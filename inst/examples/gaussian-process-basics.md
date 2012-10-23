@@ -1,18 +1,7 @@
-`ro comment=NA, message=FALSE, cache.path="gpb/", tidy=FALSE or`
 
-```{r include=FALSE}
-sha <- gsub("^commit ", "", system("git log -n 1", intern=TRUE)[1])
-short_sha <- gsub("(^.{10}).*", "\\1", sha)
-date <- format(Sys.time(), "%Y-%m-%d")
-fig.path = paste("../../../assets/figures/", date, "-", short_sha, "-", sep="")
-opts_chunk$set(fig.path=fig.path)
-theme_publish <- theme_set(theme_bw(14))
-theme_publish <- theme_update(
-        # panel.grid.major=theme_blank(),panel.grid.minor=theme_blank(),
-        legend.title=theme_blank(), 
-        panel.background = theme_rect(fill = "transparent",colour = NA), 
-        plot.background = theme_rect(fill = "transparent",colour = NA))
-```
+
+
+
 
 Basic regression in Gaussian processes  
 ---------------------------------------
@@ -23,55 +12,80 @@ Working out coded examples for basic Gaussian process regression using R.  I've 
 
 Required R libraries (for multivariate normal, also for plotting):
 
-```{r results="hide"}
+
+```r
 require(MASS)
 require(reshape2)
 require(ggplot2)
 ```
 
 
+
 Set a seed for repeatable plots
 
-```{r}
+
+```r
 set.seed(12345)
 ```
 
 
+
 Define the points at which we want to compute the function values (x values of the prediction points or test points), and the scale parameter for the covariance function $\ell=1$
 
-```{r}
+
+```r
 x_predict <- seq(-5,5,len=50)
 l <- 1
 ```
 
+
 We will use the squared exponential (also called radial basis or Gaussian, though it is not this that gives Gaussian process it's name; any covariance function would do) as the covariance function, $\operatorname{cov}(X_i, X_j) = \exp\left(-\frac{(X_i - X_j)^2}{2 \ell ^ 2}\right)$
 
-```{r}
+
+```r
 SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
 cov <- function(X, Y) outer(X, Y, SE, l)
 ```
 
-```{r}
+
+
+```r
 COV <- cov(x_predict, x_predict)
 ```
+
 Generate a number of functions from the process
 
-```{r}
+
+```r
 values <- mvrnorm(3, rep(0, length=length(x_predict)), COV)
 ```
 
 
+
 Reshape the data into long (tidy) form, listing x value, y value, and sample number
-```{r}
+
+```r
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
 head(dat)
 ```
 
+```
+       x variable   value
+1 -5.000       X1 -0.6450
+2 -4.796       X1 -0.9227
+3 -4.592       X1 -1.1587
+4 -4.388       X1 -1.3277
+5 -4.184       X1 -1.4139
+6 -3.980       X1 -1.4103
+```
+
+
 
 Plot the result
 
-```{r}
+
+```r
 fig2a <- ggplot(dat,aes(x=x,y=value)) +
   geom_rect(xmin=-Inf, xmax=Inf, ymin=-2, ymax=2, fill="grey80") +
   geom_line(aes(group=variable)) +   theme_bw() +
@@ -80,14 +94,19 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
+![plot of chunk unnamed-chunk-9](../../../assets/figures/2012-10-22-3a15cb4f90-unnamed-chunk-9.png) 
+
+
 ### Posterior distribution given the data
 
 Imagine we have some data,
 
-```{r}
+
+```r
 obs <- data.frame(x = c(-4, -3, -1,  0,  2),
                   y = c(-2,  0,  1,  2, -1))
 ```
+
 
 
 In general we aren't interested in drawing from the prior, but want to include information from the data as well.  We want the joint distribution of the observed values and the prior is:
@@ -105,21 +124,26 @@ $$C= cov(X_p, X_p) - cov(X_p, X_o) cov(X_o,X_o)^{-1} cov(X_o, X_p)$$
 
 (We use `solve(M)` which with no second argument will simply invert the matrix `M`, but should use the Cholsky decomposition instead for better numerical stability)
 
-```{r}
+
+```r
 cov_xx_inv <- solve(cov(obs$x, obs$x))
 Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
 Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(obs$x, x_predict)
 ```
 
 
+
 Now lets take 3 random samples from the posterior distribution,
-```{r}
+
+```r
 values <- mvrnorm(3, Ef, Cf)
 ```
 
+
 and plot our solution (mean, 2 standard deviations, and the ranom samples.)
 
-```{r}
+
+```r
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
 
@@ -135,12 +159,16 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
+![plot of chunk unnamed-chunk-13](../../../assets/figures/2012-10-22-3a15cb4f90-unnamed-chunk-13.png) 
+
+
 Additive noise
 --------------
 
 In general the model may have process error, and rather than observe the deterministic map $f(x)$ we only observe $y = f(x) + \varepsilon$.  Let us assume for the moment that $\varepsilon$ are independent, normally distributed random variables with variance $\sigma_n^2$.  
 
-```{r}
+
+```r
 sigma.n <- 0.8
 cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma.n^2 * diag(1, length(obs$x)))
 Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
@@ -149,14 +177,18 @@ Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(
 
 
 
+
 Now lets take 3 random samples from the posterior distribution,
-```{r}
+
+```r
 values <- mvrnorm(3, Ef, Cf)
 ```
 
+
 and plot 
 
-```{r}
+
+```r
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
 Ey <- data.frame(x=x_predict, y=(Ef), ymin=(Ef-2*sqrt(diag(Cf))), ymax=(Ef+2*sqrt(diag(Cf))))
@@ -173,6 +205,9 @@ fig2c + opts(panel.background = theme_rect(fill = "transparent"),
         plot.background = theme_rect(fill = "transparent"))
 ```
 
+![plot of chunk unnamed-chunk-16](../../../assets/figures/2012-10-22-3a15cb4f90-unnamed-chunk-16.png) 
+
+
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
 
 
@@ -185,7 +220,8 @@ $$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y
 
 Which is:
 
-```{r}
+
+```r
 
 #' observation pairs, obs$x, obs$x, 
 #' SE covariance between two observations 
@@ -205,50 +241,92 @@ minusloglik <- function(pars){
 ```
 
 
-```{r}
+
+
+```r
 pars <- c(l=1, sigma.n=1)
 o <- optim(pars, minusloglik)
 o$par
 ```
 
+```
+       l  sigma.n 
+0.703891 0.002685 
+```
+
+
 ## A comparison to built-in R utilities
 
 Some basic Gaussian process tools are provided in the `kernlab` package,
 
-```{r}
+
+```r
 library(kernlab)
 ```
 
+
 through the `gausspr` function,
 
-```{r}
+
+```r
 gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=0.8)
 ```
 
+
 Where `rbfdot` indicates the Gaussian (Radial basis function) kernel we use above, with parameter `sigma=1/(2l^2)` (note that gausspr defines the kernel parameter differently, see:
 
-```{r}
+
+```r
 gp@kernelf@.Data
 ```
+
+```
+function (x, y = NULL) 
+{
+    if (!is(x, "vector")) 
+        stop("x must be a vector")
+    if (!is(y, "vector") && !is.null(y)) 
+        stop("y must a vector")
+    if (is(x, "vector") && is.null(y)) {
+        return(1)
+    }
+    if (is(x, "vector") && is(y, "vector")) {
+        if (!length(x) == length(y)) 
+            stop("number of dimension must be the same on both data points")
+        return(exp(sigma * (2 * crossprod(x, y) - crossprod(x) - 
+            crossprod(y))))
+    }
+}
+<environment: 0x5299760>
+```
+
 note this takes vectors `x`, `y` and returns a scalar, not the covaraiance matrix).  The function will try to estimate hyperparameters such as `sigma` if they are not given unless `fit=FALSE`.  The data is also scaled to 0 mean, unit variance unless `scaled=FALSE` is set.  
 
 We can then use the estimated process to infer values on a specified grid through `predict`, e.g. for the example above,
 
-```{r}
+
+```r
 y_p <- predict(gp, x_predict)
 dat2 <- data.frame(x = x_predict, variable = "Y_p", value = y_p)
 ```
 
 
-```{r}
+
+
+```r
 ggplot(dat2, aes(x, value)) + geom_point() + geom_line(data=Ey,aes(x=x,y=y), size=1) 
 ```
+
+![plot of chunk unnamed-chunk-23](../../../assets/figures/2012-10-22-3a15cb4f90-unnamed-chunk-23.png) 
+
 
 ### Fitting hyperparameters by maximum likelihood
 
 If we do not specify `fit=false` then `gausspr` will estimate the hyperparamters by maximum likelihood:
 
 
-```{r}
+
+```r
 gp_fit <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), scaled=FALSE, var=0.8)
 ```
+

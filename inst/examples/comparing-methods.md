@@ -1,27 +1,14 @@
 
 
+
+
+
+
+
 ```r
 require(MASS)
-```
-
-```
-## Loading required package: MASS
-```
-
-```r
 require(ggplot2)
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```r
 require(kernlab)
-```
-
-```
-## Loading required package: kernlab
 ```
 
 
@@ -30,8 +17,9 @@ Parameterization-specific
 
 
 ```r
-X <- seq(-5, 5, len = 50)
-obs <- data.frame(x = c(-4, -3, -1, 0, 2), y = c(-2, 0, 1, 2, -1))
+X <- seq(-5,5,len=50)
+obs <- data.frame(x = c(-4, -3, -1,  0,  2),
+                  y = c(-2,  0,  1,  2, -1))
 l <- 1
 sigma_n <- 0.8
 ```
@@ -42,8 +30,8 @@ Radial basis function/Gaussian kernel:
 
 
 ```r
-SE <- function(Xi, Xj, l) exp(-0.5 * (Xi - Xj)^2/l^2)
-cov <- function(X, Y) outer(X, Y, SE, l)
+  SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
+  cov <- function(X, Y) outer(X, Y, SE, l) 
 ```
 
 
@@ -52,34 +40,32 @@ Cholksy method
   
 
 ```r
-n <- length(obs$x)
-K <- cov(obs$x, obs$x)
-I <- diag(1, n)
+  n <- length(obs$x)
+  K <- cov(obs$x, obs$x)
+  I <-  diag(1, n)
 
-L <- chol(K + sigma_n^2 * I)
-alpha <- solve(t(L), solve(L, obs$y))
-k_star <- cov(obs$x, X)
-Y <- t(k_star) %*% alpha
-v <- solve(L, k_star)
-Var <- cov(X, X) - t(v) %*% v
-loglik <- -0.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * 
-    pi)/2
+  L <- chol(K + sigma_n^2 * I)
+  alpha <- solve(t(L), solve(L, obs$y))
+  k_star <- cov(obs$x, X)
+  Y <- t(k_star) %*% alpha
+  v <- solve(L, k_star)
+  Var <- cov(X,X) - t(v) %*% v
+  loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
 ```
 
   
 Direct method 
 
 ```r
-cov_xx_inv <- solve(K + sigma_n^2 * I)
-Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
-Cf <- cov(X, X) - cov(X, obs$x) %*% cov_xx_inv %*% cov(obs$x, X)
+  cov_xx_inv <- solve(K + sigma_n^2*I)
+  Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
+  Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
 ```
 
 
 
 ```r
-gp <- gausspr(obs$x, obs$y, kernel = "rbfdot", kpar = list(sigma = 1/(2 * 
-    l^2)), fit = FALSE, scaled = FALSE, var = 0.8)
+gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=0.8)
 y_p <- predict(gp, X)
 ```
 
@@ -88,11 +74,10 @@ Things that should be equivelent but aren't quite:
 
 
 ```r
-ggplot(data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p)) + geom_point(aes(x, 
-    Ef), col = "red") + geom_point(aes(x, Y)) + geom_line(aes(x, y_p))
+ggplot(data.frame(x=X, Ef=Ef, Y=Y, y_p = y_p))+ geom_point(aes(x,Ef), col='red') + geom_point(aes(x,Y)) + geom_line(aes(x,y_p))
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-8](../../../assets/figures/2012-10-22-3a15cb4f90-unnamed-chunk-8.png) 
 
 
 
@@ -102,12 +87,12 @@ cov_xx_inv %*% obs$y
 ```
 
 ```
-##         [,1]
-## [1,] -1.4059
-## [2,]  0.5010
-## [3,]  0.1288
-## [4,]  1.2275
-## [5,] -0.7119
+        [,1]
+[1,] -1.4059
+[2,]  0.5010
+[3,]  0.1288
+[4,]  1.2275
+[5,] -0.7119
 ```
 
 ```r
@@ -115,7 +100,7 @@ alpha
 ```
 
 ```
-## [1] -1.21293  0.46074  0.07548  1.44144 -0.73949
+[1] -1.21293  0.46074  0.07548  1.44144 -0.73949
 ```
 
 ```r
@@ -123,12 +108,12 @@ alpha(gp)
 ```
 
 ```
-##         [,1]
-## [1,] -1.2475
-## [2,]  0.4011
-## [3,]  0.1661
-## [4,]  1.1010
-## [5,] -0.6394
+        [,1]
+[1,] -1.2475
+[2,]  0.4011
+[3,]  0.1661
+[4,]  1.1010
+[5,] -0.6394
 ```
 
 
