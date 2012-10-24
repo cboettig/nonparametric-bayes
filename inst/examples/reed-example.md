@@ -4,18 +4,8 @@ Reed (1979) with Gaussian processes
 
 ```r
 require(pdgControl)
-```
-
-```
-## Loading required package: pdgControl
-```
-
-```r
 require(ggplot2)
-```
-
-```
-## Loading required package: ggplot2
+opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
 
@@ -60,7 +50,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8190/8117649167_f5002b7024_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8186/8117674597_2e55a9d99f_o.png) 
 
 
 
@@ -72,7 +62,7 @@ Predict the function over the target grid
 obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
 X <- x_grid
 library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n = 0.05, l = 10))
+gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1))
 ```
 
 
@@ -89,7 +79,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8336/8117660178_beeca82760_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8476/8117674731_a0e931b76e_o.png) 
 
 
 
@@ -121,7 +111,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,
     d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8046/8117660240_31c8d052c4_o.png) 
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8046/8117674839_985c470a2a_o.png) 
 
 
 
@@ -134,7 +124,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8330/8117649515_59c703d880_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8191/8117674921_b567f92011_o.png) 
 
 
 Predict the function over the target grid
@@ -143,8 +133,7 @@ Predict the function over the target grid
 ```r
 obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
 X <- x_grid
-library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n = 0.05, l = 10))
+gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1))
 ```
 
 
@@ -160,6 +149,13 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8325/8117660460_a53eb7c10c_o.png) 
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8470/8117675141_0b70e99892_o.png) 
+
+
+
+## Further steps
+
+* is the posterior GP capturing the process noise?
+* Need to add optimization over hyperparameters
 
 

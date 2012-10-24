@@ -4,6 +4,7 @@ Reed (1979) with Gaussian processes
 ```{r libraries}
 require(pdgControl)
 require(ggplot2)
+opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
 Simulate some training data under a stochastic growth function with standard parameterization,
@@ -49,7 +50,7 @@ Predict the function over the target grid
 obs <- data.frame(x=x[1:(T-1)],y=x[2:T])
 X <- x_grid
 library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n=.05, l=10))
+gp <- gp_fit(obs, X, c(sigma_n=1, l=1))
 ```
 
 Gaussian Process inference from this model.  True model shown in red.  
@@ -102,8 +103,7 @@ Predict the function over the target grid
 ```{r}
 obs <- data.frame(x=x[1:(T-1)],y=x[2:T])
 X <- x_grid
-library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n=.05, l=10))
+gp <- gp_fit(obs, X, c(sigma_n=1, l=1))
 ```
 
 Gaussian Process inference from this model
@@ -115,4 +115,11 @@ ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
+
+
+## Further steps
+
+* is the posterior GP capturing the process noise?
+* Need to add optimization over hyperparameters
+
 
