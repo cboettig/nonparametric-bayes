@@ -94,7 +94,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](../../../assets/figures/2012-10-23-cad2271750-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8191/8117654983_5489353c99_o.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +159,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](../../../assets/figures/2012-10-23-cad2271750-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8463/8117666046_7585878fee_o.png) 
 
 
 Additive noise
@@ -205,7 +205,7 @@ fig2c + opts(panel.background = theme_rect(fill = "transparent"),
         plot.background = theme_rect(fill = "transparent"))
 ```
 
-![plot of chunk unnamed-chunk-16](../../../assets/figures/2012-10-23-cad2271750-unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8476/8117666112_89a7bbab98_o.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -317,7 +317,7 @@ dat2 <- data.frame(x = x_predict, variable = "Y_p", value = y_p)
 ggplot(dat2, aes(x, value)) + geom_point() + geom_line(data=Ey,aes(x=x,y=y), size=1) 
 ```
 
-![plot of chunk unnamed-chunk-23](../../../assets/figures/2012-10-23-cad2271750-unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-23](http://farm9.staticflickr.com/8336/8117655221_c8075e4842_o.png) 
 
 
 ### Fitting hyperparameters by maximum likelihood

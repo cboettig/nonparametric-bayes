@@ -77,7 +77,7 @@ Things that should be equivelent but aren't quite:
 ggplot(data.frame(x=X, Ef=Ef, Y=Y, y_p = y_p))+ geom_point(aes(x,Ef), col='red') + geom_point(aes(x,Y)) + geom_line(aes(x,y_p))
 ```
 
-![plot of chunk unnamed-chunk-8](../../../assets/figures/2012-10-23-cad2271750-unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8331/8117663002_8165a8e600_o.png) 
 
 
 

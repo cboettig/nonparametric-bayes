@@ -60,7 +60,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8190/8117649167_f5002b7024_o.png) 
 
 
 
@@ -89,7 +89,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8336/8117660178_beeca82760_o.png) 
 
 
 
@@ -121,7 +121,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,
     d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8046/8117660240_31c8d052c4_o.png) 
 
 
 
@@ -134,7 +134,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8330/8117649515_59c703d880_o.png) 
 
 
 Predict the function over the target grid
@@ -160,6 +160,6 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8325/8117660460_a53eb7c10c_o.png) 
 
 

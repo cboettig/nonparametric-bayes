@@ -112,7 +112,7 @@ ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=df2, aes(x,value,color=variable))
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8055/8117667726_8d81dc44fc_o.png) 
 
 
 Looks fine for this data, but not for Reed example:
@@ -137,7 +137,7 @@ for(t in 1:(T-1))
 plot(x)
 ```
 
-![plot of chunk libraries](figure/libraries.png) 
+![plot of chunk libraries](http://farm9.staticflickr.com/8334/8117656875_cb910e4496_o.png) 
 
 
 
@@ -191,7 +191,7 @@ ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=df2, aes(x,value,color=variable))
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8043/8117667892_7e192857c2_o.png) 
 
 
 
