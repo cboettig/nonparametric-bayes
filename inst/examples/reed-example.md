@@ -64,7 +64,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8334/8117731430_cb8982b216_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8465/8117743934_a153fbabd3_o.png) 
 
 
 
@@ -93,7 +93,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8184/8117731560_e7f4f4c9ca_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8333/8117733641_c30742893a_o.png) 
 
 
 
@@ -125,7 +125,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,
     d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8474/8117731742_0b1662b000_o.png) 
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8052/8117733757_0a75a31cc7_o.png) 
 
 
 
@@ -138,7 +138,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8047/8117721565_33bac4c162_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8184/8117744294_07f74257a5_o.png) 
 
 
 Predict the function over the target grid
@@ -163,7 +163,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8332/8117721681_6a2d72d993_o.png) 
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8184/8117744504_dc8a6f906d_o.png) 
 
 
 
@@ -182,7 +182,7 @@ minusloglik(par)
 
 ```
 ##       [,1]
-## [1,] 117.9
+## [1,] 120.6
 ```
 
 ```r
@@ -220,7 +220,7 @@ Yikes.  let's try 1-D optimization:
 
 ```r
 minusloglik <- function(par) {
-    gp <- gp_fit(obs, X, c(sigma_n = 1, l = par))
+    gp <- gp_fit(obs, X, c(sigma_n = par, l = 1))
     -gp$llik
 }
 minusloglik(1)
@@ -228,25 +228,25 @@ minusloglik(1)
 
 ```
 ##       [,1]
-## [1,] 117.9
+## [1,] 120.6
 ```
 
 ```r
-o <- optimize(minusloglik, c(0, 100))
+o <- optimize(minusloglik, c(0, 150))
 o
 ```
 
 ```
 ## $minimum
-## [1] 4.671
+## [1] 150
 ## 
 ## $objective
-##       [,1]
-## [1,] 79.84
+##        [,1]
+## [1,] -159.5
 ```
 
 ```r
-hyperpars <- c(sigma_n = 1, l = o$objective)
+hyperpars <- c(sigma_n = o$minimum, l = 1)
 ```
 
 
@@ -265,6 +265,6 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8464/8117722043_bf6df8a514_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8327/8117744938_f7f3cf82e2_o.png) 
 
 

@@ -137,13 +137,13 @@ Yikes.  let's try 1-D optimization:
 
 ```{r}
 minusloglik <- function(par){
-  gp <- gp_fit(obs, X, c(sigma_n=1, l=par))
+  gp <- gp_fit(obs, X, c(sigma_n=par, l=1))
   -gp$llik
 }
 minusloglik(1)
-o <- optimize(minusloglik, c(0,100))
+o <- optimize(minusloglik, c(0,150))
 o
-hyperpars <- c(sigma_n=1, l=o$objective)
+hyperpars <- c(sigma_n=o$minimum, l=1)
 ```
 
 
