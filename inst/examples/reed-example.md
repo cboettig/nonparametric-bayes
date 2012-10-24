@@ -4,7 +4,21 @@ Reed (1979) with Gaussian processes
 
 ```r
 require(pdgControl)
+```
+
+```
+## Loading required package: pdgControl
+```
+
+```r
 require(ggplot2)
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```r
 opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
@@ -50,7 +64,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8186/8117674597_2e55a9d99f_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8334/8117731430_cb8982b216_o.png) 
 
 
 
@@ -79,7 +93,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8476/8117674731_a0e931b76e_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8184/8117731560_e7f4f4c9ca_o.png) 
 
 
 
@@ -111,7 +125,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,
     d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8046/8117674839_985c470a2a_o.png) 
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8474/8117731742_0b1662b000_o.png) 
 
 
 
@@ -124,7 +138,7 @@ for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8191/8117674921_b567f92011_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8047/8117721565_33bac4c162_o.png) 
 
 
 Predict the function over the target grid
@@ -149,13 +163,108 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8470/8117675141_0b70e99892_o.png) 
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8332/8117721681_6a2d72d993_o.png) 
 
 
 
-## Further steps
+## Simple optimization over hyperparameters:
 
-* is the posterior GP capturing the process noise?
-* Need to add optimization over hyperparameters
+
+
+```r
+minusloglik <- function(par) {
+    gp <- gp_fit(obs, X, par)
+    -gp$llik
+}
+par <- c(sigma_n = 1, l = 1)
+minusloglik(par)
+```
+
+```
+##       [,1]
+## [1,] 117.9
+```
+
+```r
+o <- optim(par, minusloglik)
+o
+```
+
+```
+## $par
+## sigma_n       l 
+##   14023    2613 
+## 
+## $value
+## [1] -336.4
+## 
+## $counts
+## function gradient 
+##       67       NA 
+## 
+## $convergence
+## [1] 0
+## 
+## $message
+## NULL
+```
+
+```r
+hyperpars <- o$par
+```
+
+
+Yikes.  let's try 1-D optimization:
+
+
+
+```r
+minusloglik <- function(par) {
+    gp <- gp_fit(obs, X, c(sigma_n = 1, l = par))
+    -gp$llik
+}
+minusloglik(1)
+```
+
+```
+##       [,1]
+## [1,] 117.9
+```
+
+```r
+o <- optimize(minusloglik, c(0, 100))
+o
+```
+
+```
+## $minimum
+## [1] 4.671
+## 
+## $objective
+##       [,1]
+## [1,] 79.84
+```
+
+```r
+hyperpars <- c(sigma_n = 1, l = o$objective)
+```
+
+
+
+
+Plot the optimal hyperparameter solution:
+
+
+```r
+gp <- gp_fit(obs, X, hyperpars)
+df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
+    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
+true <- data.frame(x = X, y = sapply(X, f, 0, p))
+ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
+    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
+    aes(x, y), col = "red", lty = 2)
+```
+
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8464/8117722043_bf6df8a514_o.png) 
 
 

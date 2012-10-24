@@ -117,9 +117,45 @@ ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
 ```
 
 
-## Further steps
+## Simple optimization over hyperparameters:
 
-* is the posterior GP capturing the process noise?
-* Need to add optimization over hyperparameters
 
+```{r}
+minusloglik <- function(par){
+  gp <- gp_fit(obs, X, par)
+  -gp$llik
+}
+par <- c(sigma_n=1, l=1)
+minusloglik(par)
+o <- optim(par, minusloglik)
+o
+hyperpars <- o$par
+```
+
+Yikes.  let's try 1-D optimization:
+
+
+```{r}
+minusloglik <- function(par){
+  gp <- gp_fit(obs, X, c(sigma_n=1, l=par))
+  -gp$llik
+}
+minusloglik(1)
+o <- optimize(minusloglik, c(0,100))
+o
+hyperpars <- c(sigma_n=1, l=o$objective)
+```
+
+
+
+Plot the optimal hyperparameter solution:
+
+```{r}
+gp <- gp_fit(obs, X, hyperpars)
+df <- data.frame(x=X, y=gp$Ef, ymin=(gp$Ef-2*sqrt(abs(diag(gp$Cf)))), ymax=(gp$Ef+2*sqrt(abs(diag(gp$Cf)))))
+true <- data.frame(x=X, y=sapply(X,f, 0, p))
+ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+  geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
+  geom_line(data=true, aes(x,y), col='red', lty=2)
+```
 
