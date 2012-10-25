@@ -23,6 +23,8 @@ opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
 
+### Beverton-Holt function
+
 Simulate some training data under a stochastic growth function with standard parameterization,
 
 
@@ -35,19 +37,12 @@ K <- (p[1] - 1)/p[2]
 
 
 
-Noise function 
-
-```r
-z_g <- function(sigma_g) rlnorm(1, 0, sigma_g)  #1+(2*runif(1, 0,  1)-1)*sigma_g #
-```
-
-
 
 Parameter definitions
 
 
 ```r
-x_grid = seq(0, 1.5 * K, length = 100)
+x_grid = seq(0, 1.5 * K, length = 101)
 T <- 40
 sigma_g <- 0.1
 x <- numeric(T)
@@ -55,16 +50,21 @@ x[1] <- 1
 ```
 
 
+Noise function, profit function
+
+```r
+z_g <- function() rlnorm(1, 0, sigma_g)  #1+(2*runif(1, 0,  1)-1)*sigma_g #
+profit <- profit_harvest(1, 0, 0)
+```
+
+
+
 Simulation 
 
 
 ```r
-for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
-
-plot(x)
+for (t in 1:(T - 1)) x[t + 1] = z_g() * f(x[t], h = 0, p = p)
 ```
-
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8465/8117743934_a153fbabd3_o.png) 
 
 
 
@@ -76,7 +76,7 @@ Predict the function over the target grid
 obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
 X <- x_grid
 library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1))
+gp <- gp_fit(obs, X, c(sigma_n = 0.5, l = 1.5))
 ```
 
 
@@ -93,178 +93,133 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8333/8117733641_c30742893a_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8464/8123212898_904aa88749_o.png) 
 
 
 
-
-
-
-
-
-
-## Another example using the May model
+## Stochastic Dynamic programming solution based on the posterior Gaussian process:
 
 
 ```r
-f <- May
-p <- c(r = 0.75, k = 10, a = 1.2, H = 1, Q = 3)
-K <- 8  # approx
+rownorm <- function(M) t(apply(M, 1, function(x) x/sum(x)))
+h_grid <- x_grid
 ```
 
 
-Model dynamics look like this:
-
-
-```r
-birth <- function(x) p["r"] * (1 - x/p["k"])
-death <- function(x) p["a"] * x^(p["Q"] - 1)/(x^p["Q"] + p["H"])
-df <- data.frame(x = x_grid, b = sapply(x_grid, birth), d = sapply(x_grid, 
-    death))
-ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x, 
-    d), col = "red")
-```
-
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8052/8117733757_0a75a31cc7_o.png) 
-
-
-
-Simulation 
-
-
-```r
-x[1] = 2.5
-for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
-plot(x)
-```
-
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8184/8117744294_07f74257a5_o.png) 
-
-
-Predict the function over the target grid
-
-
-```r
-obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
-X <- x_grid
-gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1))
-```
-
-
-Gaussian Process inference from this model
-
-
-```r
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
-```
-
-![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8184/8117744504_dc8a6f906d_o.png) 
-
-
-
-## Simple optimization over hyperparameters:
+Define a transition matrix $F$ from the Gaussian process, giving the probability of going from state $x_t$ to $x_{t+1}$.
+We already have the Gaussian process mean and variance predicted for each point $x$ on our grid, so this is simply:
 
 
 
 ```r
-minusloglik <- function(par) {
-    gp <- gp_fit(obs, X, par)
-    -gp$llik
-}
-par <- c(sigma_n = 1, l = 1)
-minusloglik(par)
+V <- sqrt(diag(gp$Cf))
+matrices_gp <- lapply(h_grid, function(h) {
+    F <- sapply(x_grid, function(x) dnorm(x, gp$Ef - h, V))
+    F <- rownorm(F)
+})
 ```
 
-```
-##       [,1]
-## [1,] 120.6
-```
+
+True $f(x)$
+
 
 ```r
-o <- optim(par, minusloglik)
-o
+matrices_true <- lapply(h_grid, function(h) {
+    mu <- sapply(x_grid, f, h, p)
+    F_true <- sapply(x_grid, function(x) dnorm(x, mu, sigma_g))
+    F_true <- rownorm(F_true)
+})
 ```
 
-```
-## $par
-## sigma_n       l 
-##   14023    2613 
-## 
-## $value
-## [1] -336.4
-## 
-## $counts
-## function gradient 
-##       67       NA 
-## 
-## $convergence
-## [1] 0
-## 
-## $message
-## NULL
-```
+
+
+Calculate the policy function using the true F:
+
 
 ```r
-hyperpars <- o$par
+opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, 20, 0, profit, 
+    delta = 0.01)
 ```
 
 
-Yikes.  let's try 1-D optimization:
+Calculate using the inferred GP
+
+
+```r
+opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, 
+    delta = 0.01)
+```
+
+
 
 
 
 ```r
-minusloglik <- function(par) {
-    gp <- gp_fit(obs, X, c(sigma_n = par, l = 1))
-    -gp$llik
-}
-minusloglik(1)
+require(reshape2)
 ```
 
 ```
-##       [,1]
-## [1,] 120.6
+## Loading required package: reshape2
 ```
 
 ```r
-o <- optimize(minusloglik, c(0, 150))
-o
+policies <- melt(data.frame(stock = x_grid, GP = x_grid[opt_gp$D[, 
+    1]], Exact = x_grid[opt_true$D[, 1]]), id = "stock")
+q1 <- ggplot(policies, aes(stock, stock - value, color = variable)) + 
+    geom_point() + xlab("stock size") + ylab("escapement")
+q1
 ```
 
-```
-## $minimum
-## [1] 150
-## 
-## $objective
-##        [,1]
-## [1,] -159.5
-```
-
-```r
-hyperpars <- c(sigma_n = o$minimum, l = 1)
-```
+![plot of chunk unnamed-chunk-11](http://farm9.staticflickr.com/8053/8123196485_a3dc43986f_o.png) 
 
 
-
-
-Plot the optimal hyperparameter solution:
+We can see what happens when we attempt to manage a stock using this:
 
 
 ```r
-gp <- gp_fit(obs, X, hyperpars)
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
+z_g <- function() rlnorm(1, 0, sigma_g)
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8327/8117744938_f7f3cf82e2_o.png) 
+
+
+```r
+set.seed(1)
+sim_gp <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_gp$D, z_g, 
+    profit = profit)
+set.seed(1)
+sim_true <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_true$D, 
+    z_g, profit = profit)
+```
+
+
+
+```r
+df <- data.frame(time = sim_gp$time, stock_gp = sim_gp$fishstock, 
+    stock_true = sim_true$fishstock, harvest_gp = sim_gp$harvest, havest_true = sim_true$harvest)
+df <- melt(df, id = "time")
+ggplot(df) + geom_line(aes(time, value, color = variable))
+```
+
+![plot of chunk simplot](http://farm9.staticflickr.com/8191/8123196619_5b8ab8d81d_o.png) 
+
+
+Total Profits
+
+
+```r
+sum(sim_gp$profit)
+```
+
+```
+## [1] 25.43
+```
+
+```r
+sum(sim_true$profit)
+```
+
+```
+## [1] 29.95
+```
 
 
