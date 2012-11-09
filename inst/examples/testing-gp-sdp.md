@@ -2,190 +2,157 @@ Quick trial SDP approaches with GP function
 ==============================================
 
 
+
 ```r
-require(pdgControl)
-require(nonparametricbayes)
-require(ggplot2)
+knit("beverton_holt_data.Rmd")
+```
+
+```
+## 
+## 
+## processing file: beverton_holt_data.Rmd
+```
+
+```
+## output file:
+## /home/cboettig/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.md
+```
+
+```r
 opts_knit$set(upload.fun = socialR::notebook.url)
 ```
 
 
 
-### Beverton-Holt function
-
-Simulate some training data under a stochastic growth function with standard parameterization,
-
+Radial basis function/Gaussian kernel:
 
 
 ```r
-f <- BevHolt
-p <- c(1.5, 0.05)
-K <- (p[1] - 1)/p[2]
+SE <- function(Xi, Xj, l) exp(-0.5 * (Xi - Xj)^2/l^2)
+cov <- function(X, Y) outer(X, Y, SE, l)
 ```
 
 
 
+Cholesky method
+  
 
-Parameter definitions
+```r
+n <- length(obs$x)
+K <- cov(obs$x, obs$x)
+I <- diag(1, n)
+
+L <- chol(K + sigma_n^2 * I)
+alpha <- solve(t(L), solve(L, obs$y))
+k_star <- cov(obs$x, X)
+Y <- t(k_star) %*% alpha
+v <- solve(L, k_star)
+Var <- cov(X, X) - t(v) %*% v
+loglik <- -0.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * 
+    pi)/2
+```
+
+  
+Direct method 
 
 
 ```r
-x_grid = seq(0, 1.5 * K, length = 101)
-T <- 40
-sigma_g <- 0.1
-x <- numeric(T)
-x[1] <- 1
+cov_xx_inv <- solve(K + sigma_n^2 * I)
+Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
+Cf <- cov(X, X) - cov(X, obs$x) %*% cov_xx_inv %*% cov(obs$x, X)
 ```
 
 
-Noise function, profit function
+  Direct sequential method, avoids matrix inverse instability
 
 ```r
-z_g <- function() rlnorm(1, 0, sigma_g)  #1+(2*runif(1, 0,  1)-1)*sigma_g #
-profit <- profit_harvest(1, 0, 0)
-```
-
-
-
-Simulation 
-
-
-```r
-for (t in 1:(T - 1)) x[t + 1] = z_g() * f(x[t], h = 0, p = p)
-```
-
-
-
-
-Predict the function over the target grid
-
-
-```r
-obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
-X <- x_grid
-library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n = 0.5, l = 1.5))
-```
-
-
-Gaussian Process inference from this model.  True model shown in red.  
-
-
-```r
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-require(ggplot2)
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
-```
-
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-11-09-31878488d5-unnamed-chunk-5.png) 
-
-
-
-
-## Optimization over hyperparameters:
-
-
-
-```r
-minusloglik <- function(par) {
-    gp <- gp_fit(obs, X, par)
-    -gp$llik
+ef <- numeric(length(X))
+cf <- matrix(0, nrow = length(X), ncol = length(X))
+for (i in 1:length(obs$x)) {
+    ef <- ef + cov(X, obs$x[i]) * obs$y[i]/as.numeric(cov(obs$x[i], obs$x[i]) + 
+        sigma_n^2)
+    cf <- cf + cov(X, X) - cov(X, obs$x[i]) %*% cov(obs$x[i], X)/as.numeric(cov(obs$x[i], 
+        obs$x[i]) + sigma_n^2)
 }
-par <- c(sigma_n = 1, l = 1)
-minusloglik(par)
 ```
 
-```
-## [1] 2196
-```
+
+
 
 ```r
-o <- optim(par, minusloglik)
-o
+ggplot(data.frame(x = X, Ef = Ef, ef = ef)) + geom_point(aes(x, Ef), 
+    col = "red") + geom_line(aes(x, ef))
+```
+
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-09-4749fc78a7-unnamed-chunk-6.png) 
+
+
+
+kernlab method
+
+
+```r
+gp <- gausspr(obs$x, obs$y, kernel = "rbfdot", kpar = list(sigma = 1/(2 * 
+    l^2)), fit = FALSE, scaled = FALSE, var = 0.8)
+y_p <- predict(gp, X)
+```
+
+
+
+mlegp method
+
+
+```r
+require(mlegp)
+out <- mlegp(obs$x, obs$y, nugget = 1)
 ```
 
 ```
-## $par
-## sigma_n       l 
-##   8.918  -2.544 
 ## 
-## $value
-## [1] 1503
+## ========== FITTING GP # 1 ==============================
+## intial_scaled nugget is 0.166171
+## running simplex # 1...
+## ...done
+## ...simplex #1 complete, loglike = -85.440303 (convergence)
+## running simplex # 2...
+## ...done
+## ...simplex #2 complete, loglike = -85.440303 (convergence)
+## running simplex # 3...
+## ...done
+## ...simplex #3 complete, loglike = -85.440303 (convergence)
+## running simplex # 4...
+## ...done
+## ...simplex #4 complete, loglike = -85.440303 (convergence)
+## running simplex # 5...
+## ...done
+## ...simplex #5 complete, loglike = -85.440303 (convergence)
 ## 
-## $counts
-## function gradient 
-##       53       NA 
+## using L-BFGS method from simplex #4...
+## 	iteration: 1,loglike = -85.440302
+## ...L-BFGS method complete
 ## 
-## $convergence
-## [1] 0
-## 
-## $message
-## NULL
+## Maximum likelihood estimates found, log like =  -85.440302
+## addNuggets...
+## creating gp object......done
 ```
 
 ```r
-hyperpars <- o$par
+y_m <- predict(out, as.matrix(X))
 ```
 
 
-**Yikes.**  
-
-let's try 1-D optimization:
-
+Compare these results: 
 
 
 ```r
-minusloglik <- function(par) {
-    gp <- gp_fit(obs, X, c(sigma_n = par, l = 1))
-    -gp$llik
-}
-minusloglik(1)
+require(reshape2)
+df <- data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p, ef = ef, y_m = y_m)
+df <- melt(df, id = "x")
+ggplot(df) + geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, 
+    aes(x, y))
 ```
 
-```
-## [1] 2196
-```
-
-```r
-o <- optimize(minusloglik, c(0, 150))
-o
-```
-
-```
-## $minimum
-## [1] 8.915
-## 
-## $objective
-## [1] 1503
-```
-
-```r
-hyperpars <- c(sigma_n = o$minimum, l = 1)
-```
-
-
-**Yikes, that shouldn't happen either**
-
-
-Plot the optimal hyperparameter solution:
-
-
-```r
-gp <- gp_fit(obs, X, hyperpars)
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
-```
-
-![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-11-09-31878488d5-unnamed-chunk-8.png) 
-
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-09-4749fc78a7-unnamed-chunk-9.png) 
 
 
 
