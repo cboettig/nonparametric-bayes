@@ -1,6 +1,10 @@
 `ro comment=NA, message=FALSE, tidy=FALSE or`
 
-## Compare Cholsky and Direct methods
+## Compare Cholesky and Direct methods
+```{r settings}
+opts_knit$set(upload.fun = socialR::notebook.url)
+```
+
 
 ```{r}
 gp_fit_direct <- function(obs, X, pars=c(sigma_n=1, l=1)){
@@ -28,6 +32,7 @@ gp_fit_direct <- function(obs, X, pars=c(sigma_n=1, l=1)){
 }
 ```
 
+
 ```{r}
 gp_fit_cholsky <- function(obs, X, pars=c(sigma_n=1, l=1)){
   
@@ -42,7 +47,7 @@ gp_fit_cholsky <- function(obs, X, pars=c(sigma_n=1, l=1)){
   K <- cov(obs$x, obs$x)
   I <-  diag(1, n)
   
-  ## Cholksy method -- Consider implementing in C
+  ## Cholesky method -- Consider implementing in C
   L <- chol(K + sigma_n ^ 2 * I)
   alpha <- solve(t(L), solve(L, obs$y))
   loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
@@ -52,7 +57,7 @@ gp_fit_cholsky <- function(obs, X, pars=c(sigma_n=1, l=1)){
   var <- diag( cov(X,X) - t(v) %*% v )
 
   
-  ## Pt by pt following Rassmussen & WIlliams, but there's no reason to do it this way
+## Pt by pt following Rassmussen & Williams, but there's no reason to do it this way
 #  tmp <- lapply(X, function(x_i){  
 #    k_star <- cov(obs$x, x_i)
 #    Y <- t(k_star) %*% alpha
