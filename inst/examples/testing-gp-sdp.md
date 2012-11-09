@@ -84,7 +84,7 @@ ggplot(data.frame(x = X, Ef = Ef, ef = ef)) + geom_point(aes(x, Ef),
     col = "red") + geom_line(aes(x, ef))
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-09-4749fc78a7-unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-09-b2bfbd5a18-unnamed-chunk-6.png) 
 
 
 
@@ -110,28 +110,28 @@ out <- mlegp(obs$x, obs$y, nugget = 1)
 ```
 ## 
 ## ========== FITTING GP # 1 ==============================
-## intial_scaled nugget is 0.166171
+## intial_scaled nugget is 0.111782
 ## running simplex # 1...
 ## ...done
-## ...simplex #1 complete, loglike = -85.440303 (convergence)
+## ...simplex #1 complete, loglike = -60.566054 (convergence)
 ## running simplex # 2...
 ## ...done
-## ...simplex #2 complete, loglike = -85.440303 (convergence)
+## ...simplex #2 complete, loglike = -60.566055 (convergence)
 ## running simplex # 3...
 ## ...done
-## ...simplex #3 complete, loglike = -85.440303 (convergence)
+## ...simplex #3 complete, loglike = -60.566053 (convergence)
 ## running simplex # 4...
 ## ...done
-## ...simplex #4 complete, loglike = -85.440303 (convergence)
+## ...simplex #4 complete, loglike = -60.566053 (convergence)
 ## running simplex # 5...
 ## ...done
-## ...simplex #5 complete, loglike = -85.440303 (convergence)
+## ...simplex #5 complete, loglike = -60.566053 (convergence)
 ## 
-## using L-BFGS method from simplex #4...
-## 	iteration: 1,loglike = -85.440302
+## using L-BFGS method from simplex #5...
+## 	iteration: 1,loglike = -60.566053
 ## ...L-BFGS method complete
 ## 
-## Maximum likelihood estimates found, log like =  -85.440302
+## Maximum likelihood estimates found, log like =  -60.566053
 ## addNuggets...
 ## creating gp object......done
 ```
@@ -146,13 +146,14 @@ Compare these results:
 
 ```r
 require(reshape2)
-df <- data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p, ef = ef, y_m = y_m)
+df <- data.frame(x = X, direct = Ef, Cholesky = Y, kernlab = y_p, 
+    sequential = ef, mlegp = y_m)
 df <- melt(df, id = "x")
 ggplot(df) + geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, 
     aes(x, y))
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-09-4749fc78a7-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-09-b2bfbd5a18-unnamed-chunk-9.png) 
 
 
 

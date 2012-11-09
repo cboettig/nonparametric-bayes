@@ -76,7 +76,7 @@ Compare these results:
 
 ``` {r}
 require(reshape2)
-df <- data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p, ef = ef, y_m = y_m)
+df <- data.frame(x = X, direct = Ef, Cholesky = Y, kernlab = y_p, sequential = ef, mlegp = y_m)
 df <- melt(df, id = "x")
 ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ````
