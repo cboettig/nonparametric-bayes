@@ -1,0 +1,53 @@
+
+
+## Optimization over hyperparameters:
+
+```{r results="hide"}
+knit("beverton_holt_data.Rmd")
+```
+
+
+```{r}
+minusloglik <- function(par){
+  gp <- gp_fit(obs, X, par)
+  -gp$llik
+}
+par <- c(sigma_n=1, l=1)
+minusloglik(par)
+o <- optim(par, minusloglik)
+o
+hyperpars <- o$par
+```
+
+**Yikes.**  
+
+let's try 1-D optimization:
+
+
+```{r}
+minusloglik <- function(par){
+  gp <- gp_fit(obs, X, c(sigma_n=par, l=1))
+  -gp$llik
+}
+minusloglik(1)
+o <- optimize(minusloglik, c(0,150))
+o
+hyperpars <- c(sigma_n=o$minimum, l=1)
+```
+
+**Yikes, that shouldn't happen either**
+
+
+Plot the optimal hyperparameter solution:
+
+```{r}
+gp <- gp_fit(obs, X, hyperpars)
+df <- data.frame(x=X, y=gp$Ef, ymin=(gp$Ef-2*sqrt(abs(diag(gp$Cf)))), ymax=(gp$Ef+2*sqrt(abs(diag(gp$Cf)))))
+true <- data.frame(x=X, y=sapply(X,f, 0, p))
+ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+  geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
+  geom_line(data=true, aes(x,y), col='red', lty=2)
+```
+
+
+
