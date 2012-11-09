@@ -37,7 +37,7 @@ Radial basis function/Gaussian kernel:
 
 
 
-Cholksy method
+Cholesky method
   
 
 ```r
@@ -83,7 +83,7 @@ for(i in 1:length(obs$x)){
 ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_line(aes(x,ef))
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-09-5e4df576d7-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-09-d5cb8c43b1-unnamed-chunk-7.png) 
 
 
 
@@ -149,7 +149,7 @@ df <- melt(df, id = "x")
 ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ```
 
-![plot of chunk unnamed-chunk-10](http://carlboettiger.info/assets/figures/2012-11-09-5e4df576d7-unnamed-chunk-10.png) 
+![plot of chunk unnamed-chunk-10](http://carlboettiger.info/assets/figures/2012-11-09-d5cb8c43b1-unnamed-chunk-10.png) 
 
 
 
