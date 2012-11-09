@@ -141,7 +141,7 @@ Additive noise
 In general the model may have process error, and rather than observe the deterministic map $f(x)$ we only observe $y = f(x) + \varepsilon$.  Let us assume for the moment that $\varepsilon$ are independent, normally distributed random variables with variance $\sigma_n^2$.  
 
 ```{r}
-sigma.n <- 0.8
+sigma.n <- 0.3
 cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma.n^2 * diag(1, length(obs$x)))
 Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
 Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(obs$x, x_predict)

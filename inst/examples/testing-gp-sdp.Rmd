@@ -121,9 +121,10 @@ ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
 
 ### Misc ways to calc harvest matrices
 
-
-
-
+```{r}
+#escapement <- Vectorize(function(i,j) pmax(0, x_grid[i] - h_grid[D[j,(Tmax-t+1)]]))
+#S <- outer(1:n_x, 1:n_h, escapement)
+```
 
 Old-school calculation method:
 

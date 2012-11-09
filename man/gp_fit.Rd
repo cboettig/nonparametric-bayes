@@ -2,7 +2,7 @@
 \alias{gp_fit}
 \title{gp_fit fits a Gaussian process to the observed data}
 \usage{
-  gp_fit(obs, X, pars = c(sigma_n = "1", l = "1"))
+  gp_fit(obs, X, pars = c(sigma_n = 1, l = 1))
 }
 \arguments{
   \item{obs}{a data frame of observations with columns
@@ -32,14 +32,10 @@
 X <- seq(-5,5,len=50)
 obs <- data.frame(x = c(-4, -3, -1,  0,  2),
                   y = c(-2,  0,  1,  2, -1))
-l <- 1
-sigma_n <- 0.8
-gp <- gp_fit(obs, X, c(sigma_n=sigma_n, l=l))
+gp <- gp_fit(obs, X, c(sigma_n=0.8, l=1))
 
-df <- data.frame(x=X, y=gp$mu, ymin=(gp$mu-2*sqrt(diag(gp$Sigma))), ymax=(gp$mu+2*sqrt(diag(gp$Sigma))))
+df <- data.frame(x=X, y=gp$mu, ymin=(gp$mu-2*sqrt((gp$var))), ymax=(gp$mu+2*sqrt((gp$var))))
 require(ggplot2)
-ggplot(df)  +
- geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
- geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y))
+ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") + geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y))
 }
 

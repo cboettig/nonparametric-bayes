@@ -94,7 +94,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8191/8117654983_5489353c99_o.png) 
+![plot of chunk unnamed-chunk-9](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-9.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +159,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8463/8117666046_7585878fee_o.png) 
+![plot of chunk unnamed-chunk-13](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-13.png) 
 
 
 Additive noise
@@ -169,7 +169,7 @@ In general the model may have process error, and rather than observe the determi
 
 
 ```r
-sigma.n <- 0.8
+sigma.n <- 0.3
 cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma.n^2 * diag(1, length(obs$x)))
 Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
 Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(obs$x, x_predict)
@@ -205,7 +205,21 @@ fig2c + opts(panel.background = theme_rect(fill = "transparent"),
         plot.background = theme_rect(fill = "transparent"))
 ```
 
-![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8476/8117666112_89a7bbab98_o.png) 
+```
+Warning: 'opts' is deprecated. Use 'theme' instead. See help("Deprecated")
+```
+
+```
+Warning: 'theme_rect' is deprecated. Use 'element_rect' instead. See
+help("Deprecated")
+```
+
+```
+Warning: 'theme_rect' is deprecated. Use 'element_rect' instead. See
+help("Deprecated")
+```
+
+![plot of chunk unnamed-chunk-16](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-16.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -297,7 +311,7 @@ function (x, y = NULL)
             crossprod(y))))
     }
 }
-<environment: 0x9415ce0>
+<environment: 0x4d334d0>
 ```
 
 note this takes vectors `x`, `y` and returns a scalar, not the covaraiance matrix).  The function will try to estimate hyperparameters such as `sigma` if they are not given unless `fit=FALSE`.  The data is also scaled to 0 mean, unit variance unless `scaled=FALSE` is set.  
@@ -317,7 +331,7 @@ dat2 <- data.frame(x = x_predict, variable = "Y_p", value = y_p)
 ggplot(dat2, aes(x, value)) + geom_point() + geom_line(data=Ey,aes(x=x,y=y), size=1) 
 ```
 
-![plot of chunk unnamed-chunk-23](http://farm9.staticflickr.com/8336/8117655221_c8075e4842_o.png) 
+![plot of chunk unnamed-chunk-23](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-23.png) 
 
 
 ### Fitting hyperparameters by maximum likelihood

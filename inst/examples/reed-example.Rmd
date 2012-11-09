@@ -3,6 +3,7 @@ Reed (1979) with Gaussian processes
 
 ```{r libraries}
 require(pdgControl)
+require(nonparametricbayes)
 require(ggplot2)
 opts_knit$set(upload.fun = socialR::flickr.url)
 ```

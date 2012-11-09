@@ -34,28 +34,55 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1)){
   I <-  diag(1, n)
   
   
-  ## Cholksy method -- Consider implementing in C
-  L <- chol(K + sigma_n ^ 2 * I)
-  alpha <- solve(t(L), solve(L, obs$y))
-  loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
-  tmp <- lapply(X, function(x_i){  ## Must be a clever way to vectorize this...
-    k_star <- cov(obs$x, x_i)
-    Y <- t(k_star) %*% alpha
+  ## Cholesky not-exactly-sequential method -- Consider implementing in C
+  if(0){
+    L <- chol(K + sigma_n ^ 2 * I)
+    alpha <- solve(t(L), solve(L, obs$y))
+    loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
+    tmp <- lapply(X, function(x_i){  ## Must be a clever way to vectorize this...
+      k_star <- cov(obs$x, x_i)
+      Y <- t(k_star) %*% alpha
+      v <- solve(L, k_star)
+      Var <- cov(x_i,x_i) - t(v) %*% v
+      list(Y=Y, Var=Var)
+    })
+    mu <- sapply(tmp,`[[`, "Y")
+    var <- sapply(tmp,`[[`, "Var")
+  }
+  
+  ## Cholesky simultaneous method.  
+  if(0){
+    L <- chol(K + sigma_n ^ 2 * I)
+    alpha <- solve(t(L), solve(L, obs$y))
+    loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
+    k_star <- cov(obs$x, X)
+    mu <- t(k_star) %*% alpha
     v <- solve(L, k_star)
-    Var <- cov(x_i,x_i) - t(v) %*% v
-    list(Y=Y, Var=Var)
-  })
-  mu <- sapply(tmp,`[[`, "Y")
-  var <- sapply(tmp,`[[`, "Var")
+    var <- diag( cov(X,X) - t(v) %*% v )
+  }
   
   ## Direct method 
-  cov_xx_inv <- solve(K + sigma_n ^ 2 * I)
-  Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
-  Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
-  llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
+  if(1){
+    cov_xx_inv <- solve(K + sigma_n ^ 2 * I)
+    Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
+    Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
+    llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
+  }
   
-  out <- list(mu = mu, var = var, loglik=loglik, Ef = Ef, Cf = Cf, llik = llik)
-  class(out) = "gp"
+  ## Direct sequential method, avoids matrix inverse instability
+  ef <- numeric(length(X))
+  cf <- matrix(0, nrow=length(X), ncol=length(X))
+  llik <- 0
+  for(i in 1:length(obs$x)){
+    S <- as.numeric(cov(obs$x[i],obs$x[i]) + sigma_n^2)
+    ef <- ef + cov(X, obs$x[i]) * obs$y[i] / S
+    cf <- cf + cov(X, X) - cov(X, obs$x[i])  %*% cov(obs$x[i], X) / S
+    llik <- llik - 0.5 * obs$y[i] ^ 2 /  S - 0.5 * log(S) - n * log(2 * pi) / 2
+  }
+  
+  
+  out <- list(Ef = ef, Cf = cf, llik = llik)
+  class(out) = "gpfit"
   out
   }
 

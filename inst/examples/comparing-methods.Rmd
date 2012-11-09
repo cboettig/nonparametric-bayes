@@ -26,8 +26,10 @@ Parameterization-specific
 
 ```{r}
 X <- seq(-5,5,len=50)
-obs <- data.frame(x = c(-4, -3, -1,  0,  2),
-                  y = c(-2,  0,  1,  2, -1))
+obs <- data.frame(x = c(-4, -3, -1,  0,  2, 3),
+                  y = c(-2,  0,  1,  2, -1, -1))
+#x <- -5:5
+#obs <- data.frame(x = -5:5, y = sin(x) + rnorm(length(x),sd=.1))
 l <- 1
 sigma_n <- 0.8
 ```
@@ -40,7 +42,7 @@ Radial basis function/Gaussian kernel:
   cov <- function(X, Y) outer(X, Y, SE, l) 
 ```
 
-  
+
 Cholksy method
   
 ```{r}
@@ -58,23 +60,57 @@ Cholksy method
 ```
   
 Direct method 
-```{r}
+
+``` {r}
   cov_xx_inv <- solve(K + sigma_n^2*I)
   Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
   Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
 ```
 
-```{r}
+  Direct sequential method, avoids matrix inverse instability
+``` {r}
+ef <- numeric(length(X))
+cf <- matrix(0, nrow=length(X), ncol=length(X))
+for(i in 1:length(obs$x)){
+  ef <- ef + cov(X, obs$x[i]) * obs$y[i] / as.numeric(cov(obs$x[i],obs$x[i]) + sigma_n^2)
+  cf <- cf + cov(X, X) - cov(X, obs$x[i])  %*% cov(obs$x[i], X) / as.numeric(cov(obs$x[i],obs$x[i]) + sigma_n^2)
+}
+```
+
+
+``` {r}
+ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_line(aes(x,ef))
+````
+
+
+kernlab method
+
+``` {r}
 gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=0.8)
 y_p <- predict(gp, X)
 ```
 
-Things that should be equivelent but aren't quite:
 
-```{r}
-ggplot(data.frame(x=X, Ef=Ef, Y=Y, y_p = y_p))+ geom_point(aes(x,Ef), col='red') + geom_point(aes(x,Y)) + geom_line(aes(x,y_p))
+mlegp method
+
+``` {r}
+require(mlegp)
+out <- mlegp(obs$x, obs$y, nugget = 1)
+y_m <- predict(out, as.matrix(X))
+```
+
+Compare these results: 
+
+``` {r}
+require(reshape2)
+df <- data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p, ef = ef, y_m = y_m)
+df <- melt(df, id = "x")
+ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ````
 
+
+
+Compare alpha from Cholesky and alpha from `kernlab` to $K(x,x)^{-1} \vec y$
 
 ```{r}
 cov_xx_inv %*% obs$y
