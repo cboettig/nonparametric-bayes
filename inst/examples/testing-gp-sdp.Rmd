@@ -5,7 +5,7 @@ Quick trial SDP approaches with GP function
 require(pdgControl)
 require(nonparametricbayes)
 require(ggplot2)
-opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = socialR::notebook.url)
 ```
 
 
