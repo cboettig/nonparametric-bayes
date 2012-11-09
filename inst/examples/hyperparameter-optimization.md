@@ -4,6 +4,7 @@
 
 
 ```r
+opts_knit$set(upload.fun = socialR::notebook.url)
 knit("beverton_holt_data.Rmd")
 ```
 
@@ -31,7 +32,7 @@ minusloglik(par)
 ```
 
 ```
-## [1] 2158
+## [1] 2218
 ```
 
 ```r
@@ -42,14 +43,14 @@ o
 ```
 ## $par
 ## sigma_n       l 
-##   8.687  -2.442 
+##   9.043  -2.640 
 ## 
 ## $value
-## [1] 1502
+## [1] 1503
 ## 
 ## $counts
 ## function gradient 
-##       49       NA 
+##       51       NA 
 ## 
 ## $convergence
 ## [1] 0
@@ -78,7 +79,7 @@ minusloglik(1)
 ```
 
 ```
-## [1] 2158
+## [1] 2218
 ```
 
 ```r
@@ -88,10 +89,10 @@ o
 
 ```
 ## $minimum
-## [1] 8.692
+## [1] 9.042
 ## 
 ## $objective
-## [1] 1502
+## [1] 1503
 ```
 
 ```r
@@ -115,7 +116,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-11-09-4749fc78a7-unnamed-chunk-4.png) 
 
 
 

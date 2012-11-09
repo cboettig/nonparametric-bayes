@@ -3,6 +3,7 @@
 ## Optimization over hyperparameters:
 
 ```{r results="hide"}
+opts_knit$set(upload.fun = socialR::notebook.url)
 knit("beverton_holt_data.Rmd")
 ```
 
