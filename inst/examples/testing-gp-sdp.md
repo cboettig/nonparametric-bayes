@@ -4,29 +4,8 @@ Quick trial SDP approaches with GP function
 
 ```r
 require(pdgControl)
-```
-
-```
-## Loading required package: pdgControl
-```
-
-```r
 require(nonparametricbayes)
-```
-
-```
-## Loading required package: nonparametricbayes
-```
-
-```r
 require(ggplot2)
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```r
 opts_knit$set(upload.fun = socialR::notebook.url)
 ```
 
@@ -102,7 +81,7 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-11-09-f312095efb-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-11-09-31878488d5-unnamed-chunk-5.png) 
 
 
 
@@ -121,7 +100,7 @@ minusloglik(par)
 ```
 
 ```
-## [1] 2108
+## [1] 2196
 ```
 
 ```r
@@ -132,14 +111,14 @@ o
 ```
 ## $par
 ## sigma_n       l 
-##   8.394  -2.314 
+##   8.918  -2.544 
 ## 
 ## $value
-## [1] 1500
+## [1] 1503
 ## 
 ## $counts
 ## function gradient 
-##       49       NA 
+##       53       NA 
 ## 
 ## $convergence
 ## [1] 0
@@ -168,7 +147,7 @@ minusloglik(1)
 ```
 
 ```
-## [1] 2108
+## [1] 2196
 ```
 
 ```r
@@ -178,10 +157,10 @@ o
 
 ```
 ## $minimum
-## [1] 8.394
+## [1] 8.915
 ## 
 ## $objective
-## [1] 1500
+## [1] 1503
 ```
 
 ```r
@@ -205,96 +184,8 @@ ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") +
     aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-11-09-f312095efb-unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-11-09-31878488d5-unnamed-chunk-8.png) 
 
 
 
-
-
-
-### Misc ways to calc harvest matrices
-
-
-```r
-# escapement <- Vectorize(function(i,j) pmax(0, x_grid[i] -
-# h_grid[D[j,(Tmax-t+1)]])) S <- outer(1:n_x, 1:n_h, escapement)
-```
-
-
-Old-school calculation method:
-
-
-
-```r
-profit <- profit_harvest(price = 1, c0 = 0, c1 = 0)
-pdfn <- function(P, s) dlnorm(P, 0, s)
-sdp_mat <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g, pdfn)
-```
-
-```
-## Error: object 'h_grid' not found
-```
-
-```r
-opt <- find_dp_optim(sdp_mat, x_grid = x_grid, h_grid = h_grid, OptTime = 20, 
-    xT = 0, profit = profit, delta = 0.05)
-```
-
-```
-## Error: object 'h_grid' not found
-```
-
-```r
-plot(opt$D[, 1])
-```
-
-```
-## Error: object 'opt' not found
-```
-
-
-
-
-
-Somewhat silly way to adjust the matrix by harvest level:
-
-
-```r
-n <- length(h_grid)
-```
-
-```
-## Error: object 'h_grid' not found
-```
-
-```r
-silly <- function(F, n) lapply(0:(n - 1), function(i) {
-    d <- diag(1, nrow = (n - i))
-    top <- matrix(0, nrow = i, ncol = n)
-    top[, 1] <- 1
-    side <- matrix(0, nrow = (n - i), ncol = i)
-    out <- F %*% rbind(top, cbind(d, side))
-    t(apply(out, 1, function(x) x/sum(x)))  # normalize
-})
-```
-
-
-
-
-binning function, not quite right: 
-
-
-```r
-bin <- function(x, grid_centers) {
-    match <- which.min(abs(grid_centers - x))
-    out <- integer(length(grid_centers))
-    out[match] <- 1
-    out
-}
-per_harvest <- function(F, n) {
-    lapply(h_grid, function(h) {
-        t(sapply(x_grid, function(x) bin(x - h, x_grid)))
-    })
-}
-```
 
