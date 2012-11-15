@@ -94,7 +94,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-14-a4a8f0ef68-unnamed-chunk-9.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +159,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-11-14-a4a8f0ef68-unnamed-chunk-13.png) 
 
 
 Additive noise
@@ -219,7 +219,7 @@ Warning: 'theme_rect' is deprecated. Use 'element_rect' instead. See
 help("Deprecated")
 ```
 
-![plot of chunk unnamed-chunk-16](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-16](http://carlboettiger.info/assets/figures/2012-11-14-a4a8f0ef68-unnamed-chunk-16.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -311,7 +311,7 @@ function (x, y = NULL)
             crossprod(y))))
     }
 }
-<environment: 0x4d334d0>
+<environment: 0x713cc50>
 ```
 
 note this takes vectors `x`, `y` and returns a scalar, not the covaraiance matrix).  The function will try to estimate hyperparameters such as `sigma` if they are not given unless `fit=FALSE`.  The data is also scaled to 0 mean, unit variance unless `scaled=FALSE` is set.  
@@ -331,7 +331,7 @@ dat2 <- data.frame(x = x_predict, variable = "Y_p", value = y_p)
 ggplot(dat2, aes(x, value)) + geom_point() + geom_line(data=Ey,aes(x=x,y=y), size=1) 
 ```
 
-![plot of chunk unnamed-chunk-23](../../../assets/figures/2012-11-03-ef9ce56c80-unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-23](http://carlboettiger.info/assets/figures/2012-11-14-a4a8f0ef68-unnamed-chunk-23.png) 
 
 
 ### Fitting hyperparameters by maximum likelihood

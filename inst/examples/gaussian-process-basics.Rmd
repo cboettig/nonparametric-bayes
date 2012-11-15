@@ -1,17 +1,7 @@
 `ro comment=NA, message=FALSE, cache.path="gpb/", tidy=FALSE or`
 
 ```{r include=FALSE}
-sha <- gsub("^commit ", "", system("git log -n 1", intern=TRUE)[1])
-short_sha <- gsub("(^.{10}).*", "\\1", sha)
-date <- format(Sys.time(), "%Y-%m-%d")
-fig.path = paste("../../../assets/figures/", date, "-", short_sha, "-", sep="")
-opts_chunk$set(fig.path=fig.path)
-theme_publish <- theme_set(theme_bw(14))
-theme_publish <- theme_update(
-        # panel.grid.major=theme_blank(),panel.grid.minor=theme_blank(),
-        legend.title=theme_blank(), 
-        panel.background = theme_rect(fill = "transparent",colour = NA), 
-        plot.background = theme_rect(fill = "transparent",colour = NA))
+opts_knit$set(upload.fun = socialR::notebook.url)
 ```
 
 Basic regression in Gaussian processes  
