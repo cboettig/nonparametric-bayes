@@ -22,7 +22,7 @@ obs <- data.frame(x = c(-4, -3, -1,  0,  2, 3),
 #x <- -5:5
 #obs <- data.frame(x = -5:5, y = sin(x) + rnorm(length(x),sd=.1))
 l <- 1
-sigma_n <- 0.8
+sigma_n <- 0.
 ```
 
 
@@ -31,13 +31,13 @@ Radial basis function/Gaussian kernel:
 
 
 ```r
-  SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
+  SE <- function(Xi,Xj, l=1) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
   cov <- function(X, Y) outer(X, Y, SE, l) 
 ```
 
 
 
-Cholesky method
+### Cholesky method
   
 
 ```r
@@ -55,7 +55,7 @@ Cholesky method
 ```
 
   
-Direct method 
+### Direct method 
 
 
 ```r
@@ -65,15 +65,23 @@ Direct method
 ```
 
 
-  Direct sequential method, avoids matrix inverse instability
+### Direct sequential method, avoids matrix inverse instability
+
 
 ```r
 ef <- numeric(length(X))
 cf <- matrix(0, nrow=length(X), ncol=length(X))
-for(i in 1:length(obs$x)){
-  ef <- ef + cov(X, obs$x[i]) * obs$y[i] / as.numeric(cov(obs$x[i],obs$x[i]) + sigma_n^2)
-  cf <- cf + cov(X, X) - cov(X, obs$x[i])  %*% cov(obs$x[i], X) / as.numeric(cov(obs$x[i],obs$x[i]) + sigma_n^2)
+
+A <- as.numeric( cov(obs$x[1], obs$x[1]) )
+mu <- obs$y[1] 
+
+for(i in 2:length(obs$x)){
+  mu <- obs$y[i] + cov(obs$x[i], obs$x[1:(i-1)]) %*% (obs$y[1:(i-1)] - mu) / (A + sigma_n^2)
+  A <- as.numeric( cov(obs$x[i], obs$x[i]) - cov(obs$x[i], obs$x[1:(i-1)]) %*% cov(obs$x[1:(i-1)], obs$x[i]) / (A + sigma_n^2) )
 }
+  
+ef <- cov(X, obs$x) %*% (obs$y - mu) / A
+cf <- cov(X,X) - cov(X, obs$x) %*% cov(obs$x, X) / A
 ```
 
 
@@ -83,11 +91,11 @@ for(i in 1:length(obs$x)){
 ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_line(aes(x,ef))
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-09-d5cb8c43b1-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-15-e732f74985-unnamed-chunk-7.png) 
 
 
 
-kernlab method
+### kernlab method
 
 
 ```r
@@ -97,7 +105,30 @@ y_p <- predict(gp, X)
 
 
 
-mlegp method
+These are the same as `y_p`, explicitly showing the $E_y = K(x, x_i) \alpha$ multiplication
+
+
+```r
+y_mult <-  kernelMult(kernelf(gp), X, xmatrix(gp), as.matrix(alpha(gp))) 
+y_se <- sapply(X, function(x) cov(x, obs$x) %*% alpha(gp))
+rbind(as.numeric(y_p), as.numeric(y_mult), as.numeric(y_se))[,1:10]
+```
+
+```
+        [,1]    [,2]    [,3]   [,4]   [,5]    [,6]    [,7]    [,8]    [,9]
+[1,] -0.7023 -0.8287 -0.9338 -1.003 -1.026 -0.9967 -0.9151 -0.7894 -0.6324
+[2,] -0.7023 -0.8287 -0.9338 -1.003 -1.026 -0.9967 -0.9151 -0.7894 -0.6324
+[3,] -0.7023 -0.8287 -0.9338 -1.003 -1.026 -0.9967 -0.9151 -0.7894 -0.6324
+       [,10]
+[1,] -0.4598
+[2,] -0.4598
+[3,] -0.4598
+```
+
+
+Which demonstrates the kernel trick `alpha = cov_xx_inv %*% obs$y`
+
+### mlegp method
 
 
 ```r
@@ -144,12 +175,12 @@ Compare these results:
 
 ```r
 require(reshape2)
-df <- data.frame(x = X, Ef = Ef, Y = Y, y_p = y_p, ef = ef, y_m = y_m)
+df <- data.frame(x = X, direct = Ef, Cholesky = Y, kernlab = y_p, sequential = ef)
 df <- melt(df, id = "x")
 ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ```
 
-![plot of chunk unnamed-chunk-10](http://carlboettiger.info/assets/figures/2012-11-09-d5cb8c43b1-unnamed-chunk-10.png) 
+![plot of chunk unnamed-chunk-11](http://carlboettiger.info/assets/figures/2012-11-15-e732f74985-unnamed-chunk-11.png) 
 
 
 
@@ -163,12 +194,12 @@ cov_xx_inv %*% obs$y
 
 ```
         [,1]
-[1,] -1.4059
-[2,]  0.5008
-[3,]  0.1319
-[4,]  1.2165
-[5,] -0.5589
-[6,] -0.4113
+[1,] -3.2303
+[2,]  2.0421
+[3,] -0.8287
+[4,]  2.6398
+[5,] -1.1452
+[6,] -0.3344
 ```
 
 ```r
@@ -176,7 +207,7 @@ alpha
 ```
 
 ```
-[1] -1.21284  0.46035  0.08053  1.42053 -0.49258 -0.52138
+[1] -2.0407  1.6531 -0.8527  3.9213 -0.8673 -0.9967
 ```
 
 ```r
