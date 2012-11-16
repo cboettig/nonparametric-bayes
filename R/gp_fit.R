@@ -25,9 +25,8 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1)){
   l <- pars["l"]
   
   ## Parameterization-specific
-  SE <- function(Xi,Xj, l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
+  SE <- function(Xi,Xj, l=l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
   cov <- function(X, Y) outer(X, Y, SE, l) 
-   
   
   n <- length(obs$x)
   K <- cov(obs$x, obs$x)
@@ -62,13 +61,14 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1)){
   }
   
   ## Direct method 
-  if(1){
+  {
     cov_xx_inv <- solve(K + sigma_n ^ 2 * I)
     Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
     Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
     llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
   }
   
+  if(1){
   ## Direct sequential method, avoids matrix inverse instability
   ef <- numeric(length(X))
   cf <- matrix(0, nrow=length(X), ncol=length(X))
@@ -79,13 +79,20 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1)){
     cf <- cf + cov(X, X) - cov(X, obs$x[i])  %*% cov(obs$x[i], X) / S
     llik <- llik - 0.5 * obs$y[i] ^ 2 /  S - 0.5 * log(S) - n * log(2 * pi) / 2
   }
+  }
   
-  
-  out <- list(Ef = ef, Cf = cf, llik = llik)
+  out <- list(Ef = Ef, Cf = Cf, llik = llik, obs=obs, X=X, K=K, pars)
   class(out) = "gpfit"
   out
   }
 
 
-
+plot.gpfit <- function(gp){
+  dat <- data.frame(x=gp$X, y=(gp$Ef), ymin=(gp$Ef-2*sqrt(diag(gp$Cf))), ymax=(gp$Ef+2*sqrt(diag(gp$Cf))))
+  ggplot(dat) +
+  geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill="grey80") + # Var
+  geom_line(aes(x=x,y=y), size=1) + #MEAN
+  geom_point(data=gp$obs,aes(x=x,y=y)) + 
+  labs(title=paste("llik =", prettyNum(gp$llik)))
+}
 
