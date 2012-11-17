@@ -87,6 +87,12 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1)){
   }
 
 
+#' Plot a Gaussian Process
+#' 
+#' Plot the mean (line) and 2 standard deviations (ribbon)
+#' @param gp a gpfit object from \code{\link{gp_fit}}
+#' @return a ggplot object of the plot
+#' @export
 plot.gpfit <- function(gp){
   dat <- data.frame(x=gp$X, y=(gp$Ef), ymin=(gp$Ef-2*sqrt(diag(gp$Cf))), ymax=(gp$Ef+2*sqrt(diag(gp$Cf))))
   ggplot(dat) +

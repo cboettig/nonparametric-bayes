@@ -1,1 +1,2 @@
 export(gp_fit)
+export(plot.gpfit)
