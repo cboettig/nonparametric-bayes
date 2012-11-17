@@ -2,12 +2,24 @@ Reed (1979) with Gaussian processes
 ========================================================
 
 
+
+
+
+
 ```r
 require(pdgControl)
 ```
 
 ```
 ## Loading required package: pdgControl
+```
+
+```r
+require(nonparametricbayes)
+```
+
+```
+## Loading required package: nonparametricbayes
 ```
 
 ```r
@@ -18,82 +30,81 @@ require(ggplot2)
 ## Loading required package: ggplot2
 ```
 
-```r
-opts_knit$set(upload.fun = socialR::flickr.url)
-```
-
-
-### Beverton-Holt function
-
-Simulate some training data under a stochastic growth function with standard parameterization,
-
 
 
 ```r
-f <- BevHolt
-p <- c(1.5, 0.05)
-K <- (p[1] - 1)/p[2]
+knit("beverton_holt_data.Rmd")
 ```
 
-
-
-
-Parameter definitions
-
-
-```r
-x_grid = seq(0, 1.5 * K, length = 101)
-T <- 40
-sigma_g <- 0.1
-x <- numeric(T)
-x[1] <- 1
+```
+## 
+## 
+## processing file: beverton_holt_data.Rmd
 ```
 
-
-Noise function, profit function
-
-```r
-z_g <- function() rlnorm(1, 0, sigma_g)  #1+(2*runif(1, 0,  1)-1)*sigma_g #
-profit <- profit_harvest(1, 0, 0)
 ```
-
-
-
-Simulation 
-
-
-```r
-for (t in 1:(T - 1)) x[t + 1] = z_g() * f(x[t], h = 0, p = p)
+## output file:
+## /home/cboettig/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.md
 ```
-
-
 
 
 Predict the function over the target grid
 
 
 ```r
-obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
-X <- x_grid
 library(nonparametricbayes)
-gp <- gp_fit(obs, X, c(sigma_n = 0.5, l = 1.5))
+gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1.5))
+plot.gpfit(gp)
 ```
 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-11-16-e670f9bebf-unnamed-chunk-4.png) 
 
-Gaussian Process inference from this model.  True model shown in red.  
+
+Solution using `kernlab`
 
 
 ```r
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-require(ggplot2)
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
+library(kernlab)
+# gp <- gausspr(obs$x, obs$y, kernel='rbfdot', kpar=list(sigma=0.5),
+# fit=FALSE, scaled=FALSE, var=.09)
+gp <- gausspr(obs$x, obs$y, kernel = "rbfdot", scaled = FALSE, var = 0.01)
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8464/8123212898_904aa88749_o.png) 
+```
+## Using automatic sigma estimation (sigest) for RBF or laplace kernel
+```
+
+```r
+Ef <- predict(gp, X)
+```
+
+
+Manually get the covariance, $K(x_*, x_*) - K(x_*, x)(K(x, x) - \sigma_n^2\mathbb{I})^{-1}K(x,x_*)$. 
+
+
+```r
+var <- gp@kcall$var
+var <- 9
+Inv <- solve(kernelMatrix(kernelf(gp), xmatrix(gp)) + diag(rep(var, 
+    length = length(xmatrix(gp)))))
+Cf <- kernelMatrix(kernelf(gp), as.matrix(X)) - kernelMult(kernelf(gp), 
+    as.matrix(X), xmatrix(gp), Inv) %*% kernelMatrix(kernelf(gp), xmatrix(gp), 
+    as.matrix(X))
+```
+
+
+
+```r
+require(ggplot2)
+dat <- data.frame(x = X, y = (Ef), ymin = (Ef - 2 * sqrt(diag(Cf))), 
+    ymax = (Ef + 2 * sqrt(diag(Cf))))
+ggplot(dat) + geom_ribbon(aes(x = x, y = y, ymin = ymin, ymax = ymax), 
+    fill = "grey80") + geom_line(aes(x = x, y = y), size = 1) + geom_point(data = obs, 
+    aes(x = x, y = y)) + scale_y_continuous(name = "output, f(x)") + xlab("input, x")
+```
+
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-16-e670f9bebf-unnamed-chunk-7.png) 
+
 
 
 
@@ -112,9 +123,9 @@ We already have the Gaussian process mean and variance predicted for each point 
 
 
 ```r
-V <- sqrt(diag(gp$Cf))
+V <- sqrt(diag(Cf))
 matrices_gp <- lapply(h_grid, function(h) {
-    F <- sapply(x_grid, function(x) dnorm(x, gp$Ef - h, V))
+    F <- sapply(x_grid, function(x) dnorm(x, Ef - h, V))
     F <- rownorm(F)
 })
 ```
@@ -170,7 +181,7 @@ q1 <- ggplot(policies, aes(stock, stock - value, color = variable)) +
 q1
 ```
 
-![plot of chunk unnamed-chunk-11](http://farm9.staticflickr.com/8053/8123196485_a3dc43986f_o.png) 
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-11-16-e670f9bebf-unnamed-chunk-13.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -200,7 +211,7 @@ df <- melt(df, id = "time")
 ggplot(df) + geom_line(aes(time, value, color = variable))
 ```
 
-![plot of chunk simplot](http://farm9.staticflickr.com/8191/8123196619_5b8ab8d81d_o.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-16-e670f9bebf-simplot.png) 
 
 
 Total Profits
@@ -211,7 +222,7 @@ sum(sim_gp$profit)
 ```
 
 ```
-## [1] 25.43
+## [1] 27.56
 ```
 
 ```r

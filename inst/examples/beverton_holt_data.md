@@ -62,7 +62,6 @@ Predict the function over the target grid
 ```r
 obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
 X <- x_grid
-library(nonparametricbayes)
 ```
 
 
