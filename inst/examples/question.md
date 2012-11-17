@@ -12,8 +12,18 @@ Consider we have the observed `x,y` points and `x` values where we desire predic
 ```r
 obs <- data.frame(x = c(-4, -3, -1,  0,  2),
                   y = c(-2,  0,  1,  2, -1))
-x_predict <- seq(-5,5,len=50)
+X <- seq(-5,5,len=50)
 ```
+
+
+
+
+```r
+knit("beverton_holt_data.Rmd")
+```
+
+![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-11-16-73396d797b-unnamed-chunk-3.png) 
+
 
 
 
@@ -30,11 +40,33 @@ Calculate mean and variance:
 
 
 ```r
-sigma.n <- 0.3
-cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma.n^2 * diag(1, length(obs$x)))
-Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
-Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(obs$x, x_predict)
+sigma_n <- 0.3
+cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma_n^2 * diag(1, length(obs$x)))
+Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
+system.time(Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X))
 ```
+
+```
+   user  system elapsed 
+  0.004   0.000   0.005 
+```
+
+
+Plot
+
+
+```r
+require(ggplot2)
+dat <- data.frame(x=X, y=(Ef), ymin=(Ef-2*sqrt(diag(Cf))), ymax=(Ef+2*sqrt(diag(Cf))))    
+ggplot(dat) +
+  geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill="grey80") + # Var
+  geom_line(aes(x=x,y=y), size=1) + #MEAN
+  geom_point(data=obs,aes(x=x,y=y)) +  #OBSERVED DATA
+  scale_y_continuous(name="output, f(x)") + xlab("input, x") 
+```
+
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-16-73396d797b-unnamed-chunk-6.png) 
+
 
 
 
@@ -42,35 +74,90 @@ Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(
 
 I think I see how I get the equivalent expected values in kernlab:
 
+rename hyperparameters
+
 
 ```r
-library(kernlab)
-gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=0.8)
-Ef_kernlab <- predict(gp, x_predict)
+l = 1
+lengthscale = 1/(2*l^2)
+var = sigma_n^2
 ```
 
 
-but I don't see how I get the associated covariances?  Perhaps I have missed something in the documentation?  
+
+```r
+library(kernlab)
+
+gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=0.5), fit=FALSE, scaled=FALSE, var=.09)
+Ef_k <- predict(gp, X)
+```
 
 
-There are many cases where it would be nice to have access to the resulting Gaussian process, such as in generating plots as in Rasmussen and Williams:
+Manually get the covariance.  First we compute $K(x, x)$
+
+
+```r
+K <- kernelMatrix(kernelf(gp), xmatrix(gp))
+```
+
+
+Then compute $(K(x,x) + \sigma_n^2 \mathbb{I})^{-1}$,
+
+
+```r
+Inv <- solve(K + diag(rep(gp@kcall$var, length = length(xmatrix(gp)))))
+```
+
+
+The covariance is $K(x_*, x_*) - K(x_*, x)(K(x, x) - \sigma_n^2\mathbb{I})^{-1}K(x,x_*)$. 
+
+
+```r
+system.time(Cf_k <- kernelMatrix(kernelf(gp), as.matrix(X)) - kernelMatrix(kernelf(gp), as.matrix(X), xmatrix(gp)) %*% Inv %*% kernelMatrix(kernelf(gp), xmatrix(gp), as.matrix(X)))
+```
+
+```
+   user  system elapsed 
+  0.040   0.000   0.039 
+```
+
+
+
+
+Identical to computing the $K(x_*, x)(K(x, x) - \sigma_n^2\mathbb{I})^{-1}$ part first, multiplying the off-diagonal matrix block by the inverse
+
+
+```r
+system.time(Cf_k2 <- kernelMatrix(kernelf(gp), as.matrix(X)) - kernelMult(kernelf(gp), as.matrix(X), xmatrix(gp),  Inv) %*% kernelMatrix(kernelf(gp), xmatrix(gp), as.matrix(X)))
+```
+
+```
+   user  system elapsed 
+  0.032   0.000   0.029 
+```
+
+
+
+which is also faster.  
+
+
+
+compare the two in plots
 
 
 ```r
 require(ggplot2)
-dat <- data.frame(x=x_predict, y=(Ef), ymin=(Ef-2*sqrt(diag(Cf))), ymax=(Ef+2*sqrt(diag(Cf))))    
-ggplot(dat) +
-  geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill="grey80") + # Var
-  geom_line(aes(x=x,y=y), size=1) + #MEAN
+dat_k <- data.frame(x=X, y=(Ef_k), ymin=(Ef_k-2*sqrt(diag(Cf_k))), ymax=(Ef_k+2*sqrt(diag(Cf_k))))    
+ggplot(dat_k) +
+  geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill=rgb(0,0,1,.5)) + # Var
+  geom_line(aes(x=x,y=y), size=1, col="blue") + #MEAN
   geom_point(data=obs,aes(x=x,y=y)) +  #OBSERVED DATA
-  scale_y_continuous(lim=c(-3,3), name="output, f(x)") + xlab("input, x") 
+  geom_ribbon(data=dat, aes(x=x,y=y, ymin=ymin, ymax=ymax), fill=rgb(1,0,0,.5)) + # Var
+  geom_line(data=dat, aes(x=x,y=y), size=1, col="red") + #MEAN
+  scale_y_continuous(name="output, f(x)") + xlab("input, x") 
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-15-28b3256dfe-unnamed-chunk-6.png) 
-
-
-
-
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-11-16-73396d797b-unnamed-chunk-13.png) 
 
 
 
