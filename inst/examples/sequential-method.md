@@ -16,13 +16,12 @@ Parameterization-specific
 
 
 ```r
-X <- 1
+X <- seq(-5,5, length=40)
 obs <- data.frame(x = c(-3, -1, 3),
                   y = c(0,  1, -1))
-#x <- -5:5
 #obs <- data.frame(x = -5:5, y = sin(x) + rnorm(length(x),sd=.1))
 l <- 1
-sigma_n <- 0.
+sigma_n <- 0.5
 ```
 
 
@@ -35,30 +34,15 @@ Radial basis function/Gaussian kernel:
   cov <- function(X, Y) outer(X, Y, SE, l) 
 ```
 
-
-
-### Cholesky method
-  
-
-```r
-  n <- length(obs$x)
-  K <- cov(obs$x, obs$x)
-  I <-  diag(1, n)
-
-  L <- chol(K + sigma_n^2 * I)
-  alpha <- solve(t(L), solve(L, obs$y))
-  k_star <- cov(obs$x, X)
-  Y <- t(k_star) %*% alpha
-  v <- solve(L, k_star)
-  Var <- cov(X,X) - t(v) %*% v
-  loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
-```
-
   
 ### Direct method 
 
 
 ```r
+  n <- length(obs$x)
+  K <- cov(obs$x, obs$x)
+  I <-  diag(1, n)
+  
   cov_xx_inv <- solve(K + sigma_n^2*I)
   Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
   Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
@@ -69,36 +53,57 @@ Radial basis function/Gaussian kernel:
 
 
 ```r
-ef <- numeric(length(X))
-cf <- matrix(0, nrow=length(X), ncol=length(X))
 
-A <- as.numeric( cov(obs$x[1], obs$x[1]) )
-mu <- obs$y[1] 
-
-for(i in 2:length(obs$x)){
-  mu <- obs$y[i] + cov(obs$x[i], obs$x[1:(i-1)]) %*% (obs$y[1:(i-1)] - mu) / (A + sigma_n^2)
-  A <- as.numeric( cov(obs$x[i], obs$x[i]) - cov(obs$x[i], obs$x[1:(i-1)]) %*% cov(obs$x[1:(i-1)], obs$x[i]) / (A + sigma_n^2) )
+mmult <- function(x,y){
+  if(length(x) == 1){
+    x <- as.numeric(x) 
+    x * y
+  } else if(length(y) == 1){ 
+    y <- as.numeric(y)
+    x * y
+  }  else 
+  x %*% y
 }
-  
-ef <- cov(X, obs$x) %*% (obs$y - mu) / A
-cf <- cov(X,X) - cov(X, obs$x) %*% cov(obs$x, X) / A
+
+mu <- numeric(length(obs$y))
+y <- obs$y
+x <- obs$x
+
+C_seq <- function(X, X_prime, i){
+  if(i <= 1)
+    cov(X, X_prime) - mmult(cov(X,x[i]), cov(x[i], X_prime)) / as.numeric( cov(x[i], x[i]) + sigma_n^2)
+  else
+    C_seq(X, X_prime,   i-1) - mmult(C_seq(X,x[i],   i-1), C_seq(x[i], X_prime,   i-1)) / as.numeric( C_seq(x[i], x[i],   i-1)  + sigma_n^2  )
+}
+mu_seq <- function(X, i){
+  if(i <= 1)
+    cov(x[i], X) * (y[i]-mu[i]) / as.numeric( cov(x[i], x[i]) + sigma_n^2)
+  else
+    mu_seq(X, i-1) + C_seq(x[i], X,  i-1) * (y[i]-mu[i]) / as.numeric( C_seq(x[i], x[i], i-1)  + sigma_n^2 )
+}
+ef <- t(mu_seq(X, length(obs$x)))
+cf <- C_seq(X, X, length(obs$x))
+
 ```
 
 
 
-See if this iteration scheme is correct?
+
+Compare these results: 
 
 
 ```r
-V1 <- cov(x[1], x[1])
-V2 <- cov(x[2], x[2]) - cov(x[2], x[1]) %*% solve(cov(x[1], x[1])) %*% cov(x[1], x[2])
-V2b <- cov(x[2], x[2]) - cov(x[2], x[1]) %*% cov(x[1], x[2]) / V1
-V3 <- cov(x[3], x[3]) - cov(x[3], x[1:2]) %*% solve(cov(x[1:2], x[1:2])) %*% cov(x[1:2], x[3])
-V3b <- cov(x[3], x[3]) - cov(x[3], x[1:2]) %*% cov(x[1:2], x[3]) / V2
-c(V3, V3b)
+require(reshape2)
+require(ggplot2)
+df <- data.frame(x = X, direct = Ef, sequential = ef)
+df <- melt(df, id = "x")
+ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ```
 
-```
-[1]  0.0429 -9.9074
-```
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-19-58073767b5-unnamed-chunk-6.png) 
+
+
+
+
+
 
