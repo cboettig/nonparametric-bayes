@@ -10,6 +10,7 @@ require(ggplot2)
 
 
 
+
 ### Beverton-Holt function
 
 Simulate some training data under a stochastic growth function with standard parameterization,
@@ -50,6 +51,7 @@ Simulation
 
 
 ```r
+set.seed(111)
 for (t in 1:(T - 1)) x[t + 1] = z_g() * f(x[t], h = 0, p = p)
 ```
 
