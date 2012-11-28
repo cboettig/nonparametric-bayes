@@ -7,7 +7,6 @@
 #' @export
 gp_transition_matrix <- function(gp, h_grid=NULL){
   # consider taking x_grid, Ef, & Cf as arguments instead?
-  rownorm <- function(M) t(apply(M, 1, function(x) x/sum(x)))
   x_grid <- gp$X
   if(is.null(h_grid))
     h_grid <- x_grid
@@ -37,3 +36,7 @@ f_transition_matrix <- function(f, p, x_grid, h_grid=NULL){
   })
   matrices_F
 }
+
+
+# internal helper function
+rownorm <- function(M) t(apply(M, 1, function(x) x/sum(x)))
