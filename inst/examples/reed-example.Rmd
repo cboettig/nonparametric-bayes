@@ -31,7 +31,7 @@ Solution using `kernlab`
 ```{r}
 library(kernlab)
 #gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=0.5), fit=FALSE, scaled=FALSE, var=.09)
-gp <- gausspr(obs$x, obs$y, kernel="rbfdot", scaled=FALSE, var=sigma_g^2)
+gp <- gausspr(obs$x, obs$y, kernel="rbfdot", scaled=FALSE, var = sigma_g^2)
 Ef <- predict(gp, X)
 ```
 
