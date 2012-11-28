@@ -32,7 +32,7 @@ gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1.5))
 plot.gpfit(gp)
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-11-28-59d864f621-unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-11-28-22930fb2a8-unnamed-chunk-2.png) 
 
 
 Solution using `kernlab`
@@ -42,7 +42,8 @@ Solution using `kernlab`
 library(kernlab)
 # gp <- gausspr(obs$x, obs$y, kernel='rbfdot', kpar=list(sigma=0.5),
 # fit=FALSE, scaled=FALSE, var=.09)
-gp <- gausspr(obs$x, obs$y, kernel = "rbfdot", scaled = FALSE, var = sigma_g^2)
+gp <- gausspr(obs$x, obs$y, kernel = "rbfdot", scaled = FALSE, var = 2 * 
+    sigma_g^2)
 ```
 
 ```
@@ -78,7 +79,7 @@ ggplot(dat) + geom_ribbon(aes(x = x, y = y, ymin = ymin, ymax = ymax),
     aes(x = x, y = y)) + scale_y_continuous(name = "output, f(x)") + xlab("input, x")
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-11-28-59d864f621-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-11-28-22930fb2a8-unnamed-chunk-5.png) 
 
 
 
@@ -142,13 +143,6 @@ opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit,
 
 ```r
 require(reshape2)
-```
-
-```
-Loading required package: reshape2
-```
-
-```r
 policies <- melt(data.frame(stock = x_grid, GP = x_grid[opt_gp$D[, 
     1]], Exact = x_grid[opt_true$D[, 1]]), id = "stock")
 policy_plot <- ggplot(policies, aes(stock, stock - value, color = variable)) + 
@@ -156,7 +150,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color = variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-11-28-59d864f621-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-11-28-22930fb2a8-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -187,7 +181,7 @@ simplot <- ggplot(df) + geom_line(aes(time, value, color = variable))
 simplot
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-28-59d864f621-simplot.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-28-22930fb2a8-simplot.png) 
 
 
 Total Profits
