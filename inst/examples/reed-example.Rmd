@@ -5,6 +5,7 @@ Reed (1979) with Gaussian processes
 ```{r graphing-options, include=FALSE}
 require(pdgControl)
 require(nonparametricbayes)
+require(reshape2)
 require(ggplot2)
 library(kernlab)
 opts_knit$set(upload.fun = socialR::notebook.url)
@@ -23,7 +24,7 @@ true <- data.frame(x = X, y = sapply(X, f, 0, p))
 Predict the function over the target grid
 
 ```{r}
-gp <- gp_fit(obs, X, c(sigma_n=.2, l=10))
+gp <- gp_fit(obs, X, c(sigma_n=.1, l=8))
 plot.gpfit(gp, true)
 ```
 
@@ -31,14 +32,14 @@ plot.gpfit(gp, true)
 ## Stochastic Dynamic programming solution based on the posterior Gaussian process:
 
 ```{r}
+h_grid <- x_grid
 matrices_gp <- gp_transition_matrix(gp)
-matrices_true <- f_transition_matrix(f, p, x_grid)
+matrices_true <- f_transition_matrix(f, p, x_grid, h_grid)
 opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, 20, 0, profit, delta=.01)
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
 ```
 
 ```{r policy_plot}
-require(reshape2)
 policies <- melt(data.frame(stock=x_grid, GP = x_grid[opt_gp$D[,1]], Exact = x_grid[opt_true$D[,1]]), id="stock")
 policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
   geom_point() + xlab("stock size") + ylab("escapement") 
