@@ -10,3 +10,5 @@ URL: https://github.com/cboettig/nonparametric-bayes
 BugReports: https://github.com/cboettig/nonparametric-bayes/issues
 Collate:
     'gp_fit.R'
+    'gp_plot.R'
+    'gp_trasition_matrix.R'

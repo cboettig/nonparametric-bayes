@@ -2,7 +2,9 @@
 \alias{gp_fit}
 \title{gp_fit fits a Gaussian process to the observed data}
 \usage{
-  gp_fit(obs, X, pars = c(sigma_n = 1, l = 1))
+  gp_fit(obs, X, pars = c(sigma_n = 1, l = 1),
+    method = c("direct", "sequential", "kernlab", "cholesky"),
+    fit = true, out_var = NULL, ...)
 }
 \arguments{
   \item{obs}{a data frame of observations with columns
@@ -12,6 +14,12 @@
 
   \item{pars}{a named numeric specifying "sigma_n" for the
   (additive) and "l" for the covariance length scale}
+
+  \item{method}{select the method to use}
+
+  \item{out_var}{optionally force kernlab method to
+  generate Cf using a different variance than sigma_n^2
+  assumed in the fit}
 }
 \value{
   a list with items "mu", the expected Y values at X (mean
