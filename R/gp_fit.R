@@ -26,6 +26,7 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequentia
   method <- match.arg(method)
   sigma_n <- pars["sigma_n"]
   l <- pars["l"]
+  llik <- NA 
   
   ## Parameterization-specific
   SE <- function(Xi,Xj, l=l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
@@ -91,7 +92,7 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequentia
   ## Kernlab method
   else if(method=="kernlab"){
   var <- sigma_n^2
-  if(fit)
+  if(!fit)
     gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=var) # fixed length-scale
   else
     gp <- gausspr(obs$x, obs$y, kernel="rbfdot", scaled=FALSE, var = var)
@@ -105,6 +106,8 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequentia
   Cf <- kernelMatrix(kernelf(gp), as.matrix(X)) - 
     kernelMult(kernelf(gp), as.matrix(X), xmatrix(gp),  Inv) %*% 
     kernelMatrix(kernelf(gp), xmatrix(gp), as.matrix(X))
+  llik <- -.5 * t(obs$y) %*% Inv %*% obs$y - 0.5 * log(det(Inv)) - n * log(2 * pi) / 2
+  
   }
   
   
