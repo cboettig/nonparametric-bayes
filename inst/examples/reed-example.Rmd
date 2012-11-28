@@ -24,7 +24,7 @@ true <- data.frame(x = X, y = sapply(X, f, 0, p))
 Predict the function over the target grid
 
 ```{r}
-gp <- gp_fit(obs, X, c(sigma_n=.1, l=8), method="kernlab", fit=FALSE)
+gp <- gp_fit(obs, X, c(sigma_n=.1, l=8), method="kernlab", fit=TRUE)
 plot.gpfit(gp, true)
 ```
 

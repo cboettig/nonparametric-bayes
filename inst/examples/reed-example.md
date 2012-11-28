@@ -31,11 +31,18 @@ Predict the function over the target grid
 
 
 ```r
-gp <- gp_fit(obs, X, c(sigma_n=.1, l=8), method="kernlab", fit=FALSE)
+gp <- gp_fit(obs, X, c(sigma_n=.1, l=8), method="kernlab", fit=TRUE)
+```
+
+```
+Using automatic sigma estimation (sigest) for RBF or laplace kernel 
+```
+
+```r
 plot.gpfit(gp, true)
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-11-28-158fae0254-unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-11-28-ba98931d27-unnamed-chunk-2.png) 
 
 
 
@@ -59,7 +66,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-11-28-158fae0254-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-11-28-ba98931d27-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -87,7 +94,7 @@ simplot <- ggplot(df) + geom_line(aes(time,value, color=variable))
 simplot
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-28-158fae0254-simplot.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-28-ba98931d27-simplot.png) 
 
 
 Total Profits
@@ -98,7 +105,7 @@ sum(sim_gp$profit)
 ```
 
 ```
-[1] 29.33
+[1] 28.04
 ```
 
 ```r
