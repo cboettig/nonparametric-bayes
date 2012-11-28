@@ -4,7 +4,7 @@
 \usage{
   gp_fit(obs, X, pars = c(sigma_n = 1, l = 1),
     method = c("direct", "sequential", "kernlab", "cholesky"),
-    fit = true, out_var = NULL, ...)
+    fit = TRUE, out_var = NULL, ...)
 }
 \arguments{
   \item{obs}{a data frame of observations with columns

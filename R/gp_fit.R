@@ -21,7 +21,7 @@
 #' require(ggplot2)
 #' ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") + geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y))
 
-gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky"), fit = true, out_var=NULL, ...){
+gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky"), fit = TRUE, out_var=NULL, ...){
   
   method <- match.arg(method)
   sigma_n <- pars["sigma_n"]
