@@ -21,15 +21,16 @@
 #' require(ggplot2)
 #' ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") + geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y))
 
-gp_fit <- function(obs, X, pars=c(sigma_n=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky"), fit = TRUE, out_var=NULL, ...){
+gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky"), fit = TRUE, out_var=NULL, ...){
   
   method <- match.arg(method)
   sigma_n <- pars["sigma_n"]
   l <- pars["l"]
+  tau <- pars["tau"]
   llik <- NA 
   
   ## Parameterization-specific
-  SE <- function(Xi,Xj, l=l) exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
+  SE <- function(Xi,Xj, l=l) tau * exp(-0.5 * (Xi - Xj) ^ 2 / l ^ 2)
   cov <- function(X, Y) outer(X, Y, SE, l) 
   n <- length(obs$x)
   K <- cov(obs$x, obs$x)
