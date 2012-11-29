@@ -21,7 +21,7 @@
 #' require(ggplot2)
 #' ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") + geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y))
 
-gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky"), fit = TRUE, out_var=NULL, ...){
+gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "sequential", "kernlab", "cholesky", "conditional"), fit = TRUE, out_var=NULL, ...){
   
   method <- match.arg(method)
   sigma_n <- pars["sigma_n"]
@@ -56,6 +56,20 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
     llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
   }
   
+  
+  
+  ## Direct method, conditional on passing through 0,0 (quick hack)
+  else if(method=="conditional"){
+    obs <- data.frame(x=c(0, obs$x), y = c(0, obs$y))
+    n <- length(obs$x)
+    K <- cov(obs$x, obs$x)
+    sigmaI <-  sigma_n ^ 2 * diag(1, n)
+    sigmaI[1,1] <- 1e-5 # no noise about zero.  
+    cov_xx_inv <- solve(K + sigmaI)
+    Ef <- cov(X, obs$x) %*% cov_xx_inv %*% obs$y
+    Cf <- cov(X, X) - cov(X, obs$x)  %*% cov_xx_inv %*% cov(obs$x, X)
+    llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
+  }
   
   ### Sequential method, using function recursion
   else if(method=="sequential"){
@@ -110,12 +124,16 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
   llik <- -.5 * t(obs$y) %*% Inv %*% obs$y - 0.5 * log(det(Inv)) - n * log(2 * pi) / 2
   
   }
-  
-  
-  
-  out <- list(Ef = Ef, Cf = Cf, llik = llik, obs=obs, X=X, K=K, pars)
+    
+  out <- list(Ef = Ef, Cf = Cf, llik = llik, obs = obs, X = X, K = K, pars = pars)
   class(out) = "gpfit"
   out
   }
+
+
+
+update.gpfit <- function(gp, obs, sigma){
+  
+}
 
 

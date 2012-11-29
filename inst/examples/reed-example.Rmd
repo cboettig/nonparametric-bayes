@@ -24,9 +24,14 @@ true <- data.frame(x = X, y = sapply(X, f, 0, p))
 Predict the function over the target grid
 
 ```{r}
-gp <- gp_fit(obs, X, c(sigma_n=.1, l=8), method="kernlab", fit=TRUE)
+gp <- gp_fit(obs, X, c(sigma_n=2, tau=10, l=8), "conditional")
 plot.gpfit(gp, true)
 ```
+
+Things to do.  
+1. Condition f(0) = 0.  [f(x) f[0]]
+2. Basis function with linear part $\sigma_1 + \sigma_2 x x' + \sigma_3 e^{\phi (x-x')^2}$
+3. higher dimensions
 
 
 ## Stochastic Dynamic programming solution based on the posterior Gaussian process:

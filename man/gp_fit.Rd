@@ -2,8 +2,8 @@
 \alias{gp_fit}
 \title{gp_fit fits a Gaussian process to the observed data}
 \usage{
-  gp_fit(obs, X, pars = c(sigma_n = 1, l = 1),
-    method = c("direct", "sequential", "kernlab", "cholesky"),
+  gp_fit(obs, X, pars = c(sigma_n = 1, tau = 1, l = 1),
+    method = c("direct", "sequential", "kernlab", "cholesky", "conditional"),
     fit = TRUE, out_var = NULL, ...)
 }
 \arguments{
