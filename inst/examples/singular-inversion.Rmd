@@ -24,13 +24,18 @@ obs <- data.frame(x = X,
   
 ### Direct method 
 
+Fit with reasonable choice of length scale `l`
+
 ``` {r}
-d <- gp_fit(obs, X, c(sigma_n=1, l=.0001, tau=.3), "direct")
+d <- gp_fit(obs, X, c(sigma_n=.5, l=.02, tau=.3), "direct")
+det(d$K + .5^2 * diag(1, length(X)))
 plot.gpfit(d)
 ```
 
+Fit with long length scales.  
 
 ``` {r}
-d <- gp_fit(obs, X, c(sigma_n=1, l=10, tau=.3), "direct")
+d <- gp_fit(obs, X, c(sigma_n=.5, l=10, tau=.3), "direct")
+det(d$K + .5^2 * diag(1, length(X)))
 plot.gpfit(d)
 ```

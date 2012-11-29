@@ -51,21 +51,40 @@ obs <- data.frame(x = X,
   
 ### Direct method 
 
-
-```r
-d <- gp_fit(obs, X, c(sigma_n=1, l=.0001, tau=.3), "direct")
-plot.gpfit(d)
-```
-
-![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-11-28-113df7a98a-unnamed-chunk-3.png) 
-
-
+Fit with reasonable choice of length scale `l`
 
 
 ```r
-d <- gp_fit(obs, X, c(sigma_n=1, l=10, tau=.3), "direct")
+d <- gp_fit(obs, X, c(sigma_n=.5, l=.02, tau=.3), "direct")
+det(d$K + .5^2 * diag(1, length(X)))
+```
+
+```
+[1] 0
+```
+
+```r
 plot.gpfit(d)
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-11-28-113df7a98a-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-11-28-7faf6791cb-unnamed-chunk-3.png) 
+
+
+Fit with long length scales.  
+
+
+```r
+d <- gp_fit(obs, X, c(sigma_n=.5, l=10, tau=.3), "direct")
+det(d$K + .5^2 * diag(1, length(X)))
+```
+
+```
+[1] 0
+```
+
+```r
+plot.gpfit(d)
+```
+
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-11-28-7faf6791cb-unnamed-chunk-4.png) 
 
