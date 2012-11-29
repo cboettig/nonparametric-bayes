@@ -29,6 +29,10 @@ sigma_n <- 0.1
 ```
 
 
+
+
+
+
 ### Cholesky method
   
 
@@ -74,7 +78,7 @@ cf <- s$Cf
 ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_line(aes(x,ef))
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-11-28-0de731ae09-unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-28-5c332aa3ad-unnamed-chunk-7.png) 
 
 
 
@@ -97,33 +101,6 @@ df <- melt(df, id = "x")
 ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ```
 
-![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-11-28-0de731ae09-unnamed-chunk-8.png) 
-
-
-
-
-Compare alpha from Cholesky and alpha from `kernlab` to $K(x,x)^{-1} \vec y$
-
-
-```r
-alpha
-```
-
-```
-[1] -2.0165  1.6013 -0.8087  3.8084 -0.8498 -0.9826
-```
-
-```r
-alpha(gp)
-```
-
-```
-recover called non-interactively; frames dumped, use debugger() to view
-```
-
-```
-Error: error in evaluating the argument 'object' in selecting a method for
-function 'alpha': Error: object 'gp' not found
-```
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-28-5c332aa3ad-unnamed-chunk-9.png) 
 
 

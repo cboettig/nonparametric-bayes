@@ -71,7 +71,7 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
     llik <- -.5 * t(obs$y) %*% cov_xx_inv %*% obs$y - 0.5 * log(det(cov_xx_inv)) - n * log(2 * pi) / 2
   }
   
-  ### Sequential method, using function recursion
+  ### Sequential method, using function recursion (terribly slow for more than a few data points)
   else if(method=="sequential"){
     mmult <- function(x,y){
       if(length(x) == 1){
