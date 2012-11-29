@@ -1,0 +1,36 @@
+testing singular matrix condition
+
+
+```{r}
+require(ggplot2)
+require(kernlab)
+require(nonparametricbayes)
+opts_knit$set(upload.fun = socialR::notebook.url)
+opts_chunk$set(dev.args=list(bg="transparent"), comment=NA, tidy=FALSE)
+theme_set(theme_bw())
+theme_update(panel.background = element_rect(fill = "transparent",colour = NA))
+```
+
+Parameterization-specific
+
+
+```{r}
+X <- seq(0,1, length=1000)
+obs <- data.frame(x = X,
+                  y = sin(2*pi*10*X)+.3*rnorm(length(X)))
+```
+
+
+  
+### Direct method 
+
+``` {r}
+d <- gp_fit(obs, X, c(sigma_n=1, l=.0001, tau=.3), "direct")
+plot.gpfit(d)
+```
+
+
+``` {r}
+d <- gp_fit(obs, X, c(sigma_n=1, l=10, tau=.3), "direct")
+plot.gpfit(d)
+```
