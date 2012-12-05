@@ -19,7 +19,7 @@ processing file:
 ~/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.Rmd
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-unnamed-chunk-1.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-unnamed-chunk-1.png) 
 
 ```
 output file:
@@ -34,17 +34,15 @@ Z <- as.matrix(obs$y)
 ```
 
 
-Normalize data to the unit (hyper)cube.  
 
 
+## Call to `tgp` function `bgp()`
 
-
-
-
+Tweak the hyperparameter prior's parameters (`s2.p`) to influence the GP inferred.  
 
 
 ```r
-gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=FALSE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
+gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=TRUE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
 ```
 
 ```
@@ -68,14 +66,14 @@ d[a,b][0,1]=[1,20],[10,10]
 d prior fixed
 
 burn in:
-r=1000 d=0.760499; n=39
+r=1000 d=0.922051; n=39
 
 Sampling @ nn=101 pred locs: [with traces]
-r=1000 d=0.204246; mh=1 n=39
-r=2000 d=0.0573078; mh=1 n=39
-r=3000 d=0.0503173; mh=1 n=39
-r=4000 d=0.155435; mh=1 n=39
-r=5000 d=0.700194; mh=1 n=39
+r=1000 d=1.36989; mh=1 n=39
+r=2000 d=0.688873; mh=1 n=39
+r=3000 d=0.746951; mh=1 n=39
+r=4000 d=0.852561; mh=1 n=39
+r=5000 d=1.0243; mh=1 n=39
 
 Gathering traces
   XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 70% done     XX 70% done     XX 70% done     XX 70% done     XX 71% done     XX 71% done     XX 71% done     XX 71% done     XX 72% done     XX 72% done     XX 72% done     XX 73% done     XX 73% done     XX 73% done     XX 74% done     XX 74% done     XX 75% done     XX 75% done     XX 76% done     XX 77% done     XX 77% done     XX 78% done     XX 79% done     XX 80% done     XX 81% done     XX 83% done     XX 85% done     XX 88% done     XX 92% done     XX 100% done  
@@ -91,16 +89,25 @@ Gathering traces
 ```
 
 
+## parsing the function call
 
+* `X` is the observed X values (or matrix of appropriate dimension)
+* `XX` the desired predicted grid. (will also predict on X)
+* `Z` is observed Y values (or matrix of appropriate dimension)
+* `m0r1` means scale data to mean zero and unit range
+* `bprior` is the prior distribution, defaulting to `bfalt`. `b0` is a Gaussian.  This prior is for the Gaussian process and is not to be confused with the hyperpriors describing the distribution of various parameters.
+* `BTE` Burn-in B steps, Terminate after T steps, sample Every E steps. 
+* `verb` Very verbose output
+* Other options (for adaptive/query learning, etc, igored for now.  Focus on priors).  
+* The priors for the hyperparameters are given by `s2.p`, `tau.p` etc (both are Inverse Gammas).  Their parameters can vary hiearchically in general, but we hold them fixed, `s2.lam = 'fixed'`, etc.)
 
+## Hyperparameters
 
-
-
-Take a look at the trace
+Hyperparameter distributions returned in the trace:
 
 
 ```r
-names(gp$trace$XX[[1]])
+names(gp$trace$XX[[1]][2500,])
 ```
 
 ```
@@ -108,52 +115,132 @@ names(gp$trace$XX[[1]])
 [9] "ldetK" 
 ```
 
-```r
-dim(gp$trace$XX[[1]])
-```
 
-```
-[1] 2500    9
-```
+* `s2` is $\sigma^2$ in Gramacy and $\tau$ in Rassmussen and Williams, is the scale of the noise. Comes from an inverse gamma prior.  Set by inverse-gamma parameters `a0` and `g0`.  
 
-```r
-gp$trace$XX[[1]][1,]
-```
+* `tau2` Also comes from an inverse gamma prior. It is also set by inverse-gamma parameters `a0` and `g0`.  
 
-```
-  index lambda    s2   tau2 beta0     nug      d b  ldetK
-1     1   1511 26.98 0.8792 3.154 0.02537 0.8052 1 -129.2
-```
+$$Z | \beta, \sigma^2, K \sim N_n(\mathbf{F} \beta, \sigma^2 \mathbf{K}) $$
+$$ \beta | \sigma^2, \tau^2, \mathbf{W}, \beta_0 ~ N_m(\beta_0, \sigma^2 \tau^2 \mathbf{W} )  $$
+$$\beta_0 | N_m(\mathbf{\mu}, \mathbf{B})$$
+
+The parameters in this run are constant across the trace points (because hyperparameters are fixed).  
+
 
 ```r
 gp$trace$XX[[1]][2500,]
 ```
 
 ```
-     index lambda    s2  tau2 beta0     nug      d b  ldetK
-2500  2500  686.5 14.39 3.942 7.617 0.05902 0.6202 1 -98.12
+     index lambda    s2  tau2  beta0      nug     d b  ldetK
+2500  2500  89.83 2.064 3.616 0.6892 0.003601 1.024 1 -199.9
+```
+
+```r
+gp$trace$XX[[3]][2500,]
+```
+
+```
+     index lambda    s2  tau2  beta0      nug     d b  ldetK
+2500  2500  89.83 2.064 3.616 0.6892 0.003601 1.024 1 -199.9
 ```
 
 
-* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
 
-* `lambda`
-* `s2`
-* `tau2`
-* `beta0`
-* `nug`
-* `d`
+
+```r
+pars <- melt(gp$trace$XX[[1]], id = "index")
+ggplot(pars, aes(index, value)) + geom_line() + facet_wrap(~variable, scales="free_y")
+```
+
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-unnamed-chunk-5.png) 
+
+
+It is possible to calculate summary statistics and check out the distribution of these fellows.  
+
+
+```r
+mean(gp$trace$XX[[1]][,"nug"])
+```
+
+```
+[1] 0.009755
+```
+
+```r
+ggplot(pars, aes(value)) + geom_histogram() + facet_wrap(~variable, scales="free")
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-unnamed-chunk-6.png) 
+
+
+* We keep the heirachical priors fixed in the `tau.lm`, `s2.lm`, etc. `nug` fixed by default.  Note this results in the the priors from which these are sampled are fixed: e.g. `gp$trace$hier$s2.a0`, `gp$trace$hier$s2.g0`
+
+* `nug.p` This is the "nugget," the measurement error.  Comes from a mixture of gamma prior parameter (initial values) for the nugget parameter `c(a1,g1,a2,g2)` where `g1` and `g2` are scale (`1/rate`) parameters. _Default reduces to simple exponential prior._ Specifying `nug.p = 0` fixes the nugget parameter to the "starting" value in `gd[1]`, i.e., it is excluded from the MCMC
+
+
+* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
+* `lambda` possibly a mixing parameter in the importance sampler temperature??
+* `beta0` No mention in the manual
+* `d` The parameter for priors using the hierachical exponential distribution for the parameters `a1`, `a2`, `g1`, `g2`.  
+* `b` ??
+
+* Where are the hyperparameters for the correlation function (e.g. the length-scale for the Gaussian??)  
+
+
+## Extracting the estimated process 
+
+(The **MAP**, maximum a posteriori expected mean and variance).
 
 Extract the posterior Gaussian process mean and the $\pm 2$ standard deviations over the predicted grid from the fit:
 
 
 ```r
-
-dat <- data.frame(x    = gp$XX[[1]], 
+V <- gp$ZZ.ks2
+dat <- data.frame(x   = gp$XX[[1]], 
                  y    = gp$ZZ.km, 
                  ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
                  ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
-
 ```
 
 
@@ -171,38 +258,8 @@ Plot the posterior Gaussian Process:
 p1 + theme_notebook
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-gp-plot.png) 
 
-
-
-
-
-is mean ZZ.mean or ZZ.km?  is the var I want ZZ.s2 or ZZ.ks2?)  I want the kreiging values (km, ks2).  The others slightly don't agree with the above.  We do this by comparing to the plotted option (which handles the rescaling(?) from `choose.center` first).
-
-
-
-```r
-center <- tgp:::tgp.choose.center(gp, "mean")
-Z.mean <- center$Z
-X_vals <- center$X[, 1]
-o <- order(X_vals)
-Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
-df <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
-
-
-
-raw <- data.frame(x    = gp$XX[[1]], 
-                 y    = gp$ZZ.mean, 
-                 ymin = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.s2), 
-                 ymax = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.s2))
-
-
-p1 + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="red", alpha=.1, data=df) + geom_line(aes(x,y), col="red", data=df)  + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="blue", alpha=.1, data=raw) + geom_line(aes(x,y), col="blue", data=raw) 
-```
-
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-unnamed-chunk-6.png) 
 
 
 
@@ -277,27 +334,27 @@ matrices_gp[[1]][1:10,1:10]
 
 ```
       [,1]    [,2]    [,3]    [,4]    [,5]    [,6]    [,7]    [,8]    [,9]
- [1,]    0 0.11125 0.08108 0.06383 0.05258 0.04461 0.03865 0.03403 0.03033
- [2,]    0 0.10462 0.07925 0.06347 0.05279 0.04507 0.03921 0.03462 0.03092
- [3,]    0 0.09774 0.07718 0.06297 0.05293 0.04549 0.03976 0.03521 0.03152
- [4,]    0 0.09075 0.07486 0.06229 0.05295 0.04584 0.04027 0.03579 0.03212
- [5,]    0 0.08376 0.07231 0.06142 0.05284 0.04610 0.04071 0.03632 0.03269
- [6,]    0 0.07691 0.06956 0.06036 0.05258 0.04625 0.04108 0.03680 0.03321
- [7,]    0 0.07031 0.06665 0.05910 0.05215 0.04626 0.04133 0.03719 0.03368
- [8,]    0 0.02677 0.04296 0.04825 0.04876 0.04719 0.04473 0.04196 0.03916
- [9,]    0 0.06229 0.06236 0.05677 0.05092 0.04568 0.04115 0.03727 0.03392
-[10,]    0 0.05640 0.05914 0.05505 0.05004 0.04531 0.04109 0.03739 0.03417
+ [1,]    0 0.21390 0.12563 0.08674 0.06495 0.05111 0.04161 0.03474 0.02955
+ [2,]    0 0.19036 0.11927 0.08504 0.06499 0.05189 0.04271 0.03596 0.03080
+ [3,]    0 0.16918 0.11295 0.08312 0.06479 0.05246 0.04363 0.03703 0.03193
+ [4,]    0 0.14976 0.10655 0.08091 0.06433 0.05280 0.04437 0.03797 0.03296
+ [5,]    0 0.13188 0.10001 0.07838 0.06357 0.05291 0.04493 0.03876 0.03386
+ [6,]    0 0.11551 0.09339 0.07555 0.06251 0.05277 0.04529 0.03939 0.03464
+ [7,]    0 0.10066 0.08675 0.07245 0.06116 0.05237 0.04542 0.03984 0.03528
+ [8,]    0 0.08735 0.08020 0.06913 0.05954 0.05171 0.04534 0.04010 0.03575
+ [9,]    0 0.07556 0.07382 0.06566 0.05769 0.05082 0.04503 0.04017 0.03606
+[10,]    0 0.06525 0.06772 0.06211 0.05565 0.04971 0.04453 0.04006 0.03621
         [,10]
- [1,] 0.02730
- [2,] 0.02787
- [3,] 0.02846
- [4,] 0.02905
- [5,] 0.02963
- [6,] 0.03018
- [7,] 0.03068
- [8,] 0.03645
- [9,] 0.03102
-[10,] 0.03135
+ [1,] 0.02553
+ [2,] 0.02676
+ [3,] 0.02789
+ [4,] 0.02894
+ [5,] 0.02990
+ [6,] 0.03075
+ [7,] 0.03149
+ [8,] 0.03210
+ [9,] 0.03257
+[10,] 0.03289
 ```
 
 
@@ -310,7 +367,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot + theme_notebook
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -338,7 +395,7 @@ simplot <- ggplot(df) + geom_line(aes(time,value, color=variable))
 simplot + theme_notebook
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-simplot.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-04-046b509f8d-simplot.png) 
 
 
 Total Profits
@@ -349,7 +406,7 @@ sum(sim_gp$profit)
 ```
 
 ```
-[1] 10
+[1] 16.35
 ```
 
 ```r

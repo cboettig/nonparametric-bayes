@@ -27,67 +27,90 @@ X <- as.matrix(obs$x)
 Z <- as.matrix(obs$y)
 ```
 
-Normalize data to the unit (hyper)cube.  
-
-```{r, include=FALSE, eval=FALSE}
-unit_norm <- function(x, M=NULL, m=NULL, invert=FALSE){
-  if(is.null(M)){
-    M <- max(x) 
-    m <- min(x)
-    message(paste("Max M = ", M, "min m = ", m))
-  }
-  
-  if(!invert) {
-    (x-m)/(M-m)
-  } else {
-    (M-m)*x+m
-  }
-}
-XX = unit_norm(XX)
-X = unit_norm(X)
-Z = unit_norm(Y)
-```
 
 
+## Call to `tgp` function `bgp()`
 
+Tweak the hyperparameter prior's parameters (`s2.p`) to influence the GP inferred.  
 
 ```{r}
-gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=FALSE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
+gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=TRUE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
 ```
 
+## parsing the function call
 
+* `X` is the observed X values (or matrix of appropriate dimension)
+* `XX` the desired predicted grid. (will also predict on X)
+* `Z` is observed Y values (or matrix of appropriate dimension)
+* `m0r1` means scale data to mean zero and unit range
+* `bprior` is the prior distribution, defaulting to `bfalt`. `b0` is a Gaussian.  This prior is for the Gaussian process and is not to be confused with the hyperpriors describing the distribution of various parameters.
+* `BTE` Burn-in B steps, Terminate after T steps, sample Every E steps. 
+* `verb` Very verbose output
+* Other options (for adaptive/query learning, etc, igored for now.  Focus on priors).  
+* The priors for the hyperparameters are given by `s2.p`, `tau.p` etc (both are Inverse Gammas).  Their parameters can vary hiearchically in general, but we hold them fixed, `s2.lam = 'fixed'`, etc.)
 
+## Hyperparameters
 
-
-
-Take a look at the trace
+Hyperparameter distributions returned in the trace:
 
 ```{r}
-names(gp$trace$XX[[1]])
-dim(gp$trace$XX[[1]])
-gp$trace$XX[[1]][1,]
+names(gp$trace$XX[[1]][2500,])
+```
+
+* `s2` is $\sigma^2$ in Gramacy and $\tau$ in Rassmussen and Williams, is the scale of the noise. Comes from an inverse gamma prior.  Set by inverse-gamma parameters `a0` and `g0`.  
+
+* `tau2` Also comes from an inverse gamma prior. It is also set by inverse-gamma parameters `a0` and `g0`.  
+
+$$Z | \beta, \sigma^2, K \sim N_n(\mathbf{F} \beta, \sigma^2 \mathbf{K}) $$
+$$ \beta | \sigma^2, \tau^2, \mathbf{W}, \beta_0 ~ N_m(\beta_0, \sigma^2 \tau^2 \mathbf{W} )  $$
+$$\beta_0 | N_m(\mathbf{\mu}, \mathbf{B})$$
+
+The parameters in this run are constant across the trace points (because hyperparameters are fixed).  
+
+```{r}
 gp$trace$XX[[1]][2500,]
+gp$trace$XX[[3]][2500,]
+```
+
+
+```{r}
+pars <- melt(gp$trace$XX[[1]], id = "index")
+ggplot(pars, aes(index, value)) + geom_line() + facet_wrap(~variable, scales="free_y")
 ````
 
-* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
+It is possible to calculate summary statistics and check out the distribution of these fellows.  
 
-* `lambda`
-* `s2`
-* `tau2`
-* `beta0`
-* `nug`
-* `d`
+```{r}
+mean(gp$trace$XX[[1]][,"nug"])
+ggplot(pars, aes(value)) + geom_histogram() + facet_wrap(~variable, scales="free")
+```
+
+* We keep the heirachical priors fixed in the `tau.lm`, `s2.lm`, etc. `nug` fixed by default.  Note this results in the the priors from which these are sampled are fixed: e.g. `gp$trace$hier$s2.a0`, `gp$trace$hier$s2.g0`
+
+* `nug.p` This is the "nugget," the measurement error.  Comes from a mixture of gamma prior parameter (initial values) for the nugget parameter `c(a1,g1,a2,g2)` where `g1` and `g2` are scale (`1/rate`) parameters. _Default reduces to simple exponential prior._ Specifying `nug.p = 0` fixes the nugget parameter to the "starting" value in `gd[1]`, i.e., it is excluded from the MCMC
+
+
+* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
+* `lambda` possibly a mixing parameter in the importance sampler temperature??
+* `beta0` No mention in the manual
+* `d` The parameter for priors using the hierachical exponential distribution for the parameters `a1`, `a2`, `g1`, `g2`.  
+* `b` ??
+
+* Where are the hyperparameters for the correlation function (e.g. the length-scale for the Gaussian??)  
+
+
+## Extracting the estimated process 
+
+(The **MAP**, maximum a posteriori expected mean and variance).
 
 Extract the posterior Gaussian process mean and the $\pm 2$ standard deviations over the predicted grid from the fit:
 
 ```{r}
-
-dat <- data.frame(x    = gp$XX[[1]], 
+V <- gp$ZZ.ks2
+dat <- data.frame(x   = gp$XX[[1]], 
                  y    = gp$ZZ.km, 
                  ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
                  ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
-
-
 ```
 
 Plot the posterior Gaussian Process:
@@ -103,32 +126,6 @@ Plot the posterior Gaussian Process:
 p1 + theme_notebook
 ```
 
-
-
-
-is mean ZZ.mean or ZZ.km?  is the var I want ZZ.s2 or ZZ.ks2?)  I want the kreiging values (km, ks2).  The others slightly don't agree with the above.  We do this by comparing to the plotted option (which handles the rescaling(?) from `choose.center` first).
-
-
-```{r}
-center <- tgp:::tgp.choose.center(gp, "mean")
-Z.mean <- center$Z
-X_vals <- center$X[, 1]
-o <- order(X_vals)
-Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
-df <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
-
-
-
-raw <- data.frame(x    = gp$XX[[1]], 
-                 y    = gp$ZZ.mean, 
-                 ymin = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.s2), 
-                 ymax = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.s2))
-
-
-p1 + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="red", alpha=.1, data=df) + geom_line(aes(x,y), col="red", data=df)  + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="blue", alpha=.1, data=raw) + geom_line(aes(x,y), col="blue", data=raw) 
-```
 
 
 Find the actual optimum policy from the true parametric model
