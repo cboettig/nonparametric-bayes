@@ -20,27 +20,74 @@ theme_set(theme_notebook)
 
 
 ```{r results="hide"}
-knit("beverton_holt_data.Rmd")
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
+knit("~/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.Rmd")
+true <- data.frame(x = x_grid, y = sapply(x_grid, f, 0, p))
+XX <- as.matrix(x_grid)
+X <- as.matrix(obs$x)
+Z <- as.matrix(obs$y)
 ```
+
+Normalize data to the unit (hyper)cube.  
+
+```{r, include=FALSE, eval=FALSE}
+unit_norm <- function(x, M=NULL, m=NULL, invert=FALSE){
+  if(is.null(M)){
+    M <- max(x) 
+    m <- min(x)
+    message(paste("Max M = ", M, "min m = ", m))
+  }
+  
+  if(!invert) {
+    (x-m)/(M-m)
+  } else {
+    (M-m)*x+m
+  }
+}
+XX = unit_norm(XX)
+X = unit_norm(X)
+Z = unit_norm(Y)
+```
+
 
 
 
 ```{r}
-gp <- bgp(X=obs$x, XX=X, Z=obs$y)
+gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=FALSE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
 ```
+
+
+
+
+
+
+Take a look at the trace
+
+```{r}
+names(gp$trace$XX[[1]])
+dim(gp$trace$XX[[1]])
+gp$trace$XX[[1]][1,]
+gp$trace$XX[[1]][2500,]
+````
+
+* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
+
+* `lambda`
+* `s2`
+* `tau2`
+* `beta0`
+* `nug`
+* `d`
 
 Extract the posterior Gaussian process mean and the $\pm 2$ standard deviations over the predicted grid from the fit:
 
 ```{r}
-center <- tgp:::tgp.choose.center(gp, "mean")
-Z.mean <- center$Z
-X_vals <- center$X[, 1]
-o <- order(X_vals)
-Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
-dat <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
+
+dat <- data.frame(x    = gp$XX[[1]], 
+                 y    = gp$ZZ.km, 
+                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+
+
 ```
 
 Plot the posterior Gaussian Process:
@@ -54,6 +101,33 @@ Plot the posterior Gaussian Process:
   if(!is.null(true))
     p1 <- p1 + geom_line(data = true, aes(x, y), col = "red", lty = 2) 
 p1 + theme_notebook
+```
+
+
+
+
+is mean ZZ.mean or ZZ.km?  is the var I want ZZ.s2 or ZZ.ks2?)  I want the kreiging values (km, ks2).  The others slightly don't agree with the above.  We do this by comparing to the plotted option (which handles the rescaling(?) from `choose.center` first).
+
+
+```{r}
+center <- tgp:::tgp.choose.center(gp, "mean")
+Z.mean <- center$Z
+X_vals <- center$X[, 1]
+o <- order(X_vals)
+Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
+Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
+V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
+df <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
+
+
+
+raw <- data.frame(x    = gp$XX[[1]], 
+                 y    = gp$ZZ.mean, 
+                 ymin = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.s2), 
+                 ymax = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.s2))
+
+
+p1 + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="red", alpha=.1, data=df) + geom_line(aes(x,y), col="red", data=df)  + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="blue", alpha=.1, data=raw) + geom_line(aes(x,y), col="blue", data=raw) 
 ```
 
 

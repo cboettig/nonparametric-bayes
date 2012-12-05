@@ -59,7 +59,7 @@ for(t in 1:(T-1))
 
 
 
-Predict the function over the target grid
+Predict the function over the target grid (lag-1)
 
 
 ```r

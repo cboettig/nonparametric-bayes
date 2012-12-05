@@ -9,47 +9,151 @@
 
 
 ```r
-knit("beverton_holt_data.Rmd")
+knit("~/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.Rmd")
 ```
+
+```
+
+
+processing file:
+~/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.Rmd
+```
+
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-unnamed-chunk-1.png) 
+
+```
+output file:
+/home/cboettig/Documents/code/nonparametric-bayes/inst/examples/beverton_holt_data.md
+```
+
+```r
+true <- data.frame(x = x_grid, y = sapply(x_grid, f, 0, p))
+XX <- as.matrix(x_grid)
+X <- as.matrix(obs$x)
+Z <- as.matrix(obs$y)
+```
+
+
+Normalize data to the unit (hyper)cube.  
+
+
+
+
+
+
 
 
 ```r
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-```
-
-
-
-
-
-```r
-gp <- bgp(X=obs$x, XX=X, Z=obs$y)
+gp <- bgp(X=X, XX=XX, Z=Z, meanfn="constant", bprior="b0", BTE=c(1000,6000,2), m0r1=FALSE, verb=4, corr="exp", trace=TRUE, s2.p=c(5,10), tau2.p=c(5,10), s2.lam="fixed", tau2.lam="fixed")
 ```
 
 ```
+
+n=39, d=1, nn=101
+BTE=(1000,6000,2), R=1, linburn=0
+RNG state RK using rk_seed
+preds: data krige
+T[alpha,beta,nmin,smin,bmax]=[0,0,10,1,1]
+mean function: constant
+beta prior: b0 hierarchical
+s2[a0,g0]=[5,10]
+s2 prior fixed
+tau2[a0,g0]=[5,10]
+tau2 prior fixed
+corr prior: isotropic power
+nug[a,b][0,1]=[1,1],[1,1]
+nug prior fixed
+gamlin=[0,0.2,0.7]
+d[a,b][0,1]=[1,20],[10,10]
+d prior fixed
 
 burn in:
-r=1000 d=[0.157057]; n=39
+r=1000 d=0.760499; n=39
 
-Sampling @ nn=101 pred locs:
-r=1000 d=[0.0910807]; mh=1 n=39
-r=2000 d=[1.03849]; mh=1 n=39
-r=3000 d=[1.30774]; mh=1 n=39
+Sampling @ nn=101 pred locs: [with traces]
+r=1000 d=0.204246; mh=1 n=39
+r=2000 d=0.0573078; mh=1 n=39
+r=3000 d=0.0503173; mh=1 n=39
+r=4000 d=0.155435; mh=1 n=39
+r=5000 d=0.700194; mh=1 n=39
+
+Gathering traces
+  XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 63% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 64% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 65% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 66% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 67% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 68% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 69% done     XX 70% done     XX 70% done     XX 70% done     XX 70% done     XX 71% done     XX 71% done     XX 71% done     XX 71% done     XX 72% done     XX 72% done     XX 72% done     XX 73% done     XX 73% done     XX 73% done     XX 74% done     XX 74% done     XX 75% done     XX 75% done     XX 76% done     XX 77% done     XX 77% done     XX 78% done     XX 79% done     XX 80% done     XX 81% done     XX 83% done     XX 85% done     XX 88% done     XX 92% done     XX 100% done  
+  hier-params done
+  posts done
+  Zp done
+  Zp.km done
+  Zp.ks2 done
+  ZZ done
+  ZZ.km done
+  ZZ.ks2 done
 
 ```
 
+
+
+
+
+
+
+Take a look at the trace
+
+
+```r
+names(gp$trace$XX[[1]])
+```
+
+```
+[1] "index"  "lambda" "s2"     "tau2"   "beta0"  "nug"    "d"      "b"     
+[9] "ldetK" 
+```
+
+```r
+dim(gp$trace$XX[[1]])
+```
+
+```
+[1] 2500    9
+```
+
+```r
+gp$trace$XX[[1]][1,]
+```
+
+```
+  index lambda    s2   tau2 beta0     nug      d b  ldetK
+1     1   1511 26.98 0.8792 3.154 0.02537 0.8052 1 -129.2
+```
+
+```r
+gp$trace$XX[[1]][2500,]
+```
+
+```
+     index lambda    s2  tau2 beta0     nug      d b  ldetK
+2500  2500  686.5 14.39 3.942 7.617 0.05902 0.6202 1 -98.12
+```
+
+
+* `index` is the sampling point (from `BTE`, we see we sample starting at step 1000 and ending at step 6000, recording every 2 steps, so there are $(T-B)/E = 2500$ index points).  
+
+* `lambda`
+* `s2`
+* `tau2`
+* `beta0`
+* `nug`
+* `d`
 
 Extract the posterior Gaussian process mean and the $\pm 2$ standard deviations over the predicted grid from the fit:
 
 
 ```r
-center <- tgp:::tgp.choose.center(gp, "mean")
-Z.mean <- center$Z
-X_vals <- center$X[, 1]
-o <- order(X_vals)
-Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
-V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
-dat <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
+
+dat <- data.frame(x    = gp$XX[[1]], 
+                 y    = gp$ZZ.km, 
+                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+
 ```
 
 
@@ -67,7 +171,38 @@ Plot the posterior Gaussian Process:
 p1 + theme_notebook
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-11-29-71f2443754-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-gp-plot.png) 
+
+
+
+
+
+is mean ZZ.mean or ZZ.km?  is the var I want ZZ.s2 or ZZ.ks2?)  I want the kreiging values (km, ks2).  The others slightly don't agree with the above.  We do this by comparing to the plotted option (which handles the rescaling(?) from `choose.center` first).
+
+
+
+```r
+center <- tgp:::tgp.choose.center(gp, "mean")
+Z.mean <- center$Z
+X_vals <- center$X[, 1]
+o <- order(X_vals)
+Zb.q1 <- Z.mean + 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
+Zb.q2 <- Z.mean - 1.96 * sqrt(c(gp$Zp.ks2, gp$ZZ.ks2))
+V <- c(gp$Zp.ks2, gp$ZZ.ks2)[o]
+df <- data.frame(x=X_vals[o], y=Z.mean[o], ymin=Zb.q1[o], ymax=Zb.q2[o])
+
+
+
+raw <- data.frame(x    = gp$XX[[1]], 
+                 y    = gp$ZZ.mean, 
+                 ymin = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.s2), 
+                 ymax = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.s2))
+
+
+p1 + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="red", alpha=.1, data=df) + geom_line(aes(x,y), col="red", data=df)  + geom_ribbon(aes(x,y, ymin=ymin, ymax=ymax), fill="blue", alpha=.1, data=raw) + geom_line(aes(x,y), col="blue", data=raw) 
+```
+
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-unnamed-chunk-6.png) 
 
 
 
@@ -116,24 +251,24 @@ matrices_true[[1]][1:10,1:10]
  [1,]    1  0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00
  [2,]    0  5.361e-02 9.464e-01 1.078e-09 2.276e-20 3.993e-31 1.614e-41
  [3,]    0  9.446e-26 7.322e-04 9.915e-01 7.731e-03 5.996e-07 6.519e-12
- [4,]    0  8.376e-48 6.260e-14 8.679e-04 6.371e-01 3.564e-01 5.501e-03
- [5,]    0  1.195e-67 2.460e-25 2.951e-10 6.897e-04 2.011e-01 5.152e-01
- [6,]    0  3.004e-85 1.951e-36 1.482e-17 1.725e-08 6.220e-04 8.162e-02
- [7,]    0 6.940e-101 8.422e-47 7.759e-25 1.392e-13 2.499e-07 7.986e-04
- [8,]    0 1.421e-110 1.840e-53 1.001e-29 3.243e-17 5.493e-10 1.099e-05
- [9,]    0 3.645e-115 1.177e-56 4.205e-32 5.179e-19 2.471e-11 1.152e-06
-[10,]    0 4.393e-128 9.076e-66 5.459e-39 2.554e-24 2.047e-15 9.566e-10
+ [4,]    0  8.377e-48 6.260e-14 8.680e-04 6.372e-01 3.564e-01 5.502e-03
+ [5,]    0  1.484e-67 3.055e-25 3.665e-10 8.567e-04 2.498e-01 6.400e-01
+ [6,]    0  4.313e-85 2.801e-36 2.128e-17 2.477e-08 8.930e-04 1.172e-01
+ [7,]    0 8.411e-101 1.021e-46 9.403e-25 1.687e-13 3.028e-07 9.679e-04
+ [8,]    0 5.121e-115 1.654e-56 5.908e-32 7.277e-19 3.471e-11 1.618e-06
+ [9,]    0 5.398e-128 1.115e-65 6.708e-39 3.138e-24 2.515e-15 1.175e-09
+[10,]    0 6.254e-140 2.784e-74 1.492e-45 1.688e-29 1.601e-19 5.633e-13
            [,8]      [,9]     [,10]
  [1,] 0.000e+00 0.000e+00 0.000e+00
- [2,] 3.496e-48 1.969e-51 7.453e-61
- [3,] 1.939e-15 3.099e-17 1.112e-22
- [4,] 1.085e-04 1.210e-05 8.833e-09
- [5,] 1.950e-01 8.535e-02 2.634e-03
- [6,] 3.003e-01 3.769e-01 2.078e-01
- [7,] 1.860e-02 5.485e-02 3.134e-01
- [8,] 7.383e-04 3.557e-03 7.788e-02
- [9,] 1.262e-04 7.628e-04 3.103e-02
-[10,] 3.971e-07 4.447e-06 9.789e-04
+ [2,] 1.969e-51 7.453e-61 8.297e-70
+ [3,] 3.099e-17 1.112e-22 3.983e-28
+ [4,] 1.210e-05 8.834e-09 3.442e-12
+ [5,] 1.060e-01 3.272e-03 3.465e-05
+ [6,] 5.412e-01 2.984e-01 4.018e-02
+ [7,] 6.648e-02 3.799e-01 4.023e-01
+ [8,] 1.072e-03 4.360e-02 2.608e-01
+ [9,] 5.465e-06 1.203e-03 3.190e-02
+[10,] 1.444e-08 1.394e-05 1.362e-03
 ```
 
 ```r
@@ -142,27 +277,27 @@ matrices_gp[[1]][1:10,1:10]
 
 ```
       [,1]    [,2]    [,3]    [,4]    [,5]    [,6]    [,7]    [,8]    [,9]
- [1,]    0 0.12773 0.09762 0.07549 0.06015 0.04916 0.04101 0.03668 0.03477
- [2,]    0 0.11133 0.09047 0.07220 0.05872 0.04870 0.04109 0.03698 0.03516
- [3,]    0 0.09043 0.07983 0.06658 0.05576 0.04726 0.04055 0.03684 0.03518
- [4,]    0 0.08944 0.08042 0.06749 0.05665 0.04805 0.04122 0.03744 0.03574
- [5,]    0 0.06990 0.06888 0.06072 0.05268 0.04579 0.04004 0.03676 0.03527
- [6,]    0 0.05668 0.06033 0.05539 0.04937 0.04377 0.03887 0.03600 0.03467
- [7,]    0 0.05130 0.05700 0.05346 0.04827 0.04319 0.03862 0.03590 0.03463
- [8,]    0 0.02259 0.03933 0.04504 0.04556 0.04380 0.04110 0.03912 0.03811
- [9,]    0 0.04476 0.05239 0.05045 0.04635 0.04199 0.03790 0.03541 0.03424
-[10,]    0 0.03832 0.04739 0.04698 0.04399 0.04040 0.03687 0.03465 0.03359
+ [1,]    0 0.11125 0.08108 0.06383 0.05258 0.04461 0.03865 0.03403 0.03033
+ [2,]    0 0.10462 0.07925 0.06347 0.05279 0.04507 0.03921 0.03462 0.03092
+ [3,]    0 0.09774 0.07718 0.06297 0.05293 0.04549 0.03976 0.03521 0.03152
+ [4,]    0 0.09075 0.07486 0.06229 0.05295 0.04584 0.04027 0.03579 0.03212
+ [5,]    0 0.08376 0.07231 0.06142 0.05284 0.04610 0.04071 0.03632 0.03269
+ [6,]    0 0.07691 0.06956 0.06036 0.05258 0.04625 0.04108 0.03680 0.03321
+ [7,]    0 0.07031 0.06665 0.05910 0.05215 0.04626 0.04133 0.03719 0.03368
+ [8,]    0 0.02677 0.04296 0.04825 0.04876 0.04719 0.04473 0.04196 0.03916
+ [9,]    0 0.06229 0.06236 0.05677 0.05092 0.04568 0.04115 0.03727 0.03392
+[10,]    0 0.05640 0.05914 0.05505 0.05004 0.04531 0.04109 0.03739 0.03417
         [,10]
- [1,] 0.02988
- [2,] 0.03044
- [3,] 0.03081
- [4,] 0.03127
- [5,] 0.03127
- [6,] 0.03107
- [7,] 0.03116
- [8,] 0.03511
- [9,] 0.03101
-[10,] 0.03064
+ [1,] 0.02730
+ [2,] 0.02787
+ [3,] 0.02846
+ [4,] 0.02905
+ [5,] 0.02963
+ [6,] 0.03018
+ [7,] 0.03068
+ [8,] 0.03645
+ [9,] 0.03102
+[10,] 0.03135
 ```
 
 
@@ -175,7 +310,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot + theme_notebook
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-11-29-71f2443754-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -203,7 +338,7 @@ simplot <- ggplot(df) + geom_line(aes(time,value, color=variable))
 simplot + theme_notebook
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-11-29-71f2443754-simplot.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-04-ec2ffbc711-simplot.png) 
 
 
 Total Profits
@@ -214,7 +349,7 @@ sum(sim_gp$profit)
 ```
 
 ```
-[1] 17.66
+[1] 10
 ```
 
 ```r
@@ -222,7 +357,7 @@ sum(sim_true$profit)
 ```
 
 ```
-[1] 29.64
+[1] 29.95
 ```
 
 
