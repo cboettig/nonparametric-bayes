@@ -1,3 +1,8 @@
+
+
+# edit this file for a demo
+
+
 #' gp_fit fits a Gaussian process to the observed data
 #' 
 #' API not yet stable! Arguments to this function will probably be updated to be much more generic
