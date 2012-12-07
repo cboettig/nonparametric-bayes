@@ -88,13 +88,13 @@ Plot the result
 ```r
 fig2a <- ggplot(dat,aes(x=x,y=value)) +
   geom_rect(xmin=-Inf, xmax=Inf, ymin=-2, ymax=2, fill="grey80") +
-  geom_line(aes(group=variable)) +   theme_bw() +
+  geom_line(aes(group=variable)) +  
   scale_y_continuous(lim=c(-3,3), name="output, f(x)") +
   xlab("input, x")
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-15-28b3256dfe-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-9.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +159,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-11-15-28b3256dfe-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-13.png) 
 
 
 Additive noise
@@ -201,25 +201,10 @@ fig2c <- ggplot(dat,aes(x=x,y=value)) +
   geom_point(data=obs,aes(x=x,y=y)) +  #OBSERVED DATA
   scale_y_continuous(lim=c(-3,3), name="output, f(x)") +
   xlab("input, x") 
-fig2c + opts(panel.background = theme_rect(fill = "transparent"), 
-        plot.background = theme_rect(fill = "transparent"))
+fig2c
 ```
 
-```
-Warning: 'opts' is deprecated. Use 'theme' instead. See help("Deprecated")
-```
-
-```
-Warning: 'theme_rect' is deprecated. Use 'element_rect' instead. See
-help("Deprecated")
-```
-
-```
-Warning: 'theme_rect' is deprecated. Use 'element_rect' instead. See
-help("Deprecated")
-```
-
-![plot of chunk unnamed-chunk-16](http://carlboettiger.info/assets/figures/2012-11-15-28b3256dfe-unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-16](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-16.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -268,79 +253,4 @@ o$par
 0.703891 0.002685 
 ```
 
-
-## A comparison to built-in R utilities
-
-Some basic Gaussian process tools are provided in the `kernlab` package,
-
-
-```r
-library(kernlab)
-```
-
-
-through the `gausspr` function,
-
-
-```r
-gp <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), fit=FALSE, scaled=FALSE, var=0.8)
-```
-
-
-Where `rbfdot` indicates the Gaussian (Radial basis function) kernel we use above, with parameter `sigma=1/(2l^2)` (note that gausspr defines the kernel parameter differently, see:
-
-
-```r
-gp@kernelf@.Data
-```
-
-```
-function (x, y = NULL) 
-{
-    if (!is(x, "vector")) 
-        stop("x must be a vector")
-    if (!is(y, "vector") && !is.null(y)) 
-        stop("y must a vector")
-    if (is(x, "vector") && is.null(y)) {
-        return(1)
-    }
-    if (is(x, "vector") && is(y, "vector")) {
-        if (!length(x) == length(y)) 
-            stop("number of dimension must be the same on both data points")
-        return(exp(sigma * (2 * crossprod(x, y) - crossprod(x) - 
-            crossprod(y))))
-    }
-}
-<environment: 0x67eead0>
-```
-
-note this takes vectors `x`, `y` and returns a scalar, not the covaraiance matrix).  The function will try to estimate hyperparameters such as `sigma` if they are not given unless `fit=FALSE`.  The data is also scaled to 0 mean, unit variance unless `scaled=FALSE` is set.  
-
-We can then use the estimated process to infer values on a specified grid through `predict`, e.g. for the example above,
-
-
-```r
-y_p <- predict(gp, x_predict)
-dat2 <- data.frame(x = x_predict, variable = "Y_p", value = y_p)
-```
-
-
-
-
-```r
-ggplot(dat2, aes(x, value)) + geom_point() + geom_line(data=Ey,aes(x=x,y=y), size=1) 
-```
-
-![plot of chunk unnamed-chunk-23](http://carlboettiger.info/assets/figures/2012-11-15-28b3256dfe-unnamed-chunk-23.png) 
-
-
-### Fitting hyperparameters by maximum likelihood
-
-If we do not specify `fit=false` then `gausspr` will estimate the hyperparamters by maximum likelihood:
-
-
-
-```r
-gp_fit <- gausspr(obs$x, obs$y, kernel="rbfdot", kpar=list(sigma=1/(2*l^2)), scaled=FALSE, var=0.8)
-```
 
