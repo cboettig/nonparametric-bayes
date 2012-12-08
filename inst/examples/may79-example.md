@@ -2,6 +2,22 @@ GP Example using the May (1979) bistable model
 ==============================================
 
 
+Use my custom libraries and the `ggplot` plotting tools
+
+
+```r
+require(nonparametric - bayes)
+```
+
+```
+## Warning: the condition has length > 1 and only the first element will be
+## used
+```
+
+```
+## c("Loading required package: -", "Loading required package:
+## nonparametric", "Loading required package: bayes")
+```
 
 ```r
 require(pdgControl)
@@ -20,11 +36,8 @@ require(ggplot2)
 ```
 
 ```r
-# opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = socialR::flickr.url)
 ```
-
-
-
 
 
 
@@ -88,49 +101,8 @@ x[1] <- 1
 Simulation 
 
 
-```r
-x[1] = 2.5
-for (t in 1:(T - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0, p = p)
-plot(x)
-```
-
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
 
 
-Predict the function over the target grid
 
 
-```r
-obs <- data.frame(x = x[1:(T - 1)], y = x[2:T])
-X <- x_grid
-gp <- gp_fit(obs, X, c(sigma_n = 1, l = 1))
-```
-
-```
-## Error: could not find function "gp_fit"
-```
-
-
-Gaussian Process inference from this model
-
-
-```r
-df <- data.frame(x = X, y = gp$Ef, ymin = (gp$Ef - 2 * sqrt(abs(diag(gp$Cf)))), 
-    ymax = (gp$Ef + 2 * sqrt(abs(diag(gp$Cf)))))
-```
-
-```
-## Error: object 'gp' not found
-```
-
-```r
-true <- data.frame(x = X, y = sapply(X, f, 0, p))
-ggplot(df) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill = "gray80") + 
-    geom_line(aes(x, y)) + geom_point(data = obs, aes(x, y)) + geom_line(data = true, 
-    aes(x, y), col = "red", lty = 2)
-```
-
-```
-## Error: ggplot2 doesn't know how to deal with data of class function
-```
 
