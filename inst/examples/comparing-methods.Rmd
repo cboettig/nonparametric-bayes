@@ -1,19 +1,16 @@
-`ro comment=NA, message=FALSE, cache.path="compare/", tidy=FALSE or`
 
 
-
-```{r}
+```{r include=FALSE}
 require(MASS)
 require(ggplot2)
 require(kernlab)
 require(nonparametricbayes)
 opts_knit$set(upload.fun = socialR::notebook.url)
-opts_chunk$set(dev.args=list(bg="transparent"), comment=NA, tidy=FALSE)
-theme_set(theme_bw())
-theme_update(panel.background = element_rect(fill = "transparent",colour = NA))
+opts_chunk$set(dev.args=list(bg="transparent"), comment=NA, tidy=FALSE, message=FALSE)
+theme_update(plot.background = element_rect(fill = "transparent",colour = NA))
 ```
 
-Parameterization-specific
+
 
 
 ```{r}
@@ -73,7 +70,7 @@ ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_l
 ### kernlab method
 
 ``` {r}
-k <- gp_fit(obs, X, c(sigma_n=sigma_n, l=l, tau=1), "sequential")
+k <- gp_fit(obs, X, c(sigma_n=sigma_n, l=l, tau=1), "kernlab")
 y_p <- k$Ef
 ```
 

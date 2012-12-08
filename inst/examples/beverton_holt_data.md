@@ -4,6 +4,13 @@ Generate data under Beverton Holt model
 
 ```r
 require(pdgControl)
+```
+
+```
+Loading required package: pdgControl
+```
+
+```r
 require(nonparametricbayes)
 require(ggplot2)
 ```

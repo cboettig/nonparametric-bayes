@@ -3,20 +3,7 @@
 
 
 
-```r
-require(MASS)
-require(ggplot2)
-require(kernlab)
-require(nonparametricbayes)
-opts_knit$set(upload.fun = socialR::notebook.url)
-opts_chunk$set(dev.args=list(bg="transparent"), comment=NA, tidy=FALSE)
-theme_set(theme_bw())
-theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
-             plot.background = element_rect(fill = "transparent",colour = NA))
-```
 
-
-Parameterization-specific
 
 
 
@@ -78,7 +65,7 @@ cf <- s$Cf
 ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_line(aes(x,ef))
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-11-28-5c332aa3ad-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-07-c431834819-unnamed-chunk-7.png) 
 
 
 
@@ -86,7 +73,14 @@ ggplot(data.frame(x=X, Ef=Ef, ef=ef))+ geom_point(aes(x,Ef), col='red') + geom_l
 
 
 ```r
-k <- gp_fit(obs, X, c(sigma_n=sigma_n, l=l, tau=1), "sequential")
+k <- gp_fit(obs, X, c(sigma_n=sigma_n, l=l, tau=1), "kernlab")
+```
+
+```
+Using automatic sigma estimation (sigest) for RBF or laplace kernel 
+```
+
+```r
 y_p <- k$Ef
 ```
 
@@ -101,6 +95,6 @@ df <- melt(df, id = "x")
 ggplot(df)+ geom_jitter(aes(x, value, color = variable)) + geom_point(data = obs, aes(x,y))
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-11-28-5c332aa3ad-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-07-c431834819-unnamed-chunk-9.png) 
 
 
