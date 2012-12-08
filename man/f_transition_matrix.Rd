@@ -2,7 +2,7 @@
 \alias{f_transition_matrix}
 \title{calculate transition matrix based on parameterized function}
 \usage{
-  f_transition_matrix(f, p, x_grid, h_grid = NULL)
+  f_transition_matrix(f, p, x_grid, h_grid = NULL, sigma_g)
 }
 \arguments{
   \item{f}{the transtion function, a function of state x,
@@ -14,6 +14,8 @@
 
   \item{h_grid}{the harvest grid over which to compute.
   Assumed to match the stock grid gp$X if not given.}
+
+  \item{sigma_g}{the scale of the noise}
 }
 \value{
   a list of matrices corresponding to the state transition
