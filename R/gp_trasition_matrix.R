@@ -33,9 +33,10 @@ gp_transition_matrix <- function(gp, h_grid=NULL){
 #' @param p the parameters p of the transition function
 #' @param x_grid the grid over which to solve 
 #' @param h_grid the harvest grid over which to compute.  Assumed to match the stock grid gp$X if not given.
+#' @param sigma_g the scale of the noise
 #' @return a list of matrices corresponding to the state transition matrix at each harvest level h
 #' @export
-f_transition_matrix <- function(f, p, x_grid, h_grid=NULL){
+f_transition_matrix <- function(f, p, x_grid, h_grid = NULL, sigma_g){
   if(is.null(h_grid))
     h_grid <- x_grid
   
