@@ -40,40 +40,29 @@ The distribution arises as the marginal posterior distribution for the unknown v
 
 * $d$ I believe is `d`, which Grammarcy calls the range parameter (other terms include the "lengthscale"). I am not sure what either `d` or `s2` correspond to if the covariance function `corr` is something other than the radial basis function.  I'm also not clear how to set the correlation function to a strictly Gaussian covariance -- `corr` is set to the `exp` family, which leaves the power as a parameter `p_0`:
 
-$$K(X, X') =  e^{\frac{(X-X')^p_0}{d}}$$
+$$K(X, X') =  e^{\frac{-(X-X')^p_0}{d}}$$
 
-(from equation 4 in the Vignette (1)).  I do not see a prior for `p_0` or any mention of it.  Nor can I tell what is the functional form for it's prior (`d.p`) (which is not an inverse gamma?)?  Not clear why it's prior gets defined with four parameters, `c(a1, g1, a2, g2)`, instead of two.   Form the manual:
+(from equation 4 in the Vignette (1)).  The parameter `p_0` is fixed at `2`, and not treated as a hyperparameter.  
 
-> Mixture of gamma prior parameter (initial values) for the range parameter(s) c(a1,g1,a2,g2) where g1 and g2 are scale (1/rate) parameters.  
+The length-scale comes from a hyperparameter that is the sum (mixture) of two Gamma distributions, with prior parameter `c(a1,g1,a2,g2)` where `g1` and `g2` are scale (1/rate) parameters.  As before, these parameters  `c(a1, g1, a2, g2)` can be drawn from an exponential distribution hyperprior whose $\lambda$ values are given by `d.lam`, or turned off.  
 
-As before, these parameters  `c(a1, g1, a2, g2)` can be drawn from an exponential distribution hyperprior whose $\lambda$ values are given by `d.lam`, or turned off.  
+* $\varepsilon$ is `nug`.  It seems to have same shape prior as $d$, specified by `c(a1,g1,a2,g2)`, and optional hyperprior as well.  Additionally it can be fixed to a constant by setting `nug.p = 0` and specifying the staring value as `gd[1]`.  
 
-* $\varepsilon$ is `nug`.  It seems to have same shape prior as $d$, specified by `c(a1,g1,a2,g2)`, and optional hyperprior as well.  Additionally it can be fixed to a constant:
+* The mean is not fixed at zero but is instead a linear model, we need hyperparameters for it as well.  The key parameter there is the slope $\beta$.  The functional form for it's prior is specified as `bprior`, which takes values `bflat`, `b0`, `bmzt`, or `bmznot`.  A sensible choice is as a Gaussian `b0`, as shown in Equation 1 of the vignette
 
-> specifying nug.p = 0 fixes the nugget parameter to the starting value in gd[1], i.e., it is excluded from the MCMC
 
-But what is `gd[1]` and where is it defined?
-
-If the mean is not fixed at zero but is instead a linear model, we need hyperparameters for it as well.  The key parameter there is the slope $\beta$.  The functional form for it's prior is specified as `bprior`, which takes values `bflat`, `b0`, `bmzt`, or `bmznot`, but I can find no precise statement of the functional forms of these priors (e.g. I see that `b0` is Gaussian prior and `bflat` an improper or flat prior, but beyond that), nor do I see where their shape parameters are set.  
-
-The manual suggests that we need to specify start values for the hyperparameters for the MCMC (presumably we could have just drawn them from the prior? we burn in anyhow...)  The are given in 
-
-> `start =  c(0.5,0.1,1.0,1.0)` starting values for range `d`, nugget `g`, `s2`, and `tau2`
-
-Actually specifiying start values throws an error though, it appears the documentation is out of date and the start parameter has been removed.  
-
-* I'm still not clear on the role of `tau2`, whether it's unique to the "treed" partioning or whether I've misunderstood $sigma^2$.  Grammacy phrases the model as: 
-
-$$Z | \beta, \sigma^2, K \sim N_n(\mathbf{F} \beta, \sigma^2 \mathbf{K}) $$
-$$ \beta | \sigma^2, \tau^2, \mathbf{W}, \beta_0 ~ N_m(\beta_0, \sigma^2 \tau^2 \mathbf{W} )  $$
-$$\beta_0 | N_m(\mathbf{\mu}, \mathbf{B})$$
-
-(I guess I haven't parsed the second two equations)
+$$
+\begin{align} 
+Z | \beta, \sigma^2, K &\sim N_n(\mathbf{F} \beta, \sigma^2 \mathbf{K}) \\
+\beta | \sigma^2, \tau^2, \mathbf{W}, \beta_0 &\sim N_m(\beta_0, \sigma^2 \tau^2 \mathbf{W} )  \\
+\beta_0 &\sim N_m(\mathbf{\mu}, \mathbf{B})
+\end{align}
+$$
 
 
 ## Example comparison
 
-So, how now would I make a call to `tgp::bgp` that would give me the equivalent output of, say, a direct calculation of the above model (given fixed hyperparameters)?  Say, given some observed data pairs $x,y$ and predictions desired on a grid $X$,
+Say, given some observed data pairs $x,y$ and predictions desired on a grid $X$,
 
 ```{r}
 X = seq(-5, 5, length=50)
@@ -96,6 +85,9 @@ And `Ef` and `Cf` are the estimated (krieging) mean and covariance.
 
 ## Priors
 
+
+Note: it appears that the mixed gammas for `d` and `nug` actually treat the second argument, `g1` and `g2`, as the rate instead of the scale, so I invert the desired scale:
+
 ```{r}
 s2.p <- c(50,50)
 tau2.p <- c(20,1)
@@ -104,23 +96,7 @@ nug.p = c(10, 1/0.01, 10, 1/0.01)
 ```
 
 
-Define as random samples (avoids having to specify range)
-
-```{r}
-s2_rprior <- function(x) rinvgamma(x, s2.p[1], s2.p[2])
-tau2_rprior <- function(x) rinvgamma(x, tau2.p[1], tau2.p[2])
-d_rprior <- function(x) rgamma(x, d.p[1], scale = d.p[2]) + rgamma(x, d.p[3], scale = d.p[4])
-nug_rprior <- function(x) rgamma(x, nug.p[1], scale = nug.p[2]) + rgamma(x, nug.p[3], scale = nug.p[4])
-beta0_rprior <- function(x, tau) rnorm(x, 0, tau)
-n = 1000
-rpriors <- data.frame(s2 = s2_rprior(n), tau2 = tau2_rprior(n), beta0 = beta0_rprior(n, 1), nug = nug_rprior(n), d = d_rprior(n))
-rpriors <- melt(rpriors)
-ggplot(rpriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scale="free")
-````
-
-
-
-Define as curves
+Define as curves and plot the priors:
 
 ```{r}
 s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
@@ -135,9 +111,10 @@ priors <- melt(priors, id="x")
 ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
 ```
 
+
 ```{r}
 gp <- bgp(X=x, XX=X, Z=y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(1,2000,1), m0r1=FALSE, 
+          meanfn="constant", bprior="b0", BTE=c(2000,6000,2), m0r1=FALSE, 
           corr="exp", trace=TRUE, beta = 0,
           s2.p = s2.p, d.p = d.p, nug.p = nug.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
@@ -159,7 +136,10 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 and likewise for our manual data:
 
 ```{r}
-manual_dat <- data.frame(x=X, y=Ef, ymin=(Ef - 1.96 * sqrt(diag(Cf))), ymax=(Ef + 2 * sqrt(diag(Cf))))
+manual_dat <- data.frame(x = X, 
+                         y = Ef, 
+                         ymin = (Ef - 1.96 * sqrt(diag(Cf))), 
+                         ymax = (Ef + 1.96 * sqrt(diag(Cf))))
 ```
 
 
@@ -176,15 +156,7 @@ ggplot(tgp_dat) +
 ```
 
 
-Look at the actual parameter estimates from the trace
-
-```{r}
-gp$trace$XX[[1]][1999,]
-```
-
-
-
-Posteriors
+## Posteriors of hyperparameters
 
 ```{r}
 require(reshape2)
@@ -192,47 +164,6 @@ hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
 posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 ggplot(posteriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scales="free")
 
-```
-
-
-
-
-
-## Compare to priors with `scale` misplaced as `rate` in `d`, `nug`
-
-
-Define as random samples (avoids having to specify range)
-
-```{r}
-s2_rprior <- function(x) rinvgamma(x, s2.p[1], s2.p[2])
-tau2_rprior <- function(x) rinvgamma(x, tau2.p[1], tau2.p[2])
-d_rprior <- function(x) rgamma(x, d.p[1], d.p[2]) + rgamma(x, d.p[3], d.p[4])
-nug_rprior <- function(x) rgamma(x, nug.p[1], nug.p[2]) + rgamma(x, nug.p[3], nug.p[4])
-beta0_rprior <- function(x, tau) rnorm(x, 0, tau)
-n = 1000
-rpriors <- data.frame(s2 = s2_rprior(n), tau2 = tau2_rprior(n), beta0 = beta0_rprior(n, 1), nug = nug_rprior(n), d = d_rprior(n))
-rpriors <- melt(rpriors)
-ggplot(rpriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scale="free")
-````
-
-
-
-
-
-
-
-
-```{r}
-s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
-tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
-d_prior <- function(x) dgamma(x, d.p[1], d.p[2]) + dgamma(x, d.p[3], d.p[4])
-nug_prior <- function(x) dgamma(x, nug.p[1], nug.p[2]) + dgamma(x, nug.p[3], nug.p[4])
-beta0_prior <- function(x, tau) dnorm(x, 0, tau)
-
-xx <- seq(.0001, 2500, length.out=1000)
-priors <- data.frame(x = xx, s2 = s2_prior(xx), tau2 = tau2_prior(xx), beta0 = beta0_prior(xx, 1), nug = nug_prior(xx), d = d_prior(xx))
-priors <- melt(priors, id="x")
-ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
 ```
 
 
