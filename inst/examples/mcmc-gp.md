@@ -3,6 +3,15 @@
 
 
 
+```r
+library(MCMCpack)
+library(tgp)
+library(reshape2)
+library(ggplot2)
+```
+
+
+
 I am trying to understand the interface for tgp method, but much of it is not well documented (yes, despite reading through the package R manual, two nice vignettes, and a the PhD Thesis describing it.)
 
 Just to get some consistent notation down: consider the case of a Gaussian process with a Gaussian/radial basis function kernel, parameterized as:
@@ -88,19 +97,67 @@ Cf <- cov(X, X) - cov(X, x)  %*% cov_xx_inv %*% cov(x, X)
 
 And `Ef` and `Cf` are the estimated (krieging) mean and covariance.
 
-I might try something like
+## Priors
+
+
+```r
+s2.p <- c(50,50)
+tau2.p <- c(20,1)
+d.p = c(10, 1/0.01, 10, 1/0.01)
+nug.p = c(10, 1/0.01, 10, 1/0.01)
+```
+
+
+
+Define as random samples (avoids having to specify range)
+
+
+```r
+s2_rprior <- function(x) rinvgamma(x, s2.p[1], s2.p[2])
+tau2_rprior <- function(x) rinvgamma(x, tau2.p[1], tau2.p[2])
+d_rprior <- function(x) rgamma(x, d.p[1], scale = d.p[2]) + rgamma(x, d.p[3], scale = d.p[4])
+nug_rprior <- function(x) rgamma(x, nug.p[1], scale = nug.p[2]) + rgamma(x, nug.p[3], scale = nug.p[4])
+beta0_rprior <- function(x, tau) rnorm(x, 0, tau)
+n = 1000
+rpriors <- data.frame(s2 = s2_rprior(n), tau2 = tau2_rprior(n), beta0 = beta0_rprior(n, 1), nug = nug_rprior(n), d = d_rprior(n))
+rpriors <- melt(rpriors)
+ggplot(rpriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scale="free")
+```
+
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-unnamed-chunk-5.png) 
+
+
+
+
+Define as curves
+
+
+```r
+s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
+tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
+nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
+beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+
+xx <- seq(.0001, 5, length.out=100)
+priors <- data.frame(x = xx, s2 = s2_prior(xx), tau2 = tau2_prior(xx), beta0 = beta0_prior(xx, 1), nug = nug_prior(xx), d = d_prior(xx))
+priors <- melt(priors, id="x")
+ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
+```
+
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-unnamed-chunk-6.png) 
 
 
 
 ```r
-library(tgp)
 gp <- bgp(X=x, XX=X, Z=y, verb=0,
-          meanfn="constant", bprior="bflat", BTE=c(1,2,1), m0r1=FALSE, 
+          meanfn="constant", bprior="b0", BTE=c(1,2000,1), m0r1=FALSE, 
           corr="exp", trace=TRUE, beta = 0,
-          s2.p = c(25,10), d.p = c(50, 10, 10, 10), nug.p = c(50, 10, 10, 10),
+          s2.p = s2.p, d.p = d.p, nug.p = nug.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
-          tau2.lam = "fixed", tau2.p=c(5,10))
+          tau2.lam = "fixed", tau2.p = tau2.p)
 ```
+
 
 
 
@@ -129,7 +186,6 @@ Compare the GP posteriors:
 
 
 ```r
-library(ggplot2)
 ggplot(tgp_dat) +
     geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax), fill="red", alpha = .1) + # Var
     geom_line(aes(x, y), col="red") + # mean
@@ -139,7 +195,85 @@ ggplot(tgp_dat) +
     theme_bw() + theme(plot.background = element_rect(fill = "transparent",colour = NA))
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-07-c431834819-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-gp-plot.png) 
+
+
+
+Look at the actual parameter estimates from the trace
+
+
+```r
+gp$trace$XX[[1]][1999,]
+```
+
+```
+     index lambda    s2    tau2  beta0    nug      d b  ldetK
+1999  1999  17.56 1.258 0.03925 -1.975 0.2159 0.1163 1 -1.601
+```
+
+
+
+
+Posteriors
+
+
+```r
+require(reshape2)
+hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
+posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
+ggplot(posteriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scales="free")
+```
+
+![plot of chunk unnamed-chunk-11](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-unnamed-chunk-11.png) 
+
+
+
+
+
+
+## Compare to priors with `scale` misplaced as `rate` in `d`, `nug`
+
+
+Define as random samples (avoids having to specify range)
+
+
+```r
+s2_rprior <- function(x) rinvgamma(x, s2.p[1], s2.p[2])
+tau2_rprior <- function(x) rinvgamma(x, tau2.p[1], tau2.p[2])
+d_rprior <- function(x) rgamma(x, d.p[1], d.p[2]) + rgamma(x, d.p[3], d.p[4])
+nug_rprior <- function(x) rgamma(x, nug.p[1], nug.p[2]) + rgamma(x, nug.p[3], nug.p[4])
+beta0_rprior <- function(x, tau) rnorm(x, 0, tau)
+n = 1000
+rpriors <- data.frame(s2 = s2_rprior(n), tau2 = tau2_rprior(n), beta0 = beta0_rprior(n, 1), nug = nug_rprior(n), d = d_rprior(n))
+rpriors <- melt(rpriors)
+ggplot(rpriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scale="free")
+```
+
+![plot of chunk unnamed-chunk-12](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-unnamed-chunk-12.png) 
+
+
+
+
+
+
+
+
+
+
+```r
+s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
+tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], d.p[2]) + dgamma(x, d.p[3], d.p[4])
+nug_prior <- function(x) dgamma(x, nug.p[1], nug.p[2]) + dgamma(x, nug.p[3], nug.p[4])
+beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+
+xx <- seq(.0001, 2500, length.out=1000)
+priors <- data.frame(x = xx, s2 = s2_prior(xx), tau2 = tau2_prior(xx), beta0 = beta0_prior(xx, 1), nug = nug_prior(xx), d = d_prior(xx))
+priors <- melt(priors, id="x")
+ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
+```
+
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-12-10-d0529e905d-unnamed-chunk-13.png) 
 
 
 
