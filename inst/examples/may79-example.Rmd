@@ -5,12 +5,13 @@ GP Example using the May (1979) bistable model
 Use my custom libraries and the `ggplot` plotting tools
 
 ```{r libraries}
-require(pdgControl)
-require(nonparametricbayes)
-require(reshape2)
-require(ggplot2)
-require(data.table)
+library(pdgControl)
+library(nonparametricbayes)
+library(reshape2)
+library(ggplot2)
+library(data.table)
 library(kernlab)
+library(tgp)
 ```
 
 ```{r graphing-options, include=FALSE}
@@ -22,12 +23,24 @@ theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
 ```
 
 
+State-space model
 
 ```{r}
 f <- May
 p <- c(r = .75, k = 10, a=1.3, H=1, Q = 3)
 K <- 8 # approx
 ```
+
+Parameters
+
+```{r}
+x_grid = seq(0, 1.5 * K, length=101)
+T <- 40
+sigma_g <- 0.3
+x <- numeric(T)
+x[1] <- 1
+```
+
 
 Model dynamics look like this:
 
@@ -47,17 +60,6 @@ profit <- profit_harvest(1,0,0)
 ```
 
 
-Parameter definitions
-
-```{r}
-x_grid = seq(0, 1.5 * K, length=101)
-T <- 40
-sigma_g <- 0.3
-x <- numeric(T)
-x[1] <- 1
-```
-
-
 
 Simulation 
 
@@ -73,16 +75,38 @@ Predict the function over the target grid
 ```{r}
 obs <- data.frame(x=x[1:(T-1)],y=x[2:T])
 X <- x_grid
-gp <- gp_fit(obs, X, c(sigma_n=.9, tau = 1., l=.1), "kernlab")
-
 ```
 
 Gaussian Process inference from this model
 
+
+
 ```{r}
-df <- data.frame(x=X, y=gp$Ef, ymin=(gp$Ef-2*sqrt(abs(diag(gp$Cf)))), ymax=(gp$Ef+2*sqrt(abs(diag(gp$Cf)))))
+gp <- bgp(X=obs$x, XX=X, Z=obs$y, verb=0,
+          meanfn="linear", bprior="b0", BTE=c(2000,6000,2), m0r1=FALSE, 
+          corr="exp", trace=TRUE, beta = c(0,0),
+          s2.p = c(50,50), d.p = c(10, 1/0.01, 10, 1/0.01), nug.p = c(10, 1/0.01, 10, 1/0.01),
+          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
+          tau2.lam = "fixed", tau2.p = c(50,1))
+```
+
+
+Extract the posterior Gaussian process mean and the $\pm 2$ standard deviations over the predicted grid from the fit:
+
+```{r}
+V <- gp$ZZ.ks2
+Ef = gp$ZZ.km
+tgp_dat <- data.frame(x   = gp$XX[[1]], 
+                  y   = gp$ZZ.km, 
+                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+```
+
+
+
+```{r}
 true <- data.frame(x=X, y=sapply(X,f, 0, p))
-ggplot(df)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
@@ -98,7 +122,7 @@ h_grid <- x_grid
 GP Solution
 
 ```{r}
-matrices_gp <- gp_transition_matrix(gp)
+matrices_gp <- gp_transition_matrix(Ef, sqrt(V), x_grid, h_grid)
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
 ```
 
