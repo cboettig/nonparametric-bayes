@@ -36,7 +36,7 @@ Parameters
 ```r
 x_grid = seq(0, 1.5 * K, length=101)
 T <- 40
-sigma_g <- 0.3
+sigma_g <- 0.6
 x <- numeric(T)
 x[1] <- 1
 ```
@@ -53,7 +53,7 @@ df <- data.frame(x = x_grid, b = sapply(x_grid, birth), d = sapply(x_grid, death
 ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-3.png) 
+![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-3.png) 
 
 
 
@@ -62,7 +62,9 @@ Noise function, profit function
 
 ```r
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
-profit <- profit_harvest(1,0,0)
+#profit <- profit_harvest(1,0,0)
+
+profit = function(x,h) pmin(x, h)
 ```
 
 
@@ -78,7 +80,7 @@ for(t in 1:(T-1))
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-5.png) 
 
 
 Predict the function over the target grid
@@ -129,7 +131,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-9.png) 
 
 
 
@@ -146,10 +148,15 @@ h_grid <- x_grid
 
 
 ```r
-S <- Ef
+h <- x_grid[1]
+X <- numeric(length(x_grid))
+X[18] = 1
+S <- Ef-h
  F_ <- t(sapply(1:length(S), function(i){
       if(S[i]>0) {
-        out <- dnorm(x_grid/S[i], 1, V[i])  
+        out <- dnorm(x_grid, S[i], sqrt(V[i]))
+#        negatives <- sum(dnorm(seq(-K,0, length=50), S[i], sqrt(V[i])))
+#        out[1] <- out[1] + negatives
         out <- out/sum(out)
       } else {
         out <- numeric(length(x_grid))
@@ -157,17 +164,68 @@ S <- Ef
         out
       }
     }))
-
 xt1 <- X %*% F_
 
-qplot(x_grid, xti[1,], geom="point")
+xt10 <- xt1
+for(s in 1:20)
+  xt10 <- xt10 %*% F_
+
+qplot(x_grid, xt1[1,])
 ```
 
-```
-Error: object 'xti' not found
-```
+![plot of chunk unnamed-chunk-11](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-11.png) 
 
 
+
+whereas 
+
+
+
+```r
+rownorm <- function(M) t(apply(M, 1, function(x) x/sum(x)))
+
+mu <- sapply(x_grid, f, h, p)
+F_true <- t(sapply(mu, function(m){
+      if(m>0) {
+        out <- dlnorm(x_grid/m, 0, sigma_g)
+                
+      } else {
+        out <- numeric(length(x_grid))
+        out[1] <- 1
+        out
+      }
+    }))
+    F_true <- rownorm(F_true)
+F_true <- rownorm(F_true)
+yt1 <- X %*% F_true
+
+
+yt10 <- yt1
+for(s in 1:10)
+  yt10 <- yt10 %*% F_true
+qplot(x_grid, yt10[1,])
+```
+
+![plot of chunk unnamed-chunk-12](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-12.png) 
+
+
+
+```r
+transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), id="x")
+ggplot(transition) + geom_point(aes(x,value, col=variable))
+```
+
+![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-unnamed-chunk-13.png) 
+
+
+
+
+
+
+```r
+matrices_gp <- gp_transition_matrix(Ef, V, x_grid, h_grid)
+opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
+```
 
 
 
@@ -176,9 +234,28 @@ Error: object 'xti' not found
 
 
 ```r
-matrices_gp <- gp_transition_matrix(Ef, sqrt(V), x_grid, h_grid)
-opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
+F <- matrices_gp
+Tmax <- 20
+    n_x <- length(x_grid)
+    n_h <- length(h_grid)
+    D <- matrix(NA, nrow=n_x, ncol=Tmax)  
+    P <-  outer(x_grid, h_grid, profit)   
+    V <- P
+    for(t in 1:Tmax){
+      D[,(Tmax-t+1)] <- apply(V, 1, which.max) 
+      v_t <- apply(V, 1, max) # vector of current values 
+      V <- sapply(1:n_h, function(j) # updated value matrix
+        P[,j] + (1-delta) * F[[j]] %*% v_t)
+    }
 ```
+
+```
+Error: object 'delta' not found
+```
+
+
+
+
 
 
 Optimal solution
@@ -213,7 +290,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -250,13 +327,13 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-simplot1.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-simplot1.png) 
 
 ```r
 ggplot(dt) + geom_line(aes(time,harvest, color=method))
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-simplot2.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-ded3c24faf-simplot2.png) 
 
 
 Total Profits
@@ -268,7 +345,7 @@ c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profi
 
 ```
    gp  true   est 
- 8.00 25.44 25.14 
+ 8.00 27.00 30.21 
 ```
 
 
