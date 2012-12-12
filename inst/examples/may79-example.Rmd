@@ -36,7 +36,7 @@ Parameters
 ```{r}
 x_grid = seq(0, 1.5 * K, length=101)
 T <- 40
-sigma_g <- 0.3
+sigma_g <- 0.6
 x <- numeric(T)
 x[1] <- 1
 ```
@@ -56,7 +56,9 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red
 Noise function, profit function
 ```{r}
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
-profit <- profit_harvest(1,0,0)
+#profit <- profit_harvest(1,0,0)
+
+profit = function(x,h) pmin(x, h)
 ```
 
 
@@ -119,12 +121,99 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
 h_grid <- x_grid
 ```
 
-GP Solution
+## Understanding the GP Solution
 
 ```{r}
-matrices_gp <- gp_transition_matrix(Ef, sqrt(V), x_grid, h_grid)
+h <- x_grid[1]
+X <- numeric(length(x_grid))
+X[18] = 1
+S <- Ef-h
+ F_ <- t(sapply(1:length(S), function(i){
+      if(S[i]>0) {
+        out <- dnorm(x_grid, S[i], sqrt(V[i]))
+#        negatives <- sum(dnorm(seq(-K,0, length=50), S[i], sqrt(V[i])))
+#        out[1] <- out[1] + negatives
+        out <- out/sum(out)
+      } else {
+        out <- numeric(length(x_grid))
+        out[1] <- 1
+        out
+      }
+    }))
+xt1 <- X %*% F_
+
+xt10 <- xt1
+for(s in 1:20)
+  xt10 <- xt10 %*% F_
+
+qplot(x_grid, xt1[1,])
+```
+
+
+whereas 
+
+
+```{r}
+rownorm <- function(M) t(apply(M, 1, function(x) x/sum(x)))
+
+mu <- sapply(x_grid, f, h, p)
+F_true <- t(sapply(mu, function(m){
+      if(m>0) {
+        out <- dlnorm(x_grid/m, 0, sigma_g)
+                
+      } else {
+        out <- numeric(length(x_grid))
+        out[1] <- 1
+        out
+      }
+    }))
+    F_true <- rownorm(F_true)
+F_true <- rownorm(F_true)
+yt1 <- X %*% F_true
+
+
+yt10 <- yt1
+for(s in 1:10)
+  yt10 <- yt10 %*% F_true
+qplot(x_grid, yt10[1,])
+```
+
+```{r}
+transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), id="x")
+ggplot(transition) + geom_point(aes(x,value, col=variable))
+```
+
+
+
+
+```{r}
+matrices_gp <- gp_transition_matrix(Ef, V, x_grid, h_grid)
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
 ```
+
+
+
+
+
+```{r}
+F <- matrices_gp
+Tmax <- 20
+    n_x <- length(x_grid)
+    n_h <- length(h_grid)
+    D <- matrix(NA, nrow=n_x, ncol=Tmax)  
+    P <-  outer(x_grid, h_grid, profit)   
+    V <- P
+    for(t in 1:Tmax){
+      D[,(Tmax-t+1)] <- apply(V, 1, which.max) 
+      v_t <- apply(V, 1, max) # vector of current values 
+      V <- sapply(1:n_h, function(j) # updated value matrix
+        P[,j] + (1-delta) * F[[j]] %*% v_t)
+    }
+```
+
+
+
+
 
 Optimal solution
 

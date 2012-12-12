@@ -53,7 +53,7 @@ df <- data.frame(x = x_grid, b = sapply(x_grid, birth), d = sapply(x_grid, death
 ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red")
 ```
 
-![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-unnamed-chunk-3.png) 
+![plot of chunk unnamed-chunk-3](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-3.png) 
 
 
 
@@ -78,7 +78,7 @@ for(t in 1:(T-1))
 plot(x)
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-5.png) 
 
 
 Predict the function over the target grid
@@ -129,7 +129,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-unnamed-chunk-9.png) 
 
 
 
@@ -142,7 +142,37 @@ h_grid <- x_grid
 ```
 
 
-GP Solution
+## Understanding the GP Solution
+
+
+```r
+S <- Ef
+ F_ <- t(sapply(1:length(S), function(i){
+      if(S[i]>0) {
+        out <- dnorm(x_grid/S[i], 1, V[i])  
+        out <- out/sum(out)
+      } else {
+        out <- numeric(length(x_grid))
+        out[1] <- 1
+        out
+      }
+    }))
+
+xt1 <- X %*% F_
+
+qplot(x_grid, xti[1,], geom="point")
+```
+
+```
+Error: object 'xti' not found
+```
+
+
+
+
+
+
+
 
 
 ```r
@@ -183,7 +213,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-policy_plot.png) 
 
 
 We can see what happens when we attempt to manage a stock using this:
@@ -220,13 +250,13 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-simplot1.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-simplot1.png) 
 
 ```r
 ggplot(dt) + geom_line(aes(time,harvest, color=method))
 ```
 
-![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-11-9b2d792442-simplot2.png) 
+![plot of chunk simplot](http://carlboettiger.info/assets/figures/2012-12-12-b5b1d33004-simplot2.png) 
 
 
 Total Profits
