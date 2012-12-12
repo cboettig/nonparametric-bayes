@@ -67,7 +67,7 @@ dat <- dat[seq(1,2500,by=25),]
 ggplot(dat) + geom_line(aes(time, M), col="red") + geom_line(aes(time, C), col="blue")
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-11-19bbd1028b-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-11-b74ccc4566-unnamed-chunk-4.png) 
 
 
 
@@ -88,7 +88,7 @@ ggplot(df2) + geom_line(aes(M, C, group=L1)) +
   geom_point(data = subset(df2, time==1), aes(M, C, group=L1), col="red")
 ```
 
-![plot of chunk phase-space](http://carlboettiger.info/assets/figures/2012-12-11-19bbd1028b-phase-space.png) 
+![plot of chunk phase-space](http://carlboettiger.info/assets/figures/2012-12-11-b74ccc4566-phase-space.png) 
 
 
 
@@ -153,7 +153,7 @@ gp <- bgp(X=cbind(obs$x1, obs$x2), XX=cbind(x_grid,x_grid), Z=cbind(obs$y), verb
 plot(gp, layout="surf")
 ```
 
-![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-12-11-19bbd1028b-unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-12-11-b74ccc4566-unnamed-chunk-8.png) 
 
 
 
@@ -179,7 +179,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x1,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x1,y)) + geom_point(data=obs, aes(x1,y)) 
 ```
 
-![plot of chunk unnamed-chunk-10](http://carlboettiger.info/assets/figures/2012-12-11-19bbd1028b-unnamed-chunk-10.png) 
+![plot of chunk x1](http://carlboettiger.info/assets/figures/2012-12-11-b74ccc4566-x1.png) 
 
 
 
@@ -188,7 +188,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x2,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x2,y)) + geom_point(data=obs, aes(x2,y)) 
 ```
 
-![plot of chunk unnamed-chunk-11](http://carlboettiger.info/assets/figures/2012-12-11-19bbd1028b-unnamed-chunk-11.png) 
+![plot of chunk x2](http://carlboettiger.info/assets/figures/2012-12-11-b74ccc4566-x2.png) 
 
 
 

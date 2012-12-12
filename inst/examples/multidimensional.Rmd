@@ -67,7 +67,7 @@ ggplot(dat) + geom_line(aes(time, M), col="red") + geom_line(aes(time, C), col="
 
 
 
-```{r phase-space}
+```{r phase-space, cache=TRUE, cache.path="phasespace/"}
 inits <- as.matrix(expand.grid(seq(0.05,0.6,length=11), seq(0.05,0.6, length=11)))
 df <- lapply(1:round(length(inits[,1])), function(j){
   X[1,] = inits[j,]
@@ -141,12 +141,12 @@ tgp_dat <- data.frame(x1   = gp$XX[[1]],
 
 
 
-```{r}
+```{r x1}
 ggplot(tgp_dat)  + geom_ribbon(aes(x1,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x1,y)) + geom_point(data=obs, aes(x1,y)) 
 ```
 
-```{r}
+```{r x2}
 ggplot(tgp_dat)  + geom_ribbon(aes(x2,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(aes(x2,y)) + geom_point(data=obs, aes(x2,y)) 
 ```
