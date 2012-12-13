@@ -66,6 +66,7 @@ Very crude estimate of parameter values
 K = mean(x)
 r = 0.5 * sigma_g^2 / var(x)
 
+
 #cor <- acf(x)$acf[,,1]
 #m <- which(cor < 0)[1] - 1
 #l <- lm(y ~ x, data=data.frame(x = 1:6, y = log(cor[1:6])))
