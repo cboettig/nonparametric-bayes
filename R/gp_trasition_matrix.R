@@ -2,19 +2,20 @@
 #' Determine the transition matrix given a Guassian process
 #' 
 #' @param Ef GP mean
-#' @param Sf GP standard deviations (sqrt(diag(Cf))
+#' @param V GP vector of variances
 #' @param x_grid x grid over which to define transition matrices
 #' @param h_grid the harvest grid over which to compute.  Assumed to match the stock grid x_grid if not given.
 #' @return a list of matrices corresponding to the state transition matrix at each harvest level h
 #' @export
-gp_transition_matrix <- function(Ef, Sf, x_grid, h_grid=NULL){  
+gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){  
   if(is.null(h_grid))
     h_grid <- x_grid
   matrices_gp <- lapply(h_grid, function(h){
     S <- Ef - h
     F_ <- t(sapply(1:length(S), function(i){
       if(S[i]>0) {
-        out <- dlnorm(x_grid/S[i], 0, Sf[i])
+        out <- dnorm(x_grid, S[i], sqrt(V[i]))  
+        out <- out/sum(out)  # handled by rownorm already
       } else {
         out <- numeric(length(x_grid))
         out[1] <- 1
@@ -44,6 +45,7 @@ f_transition_matrix <- function(f, p, x_grid, h_grid = NULL, sigma_g){
     F_true <- t(sapply(mu, function(m){
       if(m>0) {
         out <- dlnorm(x_grid/m, 0, sigma_g)
+        
       } else {
         out <- numeric(length(x_grid))
         out[1] <- 1
