@@ -39,7 +39,7 @@ h_grid <- x_grid
 GP Solution
 
 ```{r}
-matrices_gp <- gp_transition_matrix(gp$Ef, sqrt(diag(gp$Cf)), x_grid)
+matrices_gp <- gp_transition_matrix(gp$Ef, diag(gp$Cf), x_grid)
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, 20, 0, profit, delta=.01)
 ```
 
