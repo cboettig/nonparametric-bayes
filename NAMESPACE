@@ -1,4 +1,6 @@
 export(f_transition_matrix)
+export(gp_F)
 export(gp_fit)
 export(gp_transition_matrix)
+export(par_F)
 export(plot.gpfit)

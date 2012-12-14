@@ -1,8 +1,8 @@
-\name{f_transition_matrix}
-\alias{f_transition_matrix}
-\title{calculate transition matrix at each harvest level based on parameterized function}
+\name{par_F}
+\alias{par_F}
+\title{calculate transition matrix based on parameterized function}
 \usage{
-  f_transition_matrix(f, p, x_grid, h_grid = NULL, sigma_g)
+  par_F(h, f, p, x_grid, sigma_g)
 }
 \arguments{
   \item{f}{the transtion function, a function of state x,
@@ -22,7 +22,7 @@
   matrix at each harvest level h
 }
 \description{
-  calculate transition matrix at each harvest level based
-  on parameterized function
+  calculate transition matrix based on parameterized
+  function
 }
 

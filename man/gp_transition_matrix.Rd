@@ -1,6 +1,6 @@
 \name{gp_transition_matrix}
 \alias{gp_transition_matrix}
-\title{Determine the transition matrix given a Guassian process}
+\title{Determine the transition matrix at each h given a Guassian process}
 \usage{
   gp_transition_matrix(Ef, V, x_grid, h_grid = NULL)
 }
@@ -20,6 +20,7 @@
   matrix at each harvest level h
 }
 \description{
-  Determine the transition matrix given a Guassian process
+  Determine the transition matrix at each h given a
+  Guassian process
 }
 
