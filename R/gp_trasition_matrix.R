@@ -1,5 +1,5 @@
   
-#' Determine the transition matrix given a Guassian process
+#' Determine the transition matrix at each h given a Guassian process
 #' 
 #' @param Ef GP mean
 #' @param V GP vector of variances
@@ -10,21 +10,33 @@
 gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){  
   if(is.null(h_grid))
     h_grid <- x_grid
-  matrices_gp <- lapply(h_grid, function(h){
-    S <- Ef - h
-    F_ <- t(sapply(1:length(S), function(i){
-      if(S[i]>0) {
-        out <- dnorm(x_grid, S[i], sqrt(V[i]))  
-        out <- out/sum(out)  # handled by rownorm already
-      } else {
-        out <- numeric(length(x_grid))
-        out[1] <- 1
-        out
-      }
-    }))
-    F_ <- rownorm(F_)
-  })
-  matrices_gp
+  lapply(h_grid, gp_F, Ef, V, x_grid)
+}
+
+
+
+#' Determine the transition matrix given a Guassian process
+#' 
+#' @param Ef GP mean
+#' @param V GP vector of variances
+#' @param x_grid x grid over which to define transition matrices
+#' @return a list of matrices corresponding to the state transition matrix at each harvest level h
+#' @export
+gp_F <- function(h, Ef, V, x_grid){
+  S <- Ef - h
+  F_ <- t(sapply(1:length(S), function(i){
+    if(S[i]>0) {
+      out <- dnorm(x_grid, S[i], sqrt(V[i]))  
+      #        negatives <- sum(dnorm(seq(-K,0, length=50), S[i], sqrt(V[i])))
+      #        out[1] <- out[1] + negatives
+      # out <- out/sum(out)  # handled by rownorm already
+    } else {
+      out <- numeric(length(x_grid))
+      out[1] <- 1
+      out
+    }
+  }))
+  F_ <- rownorm(F_)
 }
 
 #' calculate transition matrix based on parameterized function
