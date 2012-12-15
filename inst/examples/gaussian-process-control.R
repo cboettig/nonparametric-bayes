@@ -18,6 +18,16 @@ theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
              plot.background = element_rect(fill = "transparent",colour = NA))
 
 
+
+
+
+## @knitr BevHolt
+f <- BevHolt
+p <- c(1.5,.05)
+K <- (p[1]-1)/p[2] 
+
+
+
 ## @knitr Myer
 f <- Myer_harvest
 pars <- c(1, 2, 6) 
@@ -47,7 +57,7 @@ reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta
 ## It should be in preferred state for bistable model, 
 ## above Allee threshold for Allee model, 
 ## and near zero for BH or Ricker models
-x_0_observed <- allee + x_grid[1] 
+x_0_observed <- allee + x_grid[2] 
 
 
 
@@ -121,6 +131,16 @@ qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ## @knitr F-sim-plot
 transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), id="x")
 ggplot(transition) + geom_point(aes(x,value, col=variable))
+
+
+
+## @knitr est-F-sim
+F_est <- par_F(h, f_alt, p_alt, x_grid, sigma_g)
+zt1 <- X %*% F_true
+zt10 <- zt1
+for(s in 1:OptTime)
+  zt10 <- zt10 %*% F_true
+qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 
 
 
