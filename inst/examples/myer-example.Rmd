@@ -47,13 +47,16 @@ We fit a Gaussian process with
 
 ## The transition matrix of the inferred process
 
-```{r gp-F-sim, dependson="gp-data"}
+```{r persistence-test}
 ```
 
-```{r par-F-sim}
+```{r gp-F-sim, dependson=c("persistence-test", "gp-data")}
 ```
 
-```{r F-sim-plot}
+```{r par-F-sim, dependson="persistence-test"}
+```
+
+```{r F-sim-plot, dependson=c("gp-F-sim", "par-F-sim")}
 ```
 
 
@@ -93,6 +96,6 @@ We fit a Gaussian process with
 ```{r costs}
 ```
 
-```{r echo=FALSE, results="as.is"}
+```{r echo=FALSE, results="asis"}
 bibliography("html")
 ```
