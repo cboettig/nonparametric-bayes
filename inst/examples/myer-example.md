@@ -60,7 +60,7 @@ for (t in 1:(Tobs - 1)) x[t + 1] = z_g(sigma_g) * f(x[t], h = 0,
 plot(x)
 ```
 
-![plot of chunk sim-obs](figure/sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-sim-obs.png) 
 
 
 
@@ -109,7 +109,7 @@ ggplot(tgp_dat) + geom_ribbon(aes(x, y, ymin = ymin, ymax = ymax),
     y)) + geom_line(data = true, aes(x, y), col = "red", lty = 2)
 ```
 
-![plot of chunk gp-plot](figure/gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-gp-plot.png) 
 
 
 
@@ -132,7 +132,7 @@ for (s in 1:OptTime) xt10 <- xt10 %*% F_
 qplot(x_grid, xt10[1, ]) + geom_point(aes(y = xt1[1, ]), col = "grey")
 ```
 
-![plot of chunk gp-F-sim](figure/gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-gp-F-sim.png) 
 
 
 
@@ -144,7 +144,7 @@ for (s in 1:OptTime) yt10 <- yt10 %*% F_true
 qplot(x_grid, yt10[1, ]) + geom_point(aes(y = yt1[1, ]), col = "grey")
 ```
 
-![plot of chunk par-F-sim](figure/par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-par-F-sim.png) 
 
 
 
@@ -154,7 +154,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1, ], parametric = yt1[1,
 ggplot(transition) + geom_point(aes(x, value, col = variable))
 ```
 
-![plot of chunk F-sim-plot](figure/F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-F-sim-plot.png) 
 
 
 
@@ -196,7 +196,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color = variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](figure/policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-policy_plot.png) 
 
 
 
@@ -236,7 +236,7 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time, fishstock, color = method))
 ```
 
-![plot of chunk sim-fish](figure/sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-sim-fish.png) 
 
 
 
@@ -245,7 +245,7 @@ ggplot(dt) + geom_line(aes(time, fishstock, color = method))
 ggplot(dt) + geom_line(aes(time, harvest, color = method))
 ```
 
-![plot of chunk sim-harvest](figure/sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-bf29e185da-sim-harvest.png) 
 
 
 
