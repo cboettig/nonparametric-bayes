@@ -1,5 +1,5 @@
 ```{r set-options, echo = FALSE, cache = FALSE, external = TRUE}
-opts_chunk$set(external = TRUE, cache = TRUE, cache.path = "myers-cache/")
+opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/")
 read_chunk('gaussian-process-control.R')
 library(knitcitations)
 ```
@@ -7,15 +7,12 @@ library(knitcitations)
 
 ```{r libraries, include=FALSE}
 ```
-
 ```{r graphing-options, include=FALSE}
 ```
 
+
 ```{r Myer}
 ```
-
-
-
 
 We use the model of `r citet("10.1126/science.269.5227.1106")`.
 
@@ -28,8 +25,13 @@ With parameters `r p`.
 ```{r sim-obs}
 ```
 
+We simulate data under this model, starting from a size of `r x_0_observed`.  
+
+
 ```{r lag-data}
 ```
+
+We consider the observations as ordered pairs of observations of current stock size $x_t$ and observed stock in the following year, $x_{t+1}$.  We add the pseudo-observation of $0,0$.  Alternatively we could condition strictly on solutions passing through the origin, though in practice the weaker assumption is often sufficient. 
 
 ```{r par-est}
 ```

@@ -44,7 +44,7 @@ true <- data.frame(x = X, y = sapply(X, f, 0, p))
 
 
 ## @knitr sdp-pars
-sigma_g <- 0.02
+sigma_g <- 0.04
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
@@ -57,7 +57,7 @@ reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta
 ## It should be in preferred state for bistable model, 
 ## above Allee threshold for Allee model, 
 ## and near zero for BH or Ricker models
-x_0_observed <- allee + x_grid[2] 
+x_0_observed <- allee + x_grid[15] 
 
 
 
@@ -69,14 +69,17 @@ for(t in 1:(Tobs-1))
   x[t+1] = z_g(sigma_g) * f(x[t], h=0, p=p)
 plot(x)
 
-## @knitr lag-data
-obs <- data.frame(x=x[1:(Tobs-1)],y=x[2:Tobs])
+  ## @knitr lag-data
+obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
 
 ## @knitr par-est
-K = mean(x)
-r = 0.5 * sigma_g^2 / var(x)
+estf <- function(p){
+  mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
+  -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
+}
+o <- optim(par = c(r=1,K=1,s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
 f_alt <- Ricker
-p_alt <- p
+p_alt <- c(o$pars$r, o$pars$K)
 
 ## @knitr gp-fit
 gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
