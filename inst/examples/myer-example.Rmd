@@ -22,6 +22,10 @@ We use the model of `r citet("10.1126/science.269.5227.1106")`.
 
 With parameters `r p`. 
 
+```{r x0-obs}
+x_0_observed <- K
+```
+
 ```{r sim-obs}
 ```
 

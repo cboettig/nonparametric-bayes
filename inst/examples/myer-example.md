@@ -52,6 +52,12 @@ With parameters `1, 2, 6`.
 
 
 ```r
+x_0_observed <- K
+```
+
+
+
+```r
 Tobs <- 100
 x <- numeric(Tobs)
 x[1] <- x_0_observed
@@ -60,19 +66,16 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-obs.png) 
+
+
+We simulate data under this model, starting from a size of `4.7321`.  
+
+
 
 ```r
-
-  ## @knitr lag-data
 obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
 ```
-
-
-We simulate data under this model, starting from a size of `2.2617`.  
-
-
-
 
 
 We consider the observations as ordered pairs of observations of current stock size $x_t$ and observed stock in the following year, $x_{t+1}$.  We add the pseudo-observation of $0,0$.  Alternatively we could condition strictly on solutions passing through the origin, though in practice the weaker assumption is often sufficient. 
@@ -83,9 +86,10 @@ estf <- function(p){
   mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
   -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
 }
-o <- optim(par = c(r=1,K=1,s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
+o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
 f_alt <- Ricker
-p_alt <- c(o$pars$r, o$pars$K)
+p_alt <- c(o$par['r'], o$par['K'])
+sigma_g_alt <- o$par['s']
 ```
 
 
@@ -123,7 +127,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-gp-plot.png) 
 
 
 
@@ -147,7 +151,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-gp-F-sim.png) 
 
 
 
@@ -160,7 +164,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-par-F-sim.png) 
 
 
 
@@ -169,7 +173,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-F-sim-plot.png) 
 
 
 
@@ -190,7 +194,7 @@ opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, de
 
 
 ```r
-matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g)
+matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
 opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
 ```
 
@@ -209,7 +213,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-policy_plot.png) 
 
 
 
@@ -246,7 +250,7 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-fish.png) 
 
 
 
@@ -255,7 +259,7 @@ ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ggplot(dt) + geom_line(aes(time,harvest, color=method))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-003da6e98e-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-harvest.png) 
 
 
 
@@ -265,7 +269,7 @@ c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profi
 
 ```
     gp   true    est 
-14.054 14.480  4.732 
+ 9.724 14.480  3.620 
 ```
 
 
