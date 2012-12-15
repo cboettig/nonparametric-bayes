@@ -1,11 +1,4 @@
 
-```
-## Loading required package: bibtex
-```
-
-```
-## Warning: replacing previous import 'write.bib' when loading 'pkgmaker'
-```
 
 
 
@@ -26,7 +19,7 @@ K <- (p[1]-1)/p[2]
 
 
 
-We use the model of Myers _et. al._ (1995).
+We use the model of 
 
 
 
@@ -60,25 +53,28 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-sim-obs.png) 
 
 
 
 ```r
-obs <- data.frame(x=x[1:(Tobs-1)],y=x[2:Tobs])
+obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
 ```
 
 
 
 ```r
-K = mean(x)
-r = 0.5 * sigma_g^2 / var(x)
+estf <- function(p){
+  mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
+  -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
+}
+o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
 f_alt <- Ricker
-p_alt <- p
+p_alt <- c(o$par['r'], o$par['K'])
 ```
 
 
-
+Estimates a Ricker curve with parameters $r =$ `0.001` and $K =$ `25.8222`
 
 
 ```r
@@ -112,7 +108,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-gp-plot.png) 
 
 
 
@@ -136,7 +132,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-gp-F-sim.png) 
 
 
 
@@ -149,7 +145,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-par-F-sim.png) 
 
 
 
@@ -158,20 +154,20 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-F-sim-plot.png) 
 
 
 
 ```r
 F_est <- par_F(h, f_alt, p_alt, x_grid, sigma_g)
-zt1 <- X %*% F_true
+zt1 <- X %*% F_est
 zt10 <- zt1
 for(s in 1:OptTime)
-  zt10 <- zt10 %*% F_true
+  zt10 <- zt10 %*% F_est
 qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 ```
 
-![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-est-F-sim.png) 
+![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-est-F-sim.png) 
 
 
 
@@ -210,7 +206,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-policy_plot.png) 
 
 
 
@@ -247,7 +243,7 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-sim-fish.png) 
 
 
 
@@ -256,7 +252,7 @@ ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ggplot(dt) + geom_line(aes(time,harvest, color=method))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-14-c9f1a9f6a2-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-06f80af40d-sim-harvest.png) 
 
 
 
@@ -265,8 +261,8 @@ c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profi
 ```
 
 ```
-    gp   true    est 
-24.234 27.300  8.929 
+   gp  true   est 
+26.93 28.47 10.17 
 ```
 
 
