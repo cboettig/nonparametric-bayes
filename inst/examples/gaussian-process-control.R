@@ -37,6 +37,22 @@ allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee thre
 e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
 
 
+
+
+## @knitr May
+f <- May
+p <- c(r = .75, k = 10, a=1.3, H=1, Q = 3)
+K <- 8 
+
+
+## @knitr plot-may
+birth <- function(x) p["r"] * (1-  x / p["k"])
+death <- function(x) p["a"] * x ^ (p["Q"] - 1) / (x ^ p["Q"] + p["H"])
+df <- data.frame(x = x_grid, b = sapply(x_grid, birth), d = sapply(x_grid, death))
+ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red")
+
+
+
 ## @knitr true-data
 true <- data.frame(x = X, y = sapply(X, f, 0, p))
 
@@ -51,12 +67,15 @@ h_grid <- x_grid
 profit = function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime = 20
-xT = allee
 reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta) ^ OptTime 
-## x_0_observed is starting condition for simulation of the observed data.  
-## It should be in preferred state for bistable model, 
-## above Allee threshold for Allee model, 
-## and near zero for BH or Ricker models
+
+
+## @knitr inits
+# x_0_observed is starting condition for simulation of the observed data.  
+# It should be in preferred state for bistable model, 
+# above Allee threshold for Allee model, 
+# and near zero for BH or Ricker models
+xT <- allee
 x_0_observed <- allee + x_grid[15] 
 
 
@@ -69,7 +88,7 @@ for(t in 1:(Tobs-1))
   x[t+1] = z_g(sigma_g) * f(x[t], h=0, p=p)
 plot(x)
 
-  ## @knitr lag-data
+## @knitr lag-data
 obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
 
 ## @knitr par-est
@@ -77,9 +96,10 @@ estf <- function(p){
   mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
   -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
 }
-o <- optim(par = c(r=1,K=1,s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
+o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
 f_alt <- Ricker
-p_alt <- c(o$pars$r, o$pars$K)
+p_alt <- c(o$par['r'], o$par['K'])
+sigma_g_alt <- o$par['s']
 
 ## @knitr gp-fit
 gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
@@ -139,10 +159,10 @@ ggplot(transition) + geom_point(aes(x,value, col=variable))
 
 ## @knitr est-F-sim
 F_est <- par_F(h, f_alt, p_alt, x_grid, sigma_g)
-zt1 <- X %*% F_true
+zt1 <- X %*% F_est
 zt10 <- zt1
 for(s in 1:OptTime)
-  zt10 <- zt10 %*% F_true
+  zt10 <- zt10 %*% F_est
 qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 
 
@@ -158,7 +178,7 @@ opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, de
 
 
 ## @knitr est-opt
-matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g)
+matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
 opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
 
 
