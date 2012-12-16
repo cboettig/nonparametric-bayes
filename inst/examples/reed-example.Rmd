@@ -17,7 +17,7 @@ library(knitcitations)
 
 
 
-We use the model of 
+We use a Beverton-Holt model to drive the underlying dynamics, with parameters $A =$ `r p[1]` and $B =$ `r p[2]`.  
 
 
 ```{r sdp-pars-bh}
@@ -37,7 +37,7 @@ reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta
 x_0_observed <- x_grid[2] 
 ```
 
-With parameters `r p`. 
+We consider stochastic growth driven by a lognormal noise process, $X_{t+1} = z_g f(X_t)$, where $f$ is the stock recruitment curve and $z_g$ a lognormal shock with $\sigma_g$ = `r sigma_g`.  
 
 ```{r sim-obs}
 ```

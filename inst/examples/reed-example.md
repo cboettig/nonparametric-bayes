@@ -60,7 +60,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-obs.png) 
 
 
 
@@ -78,10 +78,11 @@ estf <- function(p){
 o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
 f_alt <- Ricker
 p_alt <- c(o$par['r'], o$par['K'])
+sigma_g_alt <- o$par['s']
 ```
 
 
-Estimates a Ricker curve with parameters $r =$ `0.0071` and $K =$ `8.9679`
+Estimates a Ricker curve with parameters $r =$ `0.001` and $K =$ `8.9378`
 
 
 ```r
@@ -91,6 +92,35 @@ gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           s2.p = c(50,50), d.p = c(10, 1/0.01, 10, 1/0.01), nug.p = c(10, 1/0.01, 10, 1/0.01),
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
           tau2.lam = "fixed", tau2.p = c(50,1))
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
+```
+
+```
+Warning: data length [1807536] is not a sub-multiple or multiple of the
+number of rows [11]
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
+```
+
+```
+Warning: number of items read is not a multiple of the number of columns
 ```
 
 
@@ -115,7 +145,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_line(data=true, aes(x,y), col='red', lty=2)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-gp-plot.png) 
 
 
 
@@ -139,7 +169,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-gp-F-sim.png) 
 
 
 
@@ -152,7 +182,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-par-F-sim.png) 
 
 
 
@@ -161,7 +191,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-F-sim-plot.png) 
 
 
 
@@ -174,7 +204,7 @@ for(s in 1:OptTime)
 qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 ```
 
-![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-est-F-sim.png) 
+![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-est-F-sim.png) 
 
 
 
@@ -194,7 +224,7 @@ opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, de
 
 
 ```r
-matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g)
+matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
 opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
 ```
 
@@ -213,7 +243,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-policy_plot.png) 
 
 
 
@@ -250,7 +280,7 @@ setnames(dt, "L1", "method")
 ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-fish.png) 
 
 
 
@@ -259,7 +289,7 @@ ggplot(dt) + geom_line(aes(time,fishstock, color=method))
 ggplot(dt) + geom_line(aes(time,harvest, color=method))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-9c656a0bf3-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-harvest.png) 
 
 
 
@@ -269,7 +299,7 @@ c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profi
 
 ```
    gp  true   est 
-26.62 28.47 28.35 
+27.11 28.47 14.48 
 ```
 
 

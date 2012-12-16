@@ -1,19 +1,4 @@
 
-```
-## Loading required package: bibtex
-```
-
-```
-## Warning: replacing previous import 'write.bib' when loading 'pkgmaker'
-```
-
-
-
-
-
-
-
-
 
 
 ```r
