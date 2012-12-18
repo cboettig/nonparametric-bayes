@@ -1,6 +1,14 @@
 
 
 
+
+
+
+
+
+
+
+
 ```r
 f <- Myer_harvest
 pars <- c(1, 2, 6) 
@@ -23,13 +31,7 @@ h_grid <- x_grid
 profit = function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime = 20
-xT = allee
 reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta) ^ OptTime 
-## x_0_observed is starting condition for simulation of the observed data.  
-## It should be in preferred state for bistable model, 
-## above Allee threshold for Allee model, 
-## and near zero for BH or Ricker models
-x_0_observed <- allee + x_grid[15] 
 ```
 
 
@@ -51,7 +53,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-obs.png) 
 
 
 We simulate data under this model, starting from a size of `4.7321`.  
@@ -106,13 +108,20 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 
 
 ```r
-true <- data.frame(x=x_grid, y=sapply(x_grid,f, 0, p))
+true <- sapply(x_grid, f, 0, p)
+est <- sapply(x_grid, f_alt, 0, p_alt)
+models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true, Parametric=est)
+models <- melt(models, id="x")
+names(models) <- c("x", "method", "value")
+# plot
 ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-  geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
-  geom_line(data=true, aes(x,y), col='red', lty=2)
+  geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+  geom_point(data=obs, aes(x,y), alpha=0.8) + 
+  xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+  scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-gp-plot.png) 
 
 
 
@@ -136,7 +145,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-gp-F-sim.png) 
 
 
 
@@ -149,7 +158,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-par-F-sim.png) 
 
 
 
@@ -158,7 +167,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-F-sim-plot.png) 
 
 
 
@@ -189,16 +198,18 @@ opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, 
 ```r
 policies <- melt(data.frame(stock=x_grid, 
                             GP = x_grid[opt_gp$D[,1]], 
-                            Exact = x_grid[opt_true$D[,1]],
-                            Approx = x_grid[opt_estimated$D[,1]]),
+                            True = x_grid[opt_true$D[,1]], 
+                            Parametric = x_grid[opt_estimated$D[,1]]),
                   id="stock")
-
-policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
-  geom_point() + xlab("stock size") + ylab("escapement") 
+names(policies) <- c("stock", "method", "value")
+policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=2, alpha=0.8) + 
+  xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=cbPalette)
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-policy_plot.png) 
 
 
 
@@ -211,50 +222,59 @@ z_g <- function() rlnorm(1,0, sigma_g)
 
 ```r
 set.seed(1)
-sim_gp <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_gp$D, z_g, profit=profit)
+sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_gp$D, z_g, profit=profit))
 set.seed(1)
-sim_true <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_true$D, z_g, profit=profit)
+sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_true$D, z_g, profit=profit))
 set.seed(1)
-sim_est <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_estimated$D, z_g, profit=profit)
+sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_estimated$D, z_g, profit=profit))
 ```
 
 
 
 
 ```r
-dat <- list(est = sim_est, gp = sim_gp, true = sim_true)
-dat <- melt(dat, id=names(dat[[1]]))
+dat <- list(GP = sim_gp, True = sim_true, Parametric = sim_est)
+dat <- melt(dat, id=names(dat[[1]][[1]]))
 dt <- data.table(dat)
-setnames(dt, "L1", "method") 
+setnames(dt, c("L1", "L2"), c("method", "reps")) 
 ```
 
 
 
 
 ```r
-ggplot(dt) + geom_line(aes(time,fishstock, color=method))
+ggplot(dt) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-fish.png) 
 
 
 
 
 ```r
-ggplot(dt) + geom_line(aes(time,harvest, color=method))
+ggplot(dt) +
+  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.5) +
+  scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-f42127cba3-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-harvest.png) 
 
 
 
 ```r
-c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profit))
+profits <- dt[, sum(profit), by = c("reps", "method")]
+means <- profits[, mean(V1), by = method]
+sds <- profits[, sd(V1), by = method]
+cbind(means, sd = sds$V1)
 ```
 
 ```
-    gp   true    est 
- 9.724 14.480  3.620 
+       method    V1     sd
+1:         GP 12.97 0.4866
+2:       True 14.13 0.4757
+3: Parametric 14.09 0.4808
 ```
 
 
