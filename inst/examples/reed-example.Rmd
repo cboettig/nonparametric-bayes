@@ -97,6 +97,11 @@ We fit a Gaussian process with
 ```{r othernoise}
 ```
 
+
+```{r stationary_policy_only}
+```
+
+
 ```{r simulate}
 ```
 
