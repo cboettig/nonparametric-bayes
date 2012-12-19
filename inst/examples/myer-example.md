@@ -11,7 +11,7 @@
 
 ```r
 f <- Myer_harvest
-pars <- c(1, 2, 6) 
+pars <- c(1, 2, 4.5) 
 p <- pars # shorthand 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
@@ -25,6 +25,7 @@ We use the model of Myers _et. al._ (1995).
 
 ```r
 sigma_g <- 0.05
+sigma_m <- 0.2
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
@@ -36,13 +37,13 @@ xT <- 0
 ```
 
 
-With parameters `1, 2, 6`. 
+With parameters `1, 2, 4.5`. 
 
 
 ```r
 x_0_observed <- allee + x_grid[15]
 xT <- 0
-set.seed(1111)
+set.seed(1)
 ```
 
 
@@ -56,10 +57,10 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-obs.png) 
 
 
-We simulate data under this model, starting from a size of `2.2617`.  
+We simulate data under this model, starting from a size of `2.13`.  
 
 
 
@@ -113,7 +114,7 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 ```r
 true <- sapply(x_grid, f, 0, p)
 est <- sapply(x_grid, f_alt, 0, p_alt)
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true, Parametric=est)
+models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
 # plot
@@ -124,7 +125,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-gp-plot.png) 
 
 
 
@@ -148,7 +149,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-gp-F-sim.png) 
 
 
 
@@ -161,7 +162,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-par-F-sim.png) 
 
 
 
@@ -170,7 +171,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-F-sim-plot.png) 
 
 
 
@@ -201,8 +202,8 @@ opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, 
 ```r
 policies <- melt(data.frame(stock=x_grid, 
                             GP = x_grid[opt_gp$D[,1]], 
-                            True = x_grid[opt_true$D[,1]], 
-                            Parametric = x_grid[opt_estimated$D[,1]]),
+                            Parametric = x_grid[opt_estimated$D[,1]],
+                            True = x_grid[opt_true$D[,1]]),
                   id="stock")
 names(policies) <- c("stock", "method", "value")
 policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
@@ -212,14 +213,14 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-policy_plot.png) 
 
 
 
 
 ```r
 z_g = function() rlnorm(1, 0, sigma_g)
-z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 ```
 
 
@@ -250,7 +251,7 @@ sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, op
 
 
 ```r
-dat <- list(GP = sim_gp, True = sim_true, Parametric = sim_est)
+dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true)
 dat <- melt(dat, id=names(dat[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
@@ -265,7 +266,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-fish.png) 
 
 
 
@@ -276,7 +277,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-5627d09b65-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-harvest.png) 
 
 
 
@@ -289,9 +290,9 @@ cbind(means, sd = sds$V1)
 
 ```
        method    V1     sd
-1:         GP 12.56 0.5922
-2:       True 12.59 0.5952
-3: Parametric 12.33 0.6122
+1:         GP 3.000 0.0000
+2: Parametric 0.000 0.0000
+3:       True 3.114 0.4534
 ```
 
 
