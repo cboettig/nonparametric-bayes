@@ -63,6 +63,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red
 
 ## @knitr sdp-pars
 sigma_g <- 0.05
+sigma_m <- 0.2
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
@@ -222,7 +223,7 @@ policy_plot
 
 ## @knitr othernoise
 z_g = function() rlnorm(1, 0, sigma_g)
-z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 ## @knitr stationary_policy_only
 m <- sapply(1:OptTime, function(i) opt_gp$D[,1])
