@@ -17,7 +17,16 @@ library(knitcitations)
 We use the Ricker model 
 
 
-```{r sdp-pars}
+```{r sdp-pars-ricker}
+sigma_g <- 0.05
+z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
+x_grid <- seq(0, 2.5 * K, length=101)
+h_grid <- x_grid
+profit = function(x,h) pmin(x, h)
+delta <- 0.01
+OptTime = 20
+reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta) ^ OptTime 
+xT <- 0
 ```
 
 with parameters `r p`. 
