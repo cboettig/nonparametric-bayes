@@ -44,8 +44,8 @@ e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point
 
 ## @knitr Ricker
 f <- Ricker
-p <- c(3.5, 10) 
-K <- 10
+p <- c(2.5, 10) 
+K <- 12.5
 
 
 ## @knitr May
@@ -103,6 +103,19 @@ o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3)
 f_alt <- Ricker
 p_alt <- c(o$par['r'], o$par['K'])
 sigma_g_alt <- o$par['s']
+
+
+
+## @knitr par-est-BH
+estf <- function(p){
+  mu <- obs$x * p["A"] / (1+ obs$x * p["B"])
+  -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
+}
+o <- optim(par = c(A=2, B=1/mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
+f_alt <- BevHolt
+p_alt <- c(A=as.numeric(o$par['A']), B=as.numeric(o$par['B']))
+sigma_g_alt <- o$par['s']
+
 
 ## @knitr gp-fit
 gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,

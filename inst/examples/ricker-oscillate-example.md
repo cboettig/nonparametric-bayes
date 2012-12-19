@@ -12,7 +12,7 @@
 ```r
 f <- Ricker
 p <- c(2.5, 10) 
-K <- 10
+K <- 12.5
 ```
 
 
@@ -39,7 +39,7 @@ with parameters `2.5, 10`.
 ```r
 x_0_observed <- K
 xT <- 0
-set.seed(1111)
+set.seed(1)
 ```
 
 
@@ -53,10 +53,10 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-sim-obs.png) 
 
 
-We simulate data under this model, starting from a size of `10`.  
+We simulate data under this model, starting from a size of `12.5`.  
 
 
 
@@ -70,16 +70,17 @@ We consider the observations as ordered pairs of observations of current stock s
 
 ```r
 estf <- function(p){
-  mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
-  -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
+  mu <- obs$x * p["A"] / (1+ obs$x * p["B"])
+  -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
 }
-o <- optim(par = c(r=1,K=mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
-f_alt <- Ricker
-p_alt <- c(o$par['r'], o$par['K'])
+o <- optim(par = c(A=2, B=1/mean(x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
+f_alt <- BevHolt
+p_alt <- c(A=as.numeric(o$par['A']), B=as.numeric(o$par['B']))
 sigma_g_alt <- o$par['s']
 ```
 
 
+Estimate data under the BH model
 
 
 
@@ -121,7 +122,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-gp-plot.png) 
 
 
 
@@ -145,7 +146,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-gp-F-sim.png) 
 
 
 
@@ -158,7 +159,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-par-F-sim.png) 
 
 
 
@@ -167,7 +168,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-F-sim-plot.png) 
 
 
 
@@ -209,7 +210,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-policy_plot.png) 
 
 
 
@@ -217,8 +218,11 @@ policy_plot
 ```r
 z_g = function() rlnorm(1, 0, sigma_g)
 z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
+```
 
-### @knitr stationary_policy_only
+
+
+```r
 m <- sapply(1:OptTime, function(i) opt_gp$D[,1])
 opt_gp$D <- m
 mm <- sapply(1:OptTime, function(i) opt_true$D[,1])
@@ -226,9 +230,6 @@ opt_true$D <- mm
 mmm <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
 opt_estimated$D <- mmm
 ```
-
-
-
 
 
 
@@ -262,7 +263,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-sim-fish.png) 
 
 
 
@@ -273,7 +274,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-71532cd717-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-380d8319e2-sim-harvest.png) 
 
 
 
@@ -285,10 +286,10 @@ cbind(means, sd = sds$V1)
 ```
 
 ```
-       method     V1    sd
-1:         GP  25.15 1.548
-2:       True 264.62 3.566
-3: Parametric 264.62 3.566
+       method    V1    sd
+1:         GP  12.5 0.000
+2:       True 267.0 3.542
+3: Parametric 131.0 5.242
 ```
 
 

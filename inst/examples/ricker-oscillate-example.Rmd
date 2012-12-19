@@ -34,7 +34,7 @@ with parameters `r p`.
 ```{r x0-obs}
 x_0_observed <- K
 xT <- 0
-set.seed(1111)
+set.seed(1)
 ```
 
 ```{r sim-obs}
@@ -48,9 +48,10 @@ We simulate data under this model, starting from a size of `r x_0_observed`.
 
 We consider the observations as ordered pairs of observations of current stock size $x_t$ and observed stock in the following year, $x_{t+1}$.  We add the pseudo-observation of $0,0$.  Alternatively we could condition strictly on solutions passing through the origin, though in practice the weaker assumption is often sufficient. 
 
-```{r par-est}
+```{r par-est-BH}
 ```
 
+Estimate data under the BH model
 
 
 ```{r gp-fit, dependson="lag-data"}
