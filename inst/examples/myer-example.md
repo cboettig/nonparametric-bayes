@@ -53,7 +53,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-sim-obs.png) 
 
 
 We simulate data under this model, starting from a size of `4.7321`.  
@@ -121,7 +121,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-gp-plot.png) 
 
 
 
@@ -145,7 +145,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-gp-F-sim.png) 
 
 
 
@@ -158,7 +158,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-par-F-sim.png) 
 
 
 
@@ -167,7 +167,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-F-sim-plot.png) 
 
 
 
@@ -209,7 +209,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-policy_plot.png) 
 
 
 
@@ -245,21 +245,33 @@ setnames(dt, c("L1", "L2"), c("method", "reps"))
 ```r
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette)
+  scale_colour_manual(values=cbPalette) + 
+  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-fish.png) 
+```
+Scale for 'colour' is already present. Adding another scale for 'colour',
+which will replace the existing scale.
+```
+
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-sim-fish.png) 
 
 
 
 
 ```r
 ggplot(dt) +
-  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.5) +
-  scale_colour_manual(values=cbPalette)
+  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=cbPalette) +   
+  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-cac79bcc42-sim-harvest.png) 
+```
+Scale for 'colour' is already present. Adding another scale for 'colour',
+which will replace the existing scale.
+```
+
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-f9efa4b8d2-sim-harvest.png) 
 
 
 
@@ -272,9 +284,9 @@ cbind(means, sd = sds$V1)
 
 ```
        method    V1     sd
-1:         GP 12.97 0.4866
+1:         GP 10.71 0.4778
 2:       True 14.13 0.4757
-3: Parametric 14.09 0.4808
+3: Parametric 14.26 0.4758
 ```
 
 
