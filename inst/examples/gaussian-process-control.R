@@ -35,7 +35,7 @@ K <- (p[1]-1)/p[2]
 
 ## @knitr Myer
 f <- Myer_harvest
-pars <- c(1, 2, 6) 
+pars <- c(1, 2, 4.5) 
 p <- pars # shorthand 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
