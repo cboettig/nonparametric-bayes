@@ -1,11 +1,4 @@
 
-```
-## Loading required package: bibtex
-```
-
-```
-## Warning: replacing previous import 'write.bib' when loading 'pkgmaker'
-```
 
 
 
@@ -24,9 +17,7 @@ K <- (p[1]-1)/p[2]
 
 
 
-
-
-We use the model of 
+We use a Beverton-Holt model to drive the underlying dynamics, with parameters $A =$ `1.5` and $B =$ `0.05`.  
 
 
 
@@ -48,7 +39,7 @@ x_0_observed <- x_grid[2]
 ```
 
 
-With parameters `1.5, 0.05`. 
+We consider stochastic growth driven by a lognormal noise process, $X_{t+1} = z_g f(X_t)$, where $f$ is the stock recruitment curve and $z_g$ a lognormal shock with $\sigma_g$ = `0.02`.  
 
 
 ```r
@@ -60,8 +51,10 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-obs.png) 
 
+
+Simulate data 
 
 
 ```r
@@ -82,7 +75,7 @@ sigma_g_alt <- o$par['s']
 ```
 
 
-Estimates a Ricker curve with parameters $r =$ `0.001` and $K =$ `8.9378`
+Estimates a Ricker curve with parameters $r =$ `0.001` and $K =$ `8.2601`
 
 
 ```r
@@ -92,35 +85,6 @@ gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           s2.p = c(50,50), d.p = c(10, 1/0.01, 10, 1/0.01), nug.p = c(10, 1/0.01, 10, 1/0.01),
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
           tau2.lam = "fixed", tau2.p = c(50,1))
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
-```
-
-```
-Warning: data length [1807536] is not a sub-multiple or multiple of the
-number of rows [11]
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
-```
-
-```
-Warning: number of items read is not a multiple of the number of columns
 ```
 
 
@@ -139,13 +103,20 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 
 
 ```r
-true <- data.frame(x=x_grid, y=sapply(x_grid,f, 0, p))
+true <- sapply(x_grid, f, 0, p)
+est <- sapply(x_grid, f_alt, 0, p_alt)
+models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true, Parametric=est)
+models <- melt(models, id="x")
+names(models) <- c("x", "method", "value")
+# plot
 ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-  geom_line(aes(x,y)) + geom_point(data=obs, aes(x,y)) +
-  geom_line(data=true, aes(x,y), col='red', lty=2)
+  geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+  geom_point(data=obs, aes(x,y), alpha=0.8) + 
+  xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+  scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-gp-plot.png) 
 
 
 
@@ -169,7 +140,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-gp-F-sim.png) 
 
 
 
@@ -182,7 +153,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-par-F-sim.png) 
 
 
 
@@ -191,7 +162,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-F-sim-plot.png) 
 
 
 
@@ -204,7 +175,7 @@ for(s in 1:OptTime)
 qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 ```
 
-![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-est-F-sim.png) 
+![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-est-F-sim.png) 
 
 
 
@@ -234,16 +205,18 @@ opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, 
 ```r
 policies <- melt(data.frame(stock=x_grid, 
                             GP = x_grid[opt_gp$D[,1]], 
-                            Exact = x_grid[opt_true$D[,1]],
-                            Approx = x_grid[opt_estimated$D[,1]]),
+                            True = x_grid[opt_true$D[,1]], 
+                            Parametric = x_grid[opt_estimated$D[,1]]),
                   id="stock")
-
-policy_plot <- ggplot(policies, aes(stock, stock - value, color=variable)) +
-  geom_point() + xlab("stock size") + ylab("escapement") 
+names(policies) <- c("stock", "method", "value")
+policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=2, alpha=0.8) + 
+  xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=cbPalette)
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-policy_plot.png) 
 
 
 
@@ -256,50 +229,71 @@ z_g <- function() rlnorm(1,0, sigma_g)
 
 ```r
 set.seed(1)
-sim_gp <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_gp$D, z_g, profit=profit)
+sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_gp$D, z_g, profit=profit))
 set.seed(1)
-sim_true <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_true$D, z_g, profit=profit)
+sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_true$D, z_g, profit=profit))
 set.seed(1)
-sim_est <- ForwardSimulate(f, p, x_grid, h_grid, K, opt_estimated$D, z_g, profit=profit)
+sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, opt_estimated$D, z_g, profit=profit))
 ```
 
 
 
 
 ```r
-dat <- list(est = sim_est, gp = sim_gp, true = sim_true)
-dat <- melt(dat, id=names(dat[[1]]))
+dat <- list(GP = sim_gp, True = sim_true, Parametric = sim_est)
+dat <- melt(dat, id=names(dat[[1]][[1]]))
 dt <- data.table(dat)
-setnames(dt, "L1", "method") 
+setnames(dt, c("L1", "L2"), c("method", "reps")) 
 ```
 
 
 
 
 ```r
-ggplot(dt) + geom_line(aes(time,fishstock, color=method))
+ggplot(dt) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=cbPalette) + 
+  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-fish.png) 
+```
+Scale for 'colour' is already present. Adding another scale for 'colour',
+which will replace the existing scale.
+```
+
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-fish.png) 
 
 
 
 
 ```r
-ggplot(dt) + geom_line(aes(time,harvest, color=method))
+ggplot(dt) +
+  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=cbPalette) +   
+  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-15-8b057f1f24-sim-harvest.png) 
+```
+Scale for 'colour' is already present. Adding another scale for 'colour',
+which will replace the existing scale.
+```
+
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-harvest.png) 
 
 
 
 ```r
-c( gp = sum(sim_gp$profit), true = sum(sim_true$profit), est = sum(sim_est$profit))
+profits <- dt[, sum(profit), by = c("reps", "method")]
+means <- profits[, mean(V1), by = method]
+sds <- profits[, sd(V1), by = method]
+cbind(means, sd = sds$V1)
 ```
 
 ```
-   gp  true   est 
-27.11 28.47 14.48 
+       method    V1     sd
+1:         GP 25.61 0.3143
+2:       True 28.16 0.4501
+3: Parametric 12.36 0.8173
 ```
 
 
