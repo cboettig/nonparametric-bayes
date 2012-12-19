@@ -58,7 +58,7 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red
 
 
 ## @knitr sdp-pars
-sigma_g <- 0.04
+sigma_g <- 0.05
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
@@ -66,6 +66,7 @@ profit = function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime = 20
 reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta) ^ OptTime 
+xT <- 0
 
 
 ## @knitr inits
@@ -79,9 +80,10 @@ x_0_observed <- K
 
 
 ## @knitr sim-obs
-Tobs <- 100
+Tobs <- 30
 x <- numeric(Tobs)
 x[1] <- x_0_observed
+set.seed(123)
 for(t in 1:(Tobs-1))
   x[t+1] = z_g(sigma_g) * f(x[t], h=0, p=p)
 plot(x)
@@ -203,7 +205,17 @@ policy_plot
 
 
 ## @knitr othernoise
-z_g <- function() rlnorm(1,0, sigma_g)
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
+
+### @knitr stationary_policy_only
+m <- sapply(1:OptTime, function(i) opt_gp$D[,1])
+opt_gp$D <- m
+mm <- sapply(1:OptTime, function(i) opt_true$D[,1])
+opt_true$D <- mm
+mmm <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
+opt_estimated$D <- mmm
+
 
 
 ## @knitr simulate
@@ -225,15 +237,13 @@ setnames(dt, c("L1", "L2"), c("method", "reps"))
 ## @knitr sim-fish
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette) + 
-  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 
 
 ## @knitr sim-harvest
 ggplot(dt) +
   geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette) +   
-  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 
 
 ## @knitr costs
