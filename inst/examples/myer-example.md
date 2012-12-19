@@ -31,7 +31,7 @@ We use the model of Myers _et. al._ (1995).
 
 
 ```r
-sigma_g <- 0.2
+sigma_g <- 0.05
 z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
@@ -47,14 +47,14 @@ With parameters `1, 2, 6`.
 
 
 ```r
-x_0_observed <- allee + x_grid[2]
-xT <- allee + x_grid[2]
+x_0_observed <- allee + x_grid[30]
+xT <- allee + x_grid[30]
 ```
 
 
 
 ```r
-Tobs <- 100
+Tobs <- 30
 x <- numeric(Tobs)
 x[1] <- x_0_observed
 for(t in 1:(Tobs-1))
@@ -62,10 +62,10 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-sim-obs.png) 
 
 
-We simulate data under this model, starting from a size of `1.3389`.  
+We simulate data under this model, starting from a size of `3.3264`.  
 
 
 
@@ -130,7 +130,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-gp-plot.png) 
 
 
 
@@ -154,7 +154,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-gp-F-sim.png) 
 
 
 
@@ -167,7 +167,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-par-F-sim.png) 
 
 
 
@@ -176,7 +176,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-F-sim-plot.png) 
 
 
 
@@ -218,14 +218,28 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-policy_plot.png) 
 
 
 
 
 ```r
-z_g <- function() rlnorm(1,0, sigma_g)
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
+
+### @knitr stationary_policy_only
+m <- sapply(1:OptTime, function(i) opt_gp$D[,1])
+opt_gp$D <- m
+mm <- sapply(1:OptTime, function(i) opt_true$D[,1])
+opt_true$D <- mm
+mmm <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
+opt_estimated$D <- mmm
 ```
+
+
+
+
+
 
 
 
@@ -257,7 +271,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-sim-fish.png) 
 
 
 
@@ -268,7 +282,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-e1d923b0cb-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-25d7dd6395-sim-harvest.png) 
 
 
 
@@ -280,10 +294,10 @@ cbind(means, sd = sds$V1)
 ```
 
 ```
-       method     V1    sd
-1:         GP  4.732 0.000
-2:       True 12.904 2.353
-3: Parametric 13.251 2.563
+       method       V1      sd
+1:         GP  8.51201 0.59066
+2:       True 12.59199 0.59524
+3: Parametric  0.02413 0.07829
 ```
 
 
