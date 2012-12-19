@@ -41,7 +41,7 @@ With parameters `1, 2, 4.5`.
 
 
 ```r
-x_0_observed <- allee + x_grid[15]
+x_0_observed <- allee + x_grid[3]
 xT <- 0
 set.seed(1)
 ```
@@ -57,10 +57,10 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-sim-obs.png) 
 
 
-We simulate data under this model, starting from a size of `2.13`.  
+We simulate data under this model, starting from a size of `1.59`.  
 
 
 
@@ -125,7 +125,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-gp-plot.png) 
 
 
 
@@ -149,7 +149,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-gp-F-sim.png) 
 
 
 
@@ -162,7 +162,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-par-F-sim.png) 
 
 
 
@@ -171,7 +171,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-F-sim-plot.png) 
 
 
 
@@ -213,7 +213,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-policy_plot.png) 
 
 
 
@@ -266,7 +266,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-sim-fish.png) 
 
 
 
@@ -277,7 +277,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-19-36a9985baf-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-19-a462d4165b-sim-harvest.png) 
 
 
 
@@ -290,7 +290,7 @@ cbind(means, sd = sds$V1)
 
 ```
        method    V1     sd
-1:         GP 3.000 0.0000
+1:         GP 3.111 0.4519
 2: Parametric 0.000 0.0000
 3:       True 3.114 0.4534
 ```

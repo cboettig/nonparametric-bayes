@@ -23,7 +23,7 @@ We use the model of `r citet("10.1126/science.269.5227.1106")`.
 With parameters `r p`. 
 
 ```{r x0-obs}
-x_0_observed <- allee + x_grid[15]
+x_0_observed <- allee + x_grid[3]
 xT <- 0
 set.seed(1)
 ```
