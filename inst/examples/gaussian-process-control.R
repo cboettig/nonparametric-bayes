@@ -140,7 +140,7 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 ## @knitr gp-plot
 true <- sapply(x_grid, f, 0, p)
 est <- sapply(x_grid, f_alt, 0, p_alt)
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true, Parametric=est)
+models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
 # plot
@@ -210,8 +210,8 @@ opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, 
 ## @knitr policy_plot
 policies <- melt(data.frame(stock=x_grid, 
                             GP = x_grid[opt_gp$D[,1]], 
-                            True = x_grid[opt_true$D[,1]], 
-                            Parametric = x_grid[opt_estimated$D[,1]]),
+                            Parametric = x_grid[opt_estimated$D[,1]],
+                            True = x_grid[opt_true$D[,1]]),
                   id="stock")
 names(policies) <- c("stock", "method", "value")
 policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
@@ -245,7 +245,7 @@ sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, op
 
 
 ## @knitr tidy
-dat <- list(GP = sim_gp, True = sim_true, Parametric = sim_est)
+dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true)
 dat <- melt(dat, id=names(dat[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
