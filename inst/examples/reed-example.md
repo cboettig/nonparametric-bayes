@@ -43,7 +43,7 @@ We consider stochastic growth driven by a lognormal noise process, $X_{t+1} = z_
 
 
 ```r
-Tobs <- 100
+Tobs <- 30
 x <- numeric(Tobs)
 x[1] <- x_0_observed
 for(t in 1:(Tobs-1))
@@ -51,7 +51,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-sim-obs.png) 
 
 
 Simulate data 
@@ -75,7 +75,7 @@ sigma_g_alt <- o$par['s']
 ```
 
 
-Estimates a Ricker curve with parameters $r =$ `0.001` and $K =$ `8.2601`
+Estimates a Ricker curve with parameters $r =$ `0.4211` and $K =$ `6.2019`
 
 
 ```r
@@ -105,7 +105,7 @@ tgp_dat <- data.frame(x   = gp$XX[[1]],
 ```r
 true <- sapply(x_grid, f, 0, p)
 est <- sapply(x_grid, f_alt, 0, p_alt)
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true, Parametric=est)
+models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
 # plot
@@ -116,7 +116,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-gp-plot.png) 
 
 
 
@@ -140,7 +140,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-gp-F-sim.png) 
 
 
 
@@ -153,7 +153,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-par-F-sim.png) 
 
 
 
@@ -162,7 +162,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-F-sim-plot.png) 
 
 
 
@@ -175,7 +175,7 @@ for(s in 1:OptTime)
 qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 ```
 
-![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-est-F-sim.png) 
+![plot of chunk est-F-sim](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-est-F-sim.png) 
 
 
 
@@ -205,8 +205,8 @@ opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, 
 ```r
 policies <- melt(data.frame(stock=x_grid, 
                             GP = x_grid[opt_gp$D[,1]], 
-                            True = x_grid[opt_true$D[,1]], 
-                            Parametric = x_grid[opt_estimated$D[,1]]),
+                            Parametric = x_grid[opt_estimated$D[,1]],
+                            True = x_grid[opt_true$D[,1]]),
                   id="stock")
 names(policies) <- c("stock", "method", "value")
 policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
@@ -216,13 +216,14 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-policy_plot.png) 
 
 
 
 
 ```r
-z_g <- function() rlnorm(1,0, sigma_g)
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 ```
 
 
@@ -240,7 +241,7 @@ sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, op
 
 
 ```r
-dat <- list(GP = sim_gp, True = sim_true, Parametric = sim_est)
+dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true)
 dat <- melt(dat, id=names(dat[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
@@ -252,16 +253,10 @@ setnames(dt, c("L1", "L2"), c("method", "reps"))
 ```r
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette) + 
-  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-Scale for 'colour' is already present. Adding another scale for 'colour',
-which will replace the existing scale.
-```
-
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-sim-fish.png) 
 
 
 
@@ -269,16 +264,10 @@ which will replace the existing scale.
 ```r
 ggplot(dt) +
   geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette) +   
-  scale_colour_discrete(guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-Scale for 'colour' is already present. Adding another scale for 'colour',
-which will replace the existing scale.
-```
-
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-4fbaada109-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-18-80a041c27e-sim-harvest.png) 
 
 
 
@@ -291,9 +280,9 @@ cbind(means, sd = sds$V1)
 
 ```
        method    V1     sd
-1:         GP 25.61 0.3143
-2:       True 28.16 0.4501
-3: Parametric 12.36 0.8173
+1:         GP 26.43 0.3513
+2: Parametric 27.52 0.3923
+3:       True 28.16 0.4501
 ```
 
 
