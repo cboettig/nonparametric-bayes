@@ -85,7 +85,7 @@ x_0_observed <- K
 
 
 ## @knitr sim-obs
-Tobs <- 30
+Tobs <- 50
 x <- numeric(Tobs)
 x[1] <- x_0_observed
 for(t in 1:(Tobs-1))
