@@ -42,6 +42,10 @@ allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee thre
 e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
 
 
+## @knitr Ricker
+f <- Ricker
+p <- c(3.5, 10) 
+K <- 10
 
 
 ## @knitr May
@@ -83,7 +87,6 @@ x_0_observed <- K
 Tobs <- 30
 x <- numeric(Tobs)
 x[1] <- x_0_observed
-set.seed(123)
 for(t in 1:(Tobs-1))
   x[t+1] = z_g(sigma_g) * f(x[t], h=0, p=p)
 plot(x)
@@ -208,7 +211,7 @@ policy_plot
 z_g = function() rlnorm(1, 0, sigma_g)
 z_m = function() 1+(2*runif(1, 0,  1)-1) * 0.1
 
-### @knitr stationary_policy_only
+## @knitr stationary_policy_only
 m <- sapply(1:OptTime, function(i) opt_gp$D[,1])
 opt_gp$D <- m
 mm <- sapply(1:OptTime, function(i) opt_true$D[,1])

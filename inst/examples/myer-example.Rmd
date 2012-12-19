@@ -1,4 +1,4 @@
-```{r set-options, echo = FALSE, cache = FALSE, external = TRUE}
+```{r set-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
 opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/")
 read_chunk('gaussian-process-control.R')
 library(knitcitations)
@@ -23,7 +23,9 @@ We use the model of `r citet("10.1126/science.269.5227.1106")`.
 With parameters `r p`. 
 
 ```{r x0-obs}
-x_0_observed <- K
+x_0_observed <- allee + x_grid[15]
+xT <- 0
+set.seed(1111)
 ```
 
 ```{r sim-obs}
@@ -86,6 +88,11 @@ We fit a Gaussian process with
 
 ```{r othernoise}
 ```
+
+```{r stationary_policy_only}
+```
+
+
 
 ```{r simulate}
 ```
