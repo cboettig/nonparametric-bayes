@@ -51,6 +51,11 @@ We consider the observations as ordered pairs of observations of current stock s
 ```{r par-est-BH}
 ```
 
+
+```{r gp-priors}
+```
+
+
 Estimate data under the BH model
 
 
@@ -63,6 +68,11 @@ We fit a Gaussian process with
 ```
 
 ```{r gp-plot, dependson="gp-data"}
+```
+
+
+
+```{r gp-posteriors}
 ```
 
 
