@@ -48,7 +48,7 @@ With parameters `r p`.
 
 ```{r parallel}
 require(snowfall)
-sfInit(cpu=2)
+sfInit(cpu=8)
 sfExportAll()
 sfLibrary(pdgControl)
 sfLibrary(nonparametricbayes)
