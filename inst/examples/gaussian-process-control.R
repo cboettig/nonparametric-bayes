@@ -177,10 +177,13 @@ prior_curves <- ddply(posteriors, "variable", function(dd){
 ggplot(posteriors) + 
   #geom_density(aes(value), lwd=2) +
   geom_histogram(aes(x=value, y=..density..), lwd=2) +
-  geom_line(data=prior_curves, aes(x=value, y=density), col="red") +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
+  facet_wrap(~ variable, scale="free")
+ggplot(prior_curves) + 
+  geom_line(aes(x=value, y=density), col="red", lwd=2) +
   facet_wrap(~ variable, scale="free")
 #ggplot(subset(posteriors, variable=="nug")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = nug_prior, col="red", lwd=2)
-ggplot(subset(posteriors, variable=="s2")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = s2_prior, col="red", lwd=2)
+#ggplot(subset(posteriors, variable=="s2")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = s2_prior, col="red", lwd=2)
 
 
 ## @knitr persistence-test

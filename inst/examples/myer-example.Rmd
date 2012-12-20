@@ -1,5 +1,5 @@
 ```{r set-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
-opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/")
+opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/", warning=FALSE)
 read_chunk('gaussian-process-control.R')
 library(knitcitations)
 ```
@@ -43,6 +43,9 @@ We consider the observations as ordered pairs of observations of current stock s
 ```
 
 
+```{r gp-priors}
+```
+
 
 ```{r gp-fit, dependson="lag-data"}
 ```
@@ -53,6 +56,11 @@ We fit a Gaussian process with
 ```
 
 ```{r gp-plot, dependson="gp-data"}
+```
+
+
+
+```{r gp-posteriors}
 ```
 
 

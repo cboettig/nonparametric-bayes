@@ -57,7 +57,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-sim-obs.png) 
+![plot of chunk sim-obs](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-sim-obs.png) 
 
 
 We simulate data under this model, starting from a size of `1.68`.  
@@ -86,14 +86,34 @@ sigma_g_alt <- o$par['s']
 
 
 
+```r
+s2.p <- c(50,50)
+tau2.p <- c(20,1)
+d.p = c(10, 1/0.01, 10, 1/0.01)
+nug.p = c(10, 1/0.01, 10, 1/0.01)
+s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
+tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
+nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
+beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+beta = c(0)
+```
+
+
+
 
 ```r
 gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="linear", bprior="b0", BTE=c(2000,6000,2), m0r1=FALSE, 
-          corr="exp", trace=TRUE, beta = c(0,0),
-          s2.p = c(50,50), d.p = c(10, 1/0.01, 10, 1/0.01), nug.p = c(10, 1/0.01, 10, 1/0.01),
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
-          tau2.lam = "fixed", tau2.p = c(50,1))
+          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          m0r1=FALSE, corr="exp", trace=TRUE, 
+          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
+          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")
+```
+
+```
+Warning: for memory/storage reasons, trace not recommended when
+3*(10+d)*(BTE[2]-BTE[1])*R*(nn+1)/BTE[3]=23562000 > 1e+7.  Try reducing
+nrow(XX)
 ```
 
 
@@ -125,7 +145,70 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-gp-plot.png) 
+![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-gp-plot.png) 
+
+
+
+
+
+```r
+hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
+posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
+priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+prior_curves <- ddply(posteriors, "variable", function(dd){
+  grid <- seq(min(dd$value), max(dd$value), length = 100)
+  data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
+})
+ggplot(posteriors) + 
+  #geom_density(aes(value), lwd=2) +
+  geom_histogram(aes(x=value, y=..density..), lwd=2) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") +
+  facet_wrap(~ variable, scale="free")
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+![plot of chunk gp-posteriors](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-gp-posteriors1.png) 
+
+```r
+#ggplot(subset(posteriors, variable=="nug")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = nug_prior, col="red", lwd=2)
+ggplot(subset(posteriors, variable=="s2")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = s2_prior, col="red", lwd=2)
+```
+
+```
+stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
+this.
+```
+
+![plot of chunk gp-posteriors](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-gp-posteriors2.png) 
 
 
 
@@ -149,7 +232,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-gp-F-sim.png) 
+![plot of chunk gp-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-gp-F-sim.png) 
 
 
 
@@ -162,7 +245,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-par-F-sim.png) 
+![plot of chunk par-F-sim](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-par-F-sim.png) 
 
 
 
@@ -171,7 +254,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-F-sim-plot.png) 
+![plot of chunk F-sim-plot](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-F-sim-plot.png) 
 
 
 
@@ -213,7 +296,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-policy_plot.png) 
+![plot of chunk policy_plot](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-policy_plot.png) 
 
 
 
@@ -266,7 +349,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-sim-fish.png) 
+![plot of chunk sim-fish](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-sim-fish.png) 
 
 
 
@@ -277,7 +360,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-19-aef1d1ac8a-sim-harvest.png) 
+![plot of chunk sim-harvest](http://carlboettiger.info/assets/figures/2012-12-19-01d0f47bcc-sim-harvest.png) 
 
 
 
@@ -290,7 +373,7 @@ cbind(means, sd = sds$V1)
 
 ```
        method    V1     sd
-1:         GP 3.056 0.4493
+1:         GP 2.992 0.4489
 2: Parametric 0.000 0.0000
 3:       True 3.114 0.4534
 ```
