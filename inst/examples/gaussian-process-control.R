@@ -302,7 +302,7 @@ ggplot(dt) +
 profits <- dt[, sum(profit), by = c("reps", "method")]
 means <- profits[, mean(V1), by = method]
 sds <- profits[, sd(V1), by = method]
-cbind(means, sd = sds$V1)
-
+yield <- cbind(means, sd = sds$V1)
+yield
 
 
