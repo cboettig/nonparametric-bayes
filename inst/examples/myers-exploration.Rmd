@@ -1,0 +1,67 @@
+```{r set-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
+opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/", warning=FALSE)
+read_chunk('gaussian-process-control.R')
+library(knitcitations)
+```
+
+
+```{r libraries, include=FALSE}
+```
+```{r graphing-options, include=FALSE}
+```
+
+
+Fixed priors on hyperparameters, fixed model type.
+
+```{r gp-priors}
+```
+
+```{r sdp-pars-fixed}
+profit = function(x,h) pmin(x, h)
+delta <- 0.01
+OptTime = 20
+reward = 0
+xT <- 0
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
+```
+
+
+```{r Myer-explore}
+f <- Myer_harvest
+pars <- c(1, 2, 4.5) 
+p <- pars # shorthand 
+K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
+allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
+e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
+```
+
+
+```{r sdp-pars-explore}
+sigma_g <- 0.05
+sigma_m <- 0.2
+x_grid <- seq(0, 1.5 * K, length=101)
+h_grid <- x_grid
+```
+
+With parameters `r p`. 
+
+
+```{r }
+yields <- 
+  lapply(1:3, function(j){
+  source("single-gp-fit.R")
+  yield
+})
+```
+
+```{r}
+yields <- melt(yields, id=c("method", "V1", "sd"))
+yields         
+````
+
+
+
+```{r echo=FALSE, results="asis"}
+bibliography("html")
+```
