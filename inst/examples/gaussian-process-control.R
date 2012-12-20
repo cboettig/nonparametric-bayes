@@ -118,13 +118,26 @@ p_alt <- c(A=as.numeric(o$par['A']), B=as.numeric(o$par['B']))
 sigma_g_alt <- o$par['s']
 
 
+## @knitr gp-priors
+require(MCMCpack)
+s2.p <- c(50,50)
+tau2.p <- c(20,1)
+d.p = c(10, 1/0.01, 10, 1/0.01)
+nug.p = c(10, 1/0.01, 10, 1/0.01)
+s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
+tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
+nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
+beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+
+
+
 ## @knitr gp-fit
 gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="linear", bprior="b0", BTE=c(2000,6000,2), m0r1=FALSE, 
-          corr="exp", trace=TRUE, beta = c(0,0),
-          s2.p = c(50,50), d.p = c(10, 1/0.01, 10, 1/0.01), nug.p = c(10, 1/0.01, 10, 1/0.01),
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", 
-          tau2.lam = "fixed", tau2.p = c(50,1))
+          meanfn="constant", bprior="b0", BTE=c(2000,6000,2),
+          m0r1=FALSE, corr="exp", trace=TRUE, 
+          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
+          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")
 
 
 ## @knitr gp-data
@@ -149,6 +162,22 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
   geom_point(data=obs, aes(x,y), alpha=0.8) + 
   xlab(expression(X[t])) + ylab(expression(X[t+1])) +
   scale_colour_manual(values=cbPalette)
+
+
+
+## @knitr gp-posteriors
+hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
+posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
+priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+require(plyr)
+prior_curves <- ddply(posteriors, "variable", function(dd){
+  grid <- with(dd, seq(min(value), max(value)), length = 100)  
+  data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
+})
+ggplot(posteriors) + geom_density(aes(value), lwd=2) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") +
+  facet_wrap(~ variable, scale="free")
+#ggplot(subset(posteriors, variable=="nug")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = nug_prior, col="red", lwd=2)
 
 
 ## @knitr persistence-test
