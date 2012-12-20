@@ -46,10 +46,24 @@ h_grid <- x_grid
 
 With parameters `r p`. 
 
+```{r parallel}
+require(snowfall)
+sfInit(cpu=2)
+sfExportAll()
+sfLibrary(pdgControl)
+sfLibrary(nonparametricbayes)
+sfLibrary(reshape2)
+sfLibrary(ggplot2)
+sfLibrary(data.table)
+sfLibrary(tgp)
+sfLibrary(kernlab)
+sfLibrary(MCMCpack)
+sfLibrary(plyr)
+```
 
 ```{r }
 yields <- 
-  lapply(1:3, function(j){
+  sfLapply(1:20, function(j){
     
 x_0_observed <- allee + x_grid[5]
 seed <- round(runif(1) * 1e6)
@@ -176,13 +190,15 @@ setnames(dt, c("L1", "L2"), c("method", "reps"))
 ## @knitr sim-fish
 fish_plot <- ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))+
+  ggtitle(paste("rep", j, "seed", seed))
 print(fish_plot)
 
 ## @knitr sim-harvest
 harvest_plot <- ggplot(dt) +
   geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+  scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1))) +
+  ggtitle(paste("rep", j, "seed", seed))
 print(harvest_plot)
 
 ## @knitr costs
