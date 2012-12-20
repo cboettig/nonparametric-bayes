@@ -48,6 +48,12 @@ Simulate data
 ```{r par-est}
 ```
 
+
+
+```{r gp-priors}
+```
+
+
 Estimates a Ricker curve with parameters $r =$ `r p_alt[1]` and $K =$ `r p_alt[2]`
 
 ```{r gp-fit, dependson="lag-data"}
@@ -59,6 +65,11 @@ We fit a Gaussian process with
 ```
 
 ```{r gp-plot, dependson="gp-data"}
+```
+
+
+
+```{r gp-posteriors}
 ```
 
 
