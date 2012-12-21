@@ -19,7 +19,7 @@ Fixed priors on hyperparameters, fixed model type.
 ```{r sdp-pars-fixed}
 profit = function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime = 20
+OptTime = 10  # stationarity with unstable models is tricky thing
 reward = 0
 xT <- 0
 z_g = function() rlnorm(1, 0, sigma_g)
@@ -87,16 +87,16 @@ optimal_policy <- function(gp, f, f_alt, p, p_alt, x_grid, h_grid, sigma_g, sigm
   list(gp_D = opt_gp$D[,1], true_D = opt_true$D[,1], est_D = opt_estimated$D[,1])
 }
 
-simulate_opt <- function(OPT, f, p, x_grid, h_grid, K, z_g, profit){
+simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
   gp_D <- sapply(1:OptTime, function(i) OPT$gp_D)
   true_D <- sapply(1:OptTime, function(i) OPT$true_D)
   est_D <- sapply(1:OptTime, function(i) OPT$est_D)
   set.seed(1)
-  sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, gp_D, z_g, profit=profit))
+  sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, gp_D, z_g, profit=profit))
   set.seed(1)
-  sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, true_D, z_g, profit=profit))
+  sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, true_D, z_g, profit=profit))
   set.seed(1)
-  sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, K, est_D, z_g, profit=profit))
+  sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, est_D, z_g, profit=profit))
   dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true)
   dat <- melt(dat, id=names(dat[[1]][[1]]))
   dt <- data.table(dat)
@@ -126,7 +126,7 @@ profits_stats <- function(dt){
 }
 
 
-gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs){
+gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs, seed){
   tgp_dat <- 
   data.frame(  x = gp$XX[[1]], 
                y = gp$ZZ.km, 
@@ -141,7 +141,8 @@ gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs){
     geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
-    scale_colour_manual(values=cbPalette)
+    scale_colour_manual(values=cbPalette) +
+    ggtitle(paste("seed", seed))
   print(plot_gp)
 }
 
@@ -168,12 +169,13 @@ sfLibrary(plyr)
 
 
 ```{r }
-seed <- round(runif(16) * 1e6)
+seed <- round(runif(32) * 1e6)
 seed[1] <- 1
 seed
 yields <- lapply(seed, 
 function(seed_i){
-  Xo <- allee + x_grid[5]
+  Xo <- allee + x_grid[5] # observations start from
+  x0 <- 2 # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
   est <- par_est(obs)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
@@ -181,9 +183,9 @@ function(seed_i){
           m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
-  gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid, obs)
+  gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid, obs, seed_i)
   OPT <- optimal_policy(gp, f, est$f_alt, p, est$p_alt, x_grid, h_grid, sigma_g, est$sigma_g_alt, delta, xT, profit, reward, OptTime)
-  dt <- simulate_opt(OPT, f, p, x_grid, h_grid, K, z_g, profit)
+  dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
   profits_stats(dt)
 })
@@ -191,7 +193,8 @@ function(seed_i){
 
 ```{r}
 yields <- melt(yields, id=c("method", "V1", "sd"))
-yields         
+ggplot(yields) + geom_histogram(aes(V1)) + facet_wrap(~method, scale='free')
+yields
 ````
 
 
