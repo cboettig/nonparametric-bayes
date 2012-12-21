@@ -40,7 +40,7 @@ allee <- 5
 
 
 ```{r sdp-pars-explore}
-sigma_g <- 0.05
+sigma_g <- 0.1
 sigma_m <- 0.2
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
