@@ -19,7 +19,7 @@ Fixed priors on hyperparameters, fixed model type.
 ```{r sdp-pars-fixed}
 profit = function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime = 10  # stationarity with unstable models is tricky thing
+OptTime = 20  # stationarity with unstable models is tricky thing
 reward = 0
 xT <- 0
 z_g = function() rlnorm(1, 0, sigma_g)
@@ -28,7 +28,7 @@ z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 
 ```{r Myer-explore}
-f <- Myer_harvest
+f <- Myers
 p <- c(1, 2, 4.5) 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
