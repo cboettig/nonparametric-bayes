@@ -29,8 +29,7 @@ z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 ```{r Myer-explore}
 f <- Myer_harvest
-pars <- c(1, 2, 4.5) 
-p <- pars # shorthand 
+p <- c(1, 2, 4.5) 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
 e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
@@ -57,6 +56,7 @@ sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1){
   data_plot <- qplot(1:Tobs, x) + ggtitle(paste("seed", seed))
   print(data_plot)
   obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
+  obs
 }
 
 par_est <- function(obs){
@@ -75,8 +75,10 @@ par_est <- function(obs){
   sigma_g_alt <- o$par['s']
   list(f_alt = f_alt, p_alt = p_alt, sigma_g_alt = sigma_g_alt)
 }
+
+
 optimal_policy <- function(gp, f, f_alt, p, p_alt, x_grid, h_grid, sigma_g, sigma_g_alt, delta, xT, profit, reward, OptTime){
-  matrices_gp <- gp_transition_matrix(gp$ZZ.ks2, gp$ZZ.km, x_grid, h_grid)
+  matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
   opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta, reward=reward)
   matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
   opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
@@ -122,6 +124,27 @@ profits_stats <- function(dt){
   yield <- cbind(means, sd = sds$V1)
   yield
 }
+
+
+gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs){
+  tgp_dat <- 
+  data.frame(  x = gp$XX[[1]], 
+               y = gp$ZZ.km, 
+             ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+             ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+  true <- sapply(x_grid, f, 0, p)
+  est <- sapply(x_grid, f_alt, 0, p_alt)
+  models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
+  models <- melt(models, id="x")
+  names(models) <- c("x", "method", "value")
+  plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette)
+  print(plot_gp)
+}
+
 ```
 
 
@@ -146,17 +169,19 @@ sfLibrary(plyr)
 
 ```{r }
 seed <- round(runif(16) * 1e6)
+seed[1] <- 1
 seed
 yields <- lapply(seed, 
 function(seed_i){
   Xo <- allee + x_grid[5]
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=50, seed = seed_i)
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
   est <- par_est(obs)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,6000,2),
+          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
           m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+  gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid, obs)
   OPT <- optimal_policy(gp, f, est$f_alt, p, est$p_alt, x_grid, h_grid, sigma_g, est$sigma_g_alt, delta, xT, profit, reward, OptTime)
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, K, z_g, profit)
   sim_plots(dt, seed=seed_i)
