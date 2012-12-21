@@ -128,7 +128,7 @@ profits_stats <- function(dt){
 
 
 
-```{r parallel, message=FALSE, warning=FALSE, results='hide', eval=FALSE, include=FALSE, echo=FALSE}
+```{r parallel, message=FALSE, warning=FALSE, results='hide'}
 require(snowfall)
 sfInit(par=TRUE, cpu=8)
 sfExportAll()
@@ -145,12 +145,12 @@ sfLibrary(plyr)
 
 
 ```{r }
-seed <- round(runif(2) * 1e6)
+seed <- round(runif(16) * 1e6)
 seed
 yields <- lapply(seed, 
 function(seed_i){
   Xo <- allee + x_grid[5]
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=50, seed = seed_i)
   est <- par_est(obs)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           meanfn="constant", bprior="b0", BTE=c(2000,6000,2),

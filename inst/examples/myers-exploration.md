@@ -146,24 +146,39 @@ profits_stats <- function(dt){
 
 
 
+```r
+require(snowfall)
+sfInit(par=TRUE, cpu=8)
+sfExportAll()
+sfLibrary(pdgControl)
+sfLibrary(nonparametricbayes)
+sfLibrary(reshape2)
+sfLibrary(ggplot2)
+sfLibrary(data.table)
+sfLibrary(tgp)
+sfLibrary(kernlab)
+sfLibrary(MCMCpack)
+sfLibrary(plyr)
+```
 
 
 
 
 ```r
-seed <- round(runif(2) * 1e6)
+seed <- round(runif(16) * 1e6)
 seed
 ```
 
 ```
-[1] 284002 748255
+ [1] 284002 748255 612767 512801 874437  13282 555496 924097 535430 227849
+[11]   4267 674742 111760 114786 773117 725971
 ```
 
 ```r
 yields <- lapply(seed, 
 function(seed_i){
   Xo <- allee + x_grid[5]
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=50, seed = seed_i)
   est <- par_est(obs)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           meanfn="constant", bprior="b0", BTE=c(2000,6000,2),
@@ -177,7 +192,7 @@ function(seed_i){
 })
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-33-4adf814f23-unnamed-chunk-21.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-39-4adf814f23-unnamed-chunk-22.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-39-4adf814f23-unnamed-chunk-23.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-39-4adf814f23-unnamed-chunk-24.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-40-4adf814f23-unnamed-chunk-25.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-26-40-4adf814f23-unnamed-chunk-26.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-25-278d66f2af-unnamed-chunk-21.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-26-278d66f2af-unnamed-chunk-22.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-26-278d66f2af-unnamed-chunk-23.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-28-278d66f2af-unnamed-chunk-24.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-28-278d66f2af-unnamed-chunk-25.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-29-278d66f2af-unnamed-chunk-26.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-30-278d66f2af-unnamed-chunk-27.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-30-278d66f2af-unnamed-chunk-28.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-31-278d66f2af-unnamed-chunk-29.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-37-278d66f2af-unnamed-chunk-210.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-38-278d66f2af-unnamed-chunk-211.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-38-278d66f2af-unnamed-chunk-212.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-39-278d66f2af-unnamed-chunk-213.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-40-278d66f2af-unnamed-chunk-214.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-41-278d66f2af-unnamed-chunk-215.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-41-278d66f2af-unnamed-chunk-216.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-42-278d66f2af-unnamed-chunk-217.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-43-278d66f2af-unnamed-chunk-218.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-44-278d66f2af-unnamed-chunk-219.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-44-278d66f2af-unnamed-chunk-220.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-45-278d66f2af-unnamed-chunk-221.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-46-278d66f2af-unnamed-chunk-222.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-47-278d66f2af-unnamed-chunk-223.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-52-278d66f2af-unnamed-chunk-224.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-53-278d66f2af-unnamed-chunk-225.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-54-278d66f2af-unnamed-chunk-226.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-55-278d66f2af-unnamed-chunk-227.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-55-278d66f2af-unnamed-chunk-228.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-56-278d66f2af-unnamed-chunk-229.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-57-278d66f2af-unnamed-chunk-230.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-58-278d66f2af-unnamed-chunk-231.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-58-278d66f2af-unnamed-chunk-232.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-59-278d66f2af-unnamed-chunk-233.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-00-278d66f2af-unnamed-chunk-234.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-01-278d66f2af-unnamed-chunk-235.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-01-278d66f2af-unnamed-chunk-236.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-02-278d66f2af-unnamed-chunk-237.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-03-278d66f2af-unnamed-chunk-238.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-09-278d66f2af-unnamed-chunk-239.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-09-278d66f2af-unnamed-chunk-240.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-10-278d66f2af-unnamed-chunk-241.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-11-278d66f2af-unnamed-chunk-242.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-12-278d66f2af-unnamed-chunk-243.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-12-278d66f2af-unnamed-chunk-244.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-13-278d66f2af-unnamed-chunk-245.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-14-278d66f2af-unnamed-chunk-246.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-14-278d66f2af-unnamed-chunk-247.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-15-278d66f2af-unnamed-chunk-248.png) 
 
 
 
@@ -187,13 +202,55 @@ yields
 ```
 
 ```
-      method    V1      sd L1
-1         GP 3.000 0.00000  1
-2 Parametric 1.741 0.11062  1
-3       True 3.114 0.45340  1
-4         GP 3.000 0.00000  2
-5 Parametric 1.831 0.05176  2
-6       True 3.114 0.45340  2
+       method     V1      sd L1
+1          GP 3.0000 0.00000  1
+2  Parametric 0.0000 0.00000  1
+3        True 3.1140 0.45340  1
+4          GP 3.0000 0.00000  2
+5  Parametric 1.8684 0.11215  2
+6        True 3.1140 0.45340  2
+7          GP 3.0000 0.00000  3
+8  Parametric 1.7221 0.26300  3
+9        True 3.1140 0.45340  3
+10         GP 3.0000 0.00000  4
+11 Parametric 1.8847 0.13847  4
+12       True 3.1140 0.45340  4
+13         GP 3.0000 0.00000  5
+14 Parametric 1.8503 0.05496  5
+15       True 3.1140 0.45340  5
+16         GP 3.0000 0.00000  6
+17 Parametric 1.9166 0.19041  6
+18       True 3.1140 0.45340  6
+19         GP 3.0000 0.00000  7
+20 Parametric 1.7435 0.06622  7
+21       True 3.1140 0.45340  7
+22         GP 3.0000 0.00000  8
+23 Parametric 1.9053 0.12432  8
+24       True 3.1140 0.45340  8
+25         GP 3.0000 0.00000  9
+26 Parametric 1.6916 0.13359  9
+27       True 3.1140 0.45340  9
+28         GP 3.0000 0.00000 10
+29 Parametric 1.9237 0.04701 10
+30       True 3.1140 0.45340 10
+31         GP 3.0000 0.00000 11
+32 Parametric 0.0315 0.06538 11
+33       True 3.1140 0.45340 11
+34         GP 3.0000 0.00000 12
+35 Parametric 1.7746 0.09434 12
+36       True 3.1140 0.45340 12
+37         GP 3.0000 0.00000 13
+38 Parametric 2.0467 0.34409 13
+39       True 3.1140 0.45340 13
+40         GP 3.0000 0.00000 14
+41 Parametric 0.0000 0.00000 14
+42       True 3.1140 0.45340 14
+43         GP 3.0000 0.00000 15
+44 Parametric 1.7403 0.06704 15
+45       True 3.1140 0.45340 15
+46         GP 3.0000 0.00000 16
+47 Parametric 1.6750 0.11505 16
+48       True 3.1140 0.45340 16
 ```
 
 
