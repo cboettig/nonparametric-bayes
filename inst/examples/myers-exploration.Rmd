@@ -177,8 +177,8 @@ seed[1] <- 1
 seed
 yields <- lapply(seed, 
 function(seed_i){
-  Xo <- allee + x_grid[5] # observations start from
-  x0 <- 2 # simulation under policy starts from
+  Xo <- allee + x_grid[10] # observations start from
+  x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
   est <- par_est(obs)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
