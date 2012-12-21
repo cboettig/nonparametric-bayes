@@ -41,8 +41,7 @@ z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 ```r
 f <- Myer_harvest
-pars <- c(1, 2, 4.5) 
-p <- pars # shorthand 
+p <- c(1, 2, 4.5) 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
 e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
@@ -64,7 +63,7 @@ With parameters 1, 2, 4.5.
 
 ```r
 
-sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1){
+sim_obs <- function(Xo, z_g, f, p, Tobs = 50, seed = 1){
   x <- numeric(Tobs)
   x[1] <- Xo
   set.seed(seed)
@@ -138,6 +137,25 @@ profits_stats <- function(dt){
   yield <- cbind(means, sd = sds$V1)
   yield
 }
+
+
+gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid){
+  tgp_dat <- 
+  data.frame(  x = gp$XX[[1]], 
+               y = gp$ZZ.km, 
+             ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+             ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+  true <- sapply(x_grid, f, 0, p)
+  est <- sapply(x_grid, f_alt, 0, p_alt)
+  models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
+  models <- melt(models, id="x")
+  names(models) <- c("x", "method", "value")
+  ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette)
+}
 ```
 
 
@@ -166,11 +184,12 @@ sfLibrary(plyr)
 
 ```r
 seed <- round(runif(16) * 1e6)
+seed[1] <- 1
 seed
 ```
 
 ```
- [1] 284002 748255 612767 512801 874437  13282 555496 924097 535430 227849
+ [1]      1 748255 612767 512801 874437  13282 555496 924097 535430 227849
 [11]   4267 674742 111760 114786 773117 725971
 ```
 
@@ -185,6 +204,7 @@ function(seed_i){
           m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+  gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid)
   OPT <- optimal_policy(gp, f, est$f_alt, p, est$p_alt, x_grid, h_grid, sigma_g, est$sigma_g_alt, delta, xT, profit, reward, OptTime)
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, K, z_g, profit)
   sim_plots(dt, seed=seed_i)
@@ -192,7 +212,7 @@ function(seed_i){
 })
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-25-278d66f2af-unnamed-chunk-21.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-26-278d66f2af-unnamed-chunk-22.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-26-278d66f2af-unnamed-chunk-23.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-28-278d66f2af-unnamed-chunk-24.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-28-278d66f2af-unnamed-chunk-25.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-29-278d66f2af-unnamed-chunk-26.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-30-278d66f2af-unnamed-chunk-27.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-30-278d66f2af-unnamed-chunk-28.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-31-278d66f2af-unnamed-chunk-29.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-37-278d66f2af-unnamed-chunk-210.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-38-278d66f2af-unnamed-chunk-211.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-38-278d66f2af-unnamed-chunk-212.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-39-278d66f2af-unnamed-chunk-213.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-40-278d66f2af-unnamed-chunk-214.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-41-278d66f2af-unnamed-chunk-215.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-41-278d66f2af-unnamed-chunk-216.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-42-278d66f2af-unnamed-chunk-217.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-43-278d66f2af-unnamed-chunk-218.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-44-278d66f2af-unnamed-chunk-219.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-44-278d66f2af-unnamed-chunk-220.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-45-278d66f2af-unnamed-chunk-221.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-46-278d66f2af-unnamed-chunk-222.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-47-278d66f2af-unnamed-chunk-223.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-52-278d66f2af-unnamed-chunk-224.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-53-278d66f2af-unnamed-chunk-225.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-54-278d66f2af-unnamed-chunk-226.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-55-278d66f2af-unnamed-chunk-227.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-55-278d66f2af-unnamed-chunk-228.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-56-278d66f2af-unnamed-chunk-229.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-57-278d66f2af-unnamed-chunk-230.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-58-278d66f2af-unnamed-chunk-231.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-58-278d66f2af-unnamed-chunk-232.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-33-59-278d66f2af-unnamed-chunk-233.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-00-278d66f2af-unnamed-chunk-234.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-01-278d66f2af-unnamed-chunk-235.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-01-278d66f2af-unnamed-chunk-236.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-02-278d66f2af-unnamed-chunk-237.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-03-278d66f2af-unnamed-chunk-238.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-09-278d66f2af-unnamed-chunk-239.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-09-278d66f2af-unnamed-chunk-240.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-10-278d66f2af-unnamed-chunk-241.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-11-278d66f2af-unnamed-chunk-242.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-12-278d66f2af-unnamed-chunk-243.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-12-278d66f2af-unnamed-chunk-244.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-13-278d66f2af-unnamed-chunk-245.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-14-278d66f2af-unnamed-chunk-246.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-14-278d66f2af-unnamed-chunk-247.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-34-15-278d66f2af-unnamed-chunk-248.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-12-61aeba3dd0-unnamed-chunk-21.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-12-61aeba3dd0-unnamed-chunk-22.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-13-61aeba3dd0-unnamed-chunk-23.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-14-61aeba3dd0-unnamed-chunk-24.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-15-61aeba3dd0-unnamed-chunk-25.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-16-61aeba3dd0-unnamed-chunk-26.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-16-61aeba3dd0-unnamed-chunk-27.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-17-61aeba3dd0-unnamed-chunk-28.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-18-61aeba3dd0-unnamed-chunk-29.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-19-61aeba3dd0-unnamed-chunk-210.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-19-61aeba3dd0-unnamed-chunk-211.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-20-61aeba3dd0-unnamed-chunk-212.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-21-61aeba3dd0-unnamed-chunk-213.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-27-61aeba3dd0-unnamed-chunk-214.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-27-61aeba3dd0-unnamed-chunk-215.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-28-61aeba3dd0-unnamed-chunk-216.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-29-61aeba3dd0-unnamed-chunk-217.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-30-61aeba3dd0-unnamed-chunk-218.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-30-61aeba3dd0-unnamed-chunk-219.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-31-61aeba3dd0-unnamed-chunk-220.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-32-61aeba3dd0-unnamed-chunk-221.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-33-61aeba3dd0-unnamed-chunk-222.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-33-61aeba3dd0-unnamed-chunk-223.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-34-61aeba3dd0-unnamed-chunk-224.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-35-61aeba3dd0-unnamed-chunk-225.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-41-61aeba3dd0-unnamed-chunk-226.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-42-61aeba3dd0-unnamed-chunk-227.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-42-61aeba3dd0-unnamed-chunk-228.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-43-61aeba3dd0-unnamed-chunk-229.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-44-61aeba3dd0-unnamed-chunk-230.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-44-61aeba3dd0-unnamed-chunk-231.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-45-61aeba3dd0-unnamed-chunk-232.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-46-61aeba3dd0-unnamed-chunk-233.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-47-61aeba3dd0-unnamed-chunk-234.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-47-61aeba3dd0-unnamed-chunk-235.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-48-61aeba3dd0-unnamed-chunk-236.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-49-61aeba3dd0-unnamed-chunk-237.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-50-61aeba3dd0-unnamed-chunk-238.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-51-61aeba3dd0-unnamed-chunk-239.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-51-61aeba3dd0-unnamed-chunk-240.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-57-61aeba3dd0-unnamed-chunk-241.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-58-61aeba3dd0-unnamed-chunk-242.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-58-61aeba3dd0-unnamed-chunk-243.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-51-59-61aeba3dd0-unnamed-chunk-244.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-52-00-61aeba3dd0-unnamed-chunk-245.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-52-01-61aeba3dd0-unnamed-chunk-246.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-52-01-61aeba3dd0-unnamed-chunk-247.png) ![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-20-16-52-02-61aeba3dd0-unnamed-chunk-248.png) 
 
 
 
@@ -204,7 +224,7 @@ yields
 ```
        method     V1      sd L1
 1          GP 3.0000 0.00000  1
-2  Parametric 0.0000 0.00000  1
+2  Parametric 2.1227 0.52166  1
 3        True 3.1140 0.45340  1
 4          GP 3.0000 0.00000  2
 5  Parametric 1.8684 0.11215  2
