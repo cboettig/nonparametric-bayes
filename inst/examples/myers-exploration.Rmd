@@ -29,7 +29,7 @@ z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 ```{r Myer-explore}
 f <- Myers
-p <- c(1, 2, 4.5) 
+p <- c(1, 2, 6) 
 K <- p[1] * p[3] / 2 + sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2
 allee <- p[1] * p[3] / 2 - sqrt( (p[1] * p[3]) ^ 2 - 4 * p[3] ) / 2 # allee threshold
 e_star <- (p[1] * sqrt(p[3]) - 2) / 2 ## Bifurcation point 
