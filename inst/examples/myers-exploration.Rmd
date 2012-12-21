@@ -36,7 +36,7 @@ Fixed priors on hyperparameters, fixed model type.
 s2.p <- c(50,50)  # inverse gamma mean is 
 tau2.p <- c(20,1)
 d.p = c(10, 1/0.01, 10, 1/0.01)
-nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
+nug.p = c(10, 1/0.01, 10, 1/0.01) # gamma mean
 s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
 tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
 d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
@@ -70,8 +70,8 @@ allee <- 5
 
 
 ```{r sdp-pars-explore}
-sigma_g <- 0.1
-sigma_m <- 0.2
+sigma_g <- 0.01
+sigma_m <- 0.02
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 ```
