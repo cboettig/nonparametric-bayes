@@ -55,7 +55,6 @@ f <- May
 p <- c(r = .75, k = 10, a=1.3, H=1, Q = 3)
 K <- 8 
 
-
 ## @knitr plot-may
 birth <- function(x) p["r"] * (1-  x / p["k"])
 death <- function(x) p["a"] * x ^ (p["Q"] - 1) / (x ^ p["Q"] + p["H"])
@@ -63,10 +62,16 @@ df <- data.frame(x = x_grid, b = sapply(x_grid, birth), d = sapply(x_grid, death
 ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red")
 
 
+## @knitr RickerAllee
+f <- RickerAllee
+p <- c(r = 1.5, C=5, K = 10)
+K <- p[3]
+allee <- p[2]
+
 ## @knitr sdp-pars
 sigma_g <- 0.05
 sigma_m <- 0.2
-z_g <- function(sigma_g) rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
+z_g <- function() rlnorm(1, 0, sigma_g) #1+(2*runif(1, 0,  1)-1)*sigma_g #
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 profit = function(x,h) pmin(x, h)
@@ -87,15 +92,46 @@ x_0_observed <- K
 
 
 ## @knitr sim-obs
-Tobs <- 50
+Tobs <- 30
 x <- numeric(Tobs)
 x[1] <- x_0_observed
 for(t in 1:(Tobs-1))
-  x[t+1] = z_g(sigma_g) * f(x[t], h=0, p=p)
+  x[t+1] = z_g() * f(x[t], h=0, p=p)
 plot(x)
 
 ## @knitr lag-data
 obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
+
+## @knitr sim-with-harvest
+Tobs <- 40
+harvest <- sort(rep(seq(1, allee-1, length=5), 8))
+x <- numeric(Tobs)
+x[1] <- x_0_observed
+for(t in 1:(Tobs-1))
+  x[t+1] = z_g() * f(x[t], h=harvest[t], p=p)
+plot(x)
+obs <- data.frame(x=c(0,x[1:(Tobs-1)]-harvest[1:Tobs-1]),y=c(0,x[2:Tobs]))
+plot(obs$x, obs$y)
+
+
+## @knitr MLE-RickerAllee
+estf <- function(p){ 
+  mu <- f(obs$x,0,p)
+  -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
+}
+par = c(r = p[1] + rnorm(1, 0, .1), 
+        C = p[2] + rnorm(1, 0, .5), 
+        K = p[3] + rnorm(1, 0, .5), 
+        s = sigma_g + abs(rnorm(1,0,.1)))
+o <- optim(par, estf, method="L", lower=c(1e-3,1e-3,1e-3, 1e-3))
+f_alt <- f
+p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
+sigma_g_alt <- as.numeric(o$par[4])
+
+
+
+
+
 
 ## @knitr par-est
 estf <- function(p){
