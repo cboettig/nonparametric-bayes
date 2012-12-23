@@ -12,3 +12,4 @@ Collate:
     'gp_fit.R'
     'gp_plot.R'
     'gp_trasition_matrix.R'
+    'nonparametric-bayes.R'
