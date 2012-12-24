@@ -280,7 +280,7 @@ qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 
 
 ## @knitr gp-opt
-matrices_gp <- gp_transition_matrix(Ef, .01*V, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(Ef, V, x_grid, h_grid) # 
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta, reward=reward)
 
 ## @knitr true-opt
