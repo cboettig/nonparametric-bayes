@@ -13,7 +13,7 @@ require(plyr)
 
 
 ## @knitr graphing-options
-opts_knit$set(upload.fun = socialR::notebook.url)
+opts_knit$set(upload.fun = function(file) socialR::notebook.url(file, cp=TRUE, sync=FALSE))
 #opts_chunk$set(dev = 'Cairo_pdf', dev.args=list(""))
 opts_chunk$set(dev="png", dev.args=list(bg="transparent"))
 opts_chunk$set(comment=NA, tidy=FALSE)
@@ -21,7 +21,10 @@ theme_set(theme_bw(base_size=16))
 theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
              plot.background = element_rect(fill = "transparent",colour = NA))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
+#sha <- gsub("^commit ", "", system("git log -n 1", intern=TRUE)[1])
+#short_sha <- gsub("(^.{10}).*", "\\1", sha)
+#date <- format(Sys.time(), "%Y-%m-%d-%H-%M-%S")
+#opts_chunk$set(fig.path = paste("figure/", date, "-", short_sha, "-", sep=""))
 
 
 
@@ -64,9 +67,11 @@ ggplot(df) + geom_line(aes(x, b), col = "blue") + geom_line(aes(x,d), col = "red
 
 ## @knitr RickerAllee
 f <- RickerAllee
-p <- c(r = 1.5, C=5, K = 10)
-K <- p[3]
-allee <- p[2]
+p <- c(r = 3, K = 10, C=4)
+K <- p[2]
+allee <- p[3]
+
+
 
 ## @knitr sdp-pars
 sigma_g <- 0.05
@@ -76,7 +81,7 @@ x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 profit = function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime = 20
+OptTime = 50 # should be long enough that profit is greater sustainably harvesting
 reward = profit(x_grid[length(x_grid)], x_grid[length(x_grid)]) + 1 / (1 - delta) ^ OptTime 
 xT <- 0
 
@@ -102,15 +107,20 @@ plot(x)
 ## @knitr lag-data
 obs <- data.frame(x=c(0,x[1:(Tobs-1)]),y=c(0,x[2:Tobs]))
 
+
+
 ## @knitr sim-with-harvest
+nz <- 10 # weight on 0,0 pt
 Tobs <- 40
-harvest <- sort(rep(seq(1, allee-1, length=5), 8))
+harvest <- sort(rep(seq(1, 2, length=5), 8))
 x <- numeric(Tobs)
 x[1] <- x_0_observed
 for(t in 1:(Tobs-1))
-  x[t+1] = z_g() * f(x[t], h=harvest[t], p=p)
+  x[t+1] = z_g() * f(x[t], h=2, p=p)
 plot(x)
-obs <- data.frame(x=c(0,x[1:(Tobs-1)]-harvest[1:Tobs-1]),y=c(0,x[2:Tobs]))
+
+
+obs <- data.frame(x=c(rep(0,nz), pmax(rep(0,Tobs-1),x[1:(Tobs-1)]-harvest[1:Tobs-1])),y=c(rep(0,nz),x[2:Tobs]))
 plot(obs$x, obs$y)
 
 
@@ -119,15 +129,16 @@ estf <- function(p){
   mu <- f(obs$x,0,p)
   -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
 }
-par = c(r = p[1] + rnorm(1, 0, .1), 
-        C = p[2] + rnorm(1, 0, .5), 
-        K = p[3] + rnorm(1, 0, .5), 
+par = c(r = p[1] - 1, 
+        C = p[2] - 1, 
+        K = p[3] + 2, 
         s = sigma_g + abs(rnorm(1,0,.1)))
 o <- optim(par, estf, method="L", lower=c(1e-3,1e-3,1e-3, 1e-3))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
 sigma_g_alt <- as.numeric(o$par[4])
-
+p_alt
+sigma_g_alt
 
 
 
@@ -157,15 +168,15 @@ sigma_g_alt <- o$par['s']
 
 
 ## @knitr gp-priors
-s2.p <- c(50,50)
-tau2.p <- c(20,1)
-d.p = c(10, 1/0.01, 10, 1/0.01)
+s2.p <- c(50,50) #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
+tau2.p <- c(50,50)
+d.p = c(10, 1/0.01, 10, 1/0.01)  ## sum of gammas, shape a & rate b. gamma has mean a / b and variance a / b ^ 2
 nug.p = c(10, 1/0.01, 10, 1/0.01)
 s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
 tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
 d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
 nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
-beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+beta0_prior <- function(x, tau = tau2.p[2] / (tau2.p[1] - 1)) dnorm(x, 0, tau)
 beta = c(0)
 
 
@@ -183,9 +194,11 @@ Ef = gp$ZZ.km
 tgp_dat <- data.frame(x   = gp$XX[[1]], 
                   y   = gp$ZZ.km, 
                  ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
-                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2),
+                 ymin2 = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.vark), 
+                 ymax2 = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.vark) )
 
-
+# ZZ.ks2, ZZ.vark, ZZ.s2
 
 ## @knitr gp-plot
 true <- sapply(x_grid, f, 0, p)
@@ -194,7 +207,9 @@ models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
 # plot
-ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+ggplot(tgp_dat)  + 
+  geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+  geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
   geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
   geom_point(data=obs, aes(x,y), alpha=0.8) + 
   xlab(expression(X[t])) + ylab(expression(X[t+1])) +
@@ -205,7 +220,7 @@ ggplot(tgp_dat)  + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
 ## @knitr gp-posteriors
 hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
 posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
-priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = beta0_prior, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
 prior_curves <- ddply(posteriors, "variable", function(dd){
   grid <- seq(min(dd$value), max(dd$value), length = 100)
   data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
@@ -265,7 +280,7 @@ qplot(x_grid, zt10[1,]) + geom_point(aes(y=zt1[1,]), col="grey")
 
 
 ## @knitr gp-opt
-matrices_gp <- gp_transition_matrix(Ef, V, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(Ef, .01*V, x_grid, h_grid)
 opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta, reward=reward)
 
 ## @knitr true-opt

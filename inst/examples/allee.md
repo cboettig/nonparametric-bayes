@@ -47,7 +47,7 @@ set.seed(123)
 
 
 ```r
-nz <- 1 # weight on 0,0 pt
+nz <- 10 # weight on 0,0 pt
 Tobs <- 40
 harvest <- sort(rep(seq(1, 2, length=5), 8))
 x <- numeric(Tobs)
@@ -57,7 +57,7 @@ for(t in 1:(Tobs-1))
 plot(x)
 ```
 
-![plot of chunk sim-with-harvest](figure/sim-with-harvest1.png) 
+![plot of chunk sim-with-harvest](figure/2012-12-23-18-09-27-cfef2b33c8-sim-with-harvest1.png) 
 
 ```r
 
@@ -66,7 +66,7 @@ obs <- data.frame(x=c(rep(0,nz), pmax(rep(0,Tobs-1),x[1:(Tobs-1)]-harvest[1:Tobs
 plot(obs$x, obs$y)
 ```
 
-![plot of chunk sim-with-harvest](figure/sim-with-harvest2.png) 
+![plot of chunk sim-with-harvest](figure/2012-12-23-18-09-27-cfef2b33c8-sim-with-harvest2.png) 
 
 
 We simulate data under this model, starting from a size of `10`.  
@@ -165,7 +165,7 @@ ggplot(tgp_dat)  +
   scale_colour_manual(values=cbPalette)
 ```
 
-![plot of chunk gp-plot](figure/gp-plot.png) 
+![plot of chunk gp-plot](figure/2012-12-23-18-09-27-cfef2b33c8-gp-plot.png) 
 
 
 
@@ -216,7 +216,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk gp-posteriors](figure/gp-posteriors1.png) 
+![plot of chunk gp-posteriors](figure/2012-12-23-18-09-27-cfef2b33c8-gp-posteriors1.png) 
 
 ```r
 ggplot(prior_curves) + 
@@ -224,7 +224,7 @@ ggplot(prior_curves) +
   facet_wrap(~ variable, scale="free")
 ```
 
-![plot of chunk gp-posteriors](figure/gp-posteriors2.png) 
+![plot of chunk gp-posteriors](figure/2012-12-23-18-09-27-cfef2b33c8-gp-posteriors2.png) 
 
 ```r
 #ggplot(subset(posteriors, variable=="nug")) + geom_histogram(aes(x=value, y = ..density..), lwd=2) + stat_function(fun = nug_prior, col="red", lwd=2)
@@ -253,7 +253,7 @@ for(s in 1:OptTime)
 qplot(x_grid, xt10[1,]) + geom_point(aes(y=xt1[1,]), col="grey")
 ```
 
-![plot of chunk gp-F-sim](figure/gp-F-sim.png) 
+![plot of chunk gp-F-sim](figure/2012-12-23-18-09-27-cfef2b33c8-gp-F-sim.png) 
 
 
 
@@ -266,7 +266,7 @@ for(s in 1:OptTime)
 qplot(x_grid, yt10[1,]) + geom_point(aes(y=yt1[1,]), col="grey")
 ```
 
-![plot of chunk par-F-sim](figure/par-F-sim.png) 
+![plot of chunk par-F-sim](figure/2012-12-23-18-09-27-cfef2b33c8-par-F-sim.png) 
 
 
 
@@ -275,7 +275,7 @@ transition <- melt(data.frame(x = x_grid, gp = xt1[1,], parametric = yt1[1,]), i
 ggplot(transition) + geom_point(aes(x,value, col=variable))
 ```
 
-![plot of chunk F-sim-plot](figure/F-sim-plot.png) 
+![plot of chunk F-sim-plot](figure/2012-12-23-18-09-27-cfef2b33c8-F-sim-plot.png) 
 
 
 
@@ -317,7 +317,7 @@ policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
 policy_plot
 ```
 
-![plot of chunk policy_plot](figure/policy_plot.png) 
+![plot of chunk policy_plot](figure/2012-12-23-18-09-27-cfef2b33c8-policy_plot.png) 
 
 
 
@@ -370,7 +370,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-fish](figure/sim-fish.png) 
+![plot of chunk sim-fish](figure/2012-12-23-18-09-27-cfef2b33c8-sim-fish.png) 
 
 
 
@@ -381,7 +381,7 @@ ggplot(dt) +
   scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk sim-harvest](figure/sim-harvest.png) 
+![plot of chunk sim-harvest](figure/2012-12-23-18-09-27-cfef2b33c8-sim-harvest.png) 
 
 
 
@@ -395,7 +395,7 @@ yield
 
 ```
        method     V1    sd
-1:         GP  70.72 2.604
+1:         GP  72.24 2.725
 2: Parametric  69.70 4.180
 3:       True 111.07 3.560
 ```
