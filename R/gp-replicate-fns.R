@@ -92,7 +92,7 @@ optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid,
   est_D <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
   alt_D <- sapply(1:OptTime, function(i) opt_alt$D[,1])
   
-  list(gp_D = gp_D, true_D = true_D, est_D = est_D, , alt_D = alt_D)
+  list(gp_D = gp_D, true_D = true_D, est_D = est_D, alt_D = alt_D)
 }
 
 #' helper function to simulate the optimal policies of each model
@@ -120,7 +120,7 @@ simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
 #' @import ggplot2
 #' @return plots of stock and harvest dynamics over time and replicates
 #' @export
-sim_plots <- function(dt, seed=1){
+sim_plots <- function(dt, seed=1, harvest=FALSE){
   fish_plot <- ggplot(dt) + 
     geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
     scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))+
@@ -130,7 +130,8 @@ sim_plots <- function(dt, seed=1){
     geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
     scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1))) +
     ggtitle(paste("seed", seed))
-  print(harvest_plot)
+  if(harvest)
+    print(harvest_plot)
 }
 
 #' function to provide summary stats or the profits

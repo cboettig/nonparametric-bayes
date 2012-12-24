@@ -92,12 +92,12 @@ sfLibrary(plyr)
 
 
 ```{r }
-seed <- round(runif(2) * 1e6)
+seed <- round(runif(32) * 1e6)
 seed[1] <- 1
 seed
 yields <- lapply(seed, 
 function(seed_i){
-  Xo <- allee + x_grid[10] # observations start from
+  Xo <- K # observations start from
   x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
   alt <- par_est(obs)
@@ -114,7 +114,7 @@ function(seed_i){
                         x_grid, h_grid, sigma_g, 
                         est$sigma_g, alt$sigma_g, 
                         delta, xT, profit, reward, OptTime)
-  plot_policies(x_grid, OPT$gp_D, OPT$est_D, opt$true_D, opt$alt_D)
+  plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
   profits_stats(dt)
