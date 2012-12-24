@@ -74,13 +74,6 @@ h_grid <- x_grid
 
 With parameters `r p`. 
 
-```{r}
-
-```
-
-
-
-
 
 ```{r parallel, message=FALSE, warning=FALSE, results='hide'}
 require(snowfall)
@@ -99,7 +92,7 @@ sfLibrary(plyr)
 
 
 ```{r }
-seed <- round(runif(32) * 1e6)
+seed <- round(runif(2) * 1e6)
 seed[1] <- 1
 seed
 yields <- lapply(seed, 
@@ -114,13 +107,14 @@ function(seed_i){
           m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
-  gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid, obs, seed_i)
+  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 #  posteriors_plot(gp, priors) # needs trace=TRUE!
-  OPT <- optimal_policy(gp, f, est$f_alt, alt$f_alt,
-                        p, est$p_alt, alt$p_alt,
+  OPT <- optimal_policy(gp, f, est$f, alt$f,
+                        p, est$p, alt$p,
                         x_grid, h_grid, sigma_g, 
-                        est$sigma_g_alt, alt$sigma_g_alt, 
+                        est$sigma_g, alt$sigma_g, 
                         delta, xT, profit, reward, OptTime)
+  plot_policies(x_grid, OPT$gp_D, OPT$est_D, opt$true_D, opt$alt_D)
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
   profits_stats(dt)

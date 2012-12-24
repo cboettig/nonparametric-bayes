@@ -2,7 +2,8 @@
 \alias{gp_plot}
 \title{plot the gaussian process, true model, and fitted parametric model(s)}
 \usage{
-  gp_plot(gp, f, p, f_alt, p_alt, x_grid, obs, seed)
+  gp_plot(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid,
+    obs, seed)
 }
 \description{
   plot the gaussian process, true model, and fitted

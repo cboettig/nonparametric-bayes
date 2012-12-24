@@ -13,7 +13,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 #' @param harvest a sequence of harvest values that occur durning the simulation
 #' @details varying harvest values allow the system to explore the state space, making for better training data.
 #' @export
-sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1, nz = 10, harvest = sort(rep(seq(1, 2, length=5), 8))){
+sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1, nz = 10, harvest = sort(rep(seq(0, 1.2, length=5), 8))){
   x <- numeric(Tobs)
   x[1] <- Xo
   set.seed(seed)
@@ -47,7 +47,7 @@ par_est_allee <- function(obs, f, p){
   f_alt <- f
   p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
   sigma_g_alt <- as.numeric(o$par[4])
-  list(f_alt = f_alt, p_alt = p_alt, sigma_g_alt = sigma_g_alt)
+  list(f = f_alt, p = p_alt, sigma_g = sigma_g_alt)
 }
 
 
@@ -86,23 +86,28 @@ optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid,
   opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
   matrices_alt <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
   opt_alt <- find_dp_optim(matrices_alt, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
-  list(gp_D = opt_gp$D[,1], true_D = opt_true$D[,1], est_D = opt_estimated$D[,1], alt_D = opt_alt$D[,1])
+  
+  gp_D <- sapply(1:OptTime, function(i) opt_gp$D[,1])
+  true_D <- sapply(1:OptTime, function(i) opt_true$D[,1])
+  est_D <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
+  alt_D <- sapply(1:OptTime, function(i) opt_alt$D[,1])
+  
+  list(gp_D = gp_D, true_D = true_D, est_D = est_D, , alt_D = alt_D)
 }
 
 #' helper function to simulate the optimal policies of each model
 #' @import pdgControl data.table reshape2
 #' @export
 simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
-  gp_D <- sapply(1:OptTime, function(i) OPT$gp_D)
-  true_D <- sapply(1:OptTime, function(i) OPT$true_D)
-  est_D <- sapply(1:OptTime, function(i) OPT$est_D)
   set.seed(1)
-  sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, gp_D, z_g, profit=profit))
+  sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$gp_D, z_g, profit=profit))
   set.seed(1)
-  sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, true_D, z_g, profit=profit))
+  sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$true_D, z_g, profit=profit))
   set.seed(1)
-  sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, est_D, z_g, profit=profit))
-  dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true)
+  sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$est_D, z_g, profit=profit))
+  set.seed(1)
+  sim_alt <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$alt_D, z_g, profit=profit))
+  dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true, Structural = sim_alt)
   dat <- melt(dat, id=names(dat[[1]][[1]]))
   dt <- data.table(dat)
   setnames(dt, c("L1", "L2"), c("method", "reps")) 
@@ -145,15 +150,16 @@ profits_stats <- function(dt){
 #' plot the gaussian process, true model, and fitted parametric model(s)
 #' @import ggplot2 reshape2 
 #' @export
-gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs, seed){
+gp_plot <- function(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid, obs, seed){
   tgp_dat <- 
     data.frame(  x = gp$XX[[1]], 
                  y = gp$ZZ.km, 
                  ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
                  ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
   true <- sapply(x_grid, f, 0, p)
-  est <- sapply(x_grid, f_alt, 0, p_alt)
-  models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true)
+  alt <- sapply(x_grid, f_alt, 0, p_alt)
+  est <- sapply(x_grid, f_est, 0, p_est)
+  models <- data.frame(x=x_grid, GP=tgp_dat$y, Parametric=est, True=true, Structural=alt)
   models <- melt(models, id="x")
   names(models) <- c("x", "method", "value")
   plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
