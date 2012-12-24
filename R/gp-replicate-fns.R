@@ -53,6 +53,7 @@ par_est <- function(obs){
 
 
 #' helper function to determine the optimal policies of each model
+#' @import pdgControl
 #' @export
 optimal_policy <- function(gp, f, f_alt, p, p_alt, x_grid, h_grid, sigma_g, sigma_g_alt, delta, xT, profit, reward, OptTime){
   matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
@@ -65,6 +66,7 @@ optimal_policy <- function(gp, f, f_alt, p, p_alt, x_grid, h_grid, sigma_g, sigm
 }
 
 #' helper function to simulate the optimal policies of each model
+#' @import pdgControl data.table reshape2
 #' @export
 simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
   gp_D <- sapply(1:OptTime, function(i) OPT$gp_D)
@@ -86,6 +88,7 @@ simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
 
 #' helper function to draw the plots of fish stock and harvest dynamics
 #' @param dt the data.table from simulate_opt
+#' @import ggplot2
 #' @return plots of stock and harvest dynamics over time and replicates
 #' @export
 sim_plots <- function(dt, seed=1){
@@ -104,6 +107,7 @@ sim_plots <- function(dt, seed=1){
 #' function to provide summary stats or the profits
 #' @param dt the data table from simulate_opt
 #' @return a table of mean and variance in profit over the replicates, by method
+#' @import data.table
 #' @export
 profits_stats <- function(dt){
   profits <- dt[, sum(profit), by = c("reps", "method")]
@@ -115,6 +119,7 @@ profits_stats <- function(dt){
 
 
 #' plot the gaussian process, true model, and fitted parametric model(s)
+#' @import ggplot2 reshape2 
 #' @export
 gp_plot <- function(gp, f, p, f_alt, p_alt, x_grid, obs, seed){
   tgp_dat <- 
