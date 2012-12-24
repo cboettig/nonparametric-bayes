@@ -13,3 +13,4 @@ Collate:
     'gp_plot.R'
     'gp_trasition_matrix.R'
     'nonparametric-bayes.R'
+    'gp-replicate-fns.R'
