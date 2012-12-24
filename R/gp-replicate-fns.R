@@ -34,6 +34,28 @@ sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1, nz = 10, harvest = sort(
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
 #' @export 
+par_est_allee <- function(obs, f, p){
+  estf <- function(p){ 
+    mu <- f(obs$x,0,p)
+    -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
+  }
+  par = c(p[1] - 1, 
+          p[2] - 1, 
+          p[3] + 2, 
+          s = sigma_g + abs(rnorm(1,0,.1)))
+  o <- optim(par, estf, method="L", lower=c(1e-3,1e-3,1e-3, 1e-3))
+  f_alt <- f
+  p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
+  sigma_g_alt <- as.numeric(o$par[4])
+  list(f_alt = f_alt, p_alt = p_alt, sigma_g_alt = sigma_g_alt)
+}
+
+
+
+#' MLE estimate of parameters given by function f
+#' @param obs the observed data, two columns giving x_t, x_t+1 respectively
+#' @return a list with the f given, the MLE estimated parameters, and estimated noise level
+#' @export 
 par_est <- function(obs){
   estf <- function(p){
     mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
@@ -55,14 +77,16 @@ par_est <- function(obs){
 #' helper function to determine the optimal policies of each model
 #' @import pdgControl
 #' @export
-optimal_policy <- function(gp, f, f_alt, p, p_alt, x_grid, h_grid, sigma_g, sigma_g_alt, delta, xT, profit, reward, OptTime){
+optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid, sigma_g, sigma_g_est, sigma_g_alt, delta, xT, profit, reward, OptTime){
   matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
   opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta, reward=reward)
   matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
   opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
-  matrices_estimated <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
+  matrices_estimated <- f_transition_matrix(f_est, p_est, x_grid, h_grid, sigma_g_est)
   opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
-  list(gp_D = opt_gp$D[,1], true_D = opt_true$D[,1], est_D = opt_estimated$D[,1])
+  matrices_alt <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
+  opt_alt <- find_dp_optim(matrices_alt, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
+  list(gp_D = opt_gp$D[,1], true_D = opt_true$D[,1], est_D = opt_estimated$D[,1], alt_D = opt_alt$D[,1])
 }
 
 #' helper function to simulate the optimal policies of each model
@@ -160,4 +184,30 @@ posteriors_plot <- function(gp, priors){
     geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
     facet_wrap(~ variable, scale="free")
   print(plot_posteriors)
+}
+
+
+
+
+#' policy plot
+#' @param x_grid stock grid
+#' @param gpD gaussian process policy
+#' @param estD an estimated policy (e.g. parametric uncertainty only)
+#' @param trueD the true optimal policy
+#' @param altD an alternative (structurally incorrect) policy
+#' @return the policy plot
+#' @export
+plot_policies <- function(x_grid, gpD, estD, trueD, altD){
+  policies <- melt(data.frame(stock=x_grid, 
+                              GP = x_grid[gpD], 
+                              Parametric = x_grid[estD],
+                              True = x_grid[trueD],
+                              Structural = x_grid[altD]),
+                   id="stock")
+  names(policies) <- c("stock", "method", "value")
+  policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
+    geom_line(lwd=2, alpha=0.8) + 
+    xlab("stock size") + ylab("escapement")  +
+    scale_colour_manual(values=cbPalette)
+  print(policy_plot)
 }
