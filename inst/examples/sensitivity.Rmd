@@ -107,7 +107,8 @@ function(seed_i){
   Xo <- allee + x_grid[10] # observations start from
   x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
-  est <- par_est(obs)
+  alt <- par_est(obs)
+  est <- par_est_allee(obs, f, p)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
           m0r1=FALSE, corr="exp", trace=FALSE, 
@@ -115,7 +116,11 @@ function(seed_i){
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
   gp_plot(gp, f, p, est$f_alt, est$p_alt, x_grid, obs, seed_i)
 #  posteriors_plot(gp, priors) # needs trace=TRUE!
-  OPT <- optimal_policy(gp, f, est$f_alt, p, est$p_alt, x_grid, h_grid, sigma_g, est$sigma_g_alt, delta, xT, profit, reward, OptTime)
+  OPT <- optimal_policy(gp, f, est$f_alt, alt$f_alt,
+                        p, est$p_alt, alt$p_alt,
+                        x_grid, h_grid, sigma_g, 
+                        est$sigma_g_alt, alt$sigma_g_alt, 
+                        delta, xT, profit, reward, OptTime)
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
   profits_stats(dt)
