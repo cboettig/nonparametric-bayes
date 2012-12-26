@@ -59,7 +59,7 @@ h_grid <- x_grid
 ```
 
 
-With parameters 1.1, 10, 5. 
+With parameters `1.1, 10, 5`. 
 
 
 
@@ -72,7 +72,7 @@ seed_i <- 1
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-24-15-47-30-408b666abf-unnamed-chunk-11.png) 
+![plot of chunk unnamed-chunk-1](figure/2012-12-25-19-17-46-05e4f647e3-unnamed-chunk-11.png) 
 
 ```r
   alt <- par_est(obs)
@@ -85,7 +85,7 @@ seed_i <- 1
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-24-15-47-31-408b666abf-unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-1](figure/2012-12-25-19-17-46-05e4f647e3-unnamed-chunk-12.png) 
 
 ```r
 #  posteriors_plot(gp, priors) # needs trace=TRUE!
@@ -97,14 +97,14 @@ seed_i <- 1
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-24-15-47-32-408b666abf-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-1](figure/2012-12-25-19-17-46-05e4f647e3-unnamed-chunk-13.png) 
 
 ```r
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-24-15-47-33-408b666abf-unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-1](figure/2012-12-25-19-17-46-05e4f647e3-unnamed-chunk-14.png) 
 
 ```r
   profits_stats(dt)
@@ -112,7 +112,7 @@ seed_i <- 1
 
 ```
        method      V1     sd
-1:         GP  7.0862 1.2117
+1:         GP 11.1060 1.4953
 2: Parametric  0.3405 0.2945
 3:       True 12.0060 1.7235
 4: Structural  0.0825 0.1452
@@ -129,8 +129,8 @@ opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta,
 
 
 ```r
-matrices_same <- gp_transition_matrix(sapply(x_grid, f, 0, p), gp$ZZ.vark, x_grid, h_grid) 
-opt_same <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
+matrices_same <- gp_transition_matrix(sapply(x_grid, f, 0, p),rep(sigma_g, length(gp$ZZ.vark)), x_grid, h_grid) 
+opt_same <- find_dp_optim(matrices_same, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
 ```
 
 
@@ -143,25 +143,19 @@ opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, de
 
 
 ```r
-dd <- melt(data.frame(x=x_grid, gp= opt_gp$D[,1], same=op_same$D[,1], true=opt_true$D[,1]), id="x")
-```
-
-```
-Error: object 'op_same' not found
-```
-
-```r
+dd <- melt(data.frame(x=x_grid, gp= opt_gp$D[,1], same=opt_same$D[,1], true=opt_true$D[,1]), id="x")
 ggplot(dd) + geom_point(aes(x, value, col=variable))
 ```
 
-```
-Error: object 'dd' not found
-```
+![plot of chunk unnamed-chunk-5](figure/2012-12-25-19-17-46-05e4f647e3-unnamed-chunk-5.png) 
 
 
   
   
   
 
-NULL
+<p>Myers RA, Barrowman NJ, Hutchings JA and Rosenberg AA (1995).
+&ldquo;Population Dynamics of Exploited Fish Stocks at Low Population Levels.&rdquo;
+<EM>Science</EM>, <B>269</B>.
+ISSN 0036-8075, <a href="http://dx.doi.org/10.1126/science.269.5227.1106">http://dx.doi.org/10.1126/science.269.5227.1106</a>.
 
