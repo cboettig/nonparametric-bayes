@@ -72,7 +72,7 @@ seed_i <- 1
                  harvest = sort(rep(seq(0, .9, length=7), 5)), seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-50-31-84c529262e-unnamed-chunk-11.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-12-59-04-fe61ece8a0-unnamed-chunk-11.png) 
 
 ```r
 
@@ -87,7 +87,7 @@ seed_i <- 1
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-50-32-84c529262e-unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-12-59-05-fe61ece8a0-unnamed-chunk-12.png) 
 
 ```r
 #  posteriors_plot(gp, priors) # needs trace=TRUE!
@@ -99,14 +99,14 @@ seed_i <- 1
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-50-32-84c529262e-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-12-59-05-fe61ece8a0-unnamed-chunk-13.png) 
 
 ```r
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-50-33-84c529262e-unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-12-59-06-fe61ece8a0-unnamed-chunk-14.png) 
 
 ```r
   profits_stats(dt)
@@ -115,7 +115,7 @@ seed_i <- 1
 ```
        method     V1     sd
 1:         GP 11.503 1.7596
-2: Parametric  9.014 1.8137
+2: Parametric  6.385 1.6417
 3:       True 12.006 1.7235
 4: Structural  5.766 0.3189
 ```
@@ -140,7 +140,7 @@ function (x, h, p)
 <environment: namespace:pdgControl>
 
 $p
-[1]  0.8738 10.3452  4.9510
+[1]  0.5166 11.3805  6.0363
 
 $sigma_g
 [1] 0.001

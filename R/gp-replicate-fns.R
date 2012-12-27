@@ -14,7 +14,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 #' @details varying harvest values allow the system to explore the state space, making for better training data.
 #' @export
 sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10, 
-                    harvest = sort(rep(seq(0, .9, length=7), 5))){
+                    harvest = sort(rep(seq(0, .8, length=7), 5))){
   x <- numeric(Tobs)
   x[1] <- Xo
   set.seed(seed)
@@ -40,7 +40,7 @@ par_est_allee <- function(obs, f, p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
   }
-  par = c(p[1] - 1, 
+  par = c(p[1] + 1, 
           p[2] - 1, 
           p[3] + 2, 
           s = sigma_g + abs(rnorm(1,0,.1)))

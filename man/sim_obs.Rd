@@ -2,8 +2,8 @@
 \alias{sim_obs}
 \title{Simulate observed data for training the GP}
 \usage{
-  sim_obs(Xo, z_g, f, p, Tobs = 40, seed = 1, nz = 10,
-    harvest = sort(rep(seq(0, 1.8, length = 5), 8)))
+  sim_obs(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10,
+    harvest = sort(rep(seq(0, 0.9, length = 7), 5)))
 }
 \arguments{
   \item{Xo}{the initial population size}

@@ -85,7 +85,7 @@ seed_i <- 1
   Xo <- K # observations start from
   x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz=1, 
-                 harvest = sort(rep(seq(0, .9, length=7), 5)), seed = seed_i)
+                 harvest = sort(rep(seq(0, .8, length=7), 5)), seed = seed_i)
 
 
   alt <- par_est(obs)
