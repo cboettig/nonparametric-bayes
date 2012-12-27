@@ -2,7 +2,8 @@
 \alias{par_est_allee}
 \title{MLE estimate of parameters given by function f}
 \usage{
-  par_est_allee(obs, f, p)
+  par_est_allee(obs, f, p,
+    init = c(p[1] + 1, p[2] - 1, p[3] - 2, s = sigma_g + abs(rnorm(1, 0, 0.1))))
 }
 \arguments{
   \item{obs}{the observed data, two columns giving x_t,

@@ -103,9 +103,10 @@ function(seed_i){
   Xo <- K # observations start from
   x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz= 1, 
-                 harvest = sort(rep(seq(0, .8, length=7), 5)), seed = seed_i)
-  alt <- par_est(obs)
-  est <- par_est_allee(obs, f, p)
+                 harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
+  alt <- par_est(obs,  init = c(r=1.5, K=mean(obs$x), s=1))
+  est <- par_est_allee(obs, f, p,  init = c(p[1]+1, p[2]-1, p[3]-2, 
+                                   s = sigma_g + abs(rnorm(1,0,.1))))
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
           m0r1=FALSE, corr="exp", trace=FALSE, 
