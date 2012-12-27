@@ -27,7 +27,7 @@ gp_calc_F <- function(h, Ef, V, x_grid){
       out[1] <- 1
       out
     } else {
-      out <- dlnorm(x_grid/mu[i], 0, V[i])
+      out <- dnorm(x_grid, mu[i], V[i])
     }
   }))
   F_ <- rownorm(F_)
