@@ -70,10 +70,10 @@ seed_i <- 1
   Xo <- K # observations start from
   x0 <- Xo # simulation under policy starts from
   obs <- sim_obs(Xo, z_g, f, p, Tobs=40, nz=1, 
-                 harvest = sort(rep(seq(0, 1.8, length=8), 5)), seed = seed_i)
+                 harvest = sort(rep(seq(0, .01, length=8), 5)), seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](figure/2012-12-27-11-01-18-a49d5666d1-unnamed-chunk-11.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-08-08-11b03c4da1-unnamed-chunk-11.png) 
 
 ```r
   alt <- par_est(obs)
@@ -86,7 +86,7 @@ seed_i <- 1
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](figure/2012-12-27-11-01-18-a49d5666d1-unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-08-09-11b03c4da1-unnamed-chunk-12.png) 
 
 ```r
 #  posteriors_plot(gp, priors) # needs trace=TRUE!
@@ -98,25 +98,25 @@ seed_i <- 1
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-1](figure/2012-12-27-11-01-18-a49d5666d1-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-08-09-11b03c4da1-unnamed-chunk-13.png) 
 
 ```r
   dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
   sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-1](figure/2012-12-27-11-01-18-a49d5666d1-unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-1](http://carlboettiger.info/assets/figures/2012-12-27-11-08-10-11b03c4da1-unnamed-chunk-14.png) 
 
 ```r
   profits_stats(dt)
 ```
 
 ```
-       method     V1    sd
-1:         GP 10.719 1.472
-2: Parametric  5.185 1.604
-3:       True 12.006 1.723
-4: Structural  8.154 1.929
+       method     V1     sd
+1:         GP 11.550 1.6259
+2: Parametric  5.185 1.6043
+3:       True 12.006 1.7235
+4: Structural  5.990 0.1433
 ```
 
   
@@ -139,7 +139,7 @@ function (x, h, p)
 <environment: namespace:pdgControl>
 
 $p
-[1] 0.3448 9.2312 7.0138
+[1] 0.4544 9.2425 7.0380
 
 $sigma_g
 [1] 0.001
@@ -162,7 +162,7 @@ function (x, h, p)
 
 $p_alt
       r       K 
- 0.4935 12.0461 
+ 0.9844 10.4633 
 
 $sigma_g_alt
     s 
