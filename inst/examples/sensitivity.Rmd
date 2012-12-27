@@ -36,6 +36,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 Fixed priors on hyperparameters, fixed model type.
 
 ```{r gp-priors}
+#inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
 s2.p <- c(50,50)  # inverse gamma mean is 
 tau2.p <- c(20,1)
 d.p = c(10, 1/0.01, 10, 1/0.01)
