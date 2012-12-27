@@ -157,7 +157,9 @@ gp_plot <- function(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid, obs, seed){
     data.frame(  x = gp$XX[[1]], 
                  y = gp$ZZ.km, 
                  ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
-                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2))
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2),
+                 ymin2 = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.vark), 
+                 ymax2 = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.vark))
   true <- sapply(x_grid, f, 0, p)
   alt <- sapply(x_grid, f_alt, 0, p_alt)
   est <- sapply(x_grid, f_est, 0, p_est)
@@ -165,6 +167,7 @@ gp_plot <- function(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid, obs, seed){
   models <- melt(models, id="x")
   names(models) <- c("x", "method", "value")
   plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
     geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
