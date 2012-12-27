@@ -13,12 +13,13 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 #' @param harvest a sequence of harvest values that occur durning the simulation
 #' @details varying harvest values allow the system to explore the state space, making for better training data.
 #' @export
-sim_obs <- function(Xo, z_g, f, p, Tobs = 40, seed = 1, nz = 10, harvest = sort(rep(seq(0, 1.8, length=5), 8))){
+sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10, 
+                    harvest = sort(rep(seq(0, .9, length=7), 5))){
   x <- numeric(Tobs)
   x[1] <- Xo
   set.seed(seed)
   for(t in 1:(Tobs-1))
-    x[t+1] = z_g() * f(x[t], h=harvest, p=p)
+    x[t+1] = z_g() * f(x[t], h=harvest[t], p=p)
   plot(x)
   obs <- data.frame(x = c(rep(0,nz), 
                           pmax(rep(0,Tobs-1), x[1:(Tobs-1)] -

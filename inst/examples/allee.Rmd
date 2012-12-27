@@ -82,11 +82,12 @@ With parameters `r p`.
 
 ```{r }
 seed_i <- 1
-
   Xo <- K # observations start from
   x0 <- Xo # simulation under policy starts from
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=40, nz=1, 
-                 harvest = sort(rep(seq(0, .01, length=8), 5)), seed = seed_i)
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz=1, 
+                 harvest = sort(rep(seq(0, .9, length=7), 5)), seed = seed_i)
+
+
   alt <- par_est(obs)
   est <- par_est_allee(obs, f, p)
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
