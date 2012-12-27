@@ -14,7 +14,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 #' @details varying harvest values allow the system to explore the state space, making for better training data.
 #' @export
 sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10, 
-                    harvest = sort(rep(seq(0, .8, length=7), 5))){
+                    harvest = sort(rep(seq(0, .5, length=7), 5))){
   x <- numeric(Tobs)
   x[1] <- Xo
   set.seed(seed)
@@ -35,15 +35,15 @@ sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10,
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
 #' @export 
-par_est_allee <- function(obs, f, p){
+par_est_allee <- function(obs, f, p, 
+                          init = c(p[1]+1, p[2]-1, p[3]-2, 
+                                   s = sigma_g + abs(rnorm(1,0,.1)))
+                          ){
   estf <- function(p){ 
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
   }
-  par = c(p[1] + 1, 
-          p[2] - 1, 
-          p[3] + 2, 
-          s = sigma_g + abs(rnorm(1,0,.1)))
+  par = init
   o <- optim(par, estf, method="L", lower=c(1e-3,1e-3,1e-3, 1e-3))
   f_alt <- f
   p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -57,7 +57,7 @@ par_est_allee <- function(obs, f, p){
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
 #' @export 
-par_est <- function(obs){
+par_est <- function(obs,  init = c(r=1.5, K=mean(obs$x), s=1)){
   estf <- function(p){
     mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
     llik <- -sum(dlnorm(obs$y, mu, p["s"]), log=TRUE)
@@ -67,7 +67,7 @@ par_est <- function(obs){
     }
     llik
   }
-  o <- optim(par = c(r=1,K=mean(obs$x),s=1), estf, method="L", lower=c(1e-3,1e-3,1e-3))
+  o <- optim(par = init, estf, method="L", lower=c(1e-3,1e-3,1e-3))
   f_alt <- Ricker
   p_alt <- c(o$par['r'], o$par['K'])
   sigma_g_alt <- o$par['s']

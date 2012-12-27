@@ -78,14 +78,15 @@ seed_i <- 1
                  harvest = sort(rep(seq(0, .7, length=7), 5)), seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-13-14-25-422b55d7bf-unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-13-31-47-8b855668cb-unnamed-chunk-2.png) 
 
 
 
 
 ```r
-  alt <- par_est(obs)
-  est <- par_est_allee(obs, f, p)
+  alt <- par_est(obs,  init = c(r=1.5, K=mean(obs$x), s=1))
+  est <- par_est_allee(obs, f, p,  init = c(p[1]+1, p[2]-1, p[3]-2, 
+                                   s = sigma_g + abs(rnorm(1,0,.1))))
 ```
 
 
@@ -100,7 +101,7 @@ seed_i <- 1
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-13-16-09-422b55d7bf-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-13-33-26-8b855668cb-unnamed-chunk-4.png) 
 
 
 
@@ -138,7 +139,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-13-16-13-422b55d7bf-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-13-33-31-8b855668cb-unnamed-chunk-5.png) 
 
 
 
@@ -152,7 +153,7 @@ this.
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-13-16-29-422b55d7bf-unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-13-33-46-8b855668cb-unnamed-chunk-6.png) 
 
 
 
@@ -163,18 +164,18 @@ dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
 sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-13-16-37-422b55d7bf-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-13-33-54-8b855668cb-unnamed-chunk-7.png) 
 
 ```r
 profits_stats(dt)
 ```
 
 ```
-       method    V1     sd
-1:         GP 11.80 1.7528
-2: Parametric  8.71 1.7981
-3:       True 12.01 1.7235
-4: Structural  6.14 0.4478
+       method    V1    sd
+1:         GP 11.80 1.753
+2: Parametric 11.64 1.755
+3:       True 12.01 1.723
+4: Structural 12.09 1.641
 ```
 
   
