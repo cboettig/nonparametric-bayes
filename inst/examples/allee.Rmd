@@ -64,7 +64,7 @@ xT <- 0
 ```{r RickerAllee-exp}
 f <- RickerAllee
 # c(5, 10, 5) is 2-cycle, c(5.5, 10, 5) is 6 cycle, 5.3 is about 4
-p <- c(5.3, 10, 5) 
+p <- c(2, 10, 5) 
 K <- 10
 allee <- 5
 ```
