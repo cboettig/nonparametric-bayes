@@ -14,9 +14,9 @@ Fixed priors on hyperparameters, fixed model type.
 
 ```r
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
-s2.p <- c(50,50)  # inverse gamma mean is 
-tau2.p <- c(20,1)
-d.p = c(10, 1/0.01, 10, 1/0.01)
+s2.p <- c(5,5)  
+tau2.p <- c(5,1)
+d.p = c(10, 1/0.1, 10, 1/0.1)
 nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
 s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
 tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
@@ -35,8 +35,6 @@ delta <- 0.01
 OptTime = 20  # stationarity with unstable models is tricky thing
 reward = 0
 xT <- 0
-z_g = function() rlnorm(1, 0, sigma_g)
-z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 ```
 
 
@@ -44,7 +42,8 @@ z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 
 ```r
 f <- RickerAllee
-p <- c(1.1, 10, 5) 
+# c(5, 10, 5) is 2-cycle, c(5.5, 10, 5) is 6 cycle, 5.3 is about 4
+p <- c(5.3, 10, 5) 
 K <- 10
 allee <- 5
 ```
@@ -53,14 +52,16 @@ allee <- 5
 
 
 ```r
-sigma_g <- 0.1
+sigma_g <- 0.001
 sigma_m <- 0.0
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 ```
 
 
-With parameters `1.1, 10, 5`. 
+With parameters `5.3, 10, 5`. 
 
 
 
@@ -79,17 +80,19 @@ seed_i <- 1
                  harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-14-58-03-373fa4bf9e-unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-16-11-45-5da7c1081b-unnamed-chunk-2.png) 
 
 
 
 
 ```r
-  alt <- par_est(obs,  init = c(r=1.5, K=mean(obs$x), s=1))
-  est <- par_est_allee(obs, f, p,  init = c(p[1]+1, p[2]-1, p[3]-2, 
-                                   s = sigma_g + abs(rnorm(1,0,.1))))
+  alt <- par_est(obs,  init = c(r=2, K=mean(obs$x), s=1))
+  est <- par_est_allee(obs, f, p,  init = c(2, 6, 2, s = sigma_g))
 ```
 
+
+
+Which estimates a Ricker model with $r =$ `0.7656`, $K =$ `7.7273`, and the Allen allee model with $r =$ `2`, $K =$ `6` and $C =$ `2`.  
 
 
 
@@ -102,7 +105,7 @@ seed_i <- 1
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-14-59-59-373fa4bf9e-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-16-13-35-5da7c1081b-unnamed-chunk-4.png) 
 
 
 
@@ -140,7 +143,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-15-00-03-373fa4bf9e-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-16-13-39-5da7c1081b-unnamed-chunk-5.png) 
 
 
 
@@ -149,12 +152,12 @@ this.
   OPT <- optimal_policy(gp, f, est$f, alt$f,
                         p, est$p, alt$p,
                         x_grid, h_grid, sigma_g, 
-                        est$sigma_g, alt$sigma_g, 
+                        sigma_g, sigma_g, # est$sigma_g, alt$sigma_g, but those ests are poor
                         delta, xT, profit, reward, OptTime)
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-15-00-18-373fa4bf9e-unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-16-13-54-5da7c1081b-unnamed-chunk-6.png) 
 
 
 
@@ -165,40 +168,21 @@ dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
 sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-15-00-25-373fa4bf9e-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-16-14-01-5da7c1081b-unnamed-chunk-7.png) 
 
 ```r
 profits_stats(dt)
 ```
 
 ```
-       method     V1     sd
-1:         GP 12.274 3.5509
-2: Parametric 11.040 3.5119
-3:       True 12.313 3.5328
-4: Structural  6.543 0.6097
+       method     V1       sd
+1:         GP 55.391 0.084893
+2: Parametric  6.144 0.007502
+3:       True 55.440 0.085280
+4: Structural  6.450 0.000000
 ```
 
   
-
-
-
-```r
-est$par
-```
-
-```
-NULL
-```
-
-```r
-alt$par
-```
-
-```
-NULL
-```
-
 
 
 

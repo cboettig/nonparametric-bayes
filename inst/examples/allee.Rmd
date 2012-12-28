@@ -38,9 +38,9 @@ Fixed priors on hyperparameters, fixed model type.
 
 ```{r gp-priors}
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
-s2.p <- c(50,50)  # inverse gamma mean is 
-tau2.p <- c(20,1)
-d.p = c(10, 1/0.01, 10, 1/0.01)
+s2.p <- c(5,5)  
+tau2.p <- c(5,1)
+d.p = c(10, 1/0.1, 10, 1/0.1)
 nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
 s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
 tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
@@ -57,22 +57,24 @@ delta <- 0.01
 OptTime = 20  # stationarity with unstable models is tricky thing
 reward = 0
 xT <- 0
-z_g = function() rlnorm(1, 0, sigma_g)
-z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
+
 ```
 
 
 ```{r RickerAllee-exp}
 f <- RickerAllee
-p <- c(1.1, 10, 5) 
+# c(5, 10, 5) is 2-cycle, c(5.5, 10, 5) is 6 cycle, 5.3 is about 4
+p <- c(5.3, 10, 5) 
 K <- 10
 allee <- 5
 ```
 
 
 ```{r sdp-pars-explore}
-sigma_g <- 0.1
+sigma_g <- 0.001
 sigma_m <- 0.0
+z_g = function() rlnorm(1, 0, sigma_g)
+z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 ```
@@ -95,10 +97,12 @@ seed_i <- 1
 
 
 ```{r}
-  alt <- par_est(obs,  init = c(r=1.5, K=mean(obs$x), s=1))
-  est <- par_est_allee(obs, f, p,  init = c(p[1]+1, p[2]-1, p[3]-2, 
-                                   s = sigma_g + abs(rnorm(1,0,.1))))
+  alt <- par_est(obs,  init = c(r=2, K=mean(obs$x), s=1))
+  est <- par_est_allee(obs, f, p,  init = c(2, 6, 2, s = sigma_g))
 ```
+
+
+Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and the Allen allee model with $r =$ `r est$p[1]`, $K =$ `r est$p[2]` and $C =$ `r est$p[3]`.  
 
 
 ```{r}
@@ -119,7 +123,7 @@ seed_i <- 1
   OPT <- optimal_policy(gp, f, est$f, alt$f,
                         p, est$p, alt$p,
                         x_grid, h_grid, sigma_g, 
-                        est$sigma_g, alt$sigma_g, 
+                        sigma_g, sigma_g, # est$sigma_g, alt$sigma_g, but those ests are poor
                         delta, xT, profit, reward, OptTime)
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
@@ -132,12 +136,6 @@ sim_plots(dt, seed=seed_i)
 profits_stats(dt)
 ```
   
-
-
-```{r}
-est$par
-alt$par
-```
 
 
 
