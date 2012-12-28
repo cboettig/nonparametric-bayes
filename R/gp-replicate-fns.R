@@ -41,7 +41,7 @@ par_est_allee <- function(obs, f, p,
                           ){
   estf <- function(p){ 
     mu <- f(obs$x,0,p)
-    -sum(dlnorm(obs$y, log(mu), p["s"]), log=TRUE)
+    -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
   }
   par = init
   o <- optim(par, estf, method="L", lower=c(1e-3,1e-3,1e-3, 1e-3))
@@ -108,11 +108,13 @@ simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
   sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$est_D, z_g, profit=profit))
   set.seed(1)
   sim_alt <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$alt_D, z_g, profit=profit))
+  
   dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true, Structural = sim_alt)
   dat <- melt(dat, id=names(dat[[1]][[1]]))
   dt <- data.table(dat)
   setnames(dt, c("L1", "L2"), c("method", "reps")) 
-  dt
+  setkey(dt, method) # chance the ordering
+  dt[c("GP", "Parametric", "True", "Structural")]
 }
 
 
