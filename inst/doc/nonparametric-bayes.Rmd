@@ -3,6 +3,8 @@ Non-parametric approaches to optimal policy are more robust
 
 Carl Boettiger, Steve Munch, Marc Mangel
 
+# Abstract
+
 
 # Introduction
 
@@ -12,7 +14,13 @@ Problem of structural uncertainty in managing ecological systems.  Motivate via 
 Typical approaches using parametric models.  motivation/strengths (mechanistic underpinnings, computationally simple/potentially analytic solutions.  Parametric structure makes it difficult to represent uncertainty accurately in areas where data is not available.  
 
 
-# Methods
+### Discussion of previous decision theory literature on the vulnerability of parametric methods
+
+* Parametric vs structural uncertainty
+* Alternative approaches: POMDP, etc.  
+
+
+# Approach and Methods
 
 
 ```{r image-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
@@ -54,6 +62,15 @@ allee <- 5
 ```
 
 
+To illustrate (the pitfalls of decision theory based on parametric assumptions and compare the performance of a non-parametric approach) these challenges, we use a simple parametric model for a single species [derived from fist principles by @Allen].  This model contains an Allee effect, or level below which the population is not self-sustaining and shrinks to zero [@Courchamp].  Model containing such "Tipping point" phenomena have become of particular interest ...
+
+$$\begin{align}
+X_{t+1} &= Z_t f(S_t) \\
+S_t &= X_t - h_t \\
+f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
+\end{align}$$
+
+
 ```{r sdp-pars, dependson="stateeq"}
 sigma_g <- 0.05
 sigma_m <- 0.0
@@ -69,16 +86,19 @@ xT <- 0
 seed_i <- 1
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
+Tobs <- 35
 ```
 
-with parameters $r =$ `r p[1]`, $K =$ `r p[2]` and $C =$ `r p[3]`.   
-
-
+Where $Z_t$ is multiplicative noise function with mean 1, representing stochastic growth. We will consider log-normal noise with shape parameter $\sigma_g$.  We start with an example in which the parameters are $r =$ `r p[1]`, $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g`.
 
 
 ### Discussion of training data
+
+Both parametric and nonparametric approaches will require some training data on which to base their model of the process.  We generate the training data under the model described in Eq 1 for `r Tobs` timesteps, under a known but not necessarily optimal sequence of harvest intensities, $h_t$.  For simplicity we imagine a fishery that started from zero harvest pressure and has been gradually increasing the harvest.  (Motivation, alternatives, stationarity, examples without a stable node (limit-cycle models), examples based on observations near a stable node alone, and why that isn't impossible).  
+
+
 ```{r obs, dependson="sdp-pars"}
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz=15, 
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=Tobs, nz=15, 
                  harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
 ```
 
@@ -95,6 +115,11 @@ est <- par_est_allee(obs, f, p,
                               C = p[3] + rnorm(1), 
                               s = sigma_g))
 ```
+
+We estimate two parametric models from the data using a maximum likelihood approach.  The first model is structurally identical to the true model (Eq 1), differing only in that it's parameters are estimated from the observed data rather than given.  The alternative model is the Ricker model, which is structurally similar and commonly assumed 
+
+
+(MLE models will assume the noise is log-normal, which it is in the simulation).  
 
 
 Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and the Allen Allele model with $r =$ `r est$p[1]`, $K =$ `r est$p[2]` and $C =$ `r est$p[3]`.  
@@ -128,7 +153,9 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 ```
 
 
-### (More thorough) Discussion of the dynamic programming solution
+###  Discussion of the dynamic programming solution
+
+(More thorough, but general-audience targeted.  Technical details and code provided in appendices).
 
 ```{r opt, dependson=c("gp", "mle")}
   OPT <- optimal_policy(gp, f, est$f, alt$f,
@@ -154,14 +181,14 @@ dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
 
 Inferred Gaussian Process compared to the true and parametric models.  
 
-```{r gp_plot, dependson=c("gp", "mle")}
+```{r gp_plot, dependson=c("gp", "mle"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
 gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
 
 ## Figure 2: 
 
-```{r policies_plot, dependson="opt"}
+```{r policies_plot, dependson="opt", fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
@@ -176,6 +203,11 @@ ggplot(dt) +
                         guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
+## Figure 4:
+
+Sensitivity analysis.  Distribution of yield over stochastic realizations. 
+
+
 
 # Discussion / Conclusion
 
@@ -188,7 +220,18 @@ ggplot(dt) +
 
 * Adapting a non-parametric approach requires modification of existing methods for decision theory.  We have illustrated how this might be done in the context of stochastic dynamic programming, opening the door for substantial further research into how these applications might be improved.  
 
+* Anticipate improved relative performance in higher dimensional examples
 
+* Constant escapement
+
+
+## Future directions 
+
+* Multiple species
+* Online learning
+* Multiple step-ahead predictions
+* Additional uncertainties
+* Improving inference of optimal policy from the GP
 
 ```{r echo=FALSE, results="asis"}
 #bibliography("html")
@@ -199,13 +242,17 @@ ggplot(dt) +
 
 ## MCMC posterior distributions and convergence analysis
 
-```{r posteriors, dependson="gp"}
+```{r posteriors, dependson="gp", fig.cap = "Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid."}
   posteriors_plot(gp, priors) # needs trace=TRUE!
 ```
  
+ @Gramacy2005
+ 
 ## Tables of nuisance parameters, sensitivity analysis
 
-## Code, "Research Compendium"
+### List of hyperparameters, prior distributions and their parameters
+
+## Reproducible code, "Research Compendium"
 
 
 

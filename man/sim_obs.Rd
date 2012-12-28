@@ -3,7 +3,8 @@
 \title{Simulate observed data for training the GP}
 \usage{
   sim_obs(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10,
-    harvest = sort(rep(seq(0, 0.5, length = 7), 5)))
+    harvest = sort(rep(seq(0, 0.5, length = 7), 5)),
+    plotdata = FALSE)
 }
 \arguments{
   \item{Xo}{the initial population size}
