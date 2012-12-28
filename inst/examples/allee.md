@@ -80,19 +80,19 @@ seed_i <- 1
                  harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
 ```
 
-![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-16-21-12-da0fb51032-unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](http://carlboettiger.info/assets/figures/2012-12-27-16-35-42-4c05a9ca58-unnamed-chunk-2.png) 
 
 
 
 
 ```r
-  alt <- par_est(obs,  init = c(r=2, K=mean(obs$x), s=1))
-  est <- par_est_allee(obs, f, p,  init = c(2, 6, 2, s = sigma_g))
+  alt <- par_est(obs,  init = c(r=p[1], K=mean(obs$x), s=sigma_g))
+  est <- par_est_allee(obs, f, p,  init = c(2, mean(obs$x), 2, s = sigma_g))
 ```
 
 
 
-Which estimates a Ricker model with $r =$ `0.5663`, $K =$ `7.7338`, and the Allen allee model with $r =$ `0.2643`, $K =$ `5.8134` and $C =$ `3.141`.  
+Which estimates a Ricker model with $r =$ `2.2016`, $K =$ `9.8569`, and the Allen allee model with $r =$ `1.4488`, $K =$ `5.6818` and $C =$ `2.3182`.  
 
 
 
@@ -105,7 +105,7 @@ Which estimates a Ricker model with $r =$ `0.5663`, $K =$ `7.7338`, and the Alle
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-16-23-04-da0fb51032-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-27-16-38-04-4c05a9ca58-unnamed-chunk-4.png) 
 
 
 
@@ -143,7 +143,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-16-23-08-da0fb51032-unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](http://carlboettiger.info/assets/figures/2012-12-27-16-38-09-4c05a9ca58-unnamed-chunk-5.png) 
 
 
 
@@ -157,7 +157,7 @@ this.
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-16-23-24-da0fb51032-unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-6](http://carlboettiger.info/assets/figures/2012-12-27-16-38-26-4c05a9ca58-unnamed-chunk-6.png) 
 
 
 
@@ -168,7 +168,7 @@ dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
 sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-16-23-31-da0fb51032-unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](http://carlboettiger.info/assets/figures/2012-12-27-16-38-35-4c05a9ca58-unnamed-chunk-7.png) 
 
 ```r
 profits_stats(dt)
@@ -177,9 +177,9 @@ profits_stats(dt)
 ```
        method     V1     sd
 1:         GP 56.515 2.2005
-2: Parametric  6.887 0.4825
+2: Parametric  6.926 0.5453
 3:       True 56.515 2.2005
-4: Structural  6.450 0.0000
+4: Structural  6.900 0.0000
 ```
 
   

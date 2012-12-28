@@ -97,8 +97,8 @@ seed_i <- 1
 
 
 ```{r}
-  alt <- par_est(obs,  init = c(r=2, K=mean(obs$x), s=1))
-  est <- par_est_allee(obs, f, p,  init = c(2, 6, 2, s = sigma_g))
+  alt <- par_est(obs,  init = c(r=p[1], K=mean(obs$x), s=sigma_g))
+  est <- par_est_allee(obs, f, p,  init = c(2, mean(obs$x), 2, s = sigma_g))
 ```
 
 
