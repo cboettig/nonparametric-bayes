@@ -71,7 +71,7 @@ allee <- 5
 
 
 ```{r sdp-pars-explore}
-sigma_g <- 0.001
+sigma_g <- 0.05
 sigma_m <- 0.0
 z_g = function() rlnorm(1, 0, sigma_g)
 z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
