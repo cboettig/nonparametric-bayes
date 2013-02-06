@@ -1,0 +1,545 @@
+\documentclass[author-year, review]{elsarticle} %review=doublespace preprint=single 5p=2 column
+\usepackage{amsmath, amsfonts, amssymb}  % extended mathematics
+% My package additions
+\usepackage[hyphens]{url}
+\usepackage{lineno} % add 
+%\linenumbers % turns line numbering on 
+\bibliographystyle{elsarticle-harv}
+\biboptions{sort&compress} % For natbib
+\usepackage{graphicx}
+\usepackage{booktabs} % book-quality tables
+
+%% Redefines the elsarticle footer
+\makeatletter
+\def\ps@pprintTitle{%
+ \let\@oddhead\@empty
+ \let\@evenhead\@empty
+ \def\@oddfoot{\it \hfill\today}%
+ \let\@evenfoot\@oddfoot}
+\makeatother
+
+% A modified page layout
+\textwidth 6.75in
+\oddsidemargin -0.15in
+\evensidemargin -0.15in
+\textheight 9in
+\topmargin -0.5in
+
+
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\pagenumbering{arabic}
+
+\usepackage{listings}
+\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
+
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
+
+%%% Syntax Highlighting for code  %%%
+%%% Adapted from knitr book %%% 
+\usepackage{fancyvrb}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\NormalTok}[1]{{#1}}
+\usepackage{enumerate}
+\usepackage{ctable}
+\usepackage{float}
+
+% This is needed because raggedright in table elements redefines \\:
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\let\PBS=\PreserveBackslash
+\usepackage[normalem]{ulem}
+\newcommand{\textsubscr}[1]{\ensuremath{_{\scriptsize\textrm{#1}}}}
+
+% Configure hyperlinks package
+\usepackage[breaklinks=true,linktocpage,pdftitle={},pdfauthor={},colorlinks]{hyperref}
+\hypersetup{breaklinks=true, pdfborder={0 0 0}}
+
+% Pandoc toggle for numbering sections (defaults to be off)
+\setcounter{secnumdepth}{0}
+
+
+\VerbatimFootnotes % allows verbatim text in footnotes
+
+% Pandoc header
+
+
+
+\begin{document}
+\begin{frontmatter}
+  \title{}
+  \author[cstar]{Carl Boettiger\corref{cor1}}
+  \author[noaa]{Stephan B. Munch}
+  \author[cstar]{Marc Mangel}
+  \ead{cboettig@ucsc.edu}
+  \cortext[cor1]{Corresponding author, cboettig@ucsc.edu}
+  \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA 95064, USA}
+  \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}
+ \end{frontmatter}
+
+
+\section{Non-parametric approaches to optimal policy are more robust}
+
+Carl Boettiger, Marc Mangel, Steve Munch
+
+\section{Abstract}
+
+\section{Introduction}
+
+The problem of structural uncertainty in managing ecological systems.
+
+\begin{itemize}
+\item
+  Most management recommendations from the ecological literature /
+  management policies based on (motivated by) parametric models.
+  \emph{Preference to pitch towards policy or theoretical literature?}
+\item
+  Background discussion on the importance/success of parametric
+  modeling; (e.g. Levins (1966), etc., up through Geritz and Kisdi
+  (2011))
+\item
+  Background on the concerns of structural uncertainty -- we don't have
+  the right models. (Also: measurement uncertainty, parameter
+  uncertainty, unobserved states, boundary conditions, etc.)
+\item
+  Hierarchical Bayesian approach has provided a natural way to address
+  these from a statistical standpoint. Successes and challenges from the
+  parametric route: e.g. Cressie et al. (2009).
+\item
+  Among pitfalls of these approaches: particularly difficult to apply in
+  management context. Optimization-based (Decision-theoretic) approaches
+  to ecological management need to be precisely parameterized about
+  everything, even the uncertainty itself (Polasky et al. 2011)
+  (discussion of Brozović and Schlenker (2011) SDP example in context of
+  threshold system would perhaps be useful as well).
+\item
+  Management goals / decision-theoretic approaches need accurate
+  prediction over relevant (short?) timescales more than accurate (but
+  incomplete or noisy estimated) mechanisms.
+\item
+  Nonparametric (machine-learning?) approaches may offer the benefit of
+  the hierarchical Bayesian approach without the practical and
+  computational limitations of their parametric kin. Non-parametric
+  models are flexible enough to take maximum advantage of the data
+  available, while being appropriately ambiguous about the dynamics of a
+  system in regions of parameter space that have been poorly or never
+  sampled.
+\item
+  Nonparametric approaches are beginning to appear more frequently in
+  ecological and conservation literature (Species distribution
+  models/maxent), including the Gaussian process based approach used
+  here (Munch et al. 2005). However, such approaches have yet to be
+  applied to the decision-theoretic framework that could guide
+  management decisions, where we expect them to excel for several
+  reasons (1) the ability to make accurate forecasts by more closely
+  approximating the underlying process where data is available (2)
+  remaining appropriately ambiguous where data is not available (3)
+  remaining computationally simple enough to avoid some pitfalls common
+  to hierarchical parametric approaches.
+\end{itemize}
+
+\section{Approach and Methods}
+
+\subsubsection{Discussion of state equation}
+
+Concerns over the potential for tipping points in ecological dynamics
+(Scheffer et al. 2001) highlight the dangers of uncertainty in
+ecological management and pose a substantial challenge to existing
+decision-theoretic approaches (Brozović and Schlenker 2011). To compare
+the performance of nonparametric and parametric approaches in an example
+that is easy to conceptualize, we will focus on a simple parametric
+model for a single species (derived from fist principles by Allen et al.
+2005) as our underlying ``reality''.
+
+\begin{align}
+X_{t+1} &= Z_t f(S_t) \\
+S_t &= X_t - h_t \\
+f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
+\end{align}
+
+As a low-dimensional system completely described by three parameters,
+this scenario should if anything be favorable to a parametric-based
+approach. This model contains an Allee effect, or tipping point, below
+which the population is not self-sustaining and shrinks to zero
+(Courchamp, Berec, and Gascoigne 2008).
+
+\subsubsection{Brief discussion on choice of model parameters, nuisance
+parameters}
+
+Where $Z_t$ is multiplicative noise function with mean 1, representing
+stochastic growth. We will consider log-normal noise with shape
+parameter $\sigma_g$. We start with an example in which the parameters
+are $r =$ \texttt{2}, $K =$ \texttt{10}, $C =$ \texttt{5}, and
+$\sigma_g =$ \texttt{0.05}.
+
+\subsubsection{Discussion of training data}
+
+Both parametric and nonparametric approaches will require some training
+data on which to base their model of the process. We generate the
+training data under the model described in Eq 1 for \texttt{35} time
+steps, under a known but not necessarily optimal sequence of harvest
+intensities, $h_t$. For simplicity we imagine a fishery that started
+from zero harvest pressure and has been gradually increasing the
+harvest. (Motivation, alternatives, stationarity, examples without a
+stable node (limit-cycle models), examples based on observations near a
+stable node alone, and why that isn't impossible).
+
+\subsubsection{Discussion of maximum likelihood estimated models}
+
+We estimate two parametric models from the data using a maximum
+likelihood approach. The first model is structurally identical to the
+true model (Eq 1), differing only in that it's parameters are estimated
+from the observed data rather than given. The alternative model is the
+Ricker model, which is structurally similar and commonly assumed
+
+(MLE models will assume the noise is log-normal, which it is in the
+simulation).
+
+Which estimates a Ricker model with $r =$ \texttt{1.8501}, $K =$
+\texttt{9.8091}, and the Allen Allele model with $r =$ \texttt{2.8079},
+$K =$ \texttt{11.8235} and $C =$ \texttt{7.2159}.
+
+\subsubsection{(Brief) Discussion of GP inference}
+
+\begin{itemize}
+\item
+  The use of Gaussian processes for inference in dynamical systems
+  {[}introduced by @Kocijan2005{]}
+\item
+  Gaussian processes in ecological literature (Munch et al. 2005)
+\item
+  Our methodology (e.g.~following Munch et al. (2005)).
+\end{itemize}
+
+\subsubsection{Discussion of the dynamic programming solution}
+
+\emph{(More thorough, but general-audience targeted. Technical details
+and code provided in appendices).}
+
+The fishery management problem over an infinite time horizon can be
+stated as:
+
+\begin{align}
+& \max_{ \{h_t\} \geq 0 } \mathbf{E} \lbrace \sum_0^\infty \delta^t \Pi(h_t) \rbrace \\
+& \mathrm{s.t.}  \\
+ & X_t = Z_t f\left(S_{t-1}\right) \\
+ & S_t = X_t - h_t \\
+ & X_t  \geq 0 
+\end{align}
+
+Where $\mathbf{E}$ is the expectation operator, $\delta$ the discount
+rate, $\Pi(h_t)$ the profit expected from a harvest of $h_t$, and other
+terms as in Eq. (1). For simplicity, we have assumed that profits depend
+only on the chosen harvest; simplifying further we will usually consider
+profits to be proportional to harvest, $\Pi(h_t) = h_t$.
+
+Once the posterior Gaussian process (GP) has been estimated (e.g.~see
+Munch et al. 2005), it is necessary to adapt it in place of the
+parametric equation for the stochastic dynamic programming (SDP)
+solution (see Mangel and Clark 1988 for a detailed description of
+parametric SDP methods) to the optimal policy. The essense of the idea
+is straight forward -- we will use the estimated GP in place of the
+parametric growth function to determine the stochastic transition matrix
+on which the SDP calculations are based.
+
+The posterior Gaussian process is completely defined by the expected
+value and covariance matrix at a defined set of training points. For
+simplicty we will consider a these points to fall on a discrete, uniform
+grid $x$ of \texttt{101} points from \texttt{0} to \texttt{15} (1.5
+times the positive equilibrium $K$). Again to keep things simple we will
+use this same grid discritization for the parametric approach. Other
+options for choosing the grid points, including collocation methods and
+functional basis expansion (or even using Guassian processes in place of
+the discrete optimization; an entirely different context in which GP can
+be used in SDP, see {[}@Deisenroth2009{]}) could also be considered.
+
+The transition matrix $\mathbf{F}$ is thus an \texttt{101} by
+\texttt{101} matrix for which the ${i,j}$ entry gives the probability of
+transitioning into state $x_i$ given that the system is in state $x_j$
+in the previous timestep. To generate the transition matrix based on the
+posterior GP, we need only the expected values at each grid point and
+the corresponding variances (the diagonal of the covariance matrix), as
+shown in Figure 1. Given the mean at each gridpoint as the length
+\texttt{101} vector $E$ and variance $V$, the probability of
+transitioning from state $x_i$ to state $x_j$ is simply
+$\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$, where
+$\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
+variance $\sigma^2$. Strictly speaking, the transition probability
+should be calculated by integrating the normal density over the bin of
+width $\Delta$ centered at $x_j$. For a sufficiently fine grid that
+$f(x_j) \approx f(x_j + \Delta)$, it is sufficient to calculate the
+density at $x_j$ and then row-normalize the transition matrix.
+
+\subsection{Pseudocode for the determining the transtion matrix from the
+GP}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{for(h in h_grid)}
+  \NormalTok{F_h = for(x_j in grid)}
+          \NormalTok{for(i in }\DecValTok{1}\NormalTok{:N) }
+            \KeywordTok{dnorm}\NormalTok{(x_j, mu[i]-h, V[i])}
+\end{Highlighting}
+\end{Shaded}
+
+A transition matrix for each of the parametric models $f$ is calculated
+using the log-normal density with mean $f(x_i)$ and log-variance as
+estimated by maximum likelihood. From the discrete transition matrix we
+may write down the Bellman recursion defining the the stochastic dynamic
+programming iteration:
+
+\begin{equation}
+V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)
+\end{equation}
+
+where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$ is
+control (harvest level) chosen. Numerically, the maximization is
+accomplished as follows. Consider the set of possible control values to
+be the discrete \texttt{101} values corresponding the the grid of stock
+sizes. Then for each $h_t$ there is a corresponding transition matrix
+$\mathbf{F}_h$ determined as described above but with mean
+$\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element
+corresponds to the value of having stock $x_i$ at time $t$. Then let
+$\Pi_h$ be the vector whose $i$th element indicates the profit from
+harvesting at intensity $h_t$ given a population $x_i$ (e.g.
+$\max(x_i, h_t)$ since one cannot harvest more fish then the current
+population size). Then the Bellman recursion can be given in matrix form
+as
+
+\[V_{t} = \max_h \left( \Pi_{h_{t}} + \delta \mathbf{F}_h V_{t+1} \right)\]
+
+where the sum is element by element and the expectation is computed by
+the matrix multiplication $\mathbf{F} V_{t+1}$.
+
+\subsection{Pseudocode for the Bellman iteration}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+ \NormalTok{V1 <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(h_grid), function(h)\{}
+      \NormalTok{delta * F[[h]] %*% V +  }\KeywordTok{profit}\NormalTok{(x_grid, h_grid[h]) }
+    \NormalTok{\})}
+    \CommentTok{# find havest, h that gives the maximum value}
+    \NormalTok{out <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:gridsize, function(j)\{}
+      \NormalTok{value <- }\KeywordTok{max}\NormalTok{(V1[j,], }\DataTypeTok{na.rm =} \NormalTok{T) }\CommentTok{# each col is a diff h, max over these}
+      \NormalTok{index <- }\KeywordTok{which.max}\NormalTok{(V1[j,])  }\CommentTok{# store index so we can recover h's }
+      \KeywordTok{c}\NormalTok{(value, index) }\CommentTok{# returns both profit value & index of optimal h.  }
+    \NormalTok{\})}
+    \CommentTok{# Sets V[t+1] = max_h V[t] at each possible state value, x}
+    \NormalTok{V <- out[}\DecValTok{1}\NormalTok{,]                        }\CommentTok{# The new value-to-go}
+    \NormalTok{D[,OptTime-time}\DecValTok{+1}\NormalTok{] <- out[}\DecValTok{2}\NormalTok{,]       }\CommentTok{# The index positions}
+\end{Highlighting}
+\end{Shaded}
+
+\emph{Currently this shows the literal R code, should be adapted}
+
+\subsubsection{Discussion on how we compare performance of policies}
+
+\begin{itemize}
+\item
+  Replicate stochastic simulations
+\item
+  Sensitivity analysis (Figure 4).
+\end{itemize}
+
+\section{Results}
+
+\subsection{Figure 1:}
+
+\emph{Shows the inferred Gaussian Process compared to the true and
+parametric models. Refer to the appendix for details on the GP
+posteriors, etc.}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/gp_plot.pdf}
+\caption{Graph of the inferred Gaussian process compared to the true
+process and maximum-likelihood estimated process. Graph shows the
+expected value for the function $f$ under each model. Two standard
+deviations from the estimated Gaussian process covariance with (light
+grey) and without (darker grey) measurement error are also shown. The
+training data is also shown as black points. (The GP is conditioned on
+0,0, shown as a pseudo-data point).}
+\end{figure}
+
+\subsection{Figure 2:}
+
+\emph{The take-home message, showing that the GP is closest to the
+optimal strategy, while the parametric methods are less accurate.
+Visualizing the policy may be more useful for the technical reader, the
+general audience may prefer Figure 3 showing all replicates of the
+population collapse under the parametric model and not under the GP.}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/policies_plot.pdf}
+\caption{The steady-state optimal policy (infinite boundary) calculated
+under each model. Policies are shown in terms of target escapement,
+$S_t$, as under models such as this a constant escapement policy is
+expected to be optimal (Reed 1979).}
+\end{figure}
+
+\subsection{Figure 3:}
+
+\emph{Figure 3 is a less abstract and more visceral visualization of the
+take-home message, with the structurally inaccurate model leading
+universally to a collapse of the fishery and very few profits, while the
+Gaussian process performs nearly optimally. The parametric approach even
+with the correct underlying structure does not perform optimally,
+choosing in this case to under-fish (may need to show harvest dynamics
+since that is not clear from the figure! Also isn't general, sometimes
+does optimally, sometimes over-fishes. Perhaps need to show more
+examples.) May need to show profits too?}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/sim_plot.pdf}
+\caption{Gaussian process inference outperforms parametric estimates.
+Shown are 100 replicate simulations of the stock dynamics (eq 1) under
+the policies derived from each of the estimated models, as well as the
+policy based on the exact underlying model.}
+\end{figure}
+
+\subsection{Figure 4:}
+
+\emph{Shows the sensitivity analysis. A histogram of distribution of
+yield over stochastic realizations, showing that the qualitative results
+do not depend on the stochastic realization of the training data here,
+or on the parameters of the underlying model, though quantitative
+differences are visible.}
+
+\section{Discussion / Conclusion}
+
+\begin{itemize}
+\item
+  Non-parametric methods have received far too little attention in
+  ecological modeling efforts that are aimed at improved conservation
+  planning and decision making support.
+\item
+  Importance of non-parametric approaches in conservation planning /
+  resource management / decision theory.
+\item
+  Decision-theoretic tools such as optimal control calculations rely on
+  robust \emph{forecasting} more strongly than they rely on accurate
+  \emph{mechanistic} relationships.
+\item
+  Adapting a non-parametric approach requires modification of existing
+  methods for decision theory. We have illustrated how this might be
+  done in the context of stochastic dynamic programming, opening the
+  door for substantial further research into how these applications
+  might be improved.
+\item
+  Anticipate improved relative performance in higher dimensional
+  examples
+\item
+  Discuss constant escapement in model, in policies.
+\item
+  Limitations of this comparison: Are the maximum-likelihood solutions a
+  straw man?
+\item
+  Discussion of alternative related approaches: POMDP/MOMDP,
+\end{itemize}
+
+\subsection{Future directions}
+
+\begin{itemize}
+\item
+  Multiple species
+\item
+  Online learning
+\item
+  Multiple step-ahead predictions
+\item
+  Explicitly accomidating additional uncertainties
+\item
+  Improving inference of optimal policy from the GP
+\end{itemize}
+
+\section{Appendix / Supplementary Materials}
+
+\subsection{MCMC posterior distributions and convergence analysis}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/posteriors.pdf}
+\caption{Histogram of posterior distributions for the estimated Gaussian
+Process shown in Figure 1. Prior distributions overlaid.}
+\end{figure}
+
+@Gramacy2005
+
+\subsection{Tables of nuisance parameters, sensitivity analysis}
+
+\subsubsection{List of hyper-parameters, prior distributions and their
+parameters}
+
+\subsection{Reproducible code, ``Research Compendium''}
+
+Allen, Linda J. S., Jesse F. Fagan, Göran Högnäs, and Henrik Fagerholm.
+2005. ``Population extinction in discrete-time stochastic population
+models with an Allee effect.'' \emph{Journal of Difference Equations and
+Applications} 11 (apr): 273--293. doi:10.1080/10236190412331335373.
+
+Brozović, Nicholas, and Wolfram Schlenker. 2011. ``Optimal management of
+an ecosystem with an unknown threshold.'' \emph{Ecological Economics}
+(jan): 1--14. doi:10.1016/j.ecolecon.2010.10.001.
+
+Courchamp, Franck, Ludek Berec, and Joanna Gascoigne. 2008. \emph{Allee
+Effects in Ecology and Conservation}. Oxford University Press, USA.
+
+Cressie, Noel, Catherine a Calder, James S. Clark, Jay M. Ver Hoef, and
+Christopher K. Wikle. 2009. ``Accounting for uncertainty in ecological
+analysis: the strengths and limitations of hierarchical statistical
+modeling.'' \emph{Ecological Applications} 19 (apr): 553--70.
+
+Geritz, Stefan a. H., and Eva Kisdi. 2011. ``Mathematical ecology: why
+mechanistic models?.'' \emph{Journal of mathematical biology} (dec).
+doi:10.1007/s00285-011-0496-3.
+
+Levins, Richard. 1966. ``The strategy of model building in population
+biology.'' \emph{American Scientist} 54: 421--431.
+
+Mangel, Marc, and Colin W. Clark. 1988. \emph{Dynamic Modeling in
+Behavioral Ecology}. Princeton: Princeton University Press.
+
+Munch, Stephan B., Melissa L. Snover, George M. Watters, and Marc
+Mangel. 2005. ``A unified treatment of top-down and bottom-up control of
+reproduction in populations.'' \emph{Ecology Letters} 8 (may): 691--695.
+doi:10.1111/j.1461-0248.2005.00766.x.
+
+Polasky, Stephen, Stephen R. Carpenter, Carl Folke, and Bonnie Keeler.
+2011. ``Decision-making under great uncertainty: environmental
+management in an era of global change.'' \emph{Trends in ecology \&
+evolution} (may): 1--7. doi:10.1016/j.tree.2011.04.007.
+
+Reed, William J. 1979. ``Optimal escapement levels in stochastic and
+deterministic harvesting models.'' \emph{Journal of Environmental
+Economics and Management} 6 (dec): 350--363.
+doi:10.1016/0095-0696(79)90014-7.
+
+Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
+Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413
+(oct): 591--6. doi:10.1038/35098000.
+
+
+\bibliography{}
+
+
+\end{document}
