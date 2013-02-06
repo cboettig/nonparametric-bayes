@@ -1,3 +1,6 @@
+
+
+
 Non-parametric approaches to optimal policy are more robust
 ===========================================================
 
@@ -5,7 +8,7 @@ Non-parametric approaches to optimal policy are more robust
 
 
 
-Carl Boettiger, Steve Munch, Marc Mangel
+Carl Boettiger, Marc Mangel, Steve Munch
 
 # Abstract
 
@@ -108,9 +111,66 @@ Which estimates a Ricker model with $r =$ `1.8501`, $K =$ `9.8091`, and the Alle
 
 ###  Discussion of the dynamic programming solution
 
-(More thorough, but general-audience targeted.  Technical details and code provided in appendices).
+_(More thorough, but general-audience targeted.  Technical details and code provided in appendices)._
 
-Outside the ecological community, Gaussian processes have been introduced into optimization literature, but as an approximation to the value function rather than to underlying dynamics [@Deisenroth2009].  
+The fishery management problem over an infinite time horizon can be stated as:
+
+\begin{align}
+& \max_{ \{h_t\} \geq 0 } \mathbf{E} \lbrace \sum_0^\infty \delta^t \Pi(h_t) \rbrace \\
+& \mathrm{s.t.}  \\
+ & X_t = Z_t f\left(S_{t-1}\right) \\
+ & S_t = X_t - h_t \\
+ & X_t  \geq 0 
+\end{align}
+
+Where $\mathbf{E}$ is the expectation operator, $\delta$ the discount rate, $\Pi(h_t)$ the profit expected from a harvest of $h_t$, and other terms as in Eq. (1).  For simplicity, we have assumed that profits depend only on the chosen harvest; simplifying further we will usually consider profits to be proportional to harvest, $\Pi(h_t) = h_t$.  
+
+Once the posterior Gaussian process (GP) has been estimated [e.g. see @Munch2005], it is necessary to adapt it in place of the parametric equation for the stochastic dynamic programming (SDP) solution [see @Mangel1988 for a detailed description of parametric SDP methods] to the optimal policy. The essense of the idea is straight forward -- we will use the estimated GP in place of the parametric growth function to determine the stochastic transition matrix on which the SDP calculations are based.  
+
+The posterior Gaussian process is completely defined by the expected value and covariance matrix at a defined set of training points.  For simplicty we will consider a these points to fall on a discrete, uniform grid $x$ of `101` points from `0` to `15` (1.5 times the positive equilibrium $K$).  Again to keep things simple we will use this same grid discritization for the parametric approach.  Other options for choosing the grid points, including collocation methods and functional basis expansion (or even using Guassian processes in place of the discrete optimization; an entirely different context in which GP can be used in SDP, see [@Deisenroth2009]) could also be considered. 
+
+The transition matrix $\mathbf{F}$ is thus an `101` by `101` matrix for which the ${i,j}$ entry gives the probability of transitioning into state $x_i$ given that the system is in state $x_j$ in the previous timestep.  To generate the transition matrix based on the posterior GP, we need only the expected values at each grid point and the corresponding variances (the diagonal of the covariance matrix), as shown in Figure 1.  Given the mean at each gridpoint as the length `101` vector $E$ and variance $V$, the probability of transitioning from state $x_i$ to state $x_j$ is simply $\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$, where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and variance $\sigma^2$.  Strictly speaking, the transition probability should be calculated by integrating the normal density over the bin of width $\Delta$ centered at $x_j$.  For a sufficiently fine grid that $f(x_j) \approx f(x_j + \Delta)$, it is sufficient to calculate the density at $x_j$ and then row-normalize the transition matrix.  
+
+
+
+## Pseudocode for the determining the transtion matrix from the GP
+```r
+for(h in h_grid)
+  F_h = for(x_j in grid)
+          for(i in 1:N) 
+            dnorm(x_j, mu[i]-h, V[i])
+```
+
+
+A transition matrix for each of the parametric models $f$ is calculated using the log-normal density with mean $f(x_i)$ and log-variance as estimated by maximum likelihood.  From the discrete transition matrix we may write down the Bellman recursion defining the the stochastic dynamic programming iteration:
+
+\begin{equation}
+V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)
+\end{equation}
+
+where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$ is control (harvest level) chosen. Numerically, the maximization is accomplished as follows. Consider the set of possible control values to be the discrete `101` values corresponding the the grid of stock sizes.  Then for each $h_t$ there is a corresponding transition matrix $\mathbf{F}_h$ determined as described above but with mean $\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element corresponds to the value of having stock $x_i$ at time $t$.  Then let $\Pi_h$ be the vector whose $i$th element indicates the profit from harvesting at intensity $h_t$ given a population $x_i$ (e.g. $\max(x_i, h_t)$ since one cannot harvest more fish then the current population size).  Then the Bellman recursion can be given in matrix form as
+
+$$V_{t} = \max_h \left( \Pi_{h_{t}} + \delta \mathbf{F}_h V_{t+1} \right)$$
+
+where the sum is element by element and the expectation is computed by the matrix multiplication $\mathbf{F} V_{t+1}$.  
+
+## Pseudocode for the Bellman iteration
+```r
+ V1 <- sapply(1:length(h_grid), function(h){
+      delta * F[[h]] %*% V +  profit(x_grid, h_grid[h]) 
+    })
+    # find havest, h that gives the maximum value
+    out <- sapply(1:gridsize, function(j){
+      value <- max(V1[j,], na.rm = T) # each col is a diff h, max over these
+      index <- which.max(V1[j,])  # store index so we can recover h's 
+      c(value, index) # returns both profit value & index of optimal h.  
+    })
+    # Sets V[t+1] = max_h V[t] at each possible state value, x
+    V <- out[1,]                        # The new value-to-go
+    D[,OptTime-time+1] <- out[2,]       # The index positions
+```
+
+_Currently this shows the literal R code, should be adapted_ 
 
 
 
