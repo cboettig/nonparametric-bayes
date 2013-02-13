@@ -158,65 +158,6 @@ The problem of structural uncertainty in managing ecological systems.
 
 \section{Approach and Methods}
 
-\subsubsection{Discussion of state equation}
-
-Concerns over the potential for tipping points in ecological dynamics
-(Scheffer et al. 2001) highlight the dangers of uncertainty in
-ecological management and pose a substantial challenge to existing
-decision-theoretic approaches (Brozović and Schlenker 2011). To compare
-the performance of nonparametric and parametric approaches in an example
-that is easy to conceptualize, we will focus on a simple parametric
-model for a single species (derived from fist principles by Allen et al.
-2005) as our underlying ``reality''.
-
-\begin{align}
-X_{t+1} &= Z_t f(S_t) \\
-S_t &= X_t - h_t \\
-f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
-\end{align}
-
-As a low-dimensional system completely described by three parameters,
-this scenario should if anything be favorable to a parametric-based
-approach. This model contains an Allee effect, or tipping point, below
-which the population is not self-sustaining and shrinks to zero
-(Courchamp, Berec, and Gascoigne 2008).
-
-\subsubsection{Brief discussion on choice of model parameters, nuisance
-parameters}
-
-Where $Z_t$ is multiplicative noise function with mean 1, representing
-stochastic growth. We will consider log-normal noise with shape
-parameter $\sigma_g$. We start with an example in which the parameters
-are $r =$ \texttt{2}, $K =$ \texttt{10}, $C =$ \texttt{5}, and
-$\sigma_g =$ \texttt{0.05}.
-
-\subsubsection{Discussion of training data}
-
-Both parametric and nonparametric approaches will require some training
-data on which to base their model of the process. We generate the
-training data under the model described in Eq 1 for \texttt{35} time
-steps, under a known but not necessarily optimal sequence of harvest
-intensities, $h_t$. For simplicity we imagine a fishery that started
-from zero harvest pressure and has been gradually increasing the
-harvest. (Motivation, alternatives, stationarity, examples without a
-stable node (limit-cycle models), examples based on observations near a
-stable node alone, and why that isn't impossible).
-
-\subsubsection{Discussion of maximum likelihood estimated models}
-
-We estimate two parametric models from the data using a maximum
-likelihood approach. The first model is structurally identical to the
-true model (Eq 1), differing only in that it's parameters are estimated
-from the observed data rather than given. The alternative model is the
-Ricker model, which is structurally similar and commonly assumed
-
-(MLE models will assume the noise is log-normal, which it is in the
-simulation).
-
-Which estimates a Ricker model with $r =$ \texttt{1.8501}, $K =$
-\texttt{9.8091}, and the Allen Allele model with $r =$ \texttt{2.8079},
-$K =$ \texttt{11.8235} and $C =$ \texttt{7.2159}.
-
 \subsubsection{(Brief) Discussion of GP inference}
 
 \begin{itemize}
@@ -263,25 +204,25 @@ on which the SDP calculations are based.
 The posterior Gaussian process is completely defined by the expected
 value and covariance matrix at a defined set of training points. For
 simplicty we will consider a these points to fall on a discrete, uniform
-grid $x$ of \texttt{101} points from \texttt{0} to \texttt{15} (1.5
-times the positive equilibrium $K$). Again to keep things simple we will
-use this same grid discritization for the parametric approach. Other
-options for choosing the grid points, including collocation methods and
-functional basis expansion (or even using Guassian processes in place of
-the discrete optimization; an entirely different context in which GP can
-be used in SDP, see {[}@Deisenroth2009{]}) could also be considered.
+grid $x$ of 101 points from 0 to 15 (1.5 times the positive equilibrium
+$K$). Again to keep things simple we will use this same grid
+discritization for the parametric approach. Other options for choosing
+the grid points, including collocation methods and functional basis
+expansion (or even using Guassian processes in place of the discrete
+optimization; an entirely different context in which GP can be used in
+SDP, see {[}@Deisenroth2009{]}) could also be considered.
 
-The transition matrix $\mathbf{F}$ is thus an \texttt{101} by
-\texttt{101} matrix for which the ${i,j}$ entry gives the probability of
-transitioning into state $x_i$ given that the system is in state $x_j$
-in the previous timestep. To generate the transition matrix based on the
-posterior GP, we need only the expected values at each grid point and
-the corresponding variances (the diagonal of the covariance matrix), as
-shown in Figure 1. Given the mean at each gridpoint as the length
-\texttt{101} vector $E$ and variance $V$, the probability of
-transitioning from state $x_i$ to state $x_j$ is simply
-$\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$, where
-$\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
+The transition matrix $\mathbf{F}$ is thus an 101 by 101 matrix for
+which the ${i,j}$ entry gives the probability of transitioning into
+state $x_i$ given that the system is in state $x_j$ in the previous
+timestep. To generate the transition matrix based on the posterior GP,
+we need only the expected values at each grid point and the
+corresponding variances (the diagonal of the covariance matrix), as
+shown in Figure 1. Given the mean at each gridpoint as the length 101
+vector $E$ and variance $V$, the probability of transitioning from state
+$x_i$ to state $x_j$ is simply
+$\mathcal{N}\left(x_j \vert  \mu = E_i, \sigma = \sqrt{V_i}\right)$,
+where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
 variance $\sigma^2$. Strictly speaking, the transition probability
 should be calculated by integrating the normal density over the bin of
 width $\Delta$ centered at $x_j$. For a sufficiently fine grid that
@@ -294,7 +235,7 @@ GP}
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{for(h in h_grid)}
-  \NormalTok{F_h = for(x_j in grid)}
+  \NormalTok{F_h =}\StringTok{ }\NormalTok{for(x_j in grid)}
           \NormalTok{for(i in }\DecValTok{1}\NormalTok{:N) }
             \KeywordTok{dnorm}\NormalTok{(x_j, mu[i]-h, V[i])}
 \end{Highlighting}
@@ -313,8 +254,8 @@ V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) 
 where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$ is
 control (harvest level) chosen. Numerically, the maximization is
 accomplished as follows. Consider the set of possible control values to
-be the discrete \texttt{101} values corresponding the the grid of stock
-sizes. Then for each $h_t$ there is a corresponding transition matrix
+be the discrete 101 values corresponding the the grid of stock sizes.
+Then for each $h_t$ there is a corresponding transition matrix
 $\mathbf{F}_h$ determined as described above but with mean
 $\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element
 corresponds to the value of having stock $x_i$ at time $t$. Then let
@@ -329,22 +270,22 @@ as
 where the sum is element by element and the expectation is computed by
 the matrix multiplication $\mathbf{F} V_{t+1}$.
 
-\subsection{Pseudocode for the Bellman iteration}
+\subsubsection{Pseudocode for the Bellman iteration}
 
 \begin{Shaded}
 \begin{Highlighting}[]
- \NormalTok{V1 <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(h_grid), function(h)\{}
-      \NormalTok{delta * F[[h]] %*% V +  }\KeywordTok{profit}\NormalTok{(x_grid, h_grid[h]) }
+ \NormalTok{V1 <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(h_grid), function(h)\{}
+      \NormalTok{delta *}\StringTok{ }\NormalTok{F[[h]] %*%}\StringTok{ }\NormalTok{V +}\StringTok{  }\KeywordTok{profit}\NormalTok{(x_grid, h_grid[h]) }
     \NormalTok{\})}
     \CommentTok{# find havest, h that gives the maximum value}
-    \NormalTok{out <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:gridsize, function(j)\{}
-      \NormalTok{value <- }\KeywordTok{max}\NormalTok{(V1[j,], }\DataTypeTok{na.rm =} \NormalTok{T) }\CommentTok{# each col is a diff h, max over these}
-      \NormalTok{index <- }\KeywordTok{which.max}\NormalTok{(V1[j,])  }\CommentTok{# store index so we can recover h's }
+    \NormalTok{out <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:gridsize, function(j)\{}
+      \NormalTok{value <-}\StringTok{ }\KeywordTok{max}\NormalTok{(V1[j,], }\DataTypeTok{na.rm =} \NormalTok{T) }\CommentTok{# each col is a diff h, max over these}
+      \NormalTok{index <-}\StringTok{ }\KeywordTok{which.max}\NormalTok{(V1[j,])  }\CommentTok{# store index so we can recover h's }
       \KeywordTok{c}\NormalTok{(value, index) }\CommentTok{# returns both profit value & index of optimal h.  }
     \NormalTok{\})}
     \CommentTok{# Sets V[t+1] = max_h V[t] at each possible state value, x}
-    \NormalTok{V <- out[}\DecValTok{1}\NormalTok{,]                        }\CommentTok{# The new value-to-go}
-    \NormalTok{D[,OptTime-time}\DecValTok{+1}\NormalTok{] <- out[}\DecValTok{2}\NormalTok{,]       }\CommentTok{# The index positions}
+    \NormalTok{V <-}\StringTok{ }\NormalTok{out[}\DecValTok{1}\NormalTok{,]                        }\CommentTok{# The new value-to-go}
+    \NormalTok{D[,OptTime-time}\DecValTok{+1}\NormalTok{] <-}\StringTok{ }\NormalTok{out[}\DecValTok{2}\NormalTok{,]       }\CommentTok{# The index positions}
 \end{Highlighting}
 \end{Shaded}
 
@@ -353,13 +294,102 @@ the matrix multiplication $\mathbf{F} V_{t+1}$.
 \subsubsection{Discussion on how we compare performance of policies}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
   Replicate stochastic simulations
 \item
   Sensitivity analysis (Figure 4).
 \end{itemize}
 
+\subsubsection{Example in a bistable system}
+
+Concerns over the potential for tipping points in ecological dynamics
+(Scheffer et al. 2001) highlight the dangers of uncertainty in
+ecological management and pose a substantial challenge to existing
+decision-theoretic approaches (Brozović and Schlenker 2011). To compare
+the performance of nonparametric and parametric approaches in an example
+that is easy to conceptualize, we will focus on a simple parametric
+model for a single species (derived from fist principles by Allen et al.
+2005) as our underlying ``reality''.
+
+\begin{align}
+X_{t+1} &= Z_t f(S_t) \\
+S_t &= X_t - h_t \\
+f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
+\end{align}
+
+Where $Z_t$ is multiplicative noise function with mean 1, representing
+stochastic growth. We will consider log-normal noise with shape
+parameter $\sigma_g$. We start with an example in which the parameters
+are $r =$ 2, $K =$ 10, $C =$ 5, and $\sigma_g =$ 0.05.
+
+As a low-dimensional system completely described by three parameters,
+this scenario should if anything be favorable to a parametric-based
+approach. This model contains an Allee effect, or tipping point, below
+which the population is not self-sustaining and shrinks to zero
+(Courchamp, Berec, and Gascoigne 2008).
+
+\subsubsection{Discussion of training data}
+
+Both parametric and nonparametric approaches will require some training
+data on which to base their model of the process. We generate the
+training data under the model described in Eq 1 for 35 time steps, under
+a known but not necessarily optimal sequence of harvest intensities,
+$h_t$. For simplicity we imagine a fishery that started from zero
+harvest pressure and has been gradually increasing the harvest.
+(Motivation, alternatives, stationarity, examples without a stable node
+(limit-cycle models), examples based on observations near a stable node
+alone, and why that isn't impossible).
+
 \section{Results}
+
+\subsubsection{Discussion of maximum likelihood estimated models}
+
+We estimate two parametric models from the data using a maximum
+likelihood approach. The first model is structurally identical to the
+true model (Eq 1), differing only in that it's parameters are estimated
+from the observed data rather than given. The alternative model is the
+Ricker model, which is structurally similar and commonly assumed
+
+(MLE models will assume the noise is log-normal, which it is in the
+simulation).
+
+Which estimates a Ricker model with $r =$
+
+\begin{verbatim}
+
+Error in eval(expr, envir, enclos) : object 'alt' not found
+\end{verbatim}
+
+, $K =$
+
+\begin{verbatim}
+
+Error in eval(expr, envir, enclos) : object 'alt' not found
+\end{verbatim}
+
+, and the Allen Allele model with $r =$
+
+\begin{verbatim}
+
+Error in eval(expr, envir, enclos) : object 'est' not found
+\end{verbatim}
+
+, $K =$
+
+\begin{verbatim}
+
+Error in eval(expr, envir, enclos) : object 'est' not found
+\end{verbatim}
+
+and $C =$
+
+\begin{verbatim}
+
+Error in eval(expr, envir, enclos) : object 'est' not found
+\end{verbatim}
+
+.
 
 \subsection{Figure 1:}
 
@@ -460,17 +490,14 @@ differences are visible.}
 \subsection{Future directions}
 
 \begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
 \item
-  Multiple species
-\item
-  Online learning
-\item
-  Multiple step-ahead predictions
-\item
-  Explicitly accomidating additional uncertainties
-\item
-  Improving inference of optimal policy from the GP
+  Multiple species * Online learning * Multiple step-ahead predictions *
+  Explicitly accomidating additional uncertainties * Improving inference
+  of optimal policy from the GP
 \end{itemize}
+
+\texttt{\{r echo=FALSE, results="asis"\} \#bibliography("html")}
 
 \section{Appendix / Supplementary Materials}
 
@@ -495,7 +522,8 @@ parameters}
 Allen, Linda J. S., Jesse F. Fagan, Göran Högnäs, and Henrik Fagerholm.
 2005. ``Population extinction in discrete-time stochastic population
 models with an Allee effect.'' \emph{Journal of Difference Equations and
-Applications} 11 (apr): 273--293. doi:10.1080/10236190412331335373.
+Applications} 11 (4-5) (apr): 273--293.
+doi:10.1080/10236190412331335373.
 
 Brozović, Nicholas, and Wolfram Schlenker. 2011. ``Optimal management of
 an ecosystem with an unknown threshold.'' \emph{Ecological Economics}
@@ -507,22 +535,22 @@ Effects in Ecology and Conservation}. Oxford University Press, USA.
 Cressie, Noel, Catherine a Calder, James S. Clark, Jay M. Ver Hoef, and
 Christopher K. Wikle. 2009. ``Accounting for uncertainty in ecological
 analysis: the strengths and limitations of hierarchical statistical
-modeling.'' \emph{Ecological Applications} 19 (apr): 553--70.
+modeling.'' \emph{Ecological Applications} 19 (3) (apr): 553--70.
 
 Geritz, Stefan a. H., and Eva Kisdi. 2011. ``Mathematical ecology: why
-mechanistic models?.'' \emph{Journal of mathematical biology} (dec).
+mechanistic models?'' \emph{Journal of mathematical biology} (dec).
 doi:10.1007/s00285-011-0496-3.
 
 Levins, Richard. 1966. ``The strategy of model building in population
-biology.'' \emph{American Scientist} 54: 421--431.
+biology.'' \emph{American Scientist} 54 (4): 421--431.
 
 Mangel, Marc, and Colin W. Clark. 1988. \emph{Dynamic Modeling in
 Behavioral Ecology}. Princeton: Princeton University Press.
 
 Munch, Stephan B., Melissa L. Snover, George M. Watters, and Marc
 Mangel. 2005. ``A unified treatment of top-down and bottom-up control of
-reproduction in populations.'' \emph{Ecology Letters} 8 (may): 691--695.
-doi:10.1111/j.1461-0248.2005.00766.x.
+reproduction in populations.'' \emph{Ecology Letters} 8 (7) (may):
+691--695. doi:10.1111/j.1461-0248.2005.00766.x.
 
 Polasky, Stephen, Stephen R. Carpenter, Carl Folke, and Bonnie Keeler.
 2011. ``Decision-making under great uncertainty: environmental
@@ -531,12 +559,12 @@ evolution} (may): 1--7. doi:10.1016/j.tree.2011.04.007.
 
 Reed, William J. 1979. ``Optimal escapement levels in stochastic and
 deterministic harvesting models.'' \emph{Journal of Environmental
-Economics and Management} 6 (dec): 350--363.
+Economics and Management} 6 (4) (dec): 350--363.
 doi:10.1016/0095-0696(79)90014-7.
 
 Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
 Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413
-(oct): 591--6. doi:10.1038/35098000.
+(6856) (oct): 591--6. doi:10.1038/35098000.
 
 
 \bibliography{}

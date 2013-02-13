@@ -104,6 +104,13 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 # Approach and Methods
 
+```{r stateeq}
+f <- RickerAllee
+p <- c(2, 10, 5) 
+K <- 10
+allee <- 5
+```
+
 
 
 ```{r sdp-pars, dependson="stateeq"}
@@ -123,7 +130,6 @@ Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
 Tobs <- 35
 ```
-
 
 
 ### (Brief) Discussion of GP inference
@@ -148,17 +154,52 @@ The fishery management problem over an infinite time horizon can be stated as:
  & X_t  \geq 0 
 \end{align}
 
-Where $\mathbf{E}$ is the expectation operator, $\delta$ the discount rate, $\Pi(h_t)$ the profit expected from a harvest of $h_t$, and other terms as in Eq. (1).  For simplicity, we have assumed that profits depend only on the chosen harvest; simplifying further we will usually consider profits to be proportional to harvest, $\Pi(h_t) = h_t$.  
+Where $\mathbf{E}$ is the expectation operator, $\delta$ the discount
+rate, $\Pi(h_t)$ the profit expected from a harvest of $h_t$, and other
+terms as in Eq. (1).  For simplicity, we have assumed that profits depend
+only on the chosen harvest; simplifying further we will usually consider
+profits to be proportional to harvest, $\Pi(h_t) = h_t$.
 
-Once the posterior Gaussian process (GP) has been estimated [e.g. see @Munch2005], it is necessary to adapt it in place of the parametric equation for the stochastic dynamic programming (SDP) solution [see @Mangel1988 for a detailed description of parametric SDP methods] to the optimal policy. The essense of the idea is straight forward -- we will use the estimated GP in place of the parametric growth function to determine the stochastic transition matrix on which the SDP calculations are based.  
+Once the posterior Gaussian process (GP) has been estimated [e.g. see
+@Munch2005], it is necessary to adapt it in place of the parametric
+equation for the stochastic dynamic programming (SDP) solution [see
+@Mangel1988 for a detailed description of parametric SDP methods] to the
+optimal policy. The essense of the idea is straight forward -- we will use
+the estimated GP in place of the parametric growth function to determine
+the stochastic transition matrix on which the SDP calculations are based.
 
-The posterior Gaussian process is completely defined by the expected value and covariance matrix at a defined set of training points.  For simplicty we will consider a these points to fall on a discrete, uniform grid $x$ of `r length(x_grid)` points from `r min(x_grid)` to `r max(x_grid)` (1.5 times the positive equilibrium $K$).  Again to keep things simple we will use this same grid discritization for the parametric approach.  Other options for choosing the grid points, including collocation methods and functional basis expansion (or even using Guassian processes in place of the discrete optimization; an entirely different context in which GP can be used in SDP, see [@Deisenroth2009]) could also be considered. 
+The posterior Gaussian process is completely defined by the expected value
+and covariance matrix at a defined set of training points.  For simplicty
+we will consider a these points to fall on a discrete, uniform grid $x$
+of `r length(x_grid)` points from `r min(x_grid)` to `r max(x_grid)`
+(1.5 times the positive equilibrium $K$).  Again to keep things simple
+we will use this same grid discritization for the parametric approach.
+Other options for choosing the grid points, including collocation methods
+and functional basis expansion (or even using Guassian processes in place
+of the discrete optimization; an entirely different context in which GP
+can be used in SDP, see [@Deisenroth2009]) could also be considered.
 
-The transition matrix $\mathbf{F}$ is thus an `r length(x_grid)` by `r length(x_grid)` matrix for which the ${i,j}$ entry gives the probability of transitioning into state $x_i$ given that the system is in state $x_j$ in the previous timestep.  To generate the transition matrix based on the posterior GP, we need only the expected values at each grid point and the corresponding variances (the diagonal of the covariance matrix), as shown in Figure 1.  Given the mean at each gridpoint as the length `r length(x_grid)` vector $E$ and variance $V$, the probability of transitioning from state $x_i$ to state $x_j$ is simply $\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$, where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and variance $\sigma^2$.  Strictly speaking, the transition probability should be calculated by integrating the normal density over the bin of width $\Delta$ centered at $x_j$.  For a sufficiently fine grid that $f(x_j) \approx f(x_j + \Delta)$, it is sufficient to calculate the density at $x_j$ and then row-normalize the transition matrix.  
+The transition matrix $\mathbf{F}$ is thus an `r length(x_grid)`
+by `r length(x_grid)` matrix for which the ${i,j}$ entry gives the
+probability of transitioning into state $x_i$ given that the system is
+in state $x_j$ in the previous timestep.  To generate the transition
+matrix based on the posterior GP, we need only the expected values
+at each grid point and the corresponding variances (the diagonal of
+the covariance matrix), as shown in Figure 1.  Given the mean at each
+gridpoint as the length `r length(x_grid)` vector $E$ and variance $V$,
+the probability of transitioning from state $x_i$ to state $x_j$ is
+simply $\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$,
+where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
+variance $\sigma^2$.  Strictly speaking, the transition probability should
+be calculated by integrating the normal density over the bin of width
+$\Delta$ centered at $x_j$.  For a sufficiently fine grid that $f(x_j)
+\approx f(x_j + \Delta)$, it is sufficient to calculate the density at
+$x_j$ and then row-normalize the transition matrix.
 
 
 
 ## Pseudocode for the determining the transtion matrix from the GP
+
 ```r
 for(h in h_grid)
   F_h = for(x_j in grid)
@@ -167,13 +208,28 @@ for(h in h_grid)
 ```
 
 
-A transition matrix for each of the parametric models $f$ is calculated using the log-normal density with mean $f(x_i)$ and log-variance as estimated by maximum likelihood.  From the discrete transition matrix we may write down the Bellman recursion defining the the stochastic dynamic programming iteration:
+A transition matrix for each of the parametric models $f$ is calculated
+using the log-normal density with mean $f(x_i)$ and log-variance as
+estimated by maximum likelihood.  From the discrete transition matrix we
+may write down the Bellman recursion defining the the stochastic dynamic
+programming iteration:
 
 \begin{equation}
 V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)
 \end{equation}
 
-where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$ is control (harvest level) chosen. Numerically, the maximization is accomplished as follows. Consider the set of possible control values to be the discrete `r length(h_grid)` values corresponding the the grid of stock sizes.  Then for each $h_t$ there is a corresponding transition matrix $\mathbf{F}_h$ determined as described above but with mean $\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element corresponds to the value of having stock $x_i$ at time $t$.  Then let $\Pi_h$ be the vector whose $i$th element indicates the profit from harvesting at intensity $h_t$ given a population $x_i$ (e.g. $\max(x_i, h_t)$ since one cannot harvest more fish then the current population size).  Then the Bellman recursion can be given in matrix form as
+where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$
+is control (harvest level) chosen. Numerically, the maximization is
+accomplished as follows. Consider the set of possible control values to
+be the discrete `r length(h_grid)` values corresponding the the grid of
+stock sizes.  Then for each $h_t$ there is a corresponding transition
+matrix $\mathbf{F}_h$ determined as described above but with mean 
+$\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element corresponds
+to the value of having stock $x_i$ at time $t$.  Then let $\Pi_h$ be
+the vector whose $i$th element indicates the profit from harvesting
+at intensity $h_t$ given a population $x_i$ (e.g. $\max(x_i, h_t)$
+since one cannot harvest more fish then the current population size).
+Then the Bellman recursion can be given in matrix form as
 
 $$V_{t} = \max_h \left( \Pi_{h_{t}} + \delta \mathbf{F}_h V_{t+1} \right)$$
 
@@ -206,11 +262,15 @@ _Currently this shows the literal R code, should be adapted_
 * Sensitivity analysis (Figure 4).  
 
 
+## Example in a bistable system
 
-
-### Discussion of state equation
-
-Concerns over the potential for tipping points in ecological dynamics [@Scheffer2001] highlight the dangers of uncertainty in ecological management and pose a substantial challenge to existing decision-theoretic approaches [@Brozovic2011].  To compare the performance of nonparametric and parametric approaches in an example that is easy to conceptualize, we will focus on a simple parametric model for a single species [derived from fist principles by @Allen2005a] as our underlying "reality".  
+Concerns over the potential for tipping points in ecological dynamics
+[@Scheffer2001] highlight the dangers of uncertainty in ecological
+management and pose a substantial challenge to existing decision-theoretic
+approaches [@Brozovic2011].  To compare the performance of nonparametric
+and parametric approaches in an example that is easy to conceptualize,
+we will focus on a simple parametric model for a single species [derived
+from fist principles by @Allen2005a] as our underlying "reality".
 
 \begin{align}
 X_{t+1} &= Z_t f(S_t) \\
@@ -218,35 +278,36 @@ S_t &= X_t - h_t \\
 f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
 \end{align}
 
-As a low-dimensional system completely described by three parameters, this scenario should if anything be favorable to a parametric-based approach.  This model contains an Allee effect, or tipping point, below which the population is not self-sustaining and shrinks to zero [@Courchamp2008].
+Where $Z_t$ is multiplicative noise function with mean 1, representing
+stochastic growth. We will consider log-normal noise with shape parameter
+$\sigma_g$.  We start with an example in which the parameters are $r =$
+`r p[1]`, $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g`.
 
 
-```{r stateeq}
-f <- RickerAllee
-p <- c(2, 10, 5) 
-K <- 10
-allee <- 5
-```
-
-### Brief discussion on choice of model parameters, nuisance parameters
+As a low-dimensional system completely described by three parameters, this
+scenario should if anything be favorable to a parametric-based approach.
+This model contains an Allee effect, or tipping point, below which the
+population is not self-sustaining and shrinks to zero [@Courchamp2008].
 
 
-Where $Z_t$ is multiplicative noise function with mean 1, representing stochastic growth. We will consider log-normal noise with shape parameter $\sigma_g$.  We start with an example in which the parameters are $r =$ `r p[1]`, $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g`.
 
+## Sample training data
 
-### Discussion of training data
-
-Both parametric and nonparametric approaches will require some training
+Both parametric and nonparametric approaches will require training
 data on which to base their model of the process.  We generate the
 training data under the model described in Eq 1 for `r Tobs` time
 steps, under a known but not necessarily optimal sequence of harvest
 intensities, $h_t$.  For simplicity we imagine a fishery that started
 from zero harvest pressure and has been gradually increasing the harvest.
+
+<!--Should we include any emprical examples? -->
+Using data simulated from a specified model rather than empirical data
+permits the comparison against the true underlying dynamics, setting 
+a bar for the optimal performance possible.  
+
 (Motivation, alternatives, stationarity, examples without a stable node
 (limit-cycle models), examples based on observations near a stable node
 alone, and why that isn't impossible).
-
-
 
 
 Results
@@ -258,18 +319,7 @@ We estimate two parametric models from the data using a maximum likelihood
 approach.  The first model is structurally identical to the true model
 (Eq 1), differing only in that it's parameters are estimated from the
 observed data rather than given.  The alternative model is the Ricker
-model, which is structurally similar and commonly assumed
-
-
-(MLE models will assume the noise is log-normal, which it is in the
-simulation).
-
-
-Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and the Allen Allele model with $r =$ `r est$p[1]`, $K =$ `r est$p[2]` and $C =$ `r est$p[3]`.  
-
-
-
-
+model, which is structurally similar and commonly used in for such data.  
 
 
 
@@ -290,6 +340,17 @@ est <- par_est_allee(obs, f, p,
                               C = p[3] + 2, 
                               s = sigma_g))
 ```
+
+
+
+(MLE models will assume the noise is log-normal, which it is in the
+simulation).
+
+
+Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ 
+`r alt$p[2]`, and the Allen Allele model with $r =$ `r est$p[1]`, $K =$
+`r est$p[2]` and $C =$ `r est$p[3]`.
+
 
 
 
@@ -333,7 +394,8 @@ dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
 
 ## Figure 1: 
 
-_Shows the inferred Gaussian Process compared to the true and parametric models.  Refer to the appendix for details on the GP posteriors, etc._
+_Shows the inferred Gaussian Process compared to the true and parametric
+models.  Refer to the appendix for details on the GP posteriors, etc._
 
 ```{r gp_plot, dependson=c("gp", "mle", "plotting-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
 tgp_dat <- 
@@ -365,7 +427,11 @@ ggplot(tgp_dat) +
 
 ## Figure 2: 
 
-_The take-home message, showing that the GP is closest to the optimal strategy, while the parametric methods are less accurate.  Visualizing the policy may be more useful for the technical reader, the general audience may prefer Figure 3 showing all replicates of the population collapse under the parametric model and not under the GP._
+_The take-home message, showing that the GP is closest to the optimal
+strategy, while the parametric methods are less accurate.  Visualizing the
+policy may be more useful for the technical reader, the general audience
+may prefer Figure 3 showing all replicates of the population collapse
+under the parametric model and not under the GP._
 
 ```{r policies_plot, dependson=c("opt", "plotting-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
 policies <- 
@@ -385,7 +451,15 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
 
 ## Figure 3: 
 
-_Figure 3 is a less abstract and more visceral visualization of the take-home message, with the structurally inaccurate model leading universally to a collapse of the fishery and very few profits, while the Gaussian process performs nearly optimally.  The parametric approach even with the correct underlying structure does not perform optimally, choosing in this case to under-fish (may need to show harvest dynamics since that is not clear from the figure! Also isn't general, sometimes does optimally, sometimes over-fishes.  Perhaps need to show more examples.)  May need to show profits too?_ 
+_Figure 3 is a less abstract and more visceral visualization of the
+take-home message, with the structurally inaccurate model leading
+universally to a collapse of the fishery and very few profits, while the
+Gaussian process performs nearly optimally.  The parametric approach even
+with the correct underlying structure does not perform optimally, choosing
+in this case to under-fish (may need to show harvest dynamics since
+that is not clear from the figure! Also isn't general, sometimes does
+optimally, sometimes over-fishes.  Perhaps need to show more examples.)
+May need to show profits too?_
 
 ```{r sim_plot, dependson=c("sim", "plotting-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
 ggplot(dt) + 
@@ -398,40 +472,50 @@ ggplot(dt) +
 
 ## Figure 4:
 
-_Shows the sensitivity analysis.  A histogram of distribution of yield over stochastic realizations, showing that the qualitative results do not depend on the stochastic realization of the training data here, or on the parameters of the underlying model, though quantitative differences are visible._
+_Shows the sensitivity analysis.  A histogram of distribution of yield
+over stochastic realizations, showing that the qualitative results do
+not depend on the stochastic realization of the training data here, or on
+the parameters of the underlying model, though quantitative differences
+are visible._
 
 
 
 # Discussion / Conclusion
 
 
-* Non-parametric methods have received far too little attention in ecological modeling efforts that are aimed at improved conservation planning and decision making support.  
+* Non-parametric methods have received far too little attention in
+ecological modeling efforts that are aimed at improved conservation
+planning and decision making support.
 
-* Importance of non-parametric approaches in conservation planning / resource management / decision theory.  
+* Importance of non-parametric approaches in conservation planning /
+resource management / decision theory.
 
-* Decision-theoretic tools such as optimal control calculations rely on robust _forecasting_ more strongly than they rely on accurate _mechanistic_ relationships.  
+* Decision-theoretic tools such as optimal control calculations rely
+on robust _forecasting_ more strongly than they rely on accurate
+_mechanistic_ relationships.
 
-* Adapting a non-parametric approach requires modification of existing methods for decision theory.  We have illustrated how this might be done in the context of stochastic dynamic programming, opening the door for substantial further research into how these applications might be improved.  
+* Adapting a non-parametric approach requires modification of existing
+methods for decision theory.  We have illustrated how this might be
+done in the context of stochastic dynamic programming, opening the
+door for substantial further research into how these applications might
+be improved.
 
 * Anticipate improved relative performance in higher dimensional examples
 
-* Discuss constant escapement in model, in policies.  
+* Discuss constant escapement in model, in policies.
 
-* Limitations of this comparison: Are the maximum-likelihood solutions a straw man?
+* Limitations of this comparison: Are the maximum-likelihood solutions
+a straw man?
 
-* Discussion of alternative related approaches: POMDP/MOMDP,  
+* Discussion of alternative related approaches: POMDP/MOMDP,
 
-## Future directions 
+## Future directions
 
-* Multiple species
-* Online learning
-* Multiple step-ahead predictions
-* Explicitly accomidating additional uncertainties
-* Improving inference of optimal policy from the GP
+* Multiple species * Online learning * Multiple step-ahead predictions *
+Explicitly accomidating additional uncertainties * Improving inference
+of optimal policy from the GP
 
-```{r echo=FALSE, results="asis"}
-#bibliography("html")
-```
+```{r echo=FALSE, results="asis"} #bibliography("html") ```
 
 
 # Appendix / Supplementary Materials
