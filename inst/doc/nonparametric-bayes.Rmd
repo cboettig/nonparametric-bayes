@@ -1,8 +1,6 @@
+% Carl Boettiger; Marc Mangel; Steve Munch
+% Non-parametric approaches to optimal policy are more robust
 
-
-
-Non-parametric approaches to optimal policy are more robust
-===========================================================
 
 
 ```{r knit-settings, cache=FALSE}
@@ -37,20 +35,13 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 
 
 
-Carl Boettiger, Marc Mangel, Steve Munch
+Abstract
+=======================================================================
 
 
+Introduction
+=======================================================================
 
-
-
-
-
-
-
-# Abstract
-
-
-# Introduction
 
 The problem of structural uncertainty in managing ecological systems.
 
@@ -102,7 +93,9 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 
 
-# Approach and Methods
+Approach and Methods
+=====================================================================
+
 
 ```{r stateeq}
 f <- RickerAllee
@@ -480,8 +473,8 @@ are visible._
 
 
 
-# Discussion / Conclusion
-
+Discussion / Conclusion
+==================================================================
 
 * Non-parametric methods have received far too little attention in
 ecological modeling efforts that are aimed at improved conservation
@@ -509,7 +502,8 @@ a straw man?
 
 * Discussion of alternative related approaches: POMDP/MOMDP,
 
-## Future directions
+Future directions
+--------------------------------------------------------------------
 
 * Multiple species * Online learning * Multiple step-ahead predictions *
 Explicitly accomidating additional uncertainties * Improving inference
@@ -518,9 +512,17 @@ of optimal policy from the GP
 ```{r echo=FALSE, results="asis"} #bibliography("html") ```
 
 
-# Appendix / Supplementary Materials
+Acknowledgments
+================
 
-## MCMC posterior distributions and convergence analysis
+This work was partially supported by the Center for Stock Assessment Research, a partnership between the University of California Santa Cruz and the Fisheries Ecology Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF grant EF-0924195 to MM.
+
+Appendix / Supplementary Materials
+==================================
+
+
+MCMC posterior distributions and convergence analysis
+----------------------------------------------------------------------------
 
 ```{r posteriors, dependson=c("gp", "plotting-options"), fig.cap = "Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid."}
 hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")

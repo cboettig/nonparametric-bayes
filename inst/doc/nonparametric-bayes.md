@@ -93,7 +93,6 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 
 
-
 ### (Brief) Discussion of GP inference
 
 * The use of Gaussian processes for inference in dynamical systems [introduced by @Kocijan2005]
@@ -224,9 +223,7 @@ _Currently this shows the literal R code, should be adapted_
 * Sensitivity analysis (Figure 4).  
 
 
-
-
-### Example in a bistable system
+## Example in a bistable system
 
 Concerns over the potential for tipping points in ecological dynamics
 [@Scheffer2001] highlight the dangers of uncertainty in ecological
@@ -255,16 +252,20 @@ population is not self-sustaining and shrinks to zero [@Courchamp2008].
 
 
 
+## Sample training data
 
-
-### Discussion of training data
-
-Both parametric and nonparametric approaches will require some training
+Both parametric and nonparametric approaches will require training
 data on which to base their model of the process.  We generate the
 training data under the model described in Eq 1 for 35 time
 steps, under a known but not necessarily optimal sequence of harvest
 intensities, $h_t$.  For simplicity we imagine a fishery that started
 from zero harvest pressure and has been gradually increasing the harvest.
+
+<!--Should we include any emprical examples? -->
+Using data simulated from a specified model rather than empirical data
+permits the comparison against the true underlying dynamics, setting 
+a bar for the optimal performance possible.  
+
 (Motivation, alternatives, stationarity, examples without a stable node
 (limit-cycle models), examples based on observations near a stable node
 alone, and why that isn't impossible).
@@ -279,69 +280,27 @@ We estimate two parametric models from the data using a maximum likelihood
 approach.  The first model is structurally identical to the true model
 (Eq 1), differing only in that it's parameters are estimated from the
 observed data rather than given.  The alternative model is the Ricker
-model, which is structurally similar and commonly assumed
+model, which is structurally similar and commonly used in for such data.  
+
+
+
+
+
+
+
+
+
+
+
 
 
 (MLE models will assume the noise is log-normal, which it is in the
 simulation).
 
 
-Which estimates a Ricker model with $r =$ 
-
-```
-
-Error in eval(expr, envir, enclos) : object 'alt' not found
-
-```
-
-, $K =$ 
-
-
-```
-
-Error in eval(expr, envir, enclos) : object 'alt' not found
-
-```
-
-, and the Allen Allele model with $r =$ 
-
-```
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-
-```
-
-, $K =$
-
-
-```
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-
-```
-
- and $C =$ 
-
-```
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-
-```
-
-.
-
-
-
-
-
-
-
-
-
-
-
-
-
+Which estimates a Ricker model with $r =$ 1.8501, $K =$ 
+9.8091, and the Allen Allele model with $r =$ 2.8079, $K =$
+11.8235 and $C =$ 7.2159.
 
 
 
@@ -366,7 +325,7 @@ Error in eval(expr, envir, enclos) : object 'est' not found
 _Shows the inferred Gaussian Process compared to the true and parametric
 models.  Refer to the appendix for details on the GP posteriors, etc._
 
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](figure/gp_plot.pdf) 
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](http://carlboettiger.info/assets/figures/2013-02-12-20-21-16-a15dc1e581-figure/gp_plot.pdf) 
 
 
 
@@ -378,7 +337,7 @@ policy may be more useful for the technical reader, the general audience
 may prefer Figure 3 showing all replicates of the population collapse
 under the parametric model and not under the GP._
 
-![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/policies_plot.pdf) 
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](http://carlboettiger.info/assets/figures/2013-02-12-20-21-26-a15dc1e581-figure/policies_plot.pdf) 
 
 
 ## Figure 3: 
@@ -393,7 +352,7 @@ that is not clear from the figure! Also isn't general, sometimes does
 optimally, sometimes over-fishes.  Perhaps need to show more examples.)
 May need to show profits too?_
 
-![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/sim_plot.pdf) 
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](http://carlboettiger.info/assets/figures/2013-02-12-20-21-33-a15dc1e581-figure/sim_plot.pdf) 
 
 
 ## Figure 4:
@@ -448,7 +407,7 @@ of optimal policy from the GP
 
 ## MCMC posterior distributions and convergence analysis
 
-![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](figure/posteriors.pdf) 
+![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](http://carlboettiger.info/assets/figures/2013-02-12-20-21-38-a15dc1e581-figure/posteriors.pdf) 
 
  
  @Gramacy2005
