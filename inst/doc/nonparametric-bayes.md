@@ -1,8 +1,4 @@
-
-
-
-Non-parametric approaches to optimal policy are more robust
-===========================================================
+% Non-parametric approaches to optimal policy are more robust
 
 
 
@@ -17,22 +13,23 @@ Non-parametric approaches to optimal policy are more robust
 
 
 
-Carl Boettiger, Marc Mangel, Steve Munch
+
+Abstract
+=======================================================================
 
 
+Introduction
+=======================================================================
 
-
-
-
-
-
-
-# Abstract
-
-
-# Introduction
 
 The problem of structural uncertainty in managing ecological systems.
+
+(Big literature here of course, primary approaches have been using
+parametric uncertainty and model uncertainty (e.g. belief distribution over models 
+I believe. Worth distinguishing our problem from the more trivially 
+sized problems in which the action space is discrete and consists
+of 2 or three possible choices, e.g. much of the recent Possingham et al work.)
+
 
 * Most management recommendations from the ecological literature
 / management policies based on (motivated by) parametric models.
@@ -82,7 +79,8 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 
 
-# Approach and Methods
+Approach and Methods
+=====================================================================
 
 
 
@@ -93,9 +91,33 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 
 
-### (Brief) Discussion of GP inference
 
-* The use of Gaussian processes for inference in dynamical systems [introduced by @Kocijan2005]
+### Background on Gaussian Process inference
+
+The use of Gaussian process regression (known as Kreging in the geospatial literature) to formulate a predictive model is relatively new in the context of modeling dynamical systems [@Kocijan2005] and introduced in the ecological modeling and fisheries management by @Munch2005.  
+
+_Is the following  discription useful or too elementary?_
+
+The essense of the Gaussian process approach can be captured in the following thought experiment: An exhaustive parametric approach to the challenge of structural uncertainty might proceed by writing down all possible functional forms for the underlying dynamical system with all possible parameter values for each form, and then consider searching over this huge space to select the most likely model and parameters; or using a Bayesian approach, assign priors to each of these possible models and infer the posterior distribution of possible models. The Gaussian process approach can be thought of as a computationally efficient approximation to this approach. Gaussian processes represent a large class of models that can be though of as capturing or reasonably approximating the set of models in this collection.  By modeling at the level of the process, rather than the level of parametric equation, we can more concisely capture the possible behavior of these curves.  In place of a parametric model of the dynamical system, the Gaussian Process approach postulates a prior distribution of (n-dimensional) curves that can be though of as approximations to a large range of possible 
+
+_Do we need more specifics on Gaussian process as an approximation to parametric models? Discussion of Gaussian process vs other machine learning / forecasting approaches that have less clear statistical foundations?  If so, does this all belong in the discussion?_
+
+The Gaussian process is defined by a covariance kernel ... _discussion of our (gaussian) kernel, blah blah how specific here vs appendix?_.  By requiring our kernel to follow a generic functional form, we can compactly describe the Gaussian process using only a handful of parameters (Table 1) 
+
+
+A more thorough introduction to the formulation and use of Gaussian processes can be found in @Rasmussen2006.  
+
+parameter       interpretation
+---------       -------------- 
+$\sigma^2$      The process noise (from the kernel)
+$\tau^2$        Variance around the mean
+$\beta$_0       The mean is given by a linear model of slope $\beta$ 
+$d$             The length-scale of the covariance function
+$n$             The observation error
+
+: Table of parameters for the Gaussian process
+
+Rather than estimate values of these parameters directly, we take a hierarchical approach of placing prior distributions on each.  Following @Gramarcy2005 we use a Gaussian prior on $\beta_0$, an inverse gamma prior on $\sigma^2$ and $\tau^2$, a gamma prior on the observation noise $n$, and exponential prior on the length-scale $d$. 
 
 * Gaussian processes in ecological literature [@Munch2005] 
 
@@ -103,7 +125,6 @@ to avoid some pitfalls common to hierarchical parametric approaches.
 
 ###  Discussion of the dynamic programming solution
 
-_(More thorough, but general-audience targeted.  Technical details and code provided in appendices)._
 
 The fishery management problem over an infinite time horizon can be stated as:
 
@@ -325,7 +346,7 @@ Which estimates a Ricker model with $r =$ 1.8501, $K =$
 _Shows the inferred Gaussian Process compared to the true and parametric
 models.  Refer to the appendix for details on the GP posteriors, etc._
 
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](http://carlboettiger.info/assets/figures/2013-02-12-20-21-16-a15dc1e581-figure/gp_plot.pdf) 
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](figure/gp_plot.pdf) 
 
 
 
@@ -337,7 +358,7 @@ policy may be more useful for the technical reader, the general audience
 may prefer Figure 3 showing all replicates of the population collapse
 under the parametric model and not under the GP._
 
-![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](http://carlboettiger.info/assets/figures/2013-02-12-20-21-26-a15dc1e581-figure/policies_plot.pdf) 
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/policies_plot.pdf) 
 
 
 ## Figure 3: 
@@ -352,7 +373,7 @@ that is not clear from the figure! Also isn't general, sometimes does
 optimally, sometimes over-fishes.  Perhaps need to show more examples.)
 May need to show profits too?_
 
-![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](http://carlboettiger.info/assets/figures/2013-02-12-20-21-33-a15dc1e581-figure/sim_plot.pdf) 
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/sim_plot.pdf) 
 
 
 ## Figure 4:
@@ -365,7 +386,10 @@ are visible._
 
 
 
-# Discussion / Conclusion
+Discussion / Conclusion
+==================================================================
+
+
 
 
 * Non-parametric methods have received far too little attention in
@@ -394,7 +418,8 @@ a straw man?
 
 * Discussion of alternative related approaches: POMDP/MOMDP,
 
-## Future directions
+Future directions
+--------------------------------------------------------------------
 
 * Multiple species * Online learning * Multiple step-ahead predictions *
 Explicitly accomidating additional uncertainties * Improving inference
@@ -403,11 +428,19 @@ of optimal policy from the GP
 ```{r echo=FALSE, results="asis"} #bibliography("html") ```
 
 
-# Appendix / Supplementary Materials
+Acknowledgments
+================
 
-## MCMC posterior distributions and convergence analysis
+This work was partially supported by the Center for Stock Assessment Research, a partnership between the University of California Santa Cruz and the Fisheries Ecology Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF grant EF-0924195 to MM.
 
-![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](http://carlboettiger.info/assets/figures/2013-02-12-20-21-38-a15dc1e581-figure/posteriors.pdf) 
+Appendix / Supplementary Materials
+==================================
+
+
+MCMC posterior distributions and convergence analysis
+----------------------------------------------------------------------------
+
+![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](figure/posteriors.pdf) 
 
  
  @Gramacy2005

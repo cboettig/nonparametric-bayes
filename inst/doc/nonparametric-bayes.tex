@@ -1,6 +1,5 @@
 \documentclass[author-year, review]{elsarticle} %review=doublespace preprint=single 5p=2 column
-\usepackage{amsmath, amsfonts, amssymb}  % extended mathematics
-% My package additions
+%%% Begin My package additions %%%%%%%%%%%%%%%%%%%
 \usepackage[hyphens]{url}
 \usepackage{lineno} % add 
 %\linenumbers % turns line numbering on 
@@ -8,7 +7,6 @@
 \biboptions{sort&compress} % For natbib
 \usepackage{graphicx}
 \usepackage{booktabs} % book-quality tables
-
 %% Redefines the elsarticle footer
 \makeatletter
 \def\ps@pprintTitle{%
@@ -24,24 +22,32 @@
 \evensidemargin -0.15in
 \textheight 9in
 \topmargin -0.5in
+%%%%%%%%%%%%%%%% end my additions to header
 
 
-\usepackage{microtype}
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\pagenumbering{arabic}
 
-\usepackage{listings}
-\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
-
-
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-
-
-%%% Syntax Highlighting for code  %%%
-%%% Adapted from knitr book %%% 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \usepackage{fontspec}
+  \ifxetex
+    \usepackage{xltxtra,xunicode}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\usepackage{color}
 \usepackage{fancyvrb}
+\DefineShortVerb[commandchars=\\\{\}]{\|}
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
 % Add ',fontsize=\small' for more characters per line
 \newenvironment{Shaded}{}{}
@@ -59,33 +65,46 @@
 \newcommand{\RegionMarkerTok}[1]{{#1}}
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
 \newcommand{\NormalTok}[1]{{#1}}
-\usepackage{enumerate}
-\usepackage{ctable}
-\usepackage{float}
-
-% This is needed because raggedright in table elements redefines \\:
-\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
-\let\PBS=\PreserveBackslash
-\usepackage[normalem]{ulem}
-\newcommand{\textsubscr}[1]{\ensuremath{_{\scriptsize\textrm{#1}}}}
-
-% Configure hyperlinks package
-\usepackage[breaklinks=true,linktocpage,pdftitle={},pdfauthor={},colorlinks]{hyperref}
-\hypersetup{breaklinks=true, pdfborder={0 0 0}}
-
+\usepackage{longtable}
+\usepackage{graphicx}
+% We will generate all images so they have a width \maxwidth. This means
+% that they will get their normal width if they fit onto the page, but
+% are scaled down if they would overflow the margins.
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth
+\else\Gin@nat@width\fi}
+\makeatother
+\let\Oldincludegraphics\includegraphics
+\renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Non-parametric approaches to optimal policy are more robust},
+            colorlinks=true,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
 % Pandoc toggle for numbering sections (defaults to be off)
 \setcounter{secnumdepth}{0}
-
-
-\VerbatimFootnotes % allows verbatim text in footnotes
-
 % Pandoc header
 
 
 
 \begin{document}
 \begin{frontmatter}
-  \title{}
+  \title{Non-parametric approaches to optimal policy are more robust}
   \author[cstar]{Carl Boettiger\corref{cor1}}
   \author[noaa]{Stephan B. Munch}
   \author[cstar]{Marc Mangel}
@@ -96,15 +115,18 @@
  \end{frontmatter}
 
 
-\section{Non-parametric approaches to optimal policy are more robust}
-
-Carl Boettiger, Marc Mangel, Steve Munch
-
 \section{Abstract}
 
 \section{Introduction}
 
 The problem of structural uncertainty in managing ecological systems.
+
+(Big literature here of course, primary approaches have been using
+parametric uncertainty and model uncertainty (e.g.~belief distribution
+over models I believe. Worth distinguishing our problem from the more
+trivially sized problems in which the action space is discrete and
+consists of 2 or three possible choices, e.g.~much of the recent
+Possingham et al work.)
 
 \begin{itemize}
 \item
@@ -158,12 +180,76 @@ The problem of structural uncertainty in managing ecological systems.
 
 \section{Approach and Methods}
 
-\subsubsection{(Brief) Discussion of GP inference}
+\subsubsection{Background on Gaussian Process inference}
+
+The use of Gaussian process regression (known as Kreging in the
+geospatial literature) to formulate a predictive model is relatively new
+in the context of modeling dynamical systems {[}@Kocijan2005{]} and
+introduced in the ecological modeling and fisheries management by Munch
+et al. (2005).
+
+\emph{Is the following discription useful or too elementary?}
+
+The essense of the Gaussian process approach can be captured in the
+following thought experiment: An exhaustive parametric approach to the
+challenge of structural uncertainty might proceed by writing down all
+possible functional forms for the underlying dynamical system with all
+possible parameter values for each form, and then consider searching
+over this huge space to select the most likely model and parameters; or
+using a Bayesian approach, assign priors to each of these possible
+models and infer the posterior distribution of possible models. The
+Gaussian process approach can be thought of as a computationally
+efficient approximation to this approach. Gaussian processes represent a
+large class of models that can be though of as capturing or reasonably
+approximating the set of models in this collection. By modeling at the
+level of the process, rather than the level of parametric equation, we
+can more concisely capture the possible behavior of these curves. In
+place of a parametric model of the dynamical system, the Gaussian
+Process approach postulates a prior distribution of (n-dimensional)
+curves that can be though of as approximations to a large range of
+possible
+
+\emph{Do we need more specifics on Gaussian process as an approximation
+to parametric models? Discussion of Gaussian process vs other machine
+learning / forecasting approaches that have less clear statistical
+foundations? If so, does this all belong in the discussion?}
+
+The Gaussian process is defined by a covariance kernel \ldots{}
+\emph{discussion of our (gaussian) kernel, blah blah how specific here
+vs appendix?}. By requiring our kernel to follow a generic functional
+form, we can compactly describe the Gaussian process using only a
+handful of parameters (Table 1)
+
+A more thorough introduction to the formulation and use of Gaussian
+processes can be found in @Rasmussen2006.
+
+\begin{longtable}[c]{@{}ll@{}}
+\hline\noalign{\medskip}
+parameter & interpretation
+\\\noalign{\medskip}
+\hline\noalign{\medskip}
+$\sigma^2$ & The process noise (from the kernel)
+\\\noalign{\medskip}
+$\tau^2$ & Variance around the mean
+\\\noalign{\medskip}
+$\beta$\_0 & The mean is given by a linear model of slope $\beta$
+\\\noalign{\medskip}
+$d$ & The length-scale of the covariance function
+\\\noalign{\medskip}
+$n$ & The observation error
+\\\noalign{\medskip}
+\hline
+\noalign{\medskip}
+\caption{Table of parameters for the Gaussian process}
+\end{longtable}
+
+Rather than estimate values of these parameters directly, we take a
+hierarchical approach of placing prior distributions on each. Following
+@Gramarcy2005 we use a Gaussian prior on $\beta_0$, an inverse gamma
+prior on $\sigma^2$ and $\tau^2$, a gamma prior on the observation noise
+$n$, and exponential prior on the length-scale $d$.
 
 \begin{itemize}
-\item
-  The use of Gaussian processes for inference in dynamical systems
-  {[}introduced by @Kocijan2005{]}
 \item
   Gaussian processes in ecological literature (Munch et al. 2005)
 \item
@@ -171,9 +257,6 @@ The problem of structural uncertainty in managing ecological systems.
 \end{itemize}
 
 \subsubsection{Discussion of the dynamic programming solution}
-
-\emph{(More thorough, but general-audience targeted. Technical details
-and code provided in appendices).}
 
 The fishery management problem over an infinite time horizon can be
 stated as:
@@ -301,7 +384,7 @@ the matrix multiplication $\mathbf{F} V_{t+1}$.
   Sensitivity analysis (Figure 4).
 \end{itemize}
 
-\subsubsection{Example in a bistable system}
+\subsection{Example in a bistable system}
 
 Concerns over the potential for tipping points in ecological dynamics
 (Scheffer et al. 2001) highlight the dangers of uncertainty in
@@ -329,14 +412,19 @@ approach. This model contains an Allee effect, or tipping point, below
 which the population is not self-sustaining and shrinks to zero
 (Courchamp, Berec, and Gascoigne 2008).
 
-\subsubsection{Discussion of training data}
+\subsection{Sample training data}
 
-Both parametric and nonparametric approaches will require some training
-data on which to base their model of the process. We generate the
-training data under the model described in Eq 1 for 35 time steps, under
-a known but not necessarily optimal sequence of harvest intensities,
-$h_t$. For simplicity we imagine a fishery that started from zero
-harvest pressure and has been gradually increasing the harvest.
+Both parametric and nonparametric approaches will require training data
+on which to base their model of the process. We generate the training
+data under the model described in Eq 1 for 35 time steps, under a known
+but not necessarily optimal sequence of harvest intensities, $h_t$. For
+simplicity we imagine a fishery that started from zero harvest pressure
+and has been gradually increasing the harvest.
+
+Using data simulated from a specified model rather than empirical data
+permits the comparison against the true underlying dynamics, setting a
+bar for the optimal performance possible.
+
 (Motivation, alternatives, stationarity, examples without a stable node
 (limit-cycle models), examples based on observations near a stable node
 alone, and why that isn't impossible).
@@ -349,47 +437,14 @@ We estimate two parametric models from the data using a maximum
 likelihood approach. The first model is structurally identical to the
 true model (Eq 1), differing only in that it's parameters are estimated
 from the observed data rather than given. The alternative model is the
-Ricker model, which is structurally similar and commonly assumed
+Ricker model, which is structurally similar and commonly used in for
+such data.
 
 (MLE models will assume the noise is log-normal, which it is in the
 simulation).
 
-Which estimates a Ricker model with $r =$
-
-\begin{verbatim}
-
-Error in eval(expr, envir, enclos) : object 'alt' not found
-\end{verbatim}
-
-, $K =$
-
-\begin{verbatim}
-
-Error in eval(expr, envir, enclos) : object 'alt' not found
-\end{verbatim}
-
-, and the Allen Allele model with $r =$
-
-\begin{verbatim}
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-\end{verbatim}
-
-, $K =$
-
-\begin{verbatim}
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-\end{verbatim}
-
-and $C =$
-
-\begin{verbatim}
-
-Error in eval(expr, envir, enclos) : object 'est' not found
-\end{verbatim}
-
-.
+Which estimates a Ricker model with $r =$ 1.8501, $K =$ 9.8091, and the
+Allen Allele model with $r =$ 2.8079, $K =$ 11.8235 and $C =$ 7.2159.
 
 \subsection{Figure 1:}
 
@@ -499,6 +554,13 @@ differences are visible.}
 
 \texttt{\{r echo=FALSE, results="asis"\} \#bibliography("html")}
 
+\section{Acknowledgments}
+
+This work was partially supported by the Center for Stock Assessment
+Research, a partnership between the University of California Santa Cruz
+and the Fisheries Ecology Division, Southwest Fisheries Science Center,
+Santa Cruz, CA and by NSF~grant EF-0924195 to MM.
+
 \section{Appendix / Supplementary Materials}
 
 \subsection{MCMC posterior distributions and convergence analysis}
@@ -566,8 +628,6 @@ Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
 Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413
 (6856) (oct): 591--6. doi:10.1038/35098000.
 
-
-\bibliography{}
-
-
 \end{document}
+
+
