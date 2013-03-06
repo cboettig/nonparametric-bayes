@@ -1,25 +1,32 @@
 Mechanistic models have long been the gold standard of theoretical modeling in ecology (e.g. see @Geritz2012 or @Cuddington2013).  Only by understanding the processes involved can we make reliable long term predictions and build an knowledge of cause and effect that guides the hypotheses we make, the data we collect, and the management decisions we make.  Process-based models, whether expressed in the language of mathematics or English, identify the connection between mosquitoes and the spread of malaria, or greenhouses gases and climate change, guiding our approach to understand and manage these threats. Despite this central importance, I argue here that ecologists would do well to give greater attention to the role non-mechanistic models can play in ecological management and decision making.  The value of these approaches is greatest in a context where decisions are made over short time horizons, and updated as new data becomes available. 
 
+
 A simple example will illustrate many of these points.  
 
 Mechanistic modeling emphasizes the importance of capturing the correct gross properties of a system over the tracking minute fluctuations.  For instance, in selecting and parameterizing model of a population of conservation concern, we may be most interested in getting the long-term behavior correct -- such as identifying if the dynamics support persistence of the population -- rather than worrying how well they reflect the year-to-year fluctuations.  We would certainly have good reason to prefer such a model over alternatives which are irreconcilable to the most basic biological processes, such as unbounded growth, or growth curves that do not pass through the origin in a closed system. So it may come as a surprise to realize that such obviously wrong models can perform as well or even better than reasonable mechanistic models in guiding ecological management and decision making.  
 
 An example of such a comparison is shown in Figure 1, in which the optimal management decision is determined by stochastic dynamic programming algorithm using the biologically (a) plausible and (b) the implausible model of the population growth.  
 
-Three elements 
+Three elements contribute to the biologically implausible phenomenological model performing better in this context:   
 
-1. The dynamics occur over a range of state-space in which the biologically implausible model performs as well or better than the more plausible model.
+### 1. Relevant state space
 
-  * 
+The dynamics occur over a range of state-space in which the biologically implausible model performs as well or better than the more plausible model.  This is the most obvious and immediate reason why the shortcomings that appear to make the model implausible do not make it useless.  This effect is enhanced in our example because the management actions help drive the system towards rather than away from this region of state-space.  
 
-2. This application relies only on the predictive accuracy of the model, not an intepretation of the parameters. 
+### 2. Predictive accuracy
 
-  * Mechanistic modeling is at its most powerful not when it is used to directly forecast future states but when it provides an understanding of how to approach a problem.  Simple epidemiological models 
+This application relies only on the predictive accuracy of the model, not an interpretation of the parameters.  Predictive accuracy is not the goal of all modeling, as ecologists have been observing for as long as they made models (perhaps none more memorably than @Levins1969).  
 
-3. We are presented with new data after each subsequent decision.  
+Mechanistic modeling is at its most powerful not when it is used to directly forecast future states but when it provides an understanding of how to approach a problem.  SIR-type models from the epidemiological literature are a good example.  While the simplest SIR models have little predictive power over the outbreak intensity or timing at a particular location, they provide a powerful understanding of the spread of an infection in terms of a single, biologically meaningful parameter: $R_0$, the basic reproductive number.  From the model, it becomes clear that management need not vaccinate every member of the population to stop the spread, but rather it suffices to vaccinate a sufficient fraction of the population to reduce $R_0$ below 1. 
 
-  * The relevant timescale for the prediction is thus not the long-term dynamics, which would be wildly divergent, but the dynamics over the much shorter interval between subsequent decisions.  
+### 3. Time scale for new data 
 
+In the sequential decision making problem we considered, we are presented with new data after each action.  The relevant timescale for the prediction is thus not the long-term dynamics, which would be wildly divergent, but the dynamics over this much shorter interval.  While ecologists may be hesitant to base continual management on a model with obviously inaccurate long-term behavior, engineers tend to consider the problem in frequency space and gravitate to the opposite position -- a good control model should prioritize high-frequency accuracy over low frequency accuracy.  The differences in intuition may arise from the timescales at which each profession can typically adjust their control variables -- much faster for a control system of a chemical plant than state policy for a natural resource.  Still, the lesson is clear: when facing repeated management decisions over a short timescale, such as setting annual harvests of a fishery, it may be more valuable to use a machine learning algorithm that makes accurate year-ahead predictions that capture some of the high-frequency fluctuations that appear only as noise in a mechanistic model of the long-term population dynamics.  
+
+
+While many management scenarios will not satisfy all of these conditions, many will. 
+
+I argue that we may find ourselves in this
 
 
 on the 
