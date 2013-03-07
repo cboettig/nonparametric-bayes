@@ -1,16 +1,15 @@
 Mechanistic models have long been the gold standard of theoretical modeling in ecology (e.g. see @Geritz2012 or @Cuddington2013).  Only by understanding the processes involved can we make reliable long term predictions and build an knowledge of cause and effect that guides the hypotheses we make, the data we collect, and the management decisions we make.  Process-based models, whether expressed in the language of mathematics or English, identify the connection between mosquitoes and the spread of malaria, or greenhouses gases and climate change, guiding our approach to understand and manage these threats. Despite this central importance, I argue here that ecologists would do well to give greater attention to the role non-mechanistic models can play in ecological management and decision making.  The value of these approaches is greatest in a context where decisions are made over short time horizons, and updated as new data becomes available. 
 
 
-
 ## The alternative to process-based models: pattern-based modeling
 
-Before we proceed further it would be useful to define our terms and lay some greater context for the discussion.  In this essay, as we examine the advantages and disadvantages of mechanistic modeling in light of the alternatives, so it will be useful to better define what the alternatives are.  The alternative to mechanistic model or process-based description of the world has always been a correlative, or pattern-based one. Historically pattern-based modelling meant regression (usually linear regression) and resided in methodology rooted in statistics departments and was the primary focus of empericial ecologists, while mechanistic modeling meant dynamical systems (ODEs, PDEs, SDEs and their discrete kin), residing in methodology from the mathematics department and was the primary focus of theoretical ecologists.  
+Before we proceed further it would be useful to define our terms and lay some greater context for the discussion.  In this essay, as we examine the advantages and disadvantages of mechanistic modeling in light of the alternatives, so it will be useful to better define what the alternatives are.  The alternative to mechanistic model or process-based description of the world has always been a correlative, or pattern-based one. Historically pattern-based modeling meant regression (usually linear regression) and resided in methodology rooted in statistics departments and was the primary focus of empirical ecologists, while mechanistic modeling meant dynamical systems (ODEs, PDEs, SDEs and their discrete kin), residing in methodology from the mathematics department and was the primary focus of theoretical ecologists.  
 
-I believe these historical divides continue to color much of the literature today, with theorists more skeptical than empericists of statistical methodology and vice versa.  Meanwhile, the ground underneath has shifted.  Computational power and heirarchical statistical methods (particularly approximate likelihood or simulation techniques such as particle filters and approximate Bayesian computing) have brought the inference richer dynamical systems into their fold, while pattern-based modeling has spawned an entirely new approach under the banner of machine learning that has devided the statistics community (See @Bremman2001, "The Two Cultures").  Before these changes, pattern-matching approaches could be critiqued on the grounds of their simplicity (not everything is linear) while mechanisitic approaches could be critiqued on their tenous connections to data -- model parameter values such as death rates, birth rates, etc would be estimated in advance and then stuck into the model, rather than estimated in the context of the model itself.  Today both of these critiques 
+I believe these historical divides continue to color much of the literature today, with theorists more skeptical than empiricists of statistical methodology and vice versa.  Meanwhile, the ground underneath has shifted.  Originally pattern-matching approaches could be critiqued on the grounds of their simplicity (not everything is linear) while mechanistic approaches could be critiqued on their tenuous connections to data -- model parameter values such as death rates, birth rates, etc. would be estimated in advance and then stuck into the model, rather than estimated in the context of the model itself.  Today both of these critiques are outdated. Computational power and hierarchical statistical methods (particularly approximate likelihood or simulation techniques such as particle filters and approximate Bayesian computing) have brought the inference richer dynamical systems into their fold, while pattern-based modeling has spawned an entirely new approach under the banner of machine learning that has divided the statistics community (See @Bremman2001, "The Two Cultures").   Machine learning models can represent almost arbitrarily complex patterns and incorporate learning and decision making strategies that have earned them the name 'artificial intelligence.'  Yet at the same time they can be far less transparent their linear regression predecessors, making both astounding successes and startling biases and failures like their biological namesake. More ecologists, particularly theorists and modelers, would do well to learn both how to take advantage of these strengths and recognize their weaknesses.  
 
 
 
-A simple example will illustrate many of these points.  
+A simple example comparing the performance of the two modeling approaches in a quantitative decision problem will help to introduce these issues.  
 
 Mechanistic modeling emphasizes the importance of capturing the correct gross properties of a system over the tracking minute fluctuations.  For instance, in selecting and parameterizing model of a population of conservation concern, we may be most interested in getting the long-term behavior correct -- such as identifying if the dynamics support persistence of the population -- rather than worrying how well they reflect the year-to-year fluctuations.  We would certainly have good reason to prefer such a model over alternatives which are irreconcilable to the most basic biological processes, such as unbounded growth, or growth curves that do not pass through the origin in a closed system. So it may come as a surprise to realize that such obviously wrong models can perform as well or even better than reasonable mechanistic models in guiding ecological management and decision making.  
 
@@ -34,34 +33,28 @@ In the sequential decision making problem we considered, we are presented with n
 
 
 
-
-
-
 ## Advantages of non-mechanistic models
 
 1. Can better use all of the data available.  
 
-Incoprating various sources of information into mechanistic models can be an immensely difficult due to the increased complexity involved.  Only thanks to tandem advances in increasing computational power and hierarchical statistical methodology have we been able to tackle such intuitively important complexity (and the potentially new available data that accompanies it) such as spatial distribution, heterogeneties of space, time, and individuals, to shift to ecosystem-based approaches from single-species based approaches.  Machine learning algorithms 
+Incorporating various sources of information into mechanistic models can be an immensely difficult due to the increased complexity involved.  Only thanks to tandem advances in increasing computational power and hierarchical statistical methodology have we been able to tackle such intuitively important complexity (and the potentially new available data that accompanies it) such as spatial distribution, heterogeneities of space, time, and individuals, to shift to ecosystem-based approaches from single-species based approaches.  Without the need to formulate mechanisms, many modern machine learning algorithms can leverage potential information from all available sources of data directly.  The algorithms can recognize unanticipated or subtle patterns in large data sets that enable more accurate predictions than mechanistic models that are formulated at a more macroscopic level.  Such approaches depend critically 
 
 2. Better express ambiguity in regions where data is not available
 
-One of the greatest stengths of mechanistic models is their greatest weakness as well.  
+One of the greatest strengths of mechanistic models is their greatest weakness as well.  
 
 
-## Better the devil you know?  The dangers of phenomenological approaches
+## Better the devil you know?  The dangers of pattern-based approaches
 
-While non-mechanistic models from the machine learning literature have the 
+When all we have identified is a pattern rather than a mechanism, there is little way to guarantee that the pattern will not change in the future.  Few examples illustrate this danger more broadly than the sub-prime mortgage crisis of 2008.  Simplifying greatly, the unquenchable demand for mortgage backed securities had shifted the underlying dynamics on which the phenomenological models were based.  Historical data indicated that mortgage-backed securities involved little risk. As demand exhausted the supply of traditional mortgages, it became profitable to invent new mortgages that could be sold to higher risk customers, such as those without proof of income.  The pattern-based models did not have enough time or data to learn about the higher default rate occurring as a result, but remained anchored too in the old patterns where default rates were low.  While a mechanistic formulation may have anticipated the resulting higher risk, the pattern based model must learn by seeing it.  The economy still struggles to pay off that lesson.  
 
-Few examples illustrate the danger of phenomenological modeling more broadly than the sub-prime mortgage crisis of 2008.  Simplifying greatly, the unquenchable demand for mortgage backed securities had shifted the underlying dynamics on which the phenomenological models were based faster than the models could learn about the shift.  Historical data indicated that mortgage-backed securities involved little risk.  
+Of course mechanistic models may also fail to predict sudden structural changes.  It is all too easy to overlook some slowly changing environmental variable, particularly if temporal changes in a parameter must be modeled explicitly if they are to be included at all.  Machine learning approaches are frequently less rigid in their assumptions, but can also less transparent about them.  This creates a second weakness in the machine learning approach. 
 
-
-Mechanistic models are not free from this danger either. In fact they can be more suseptible to them for the very same reasons.  A mechanistic model has the ability to more convincingly produce out-of-sample predictions or extrapolation.  This may allow us to determine that a virus will spread or an endagered species will go extinct even before we have observed 
-
-
-Biased estimation.  
+Mechanistic models are not free from this danger either. In fact they can be more susceptible to them for the very same reasons.  A mechanistic model has the ability to more convincingly produce out-of-sample predictions or extrapolation.  This may allow us to determine that a virus will spread or an endangered species will go extinct even before we have observed 
 
 
-Mechanistic models have their greatest strengths in a data-limited world -- where knowledge of plausible mechanisms can greatly decrease the risk 
+
+Dangers of biased estimation.  
 
 
 
@@ -70,15 +63,8 @@ Parametric models are frequently used phenomenologically, rather than being deri
 
 Three elements contribute to this.  
 
-phenomenological accuracy over 
-
-
-$$ $$
-
 
 A process-based understanding helps us formulate hypotheses, guide experimental design and data collection, predict outcomes, and influence management decisions.  The alternative to a processed-based model is  a correlative one. Statical models machine learning.  
-
-
 
 
 > since the late 1980s there has been some consensus amongst ecologists that management decisions are best guided by models which are grounded in ecological theory, and which strike a balance between too much or too little detail describing the relevant processes (e.g., DeAngelis 1988, Starfield 1997, Jackson et al. 2000, Carpenter 2003, Nelson et al. 2008) 
@@ -93,10 +79,6 @@ Example of Statistical model vs process-based model.
 
 
 @Geritz2012 @Cuddington2013 
-
-
-Parametric doesn't mean process-based/mechanistic
-
 
 
 Managing by rule-of-thumb
