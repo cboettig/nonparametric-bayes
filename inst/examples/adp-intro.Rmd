@@ -23,13 +23,18 @@ opts_chunk$set(dev.args=list(bg="transparent"),
 Based on Powell 2006, page 97.  
 
 
-```{r}
-a <- 1.5
-b <- .5
-f <- function(x, z) z * a * x / (x + b)
+``` {r bevholt}
+f <- function(x, h, p){
+    A <- p[1] 
+    B <- p[2] 
+    s <- pmax(x-h, 0)
+    A * s/(1 + B * s)
+}
+pars <- c(1.5, 0.05)
+K <- (pars[1] - 1)/pars[2]
 ```
 
-We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = `r a` and b = `r b`.  We define a statespace $S$
+We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = `r pars[1]` and b = `r pars[2]`.  We define a statespace $S$
 
 
 ```{r}
@@ -72,8 +77,9 @@ S_0 <- 0.5
 
 - **Step 1**: Choose a sample path, $\omega^n$
 
-```r
-Z <- lnorm(T)
+```{r}
+sigma <- 0.2
+Z <- rlnorm(T, 0, sigma)
 ```
 
 - ** Step 2**: For $t = 0, 1, 2, \ldots, T$, do:
@@ -88,9 +94,6 @@ The next terms depend on the value $\tilde V^0_1(s^{\prime})$ for all $s^{\prime
 
 We must also come up with some values for the probability $\mathbb{P}(s^{\prime} | S_1^0, x_1)$ for each state, given our current state $S_1^0$ and considered action $x_1$.  This is more straight forward, since it is determined by our one-step transition function (without simulation - recall that the single step transition is given exactly).   
 
-```{r}
-f_matrix <- outer(S, chi, f)
-```
 
 
 To do so, we evaluate the argument for each value in our action space, $x_t \in \chi_t$,
@@ -99,12 +102,10 @@ To do so, we evaluate the argument for each value in our action space, $x_t \in 
 s <- S_0
 C <- function(S, X) pmin(S, X)
 
-sapply(0:T, function(t){
-  max(
-    arg <- sapply(chi, function(x){
-      C(s, x) + # C(S_t, X_t) 
-      f_matrix[
-    c(x.n_t = which.max(arg), v.n_t = max(arg)) 
-    
+arg <- sapply(chi, function(x) C(s, x) + f(S, x, pars) %*% V)
+c(x_nt = which.max(arg), v_nt = max(arg))
+
+## Update V
+
 ```
 

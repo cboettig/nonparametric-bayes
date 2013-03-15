@@ -16,13 +16,18 @@ Based on Powell 2006, page 97.
 
 
 ```r
-a <- 1.5
-b <- .5
-f <- function(x, z) z * a * x / (x + b)
+f <- function(x, h, p){
+    A <- p[1] 
+    B <- p[2] 
+    s <- pmax(x-h, 0)
+    A * s/(1 + B * s)
+}
+pars <- c(1.5, 0.05)
+K <- (pars[1] - 1)/pars[2]
 ```
 
 
-We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = 1.5 and b = 0.5.  We define a statespace $S$
+We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = 1.5 and b = 0.05.  We define a statespace $S$
 
 
 
@@ -75,9 +80,12 @@ S_0 <- 0.5
 
 - **Step 1**: Choose a sample path, $\omega^n$
 
+
 ```r
-Z <- lnorm(T)
+sigma <- 0.2
+Z <- rlnorm(T, 0, sigma)
 ```
+
 
 - ** Step 2**: For $t = 0, 1, 2, \ldots, T$, do:
 
@@ -93,7 +101,8 @@ We must also come up with some values for the probability $\mathbb{P}(s^{\prime}
 
 
 ```r
-f_matrix <- outer(S, chi, f)
+require(pdgControl)
+F <- determine_SDP_matrix(f, pars, S, chi, sigma)
 ```
 
 
@@ -107,7 +116,7 @@ C <- function(S, X) pmin(S, X)
 sapply(0:T, function(t){
   max(
     arg <- sapply(chi, function(x){
-      C(s, x) + # C(S_t, X_t) 
+      C(s, x) + 
       f_matrix[
     c(x.n_t = which.max(arg), v.n_t = max(arg)) 
     
