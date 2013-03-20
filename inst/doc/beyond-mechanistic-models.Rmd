@@ -1,4 +1,11 @@
 ```{r}
+options(xtable.print.comment=FALSE)
+options(xtable.type = 'latex', table.placement="H")
+opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
+               tidy=FALSE, echo=FALSE)
+opts_knit$set(progress = TRUE, verbose = TRUE)
+opts_chunk$set(dev = 'Cairo_pdf', fig.width=5.5, fig.height=4,
+ cache.path = 'cache-pdf/', cache=TRUE, external=TRUE)
 read_chunk("nonparametric-bayes.R")
 ```
 ```{r knit-settings, echo=FALSE, include=FALSE, cache=FALSE}
@@ -23,6 +30,10 @@ read_chunk("nonparametric-bayes.R")
 ```
 ```{r sim, dependson="opt"}
 ```
+
+
+Introduction
+===============================================================
 
 Process-based models built on modern machine learning approaches 
 offer a powerful and underappreciated approach for ecological
@@ -102,15 +113,8 @@ particularly theorists and modelers, would do well to learn both how to
 take advantage of these strengths and recognize their weaknesses.
 
 
-
-
-
-
-A simple example comparing the performance of the two modeling approaches
-in a quantitative decision problem will help to introduce these issues.
-
 Mechanistic modeling emphasizes the importance of capturing the correct
-gross properties of a system over the tracking minute fluctuations.
+gross properties of a system over tracking minute fluctuations.
 For instance, in selecting and parameterizing model of a population
 of conservation concern, we may be most interested in getting the
 long-term behavior correct -- such as identifying if the dynamics support
@@ -125,6 +129,24 @@ in guiding ecological management and decision making.
 
 
 
+A simple example comparing the performance of the two modeling approaches
+in a quantitative decision problem will help to introduce these issues.
+
+
+
+
+Models & Methods
+===========================================================================
+
+
+<!-- Include example of a machine learning prediction that involves biologically
+inaccurate predictions such as unbounded growth or growth at zero and yet still
+performs well (by fitting well in the region of interest?)  -->
+
+
+
+
+
 ```{r gp_plot, dependson=c("gp", "mle", "plotting-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
 ```
 ```{r policies_plot, dependson=c("opt", "plotting-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."
@@ -136,14 +158,14 @@ in guiding ecological management and decision making.
 
 
 
-
-
-
-
 An example of such a comparison is shown in Figure 1, in which the optimal
 management decision is determined by stochastic dynamic programming
 algorithm using the biologically (a) plausible and (b) the implausible
 model of the population growth.
+
+
+Discussion
+===========================================================================
 
 Three elements contribute to the biologically implausible phenomenological
 model performing better in this context:
@@ -272,27 +294,12 @@ Assuming either scramble competition or interference competition gives
 rise to two alternative delay equations, both structurally different
 from the original.
 
-Three elements contribute to this.
-
-
-A process-based understanding helps us formulate hypotheses, guide
-experimental design and data collection, predict outcomes, and influence
-management decisions.  The alternative to a processed-based model is  a
-correlative one. Statical models machine learning.
-
 
 > since the late 1980s there has been some consensus amongst ecologists
 that management decisions are best guided by models which are grounded
 in ecological theory, and which strike a balance between too much or too
 little detail describing the relevant processes (e.g., DeAngelis 1988,
 Starfield 1997, Jackson et al. 2000, Carpenter 2003, Nelson et al. 2008)
-
-machine learning algorithms
-
-Prediction without
-
-Example of Statistical model vs process-based model.
-
 
 
 

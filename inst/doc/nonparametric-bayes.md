@@ -3,6 +3,15 @@
 
 
 
+```r
+options(xtable.print.comment = FALSE)
+options(xtable.type = "latex", table.placement = "H")
+opts_chunk$set(warning = FALSE, message = FALSE, comment = NA, tidy = FALSE, 
+    echo = FALSE)
+opts_knit$set(progress = TRUE, verbose = TRUE)
+opts_chunk$set(dev = "Cairo_pdf", fig.width = 5.5, fig.height = 4, 
+    cache.path = "cache-pdf/", cache = TRUE)
+```
 
 
 
@@ -20,6 +29,11 @@ Abstract
 
 Introduction
 =======================================================================
+
+
+1. Classical approaches are to fix relationship of stock recruitment.  
+2. Parameter uncertainty
+3. Gaussian processes for model uncertainty
 
 
 The problem of structural uncertainty in managing ecological systems.
