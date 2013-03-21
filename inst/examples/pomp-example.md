@@ -21,9 +21,6 @@ library(pomp)
 opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
-
-
-
 ```r
 process.sim <- function(x, t, params, delta.t, ...) {
     # r = 0.75, K = 10, Q = 3, H = 1, a = 1.3
