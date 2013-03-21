@@ -72,11 +72,11 @@ Parameters and an initial condition
 
 
 ```r
-theta <- c(r = 0.75, K = 10, Q = 3, H = 1, a = 1.3, sigma = 0.05, 
-    tau = 0.02, X.0 = 5)
+theta <- c(r = 0.75, K = 10, Q = 3, H = 1, a = 1.3, sigma = 0.2, 
+    tau = 0.1, X.0 = 5)
 ```
 
-```
+
 
 Simulate
 
@@ -85,28 +85,36 @@ Simulate
 dat <- simulate(may, params = theta, obs = TRUE, states = TRUE)
 library(reshape2)
 library(ggplot2)
-dat <- melt(dat)[3:5]
-names(dat) = c("time", "value", "variable")
-ggplot(dat, aes(time, value, lty = variable)) + geom_line()
+dt <- melt(dat)[3:5]
+names(dt) = c("time", "value", "variable")
+ggplot(dt, aes(time, value, lty = variable)) + geom_line()
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8389/8575659497_499889b94d_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8527/8575983353_a8cbbdd4eb_o.png) 
 
 
-Note that simulate returns an instance of our object, with the data column filled in.  This is not true if we give it arguments such as state or obs = TRUE.  
+Note that simulate returns an instance of our object, with the data column filled in.  This is not true if we give it arguments such as state or obs = TRUE as above.  However, when we query for observed and true states in this way, the simulated data is not stored in our object.  We must assign it with `may <- pomp(data = ...` where data is a data frame with columns "time" and "Y".  This is much simpler if we use the default return:
+
+
+```r
+may <- simulate(may, params = theta)
+```
+
+
 
 Measurement density
 
 
 ```r
-measure.dens <- function(y, x, t, params, log, ...) {
+measure.density <- function(y, x, t, params, log, ...) {
     tau <- params["tau"]
     ## state at time t:
     X <- x["X"]
     ## observation at time t:
     Y <- y["Y"]
     ## compute the likelihood of Y|X,tau
-    dlnorm(x = Y, meanlog = log(X), sdlog = tau, log = log)
+    f <- dlnorm(x = Y, meanlog = log(X), sdlog = tau, log = log)
+    
 }
 ```
 
@@ -115,7 +123,7 @@ Add to our container
 
 
 ```r
-may <- pomp(may, dmeasure = measure.dens)
+may <- pomp(may, dmeasure = measure.density)
 ```
 
 
@@ -134,28 +142,139 @@ may <- pomp(may, parameter.transform = function(params, ...) {
 ```
 
 
-Run the particle filter
+Run the particle filter.  Note that this evaluates the likelihood of our simulated data (stored in the object) at the given (true) parameters.  
 
 
 ```r
-pf <- pfilter(may, params = theta, Np = 1000, transform = TRUE)
-```
-
-```
-## Error: 'pfilter' error: 'dmeasure' returns non-finite value
-```
-
-```r
+pf <- pfilter(may, params = theta, Np = 1000)
 logLik(pf)
 ```
 
 ```
-## Error: no applicable method for 'logLik' applied to an object of class
-## "function"
+## [1] -304.7
+```
+
+
+Here we go, estimate the model by particle filter.  This'll be slow...
+
+
+```r
+theta.guess <- theta + c(abs(rnorm(length(theta)-1)),0)
+estpars <- names(theta[1:7]) # which pars should be estimated. lets try and get them all
+rw.sd <- theta[1:7]/(50*theta[1:7]) # a named vector of random walk values. This sets it to 0.02 for all pars
+system.time(mf <- 
+  mif(may, Nmif = 10, # Number of iterations
+      start = theta.guess, # Starting value of parameters
+      transform = TRUE, # work in transformed parameter space (e.g. logs avoid neg par values)
+      pars = estpars,  # which parameters to estimate (others fixed at starting value)
+      rw.sd = rw.sd, # random walk width
+      Np = 200, # Number of particles
+      var.factor = 4, # scaling factor for random walk sd
+      ic.lag = 10, # fixed lag
+      cooling.factor = 0.999, # exponential cooling
+      max.fail = 10) # internal tolerance
+)
+```
+
+```
+##    user  system elapsed 
+##  22.018   0.008  22.106
 ```
 
 
 
 
+
+```r
+compare.mif(mf)
+```
+
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8507/8575984095_b391cbb8c8_o.png) ![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8382/8577082802_82dc557940_o.png) 
+
+
+
+
+```r
+coef(mf)
+```
+
+```
+##       r       K       Q       H       a   sigma     tau     X.0 
+##  0.6985 10.2655  4.0470  1.2844  1.6782  0.1587  0.1711  5.0000
+```
+
+```r
+logLik(mf)
+```
+
+```
+## [1] -314.4
+```
+
+```r
+pf_est <- pfilter(may, params = theta.guess, Np = 1000)
+logLik(pf_est)  # initial loglik
+```
+
+```
+## [1] -441.9
+```
+
+
+
+These functions apply to replicated mifs above.  
+
+
+
+```r
+theta.true <- coef(may)
+theta.mif <- apply(sapply(mf, coef), 1, mean)
+```
+
+```
+## Error: no method for coercing this S4 class to a vector
+```
+
+```r
+loglik.mif <- replicate(n = 10, logLik(pfilter(mf[[1]], params = theta.mif, 
+    Np = 10000)))
+```
+
+```
+## recover called non-interactively; frames dumped, use debugger() to view
+## recover called non-interactively; frames dumped, use debugger() to view
+```
+
+```
+## Error: error in evaluating the argument 'object' in selecting a method for
+## function 'logLik': Error in pfilter(mf[[1]], params = theta.mif, Np =
+## 10000) : error in evaluating the argument 'object' in selecting a method
+## for function 'pfilter': Error in mf[[1]] : this S4 class is not
+## subsettable
+```
+
+```r
+bl <- mean(loglik.mif)
+```
+
+```
+## Error: object 'loglik.mif' not found
+```
+
+```r
+loglik.mif.est <- bl + log(mean(exp(loglik.mif - bl)))
+```
+
+```
+## Error: object 'bl' not found
+```
+
+```r
+loglik.mif.se <- sd(exp(loglik.mif - bl))/exp(loglik.mif.est - bl)
+```
+
+```
+## Error: object 'loglik.mif' not found
+```
 
 
