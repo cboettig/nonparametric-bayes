@@ -1,12 +1,4 @@
-% Beyond Mechanistic Models: The case for machine learning in ecological management 
-
-Abstract
-============
-
-
-
-<!-- Run R code for analysis, to be called by figures -->
-```{r, echo=FALSE, cache=FALSE, include=FALSE}
+```{r}
 options(xtable.print.comment=FALSE)
 options(xtable.type = 'latex', table.placement="H")
 opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
@@ -86,16 +78,15 @@ and updated as new data becomes available.
 
 ## The alternative to process-based models: pattern-based modeling
 
-Before we proceed further it would be useful to define our terms and lay
-some greater context for the discussion. Throughout, we will distinguish
-"mechanistic" or "process-based" models from models that are merely
-"correlative" or "pattern-based". Historically pattern-based modeling
-meant regression (usually linear regression) and resided in methodology
-rooted in statistics departments and was the primary focus of empirical
-ecologists, while mechanistic modeling meant dynamical systems (ODEs,
-PDEs, SDEs and their discrete kin), residing in methodology from
-the mathematics department and was the primary focus of theoretical
-ecologists.
+Before we proceed further it would be useful to define our terms and
+lay some greater context for the discussion. Throughout, we will distinguish
+"mechanistic" or "process-based" models from models that are merely "correlative" 
+or "pattern-based". Historically pattern-based modeling meant regression (usually linear
+regression) and resided in methodology rooted in statistics departments
+and was the primary focus of empirical ecologists, while mechanistic
+modeling meant dynamical systems (ODEs, PDEs, SDEs and their discrete
+kin), residing in methodology from the mathematics department and was
+the primary focus of theoretical ecologists.
 
 We believe these historical divides continue to color much of the
 literature today, with theorists more skeptical than empiricists of
@@ -183,9 +174,7 @@ model performing better in this context:
 
 The dynamics occur over a range of state-space in which the biologically
 implausible model performs as well or better than the more plausible
-model.  
-
-This is the most obvious and immediate reason why the shortcomings
+model.  This is the most obvious and immediate reason why the shortcomings
 that appear to make the model implausible do not make it useless.
 This effect is enhanced in our example because the management actions help
 drive the system towards rather than away from this region of state-space.

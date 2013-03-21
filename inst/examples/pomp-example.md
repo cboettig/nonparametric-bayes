@@ -19,7 +19,11 @@ library(pomp)
 
 ```r
 opts_knit$set(upload.fun = socialR::flickr.url)
+options(flickr_tags = "nonparametric-bayes")
 ```
+
+
+
 
 ```r
 process.sim <- function(x, t, params, delta.t, ...) {
@@ -68,8 +72,8 @@ Parameters and an initial condition
 
 
 ```r
-theta <- c(r = 0.75, K = 10, Q = 3, H = 1, a = 1.3, sigma = 0.1, 
-    tau = 0.1, X.0 = 5)
+theta <- c(r = 0.75, K = 10, Q = 3, H = 1, a = 1.3, sigma = 0.05, 
+    tau = 0.02, X.0 = 5)
 ```
 
 ```
@@ -86,7 +90,7 @@ names(dat) = c("time", "value", "variable")
 ggplot(dat, aes(time, value, lty = variable)) + geom_line()
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8252/8576510722_aa95db3a10_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8389/8575659497_499889b94d_o.png) 
 
 
 Note that simulate returns an instance of our object, with the data column filled in.  This is not true if we give it arguments such as state or obs = TRUE.  
@@ -134,7 +138,7 @@ Run the particle filter
 
 
 ```r
-pf <- pfilter(may, params = theta, Np = 1000)
+pf <- pfilter(may, params = theta, Np = 1000, transform = TRUE)
 ```
 
 ```
