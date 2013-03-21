@@ -2,8 +2,8 @@
 
 ```{r}
 library(pomp)
-opts_knit$set(upload.fun = socialR::flickr.url)
-options(flickr_tags = "nonparametric-bayes")
+#opts_knit$set(upload.fun = socialR::flickr.url)
+#options(flickr_tags = "nonparametric-bayes")
 ```
 
 
@@ -157,4 +157,6 @@ bl <- mean(loglik.mif)
 loglik.mif.est <- bl+log(mean(exp(loglik.mif-bl)))
 loglik.mif.se <- sd(exp(loglik.mif-bl))/exp(loglik.mif.est-bl)
 ```
+
+
 

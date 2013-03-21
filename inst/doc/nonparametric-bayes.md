@@ -21,101 +21,6 @@ Abstract
 Introduction
 =======================================================================
 
-Process-based models built on modern machine learning approaches 
-offer a powerful and underappreciated approach for ecological
-forecasting and management.  We present a novel example of how
-one such example - non-parametric Gaussian processes, can be adapted
-to the context of management and decision-making.  
-
-While effective machine learning algorithms have speckled the literature, 
-most theoretical ecologists in particular have been wary of these 'black-box'
-approaches in favor of simple, mechanistic models.  While a blind application
-of machine learning approaches would indeed be dangerous grounds to stake 
-either ecological understanding or management practice, such concerns are not
-grounds to reject such methods out of hand.  Rather, further attention is 
-warranted to identify the circumstances in which machine-learning approaches
-will most likely outperform existing more mechanistic approaches, or help
-crack difficult management questions where ecological or dynamical complexity
-has caused traditional approaches to founder.
-
-Here we illustrate how a machine learning model can be implemented in place
-of simple mechanistic model in a decision theory (optimal control) problem,
-and highlight the features of this system that make the nonparametric approach
-particularly effective.  
-
-<!-- Um, Intro take 2, here we go... -->
-
-Mechanistic models have long been the gold standard of theoretical
-modeling in ecology (e.g. see @Geritz2012 or @Cuddington2013).  Only by
-understanding the processes involved can we make reliable long term
-predictions and build an knowledge of cause and effect that guides the
-hypotheses we make, the data we collect, and the management decisions
-we make.  Process-based models, whether expressed in the language of
-mathematics or English, identify the connection between mosquitoes and
-the spread of malaria, or greenhouses gases and climate change, guiding
-our approach to understand and manage these threats. Despite this central
-importance, we argue here that ecologists would do well to give greater
-attention to the role non-mechanistic models can play in ecological
-management and decision making.  The value of these approaches is
-greatest in a context where decisions are made over short time horizons,
-and updated as new data becomes available.
-
-
-## The alternative to process-based models: pattern-based modeling
-
-Before we proceed further it would be useful to define our terms and lay
-some greater context for the discussion. Throughout, we will distinguish
-"mechanistic" or "process-based" models from models that are merely
-"correlative" or "pattern-based". Historically pattern-based modeling
-meant regression (usually linear regression) and resided in methodology
-rooted in statistics departments and was the primary focus of empirical
-ecologists, while mechanistic modeling meant dynamical systems (ODEs,
-PDEs, SDEs and their discrete kin), residing in methodology from
-the mathematics department and was the primary focus of theoretical
-ecologists.
-
-We believe these historical divides continue to color much of the
-literature today, with theorists more skeptical than empiricists of
-statistical methodology and vice versa.  Meanwhile, the ground underneath
-has shifted.  Originally pattern-matching approaches could be critiqued
-on the grounds of their simplicity (not everything is linear) while
-mechanistic approaches could be critiqued on their tenuous connections
-to data -- model parameter values such as death rates, birth rates,
-etc. would be estimated in advance and then stuck into the model, rather
-than estimated in the context of the model itself.  Today both of these
-critiques are outdated. Computational power and hierarchical statistical
-methods (particularly approximate likelihood or simulation techniques such
-as particle filters and approximate Bayesian computing) have brought the
-inference richer dynamical systems into their fold, while pattern-based
-modeling has spawned an entirely new approach under the banner of machine
-learning that has divided the statistics community (See @Bremman2001,
-"The Two Cultures").   Machine learning models can represent almost
-arbitrarily complex patterns and incorporate learning and decision making
-strategies that have earned them the name 'artificial intelligence.'
-Yet at the same time they can be far less transparent their linear
-regression predecessors, making both astounding successes and startling
-biases and failures like their biological namesake. More ecologists,
-particularly theorists and modelers, would do well to learn both how to
-take advantage of these strengths and recognize their weaknesses.
-
-
-Mechanistic modeling emphasizes the importance of capturing the correct
-gross properties of a system over tracking minute fluctuations.
-For instance, in selecting and parameterizing model of a population
-of conservation concern, we may be most interested in getting the
-long-term behavior correct -- such as identifying if the dynamics support
-persistence of the population -- rather than worrying how well they
-reflect the year-to-year fluctuations.  We would certainly have good
-reason to prefer such a model over alternatives which are irreconcilable
-to the most basic biological processes, such as unbounded growth, or
-growth curves that do not pass through the origin in a closed system. So
-it may come as a surprise to realize that such obviously wrong models
-can perform as well or even better than reasonable mechanistic models
-in guiding ecological management and decision making.
-
-
-<!--- Um, Intro take 3? here we go again... -->
-
 
 Most management recommendations from the ecological literature are based
 on (or at least motivated by) parametric models. Though in principle
@@ -526,11 +431,14 @@ a straw man?
 
 --------------------------------------------------------------------
 
-* Multiple species * Online learning * Multiple step-ahead predictions *
-Explicitly accomidating additional uncertainties * Improving inference
-of optimal policy from the GP
+* Multiple species 
+* Online learning 
+* Multiple step-ahead predictions 
+* Explicitly accomidating additional uncertainties 
+* Improving inference of optimal policy from the GP
 
-```{r echo=FALSE, results="asis"} #bibliography("html") ```
+
+
 
 
 Acknowledgments

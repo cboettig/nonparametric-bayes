@@ -138,8 +138,6 @@ in guiding ecological management and decision making.
 
 
 
-
-
 A simple example comparing the performance of the two modeling approaches
 in a quantitative decision problem will help to introduce these issues.
 
@@ -160,11 +158,11 @@ performs well (by fitting well in the region of interest?)  -->
 
 ```{r gp_plot, dependson=c("gp", "mle", "plotting-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
 ```
-```{r policies_plot, dependson=c("opt", "plotting-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."
-}
+
+```{r policies_plot, dependson=c("opt", "plotting-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
 ```
-```{r sim_plot, dependson=c("sim", "plotting-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."
-}
+
+```{r sim_plot, dependson=c("sim", "plotting-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
 ```
 
 

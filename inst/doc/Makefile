@@ -1,4 +1,5 @@
 SOURCEFILE = nonparametric-bayes
+SOURCEFILE_B = beyond-mechanistic-models
 
 
 
@@ -35,6 +36,12 @@ epub:
 bib:
 	bibtool -s -d --preserve.key.case=on -x citations.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
 
+fileb:
+	./knitb fileb
+	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE_B}.md --template=elsarticle.latex -o ${SOURCEFILE_B}.tex
+	pdflatex ${SOURCEFILE_B}.tex
+	pdflatex ${SOURCEFILE_B}.tex
+	pdflatex ${SOURCEFILE_B}.tex
 
 clean:
 	rm -rf *.log *.bbl *.blg *.out *.spl
