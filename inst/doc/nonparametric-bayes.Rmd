@@ -51,31 +51,60 @@ simple mechanistic models can nevertheless provide imporant insights
 into possible dynamics -- for instance, demonstrating that a vaccine
 does not have to be 100% effective to eliminate the transmission of a
 virus [@Kermack1921] -- such approaches are not well-suited for use in
-forecasting future dynamics upon which outcomes management policy can
-be based.  Despite a long history of work emphasizing the difference
-between modeling for understanding (generic or strategic models)
-and modeling for prediction (precise, specific, or tactical models)
-[e.g. @Levins1966], simple parametric models continue to find application
-in predictive management contexts.  The management of marine fisheries
-is a prime example, in which simple, mechanistically motivated models of
-stock-recruitment relationships such as Ricker or Beverton-Holt curves
-are systematically fit to data and used in solving decision-theoretic
-or optimal control problems determining resource management policies
-such as maximum sustainable yield [@refs].
-
-<!-- Better defintion of focal problems here .... -->
-Stochastic dynamic programming @Mangel1982
-
-To address structural uncertainty in the processes involved, such mechanistic models
-can be adapted to accomidate uncertainty in the parameters or consider a set of 
-alternative models simultaneously (belief SDP) 
+forecasting outcomes of potential management options.  Non-parametric 
+approaches offer a more flexible alternative that can both more accurately
+reflect the data available while also representing greater uncertainty
+in areas (of state-space) where data is lacking.  Ecological research
+and management strategy should pay closer attention to the opportunities 
+and challenges nonparametric modeling can offer.  
 
 
+### Quantitative vs Qualitative Decisions
+
+In this paper, we consider those ecological management problems in which
+a mathematical (or computational) model is used to quantitatively inform
+decision-making by allowing a manager to compare to the expected consequences
+of potential management actions (or policies).  We distinguish this from the
+solely qualitative use of a model, in which models are used to represent and
+compare hypotheses of different mechanisms that would lead to qualitatively 
+different actions. 
+
+We argue that while simple mechanistically motivated models
+may be best for the latter case [@Cunningham2013; @Geritz2012], such models 
+can be not only inaccurate but misleading in quantitative decision making.
+Nonparametric models can more realistically represent uncertainties outside 
+of observed data while also better capturing the dynamics in the region
+observed.  Advances in the theory and computational implementations of 
+nonparametric methods make them ripe for such applications.  We use the classic
+problem of optimal harvest of a marine fishery to illustrate how the 
+nonparametric approach of Gaussian processes can be applied. 
+
+We imagine the manager seeks to maximize some known socio-economic value function, 
+given their knowledge of the system. 
+In particular, we will focus on the case in which the manager faces a series of decisions,
+such as setting a harvest quota for a marine fishery each year based on observations
+of the stock size the year before.  
+
+
+### Uncertainties: the classical approach
+
+The ecological dynamics of most systems of management interest are 
+typically both complex and unknown [@refs].  Despite this, quantitative policy
+optimization in these systems has almost exclusively been based on
+simple, mechanistically motivated parametric models.
+There are several reasons for this.  First, limited available data almost 
+always percludes any accurate estimate of more complicated models.  Second,
+the computational demands of determining an optimal stategy in a sequential
+decision-theory problem suffer from the "curse of dimensionality" that makes  
+it difficult to consider more complicated models, states, or actions.  Unfortunately,
+these challenges also make it particularly difficult to reflect the true uncertainty
+either in the parameters of the given models (parametric uncertainty) or in 
+the structure of the models themselves (structural uncertainty).  
 Further unknowns such as measurement uncertainty, parameter uncertainty,
 unobserved states, knowledge of boundary conditions, etc. further
 compound the issue.  Though a hierarchical Bayesian approach provides a
 natural way to address these from a statistical standpoint, formulating
-reasonable parametric descriptions of each form of uncertainty is a
+reasonable parametric  descriptions of each form of uncertainty is a
 challenging task in itself, let alone the computational difficulties
 of solving such a system. @Cressie2009 provides a good account of the
 successess and challenges of the approach.  Applying these approaches in
@@ -83,27 +112,27 @@ the management context of sequential decision making, in which forecasts
 must be obtained over a range of possible actions and updated regularly
 as new information arrives makes such an approach less feasible still.
 
+
+An active literature and growing computational power over the past several decades have
+only marginally improved this situation.  Parametric or structural uncertainty
+can be introduced only by increasing the state space to reflect a distribution
+of possible parameters [@refs] or the degree of belief in each of a set of possible models [@refs]
+Frequently, the space of possible actions must then be reduced or the algorithms adjusted
+by approximations to keep computations feasible.  
+
+
 Though machine learning approaches have begun to appear in the
 ecological and conservation literature (Species distribution models),
 including the Gaussian process based approach used here [@Munch2005],
 they remain unfamiliar and untrusted approaches for most ecologists.
-Machine learning approaches represent an essentially pattern-based
-rather than process-based approach, raising the same skepticism from most
-theoretical ecologists that they hold for older correlative methods such
-as linear regression, while the complexity of the techniques has barred
-their adoption in more empirical audiences. <!-- Whoa! rampant speculation
-alert! -->
-
-<!-- Whoa, isn't machine learning used to make decisions all the time,
- eg, in engineering and Artificial Intelligence?  -->
-
-A more immediate barrier to their adoption is the absence of a framework
+One potential barrier to their adoption is the absence of a framework
 for applying machine learning approaches to resource management problems.
 Traditional approaches to optimal control (Pontryagin's principle, stochastic
 dynamic programming) rely on knowledge of the state equation, usually described
 by a simple parametric model. Here we illustrate how a stochastic dynamic
 programming algorithm can alternatively be driven by the predictions from
 a Gaussian process -- a machine learning approximation to the state dynamics.  
+
 <!-- Okay, perhaps that's novel, but it's pretty trivial.  Isn't it
 obvious to everyon that it's trivial? -->
 
@@ -124,6 +153,88 @@ parameter space that have been poorly or never sampled.
 
 Approach and Methods
 =====================================================================
+
+### The fisheries management problem
+
+In our example, we focus on the problem in which a manager must set 
+the harvest level for a marine fishery each year to maximize the net
+present value of the resource, given an estimated stock size from the year
+before. Rich data and global concerns have made marine fisheries the crucible for much
+of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
+in managing ecosystems under uncertainty.  Global trends [@Worm2006]
+and controversy [@Hilborn2007; @Worm2009] have made understanding these
+challenges all the more pressing. 
+
+To permit comparisons against a theoretical optimum we will consider
+data on the stock dynamics simulated from a simple parametric model
+in which recruitment of the fish stock $X_{t+1}$ in the following year
+is a stochastic process governed by a function $f$ of the current 
+stock $X_t$, selected harvest policy $h_t$, and noise process $Z$,
+
+$$X_{t+1} = Z_t f(X_t, h_t) $$
+
+
+Given parameters for the function $f$ and probability distribution $Z$, 
+along with a given economic model determining the  price/profit $\Pi(X_t, h_t)$
+realized in a given year given a choice of harvest $h_t$ and observed stock $X_t$.
+This problem can be solved exactly for discretized values of stock $X$ and policy $h$
+using stochastic dynamic programming [@Mangel1982].  
+Problems of this sort underpin much marine fisheries management today.  
+
+A crux of this approach is correctly specifying the functional form of $f$,
+along with its parameters.  The standard approach [@refs] uses one of a 
+handful of common parametric models representing the stock-recruitment
+relationship, usually after estimating the model parameters from any 
+available existing data. Though modifications of this approach mentioned in the 
+introduction can permit additional sources of uncertainty such as measurement 
+error in the stock assessment, implementation errors in the harvest policy, [@Clark1986, @Roughgarden1996, @Sethi2005]
+uncertainty in parameters [@Mangel1985, @Schaupaugh2013] or model structure [@Williams2001, @Athanassoglou2012]
+
+
+
+Here, we compare this approach to our alternative
+that uses a Gaussian Process in place of the a given stock recruitment curve.  
+
+### The Non-parametric Bayesian alternative for stock-recruitment curves
+
+
+The use of Gaussian process regression (known as Kreging in the geospatial
+literature) to formulate a predictive model is relatively new in the
+context of modeling dynamical systems [@Kocijan2005] and introduced
+in the ecological modeling and fisheries management by @Munch2005.
+An accessible and thorough introduction to the formulation and use of
+Gaussian processes can be found in @Rasmussen2006.
+
+The essense of the Gaussian process approach can be captured in the
+following thought experiment: An exhaustive parametric approach to the
+challenge of structural uncertainty might proceed by writing down all
+possible functional forms for the underlying dynamical system with all
+possible parameter values for each form, and then consider searching
+over this huge space to select the most likely model and parameters;
+or using a Bayesian approach, assign priors to each of these possible
+models and infer the posterior distribution of possible models. The
+Gaussian process approach can be thought of as a computationally
+efficient approximation to this approach. Gaussian processes represent
+a large class of models that can be though of as capturing or reasonably
+approximating the set of models in this collection.  By modeling at the
+level of the process, rather than the level of parametric equation,
+we can more concisely capture the possible behavior of these curves.
+In place of a parametric model of the dynamical system, the Gaussian
+Process approach postulates a prior distribution of (n-dimensional)
+curves that can be though of as approximations to a range of possible
+(parametric) models that might describe the data. The GP allows us
+to consider a set of possible curves simultaneously.  
+<!-- Figure 1 include curves drawn from the posterior density?  -->
+
+Following [@Munch2005], we will estimate Gaussian processes from
+
+
+<!-- Do we need more specifics on Gaussian process as an approximation
+to parametric models? Discussion of Gaussian process vs other machine
+learning / forecasting approaches that have less clear statistical
+foundations?  If so, does this all belong in the discussion? -->
+
+### 
 
 
 ```{r stateeq}
@@ -154,39 +265,6 @@ Tobs <- 35
 
 ### Background on Gaussian Process inference
 
-The use of Gaussian process regression (known as Kreging in the geospatial
-literature) to formulate a predictive model is relatively new in the
-context of modeling dynamical systems [@Kocijan2005] and introduced
-in the ecological modeling and fisheries management by @Munch2005.
-An accessible and thorough introduction to the formulation and use of
-Gaussian processes can be found in @Rasmussen2006.
-
-The essense of the Gaussian process approach can be captured in the
-following thought experiment: An exhaustive parametric approach to the
-challenge of structural uncertainty might proceed by writing down all
-possible functional forms for the underlying dynamical system with all
-possible parameter values for each form, and then consider searching
-over this huge space to select the most likely model and parameters;
-or using a Bayesian approach, assign priors to each of these possible
-models and infer the posterior distribution of possible models. The
-Gaussian process approach can be thought of as a computationally
-efficient approximation to this approach. Gaussian processes represent
-a large class of models that can be though of as capturing or reasonably
-approximating the set of models in this collection.  By modeling at the
-level of the process, rather than the level of parametric equation,
-we can more concisely capture the possible behavior of these curves.
-In place of a parametric model of the dynamical system, the Gaussian
-Process approach postulates a prior distribution of (n-dimensional)
-curves that can be though of as approximations to a range of possible
-(parametric) models that might describe the data. The GP allows us
-to consider a set of possible curves simultaneously.  
-<!-- Figure 1 include curves drawn from the posterior density?  -->
-
-
-<!-- Do we need more specifics on Gaussian process as an approximation
-to parametric models? Discussion of Gaussian process vs other machine
-learning / forecasting approaches that have less clear statistical
-foundations?  If so, does this all belong in the discussion? -->
 
 ### The optimal control problem
 
