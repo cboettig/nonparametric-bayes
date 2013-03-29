@@ -34,7 +34,11 @@ epub:
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}.epub
 
 bib:
-	bibtool -s -d --preserve.key.case=on -x citations.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
+	grep -o "@\w*" ${SOURCEFILE}.Rmd | tr '\n' ',' | tr -d "@"  > refs.tmp  # Extract cited references
+	cp auxtemplate refs.aux          ## Create the aux file (in 3 steps)
+	cat refs.tmp >> refs.aux
+	echo "}" >> refs.aux	
+	bibtool -s -d --preserve.key.case=on -x refs.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
 
 fileb:
 	./knitb fileb
