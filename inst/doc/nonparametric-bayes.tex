@@ -172,11 +172,11 @@ are several reasons for this. First, limited available data almost
 always percludes any accurate estimate of more complicated models.
 Second, the computational demands of determining an optimal stategy in a
 sequential decision-theory problem suffer from the ``curse of
-dimensionality'' that makes\\it difficult to consider more complicated
+dimensionality'' that makes it difficult to consider more complicated
 models, states, or actions. Unfortunately, these challenges also make it
 particularly difficult to reflect the true uncertainty either in the
 parameters of the given models (parametric uncertainty) or in the
-structure of the models themselves (structural uncertainty).\\Further
+structure of the models themselves (structural uncertainty). Further
 unknowns such as measurement uncertainty, parameter uncertainty,
 unobserved states, knowledge of boundary conditions, etc. further
 compound the issue. Though a hierarchical Bayesian approach provides a
@@ -198,19 +198,28 @@ the degree of belief in each of a set of possible models {[}@refs{]}
 Frequently, the space of possible actions must then be reduced or the
 algorithms adjusted by approximations to keep computations feasible.
 
-Though machine learning approaches have begun to appear in the
-ecological and conservation literature (Species distribution models),
-including the Gaussian process based approach used here (Munch et al.
-2005), they remain unfamiliar and untrusted approaches for most
-ecologists. One potential barrier to their adoption is the absence of a
-framework for applying machine learning approaches to resource
-management problems. Traditional approaches to optimal control
-(Pontryagin's principle, stochastic dynamic programming) rely on
-knowledge of the state equation, usually described by a simple
-parametric model. Here we illustrate how a stochastic dynamic
-programming algorithm can alternatively be driven by the predictions
-from a Gaussian process -- a machine learning approximation to the state
-dynamics.
+ \textbf{This part is overstated and unnecessary} Though machine
+learning approaches have begun to appear in the ecological and
+conservation literature (e.g.~in species distribution models), including
+the Gaussian process based approach used here (Munch et al. 2005),
+overall machine learning remains an unfamiliar and somewhat untrusted
+approach for many ecologists. One potential barrier to their adoption is
+the absence of a framework for applying machine learning approaches to
+resource management problems.
+
+ transition sentences!?
+
+Traditional approaches to optimal control (Pontryagin's principle,
+stochastic dynamic programming) rely on knowledge of the state equation,
+usually described by a simple parametric model. Here we illustrate how a
+stochastic dynamic programming algorithm can alternatively be driven by
+the predictions from a Gaussian process -- a machine learning
+approximation to the state dynamics.
+
+ Okay, perhaps that's novel, but it's pretty trivial. Isn't it obvious
+to everyon that it's trivial?
+
+ paraphrase advantages of machine learning
 
 Management goals / decision-theoretic approaches need accurate
 prediction over relevant (short?) timescales more than reasonable
@@ -248,8 +257,8 @@ along with a given economic model determining the price/profit
 $\Pi(X_t, h_t)$ realized in a given year given a choice of harvest $h_t$
 and observed stock $X_t$. This problem can be solved exactly for
 discretized values of stock $X$ and policy $h$ using stochastic dynamic
-programming (SDP) {[}@Mangel1982{]}.\\Problems of this sort underpin
-much marine fisheries management today.
+programming (SDP) (Mangel and Clark 1985). Problems of this sort
+underpin much marine fisheries management today.
 
 A crux of this approach is correctly specifying the functional form of
 $f$, along with its parameters. The standard approach {[}@refs{]} uses
@@ -259,11 +268,13 @@ parameters from any available existing data. Though modifications of
 this approach mentioned in the introduction can permit additional
 sources of uncertainty such as measurement error in the stock
 assessment, implementation errors in the harvest policy, (Clark and
-Kirkwood 1986, , ) uncertainty in parameters (Mangel and Clark 1985,
-@Schaupaugh2013) or model structure (B. K. Williams 2001, ), we focus on
-the simplest example to illustrate the comparison, where only a single
-form of uncertainty (the growth shocks $Z_t$) is present in the
-underlying model, making additional modes unnecessary.
+Kirkwood 1986; Roughgarden and Smith 1996; Sethi et al. 2005)
+uncertainty in parameters (Mangel and Clark 1985; Schapaugh and Tyre
+2013) or model structure (B. K. Williams 2001; Athanassoglou and
+Xepapadeas 2012), we focus on the simplest example to illustrate the
+comparison, where only a single form of uncertainty (the growth shocks
+$Z_t$) is present in the underlying model, making additional modes
+unnecessary. Add comment / apology on single species dynamics
 
 We compare this approach to our alternative that uses a Gaussian Process
 (GP) in place of the a given stock recruitment curve. We briefly revisit
@@ -275,7 +286,7 @@ using SDP.
 \subsubsection{The Non-parametric Bayesian alternative for
 stock-recruitment curves}
 
-The use of Gaussian process (GP) regression (known as Kreging in the
+The use of Gaussian process (GP) regression (or ``kreging'' in the
 geospatial literature) to formulate a predictive model is relatively new
 in the context of modeling dynamical systems (Kocijan et al. 2005) and
 introduced in the ecological modeling and fisheries management by Munch
@@ -301,6 +312,12 @@ dynamical system, the GP approach postulates a prior distribution of
 (n-dimensional) curves that can be though of as approximations to a
 range of possible (parametric) models that might describe the data. The
 GP allows us to consider a set of possible curves simultaneously.\\
+Figure 1 include curves drawn from the posterior density?
+
+ Do we need more specifics on Gaussian process as an approximation to
+parametric models? Discussion of Gaussian process vs other machine
+learning / forecasting approaches that have less clear statistical
+foundations? If so, does this all belong in the discussion?
 
 \subsubsection{Background on Gaussian Process inference}
 
@@ -453,9 +470,10 @@ but not necessarily optimal sequence of harvest intensities, $h_t$. For
 simplicity we imagine a fishery that started from zero harvest pressure
 and has been gradually increasing the harvest.
 
-Using data simulated from a specified model rather than empirical data
-permits the comparison against the true underlying dynamics, setting a
-bar for the optimal performance possible.
+Should we include any emprical examples? Using data simulated from a
+specified model rather than empirical data permits the comparison
+against the true underlying dynamics, setting a bar for the optimal
+performance possible.
 
 (Motivation, alternatives, stationarity, examples without a stable node
 (limit-cycle models), examples based on observations near a stable node
@@ -577,20 +595,20 @@ system towards rather than away from this region of state-space.
 This application relies only on the predictive accuracy of the model,
 not an interpretation of the parameters.
 
-Predictive accuracy is not the goal of all modeling, as ecologists have
-been observing for as long as they made models (perhaps none more
-memorably than Levins (1969)). Mechanistic modeling is at its most
-powerful not when it is used to directly forecast future states but when
-it provides an understanding of how to approach a problem. SIR-type
-models from the epidemiological literature are a good example. While the
-simplest SIR models have little predictive power over the outbreak
-intensity or timing at a particular location, they provide a powerful
-understanding of the spread of an infection in terms of a single,
-biologically meaningful parameter: $R_0$, the basic reproductive number.
-From the model, it becomes clear that management need not vaccinate
-every member of the population to stop the spread, but rather it
-suffices to vaccinate a sufficient fraction of the population to reduce
-$R_0$ below 1.
+ wow, run-on tangent? Predictive accuracy is not the goal of all
+modeling, as ecologists have been observing for as long as they made
+models (perhaps none more memorably than Levins (1969)). Mechanistic
+modeling is at its most powerful not when it is used to directly
+forecast future states but when it provides an understanding of how to
+approach a problem. SIR-type models from the epidemiological literature
+are a good example. While the simplest SIR models have little predictive
+power over the outbreak intensity or timing at a particular location,
+they provide a powerful understanding of the spread of an infection in
+terms of a single, biologically meaningful parameter: $R_0$, the basic
+reproductive number. From the model, it becomes clear that management
+need not vaccinate every member of the population to stop the spread,
+but rather it suffices to vaccinate a sufficient fraction of the
+population to reduce $R_0$ below 1.
 
 \subsubsection{3. Time scale for new data}
 
@@ -625,37 +643,49 @@ weakness as well.
 
 \subsection{Future directions}
 
-While we have highlighted certain generic of this problem that allow the
-nonparametric approach to excel -- short timescales between successive
-observations and actions, the accuracy in the appropriate region of
-state space, the ability to express uncertainty outside the observed
-data -- there are equally several aspects for which the nonparametric
-approach is at a relative disadvantage.
+ Jargony and vague While we have highlighted certain generic of this
+problem that allow the nonparametric approach to excel -- short
+timescales between successive observations and actions, the accuracy in
+the appropriate region of state space, the ability to express
+uncertainty outside the observed data -- there are equally several
+aspects for which the nonparametric approach is at a relative
+disadvantage.
 
-In this simulated example, the underlying dynamics are truly governed by
-a simple parametric model, allowing the parametric approaches to be more
-accurate. Similarly, because the dynamics are one-dimensional dynamics
-and lead to stable nodes (rather than other attractors such as
-limit-cycles resulting in oscillations), the training data provides
-relatively limited information about the dynamics. For these reasons, we
-anticipate that in higher-dimensional examples characteristic of
-ecosystem management problems that the machine learning approach will
-prove even more valuable.
+ Model complexity In this simulated example, the underlying dynamics are
+truly governed by a simple parametric model, allowing the parametric
+approaches to be more accurate. Similarly, because the dynamics are
+one-dimensional dynamics and lead to stable nodes (rather than other
+attractors such as limit-cycles resulting in oscillations), the training
+data provides relatively limited information about the dynamics. For
+these reasons, we anticipate that in higher-dimensional examples
+characteristic of ecosystem management problems that the machine
+learning approach will prove even more valuable.
 
-The machine learning approach is also better suited to complex and
-disparate data. Incorporating various sources of information into
-mechanistic models can be an immensely difficult due to the increased
-complexity involved. Only thanks to tandem advances in increasing
-computational power and hierarchical statistical methodology have we
-been able to tackle such intuitively important complexity (and the
-potentially new available data that accompanies it) such as spatial
-distribution, heterogeneities of space, time, and individuals, to shift
-to ecosystem-based approaches from single-species based approaches.
-Without the need to formulate mechanisms, many modern machine learning
-algorithms can leverage potential information from all available sources
-of data directly. The algorithms can recognize unanticipated or subtle
-patterns in large data sets that enable more accurate predictions than
-mechanistic models that are formulated at a more macroscopic level.
+ Data complexity. Perhaps too far out of scope\ldots{} The machine
+learning approach is also better suited to complex and disparate data.
+Incorporating various sources of information into mechanistic models can
+be an immensely difficult due to the increased complexity involved. Only
+thanks to tandem advances in increasing computational power and
+hierarchical statistical methodology have we been able to tackle such
+intuitively important complexity (and the potentially new available data
+that accompanies it) such as spatial distribution, heterogeneities of
+space, time, and individuals, to shift to ecosystem-based approaches
+from single-species based approaches. Without the need to formulate
+mechanisms, many modern machine learning algorithms can leverage
+potential information from all available sources of data directly. The
+algorithms can recognize unanticipated or subtle patterns in large data
+sets that enable more accurate predictions than mechanistic models that
+are formulated at a more macroscopic level.
+
+ * Discuss constant escapement in model, in policies.
+
+\begin{itemize}
+\item
+  Limitations of this comparison: Are the maximum-likelihood solutions a
+  straw man?
+\item
+  Discussion of alternative related approaches: POMDP/MOMDP 
+\end{itemize}
 
 \begin{center}\rule{3in}{0.4pt}\end{center}
 
@@ -963,6 +993,11 @@ Roughgarden, Joan E., and F. Smith. 1996. ``Why fisheries collapse and
 what to do about it.'' \emph{Proceedings of the National Academy of
 Sciences of the United States of America} 93 (10): 5078.
 \url{http://www.pnas.org/content/93/10/5078.short}.
+
+Schapaugh, Adam W., and Andrew J. Tyre. 2013. ``Accounting for
+parametric uncertainty in Markov decision processes.'' \emph{Ecological
+Modelling} 254 (apr): 15--21. doi:10.1016/j.ecolmodel.2013.01.003.
+\url{http://linkinghub.elsevier.com/retrieve/pii/S0304380013000306}.
 
 Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
 Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413

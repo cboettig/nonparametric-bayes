@@ -73,29 +73,30 @@ of the stock size the year before.
 
 ### Uncertainties: the classical approach
 
-The ecological dynamics of most systems of management interest are 
-typically both complex and unknown [@refs].  Despite this, quantitative policy
-optimization in these systems has almost exclusively been based on
-simple, mechanistically motivated parametric models.
-There are several reasons for this.  First, limited available data almost 
-always percludes any accurate estimate of more complicated models.  Second,
-the computational demands of determining an optimal stategy in a sequential
-decision-theory problem suffer from the "curse of dimensionality" that makes  
-it difficult to consider more complicated models, states, or actions.  Unfortunately,
-these challenges also make it particularly difficult to reflect the true uncertainty
-either in the parameters of the given models (parametric uncertainty) or in 
-the structure of the models themselves (structural uncertainty).  
-Further unknowns such as measurement uncertainty, parameter uncertainty,
-unobserved states, knowledge of boundary conditions, etc. further
-compound the issue.  Though a hierarchical Bayesian approach provides a
-natural way to address these from a statistical standpoint, formulating
-reasonable parametric  descriptions of each form of uncertainty is a
-challenging task in itself, let alone the computational difficulties
-of solving such a system. @Cressie2009 provides a good account of the
-successess and challenges of the approach.  Applying these approaches in
-the management context of sequential decision making, in which forecasts
-must be obtained over a range of possible actions and updated regularly
-as new information arrives makes such an approach less feasible still.
+The ecological dynamics of most systems of management interest are
+typically both complex and unknown [@refs].  Despite this, quantitative
+policy optimization in these systems has almost exclusively been based
+on simple, mechanistically motivated parametric models.  There are
+several reasons for this.  First, limited available data almost always
+percludes any accurate estimate of more complicated models.  Second, the
+computational demands of determining an optimal stategy in a sequential
+decision-theory problem suffer from the "curse of dimensionality"
+that makes it difficult to consider more complicated models, states,
+or actions.  Unfortunately, these challenges also make it particularly
+difficult to reflect the true uncertainty either in the parameters of
+the given models (parametric uncertainty) or in the structure of the
+models themselves (structural uncertainty).  Further unknowns such as
+measurement uncertainty, parameter uncertainty, unobserved states,
+knowledge of boundary conditions, etc. further compound the issue.
+Though a hierarchical Bayesian approach provides a natural way to
+address these from a statistical standpoint, formulating reasonable
+parametric  descriptions of each form of uncertainty is a challenging
+task in itself, let alone the computational difficulties of solving such
+a system. @Cressie2009 provides a good account of the successess and
+challenges of the approach.  Applying these approaches in the management
+context of sequential decision making, in which forecasts must be obtained
+over a range of possible actions and updated regularly as new information
+arrives makes such an approach less feasible still.
 
 
 An active literature and growing computational power over the past several decades have
@@ -106,23 +107,28 @@ Frequently, the space of possible actions must then be reduced or the algorithms
 by approximations to keep computations feasible.  
 
 
+
+<span style="color:#007FFF; font-style:italic"> **This part is overstated and unnecessary**
 Though machine learning approaches have begun to appear in the
-ecological and conservation literature (Species distribution models),
+ecological and conservation literature (e.g. in species distribution models),
 including the Gaussian process based approach used here [@Munch2005],
-they remain unfamiliar and untrusted approaches for most ecologists.
+overall machine learning remains an unfamiliar and somewhat untrusted approach for many ecologists.
 One potential barrier to their adoption is the absence of a framework
-for applying machine learning approaches to resource management problems.
+for applying machine learning approaches to resource management problems. </span>
+
+<span style="color:#007FFF; font-style:italic"> transition sentences!? </span> 
+
 Traditional approaches to optimal control (Pontryagin's principle, stochastic
 dynamic programming) rely on knowledge of the state equation, usually described
 by a simple parametric model. Here we illustrate how a stochastic dynamic
 programming algorithm can alternatively be driven by the predictions from
 a Gaussian process -- a machine learning approximation to the state dynamics.  
 
-<!-- Okay, perhaps that's novel, but it's pretty trivial.  Isn't it
-obvious to everyon that it's trivial? -->
+<span style="color:#007FFF; font-style:italic"> Okay, perhaps that's novel, but it's pretty trivial.  Isn't it
+obvious to everyon that it's trivial? </span>
 
 
-<!-- paraphrase advantages of machine learning -->
+<span style="color:#007FFF; font-style:italic"> paraphrase advantages of machine learning </span>
 
 Management goals / decision-theoretic approaches need accurate prediction
 over relevant (short?) timescales more than reasonable long-term
@@ -163,8 +169,7 @@ Given parameters for the function $f$ and probability distribution $Z$,
 along with a given economic model determining the  price/profit $\Pi(X_t, h_t)$
 realized in a given year given a choice of harvest $h_t$ and observed stock $X_t$.
 This problem can be solved exactly for discretized values of stock $X$ and policy $h$
-using stochastic dynamic programming (SDP) [@Mangel1982].  
-Problems of this sort underpin much marine fisheries management today.  
+using stochastic dynamic programming (SDP) [@Mangel1985]. Problems of this sort underpin much marine fisheries management today.  
 
 A crux of this approach is correctly specifying the functional form of $f$,
 along with its parameters.  The standard approach [@refs] uses one of a 
@@ -172,12 +177,12 @@ handful of common parametric models representing the stock-recruitment
 relationship, usually after estimating the model parameters from any 
 available existing data. Though modifications of this approach mentioned in the 
 introduction can permit additional sources of uncertainty such as measurement 
-error in the stock assessment, implementation errors in the harvest policy, [@Clark1986, @Roughgarden1996, @Sethi2005]
-uncertainty in parameters [@Mangel1985, @Schaupaugh2013] or model structure [@Williams2001, @Athanassoglou2012],
+error in the stock assessment, implementation errors in the harvest policy, [@Clark1986; @Roughgarden1996; @Sethi2005]
+uncertainty in parameters [@Mangel1985; @Schapaugh2013] or model structure [@Williams2001; @Athanassoglou2012],
 we focus on the simplest example to illustrate the comparison, where only a 
 single form of uncertainty (the growth shocks $Z_t$) is present in the underlying
 model, making additional modes unnecessary. 
-<!--Add comment / apology on single species dynamics --> 
+<span style="color:#007FFF; font-style:italic">Add comment / apology on single species dynamics </span> 
 
 
 We compare this approach to our alternative that uses a Gaussian Process (GP)
@@ -189,7 +194,7 @@ using SDP.
 
 ### The Non-parametric Bayesian alternative for stock-recruitment curves
 
-The use of Gaussian process (GP) regression (known as Kreging in the geospatial
+The use of Gaussian process (GP) regression (or "kreging" in the geospatial
 literature) to formulate a predictive model is relatively new in the
 context of modeling dynamical systems [@Kocijan2005] and introduced
 in the ecological modeling and fisheries management by @Munch2005.
@@ -215,13 +220,13 @@ approach postulates a prior distribution of (n-dimensional)
 curves that can be though of as approximations to a range of possible
 (parametric) models that might describe the data. The GP allows us
 to consider a set of possible curves simultaneously.  
-<!-- Figure 1 include curves drawn from the posterior density?  -->
+<span style="color:#007FFF; font-style:italic"> Figure 1 include curves drawn from the posterior density?  </span>
 
 
-<!-- Do we need more specifics on Gaussian process as an approximation
+<span style="color:#007FFF; font-style:italic"> Do we need more specifics on Gaussian process as an approximation
 to parametric models? Discussion of Gaussian process vs other machine
 learning / forecasting approaches that have less clear statistical
-foundations?  If so, does this all belong in the discussion? -->
+foundations?  If so, does this all belong in the discussion? </span>
 
 
 ### Background on Gaussian Process inference
@@ -369,7 +374,7 @@ steps, under a known but not necessarily optimal sequence of harvest
 intensities, $h_t$.  For simplicity we imagine a fishery that started
 from zero harvest pressure and has been gradually increasing the harvest.
 
-<!--Should we include any emprical examples? -->
+<span style="color:#007FFF; font-style:italic">Should we include any emprical examples? </span>
 Using data simulated from a specified model rather than empirical data
 permits the comparison against the true underlying dynamics, setting 
 a bar for the optimal performance possible.  
@@ -429,7 +434,7 @@ Which estimates a Ricker model with $r =$ 1.8501, $K =$
 _Shows the inferred Gaussian Process compared to the true and parametric
 models.  Refer to the appendix for details on the GP posteriors, etc._
 
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](figure/gp_plot.pdf) 
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](http://carlboettiger.info/assets/figures/2013-04-01-10-45-33-d3c874043a-figure/gp_plot.pdf) 
 
 
 
@@ -441,7 +446,7 @@ policy may be more useful for the technical reader, the general audience
 may prefer Figure 3 showing all replicates of the population collapse
 under the parametric model and not under the GP._
 
-![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/policies_plot.pdf) 
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](http://carlboettiger.info/assets/figures/2013-04-01-10-45-37-d3c874043a-figure/policies_plot.pdf) 
 
 
 ## Figure 3: 
@@ -456,7 +461,7 @@ that is not clear from the figure! Also isn't general, sometimes does
 optimally, sometimes over-fishes.  Perhaps need to show more examples.)
 May need to show profits too?_
 
-![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/sim_plot.pdf) 
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](http://carlboettiger.info/assets/figures/2013-04-01-10-45-40-d3c874043a-figure/sim_plot.pdf) 
 
 
 ## Figure 4:
@@ -506,7 +511,7 @@ drive the system towards rather than away from this region of state-space.
 This application relies only on the predictive accuracy of the model,
 not an interpretation of the parameters.  
 
-<!-- wow, run-on tangent? -->
+<span style="color:#007FFF; font-style:italic"> wow, run-on tangent? </span>
 Predictive accuracy is not the goal of all modeling, as ecologists
 have been observing for as long as they made models (perhaps none
 more memorably than @Levins1969).  Mechanistic modeling is at its
@@ -554,7 +559,7 @@ One of the greatest strengths of mechanistic models is their greatest weakness a
 
 ## Future directions
 
-<!-- Jargony and vague -->
+<span style="color:#007FFF; font-style:italic"> Jargony and vague </span>
 While we have highlighted certain generic of this problem that allow the
 nonparametric approach to excel -- short timescales between successive
 observations and actions, the accuracy in the appropriate region of state
@@ -562,7 +567,7 @@ space, the ability to express uncertainty outside the observed data --
 there are equally several aspects for which the nonparametric approach is
 at a relative disadvantage.  
 
-<!-- Model complexity -->
+<span style="color:#007FFF; font-style:italic"> Model complexity </span>
 In this simulated example, the underlying
 dynamics are truly governed by a simple parametric model, allowing
 the parametric approaches to be more accurate.  Similarly, because the
@@ -573,7 +578,7 @@ dynamics.  For these reasons, we anticipate that in higher-dimensional
 examples characteristic of ecosystem management problems that the machine
 learning approach will prove even more valuable.
 
-<!-- Data complexity. Perhaps too far out of scope... -->
+<span style="color:#007FFF; font-style:italic"> Data complexity. Perhaps too far out of scope... </span>
 The machine learning approach is also better suited to complex and
 disparate data.  Incorporating various sources of information into
 mechanistic models can be an immensely difficult due to the increased
@@ -589,14 +594,14 @@ of data directly.  The algorithms can recognize unanticipated or subtle
 patterns in large data sets that enable more accurate predictions than
 mechanistic models that are formulated at a more macroscopic level.
 
-<!-- 
+<span style="color:#007FFF; font-style:italic"> 
 * Discuss constant escapement in model, in policies.
 
 * Limitations of this comparison: Are the maximum-likelihood solutions
 a straw man?
 
 * Discussion of alternative related approaches: POMDP/MOMDP
---> 
+</span> 
 
 --------------------------------------------------------------------
 
@@ -751,7 +756,7 @@ _Currently this shows the literal R code, should be adapted_
 MCMC posterior distributions and convergence analysis
 ----------------------------------------------------------------------------
 
-![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](figure/posteriors.pdf) 
+![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](http://carlboettiger.info/assets/figures/2013-04-01-10-45-45-d3c874043a-figure/posteriors.pdf) 
 
  
  @Gramacy2005

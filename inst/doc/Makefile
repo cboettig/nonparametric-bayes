@@ -4,10 +4,14 @@ SOURCEFILE_B = beyond-mechanistic-models
 
 
 all: 
+	make bib
+	make pdf
+
 
 github:
 	./knit github
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}_github.md
+	pandoc -s --template=rstudio-headers.html ${SOURCEFILE}_github.md -o  ${SOURCEFILE}.html
 
 md:
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}.md
