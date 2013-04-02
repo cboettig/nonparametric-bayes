@@ -19,6 +19,23 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Abstract
 =======================================================================
 
@@ -108,7 +125,7 @@ by approximations to keep computations feasible.
 
 
 
-<span style="color:#007FFF; font-style:italic"> **This part is overstated and unnecessary**
+<span style="color:#007FFF;"> ***This part is overstated and unnecessary***
 Though machine learning approaches have begun to appear in the
 ecological and conservation literature (e.g. in species distribution models),
 including the Gaussian process based approach used here [@Munch2005],
@@ -116,7 +133,7 @@ overall machine learning remains an unfamiliar and somewhat untrusted approach f
 One potential barrier to their adoption is the absence of a framework
 for applying machine learning approaches to resource management problems. </span>
 
-<span style="color:#007FFF; font-style:italic"> transition sentences!? </span> 
+<span style="color:#007FFF;">***transition sentences!?***</span> 
 
 Traditional approaches to optimal control (Pontryagin's principle, stochastic
 dynamic programming) rely on knowledge of the state equation, usually described
@@ -124,11 +141,11 @@ by a simple parametric model. Here we illustrate how a stochastic dynamic
 programming algorithm can alternatively be driven by the predictions from
 a Gaussian process -- a machine learning approximation to the state dynamics.  
 
-<span style="color:#007FFF; font-style:italic"> Okay, perhaps that's novel, but it's pretty trivial.  Isn't it
-obvious to everyon that it's trivial? </span>
+<span style="color:#007FFF;">***Okay, perhaps that's novel, but it's pretty trivial.  Isn't it
+obvious to everyon that it's trivial?***</span>
 
 
-<span style="color:#007FFF; font-style:italic"> paraphrase advantages of machine learning </span>
+<span style="color:#007FFF;">***paraphrase advantages of machine learning***</span>
 
 Management goals / decision-theoretic approaches need accurate prediction
 over relevant (short?) timescales more than reasonable long-term
@@ -182,7 +199,7 @@ uncertainty in parameters [@Mangel1985; @Schapaugh2013] or model structure [@Wil
 we focus on the simplest example to illustrate the comparison, where only a 
 single form of uncertainty (the growth shocks $Z_t$) is present in the underlying
 model, making additional modes unnecessary. 
-<span style="color:#007FFF; font-style:italic">Add comment / apology on single species dynamics </span> 
+<span style="color:#007FFF;">***Add comment / apology on single species dynamics?*** </span> 
 
 
 We compare this approach to our alternative that uses a Gaussian Process (GP)
@@ -220,13 +237,13 @@ approach postulates a prior distribution of (n-dimensional)
 curves that can be though of as approximations to a range of possible
 (parametric) models that might describe the data. The GP allows us
 to consider a set of possible curves simultaneously.  
-<span style="color:#007FFF; font-style:italic"> Figure 1 include curves drawn from the posterior density?  </span>
+<span style="color:#007FFF;"> ***Figure 1 include curves drawn from the posterior density?*** </span>
 
 
-<span style="color:#007FFF; font-style:italic"> Do we need more specifics on Gaussian process as an approximation
+<span style="color:#007FFF;">***Do we need more specifics on Gaussian process as an approximation
 to parametric models? Discussion of Gaussian process vs other machine
 learning / forecasting approaches that have less clear statistical
-foundations?  If so, does this all belong in the discussion? </span>
+foundations?  If so, does this all belong in the discussion?***</span>
 
 
 ### Background on Gaussian Process inference
@@ -238,38 +255,38 @@ equation for the stochastic dynamic programming (SDP) solution [see
 optimal policy. The essense of the idea is straight forward -- we will use
 the estimated GP in place of the parametric growth function to determine
 the stochastic transition matrix on which the SDP calculations are based.
+The SDP is solved in a discritized state space -- both the continuously 
+valued population densities $X$ and harvest quotas $h$ are first mapped to
+a bounded, discrete grid.  (For simplicity we will consider a uniform grid,
+though for either parametric or GP-based SDP it is often advantageous to 
+use a non-uniform discretization such as a basis function representation,
+e.g. see [@Deisenroth2009]). 
 
-The posterior Gaussian process is completely defined by the expected value
-and covariance matrix at a defined set of training points.  For simplicty
-we will consider a these points to fall on a discrete, uniform grid $x$
-of 101 points from 0 to 15
-(1.5 times the positive equilibrium $K$).  Again to keep things simple
-we will use this same grid discritization for the parametric approach.
-Other options for choosing the grid points, including collocation methods
-and functional basis expansion (or even using Guassian processes in place
-of the discrete optimization; an entirely different context in which GP
-can be used in SDP, see [@Deisenroth2009]) could also be considered.
-
-The transition matrix $\mathbf{F}$ is thus an 101
-by 101 matrix for which the ${i,j}$ entry gives the
-probability of transitioning into state $x_i$ given that the system is
-in state $x_j$ in the previous timestep.  To generate the transition
+The SDP approach then computes a transition matrix, $\mathbf{F}$.  We 
+demonstrate that calculation is just as straight forward based on the GP
+as it is in the classical context using the parametric model.  The 
+${i,j}$ of the transition matrix $F$ entry gives the probability of transitioning into 
+state $x_i$ given that the system is in state $x_j$ in the previous 
+timestep.  To generate the transition
 matrix based on the posterior GP, we need only the expected values
 at each grid point and the corresponding variances (the diagonal of
-the covariance matrix), as shown in Figure 1.  Given the mean at each
-gridpoint as the length 101 vector $E$ and variance $V$,
-the probability of transitioning from state $x_i$ to state $x_j$ is
-simply $\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$,
+the covariance matrix), as shown in Figure 1.  Given the mean of the 
+GP posterior at each gridpoint as the vector $E$ and variance at that
+point as vector $V$, the probability of transitioning from state $x_i$ to state $x_j$ is
+
+$$\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$$
+
 where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
 variance $\sigma^2$.  Strictly speaking, the transition probability should
 be calculated by integrating the normal density over the bin of width
 $\Delta$ centered at $x_j$.  For a sufficiently fine grid that $f(x_j)
 \approx f(x_j + \Delta)$, it is sufficient to calculate the density at
-$x_j$ and then row-normalize the transition matrix.
+$x_j$ and then row-normalize the transition matrix. The process
+can then be repeated for each possible discrete value of our control 
+variable, (harvest $h$).  
 
 
-
-## Pseudocode for the determining the transtion matrix from the GP
+**Pseudocode for the determining the transtion matrix from the GP**
 
 ```r
 for(h in h_grid)
@@ -279,11 +296,8 @@ for(h in h_grid)
 ```
 
 
-A transition matrix for each of the parametric models $f$ is calculated
-using the log-normal density with mean $f(x_i)$ and log-variance as
-estimated by maximum likelihood.  From the discrete transition matrix we
-may write down the Bellman recursion defining the the stochastic dynamic
-programming iteration:
+Using the discrete transition matrix we may write down the Bellman
+recursion defining the the stochastic dynamic programming iteration:
 
 \begin{equation}
 V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)
@@ -292,7 +306,7 @@ V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) 
 where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$
 is control (harvest level) chosen. Numerically, the maximization is
 accomplished as follows. Consider the set of possible control values to
-be the discrete 101 values corresponding the the grid of
+be the discrete values corresponding the the grid of
 stock sizes.  Then for each $h_t$ there is a corresponding transition
 matrix $\mathbf{F}_h$ determined as described above but with mean 
 $\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element corresponds
@@ -323,17 +337,12 @@ where the sum is element by element and the expectation is computed by the matri
     D[,OptTime-time+1] <- out[2,]       # The index positions
 ```
 
-_Currently this shows the literal R code, should be adapted_ 
+This completes the algorithm adapting the GP to the sequential decision-making 
+problem through SDP, which we believe has not yet been demonstrated in the
+literature.  We provide an R package implementation of this, along with
+the Gaussian process inference, in the supplemental materials.  
 
 
-
-### The optimal control problem
-
-
-### Discussion on how we compare performance of policies
-
-* Replicate stochastic simulations 
-* Sensitivity analysis (Figure 4).  
 
 
 ## Example in a bistable system
@@ -341,9 +350,18 @@ _Currently this shows the literal R code, should be adapted_
 Concerns over the potential for tipping points in ecological dynamics
 [@Scheffer2001] highlight the dangers of uncertainty in ecological
 management and pose a substantial challenge to existing decision-theoretic
-approaches [@Brozovic2011].  To compare the performance of nonparametric
-and parametric approaches in an example that is easy to conceptualize,
-we will focus on a simple parametric model for a single species [derived
+approaches [@Brozovic2011].  Because intervention is often too late 
+after a tipping point has been crossed (but see @Hughes2013), management
+is most often concerned with avoiding potentially catostrophic tipping
+points before any data is available at or following a transition that
+would more clearly reveal these regime shift dyanmics [e.g. @Bestelmeyer2012].
+
+<!-- Explain the connection to alternative stable states -->
+
+To illustrate the value of the non-parametric Bayesian approach to management,
+we focus on example of a system containing such a tipping point whose dynamics
+can still be described by a simple, one-dimensional parametric model.  
+We will focus on a simple parametric model for a single species [derived
 from fist principles by @Allen2005a] as our underlying "reality".
 
 \begin{align}
@@ -364,9 +382,6 @@ This model contains an Allee effect, or tipping point, below which the
 population is not self-sustaining and shrinks to zero [@Courchamp2008].
 
 
-
-## Sample training data
-
 Both parametric and nonparametric approaches will require training
 data on which to base their model of the process.  We generate the
 training data under the model described in Eq 1 for 35 time
@@ -374,7 +389,10 @@ steps, under a known but not necessarily optimal sequence of harvest
 intensities, $h_t$.  For simplicity we imagine a fishery that started
 from zero harvest pressure and has been gradually increasing the harvest.
 
-<span style="color:#007FFF; font-style:italic">Should we include any emprical examples? </span>
+
+
+
+<!-- things that we could hit upon in discussion:
 Using data simulated from a specified model rather than empirical data
 permits the comparison against the true underlying dynamics, setting 
 a bar for the optimal performance possible.  
@@ -382,12 +400,11 @@ a bar for the optimal performance possible.
 (Motivation, alternatives, stationarity, examples without a stable node
 (limit-cycle models), examples based on observations near a stable node
 alone, and why that isn't impossible).
+-->
 
+<span style="color:#007FFF;">***Should we include any emprical examples?***</span>
 
-Results
-====================================================
-
-### Discussion of maximum likelihood estimated models
+### Estimating parametric models 
 
 We estimate two parametric models from the data using a maximum likelihood
 approach.  The first model is structurally identical to the true model
@@ -398,43 +415,38 @@ model, which is structurally similar and commonly used in for such data.
 
 
 
+The maximum likelihood estimates (MLE) will assume that the process noise $Z_t$
+is log-normal, as in the simulation itself.  In reality the noise structure might 
+differ from this assumption, making this a best-case scenario for the MLE approach.  
+The GP must also make an assumption about the noise structure -- in this case we 
+assume additve noise, though multiplicative noise would be more accurate.  This
+will illustrate the flexibility of the GP in fitting different noise structures
+even without knowledge of the correct assumptions.  
+
+The GP estimate is Bayesian approach which requires specification of
+prior distributions for the hyperparameters [see Appendix for details,
+or @Rassmussen1996, @Munch2005 for background], as given in Table 1.
+Then given the data, both the GP and the MLE parametric models can
+be estimated as described above, as we implement in R in the code
+provided in supplementary materials.  
 
 
+Results
+====================================================
 
 
+Figure 1 shows the  inferred Gaussian Process compared to the true and the MLE parametric
+models. The grey shading shows the uncertainty estimated by the GP.  Unlike the MLE estimates,
+the GP uncertainty changes depending on where the data is available, allowing for a much 
+greater level of uncertainty at low stock sizes.  While it would be natural (and straight forward)
+to condition the GP on passing through the origin (0,0) (see appendix), the estimate shown
+here is based only on the observed data.  
 
+<!-- Would it be useful to show the uncertainty in the other models? -->
 
-(MLE models will assume the noise is log-normal, which it is in the
-simulation).
+<!-- with (light grey) and without (darker grey) measurement error -->
 
-Which estimates a Ricker model with $r =$ 1.8501, $K =$ 
-9.8091, and the Allen Allele model with $r =$ 2.8079, $K =$
-11.8235 and $C =$ 7.2159.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Figure 1: 
-
-_Shows the inferred Gaussian Process compared to the true and parametric
-models.  Refer to the appendix for details on the GP posteriors, etc._
-
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](http://carlboettiger.info/assets/figures/2013-04-01-10-45-33-d3c874043a-figure/gp_plot.pdf) 
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance (grey shading)  is also shown.  The training data is also shown as black points. ](figure/gp_plot.png) 
 
 
 
@@ -446,7 +458,7 @@ policy may be more useful for the technical reader, the general audience
 may prefer Figure 3 showing all replicates of the population collapse
 under the parametric model and not under the GP._
 
-![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](http://carlboettiger.info/assets/figures/2013-04-01-10-45-37-d3c874043a-figure/policies_plot.pdf) 
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/policies_plot.png) 
 
 
 ## Figure 3: 
@@ -461,7 +473,7 @@ that is not clear from the figure! Also isn't general, sometimes does
 optimally, sometimes over-fishes.  Perhaps need to show more examples.)
 May need to show profits too?_
 
-![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](http://carlboettiger.info/assets/figures/2013-04-01-10-45-40-d3c874043a-figure/sim_plot.pdf) 
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/sim_plot.png) 
 
 
 ## Figure 4:
@@ -472,6 +484,12 @@ not depend on the stochastic realization of the training data here, or on
 the parameters of the underlying model, though quantitative differences
 are visible._
 
+
+
+### Discussion on how we compare performance of policies
+
+* Replicate stochastic simulations 
+* Sensitivity analysis (Figure 4).  
 
 
 Discussion / Conclusion
@@ -511,7 +529,7 @@ drive the system towards rather than away from this region of state-space.
 This application relies only on the predictive accuracy of the model,
 not an interpretation of the parameters.  
 
-<span style="color:#007FFF; font-style:italic"> wow, run-on tangent? </span>
+<span style="color:#007FFF;"> wow, run-on tangent? </span>
 Predictive accuracy is not the goal of all modeling, as ecologists
 have been observing for as long as they made models (perhaps none
 more memorably than @Levins1969).  Mechanistic modeling is at its
@@ -559,7 +577,7 @@ One of the greatest strengths of mechanistic models is their greatest weakness a
 
 ## Future directions
 
-<span style="color:#007FFF; font-style:italic"> Jargony and vague </span>
+<span style="color:#007FFF;"> Jargony and vague </span>
 While we have highlighted certain generic of this problem that allow the
 nonparametric approach to excel -- short timescales between successive
 observations and actions, the accuracy in the appropriate region of state
@@ -567,7 +585,7 @@ space, the ability to express uncertainty outside the observed data --
 there are equally several aspects for which the nonparametric approach is
 at a relative disadvantage.  
 
-<span style="color:#007FFF; font-style:italic"> Model complexity </span>
+<span style="color:#007FFF;"> Model complexity </span>
 In this simulated example, the underlying
 dynamics are truly governed by a simple parametric model, allowing
 the parametric approaches to be more accurate.  Similarly, because the
@@ -578,7 +596,7 @@ dynamics.  For these reasons, we anticipate that in higher-dimensional
 examples characteristic of ecosystem management problems that the machine
 learning approach will prove even more valuable.
 
-<span style="color:#007FFF; font-style:italic"> Data complexity. Perhaps too far out of scope... </span>
+<span style="color:#007FFF;"> Data complexity. Perhaps too far out of scope... </span>
 The machine learning approach is also better suited to complex and
 disparate data.  Incorporating various sources of information into
 mechanistic models can be an immensely difficult due to the increased
@@ -594,7 +612,7 @@ of data directly.  The algorithms can recognize unanticipated or subtle
 patterns in large data sets that enable more accurate predictions than
 mechanistic models that are formulated at a more macroscopic level.
 
-<span style="color:#007FFF; font-style:italic"> 
+<span style="color:#007FFF;"> 
 * Discuss constant escapement in model, in policies.
 
 * Limitations of this comparison: Are the maximum-likelihood solutions
@@ -632,7 +650,7 @@ parameter       interpretation
 ---------       -------------- 
 $\sigma^2$      The process noise (from the kernel)
 $\tau^2$        Variance around the mean
-$\beta$_0       The mean is given by a linear model of slope $\beta$ 
+$\beta_0$       The mean is given by a linear model of slope $\beta$ 
 $d$             The length-scale of the covariance function
 $n$             The observation error
 
@@ -756,7 +774,7 @@ _Currently this shows the literal R code, should be adapted_
 MCMC posterior distributions and convergence analysis
 ----------------------------------------------------------------------------
 
-![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](http://carlboettiger.info/assets/figures/2013-04-01-10-45-45-d3c874043a-figure/posteriors.pdf) 
+![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](figure/posteriors.png) 
 
  
  @Gramacy2005
