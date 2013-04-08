@@ -81,37 +81,39 @@ par_est <- function(obs,  init = c(r=1.5, K=mean(obs$x), s=1)){
 #' @import pdgControl
 #' @export
 optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid, sigma_g, sigma_g_est, sigma_g_alt, delta, xT, profit, reward, OptTime){
+  MaxT = 1000
   matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
-  opt_gp <- find_dp_optim(matrices_gp, x_grid, h_grid, OptTime, xT, profit, delta, reward=reward)
+  opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
   matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
-  opt_true <- find_dp_optim(matrices_true, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
+  opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
   matrices_estimated <- f_transition_matrix(f_est, p_est, x_grid, h_grid, sigma_g_est)
-  opt_estimated <- find_dp_optim(matrices_estimated, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
+  opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
   matrices_alt <- f_transition_matrix(f_alt, p_alt, x_grid, h_grid, sigma_g_alt)
-  opt_alt <- find_dp_optim(matrices_alt, x_grid, h_grid, OptTime, xT, profit, delta=delta, reward = reward)
+  opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
   
-  gp_D <- sapply(1:OptTime, function(i) opt_gp$D[,1])
-  true_D <- sapply(1:OptTime, function(i) opt_true$D[,1])
-  est_D <- sapply(1:OptTime, function(i) opt_estimated$D[,1])
-  alt_D <- sapply(1:OptTime, function(i) opt_alt$D[,1])
   
-  list(gp_D = gp_D, true_D = true_D, est_D = est_D, alt_D = alt_D)
+  list(gp_D = opt_gp$D, true_D = opt_true$D, est_D = opt_estimated$D, alt_D = opt_alt$D)
 }
 
 #' helper function to simulate the optimal policies of each model
 #' @import pdgControl data.table reshape2
 #' @export
-simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit){
+simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime){
   set.seed(1)
-  sim_gp <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$gp_D, z_g, profit=profit))
+  sim_gp <- lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$gp_D, z_g, profit=profit, OptTime=OptTime))
   set.seed(1)
-  sim_true <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$true_D, z_g, profit=profit))
+  sim_true <- lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$true_D, z_g, profit=profit, OptTime=OptTime))
   set.seed(1)
-  sim_est <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$est_D, z_g, profit=profit))
+  sim_est <- lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$est_D, z_g, profit=profit, OptTime=OptTime))
   set.seed(1)
-  sim_alt <- lapply(1:100, function(i) ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$alt_D, z_g, profit=profit))
+  sim_alt <- lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, OPT$alt_D, z_g, profit=profit, OptTime=OptTime))
   
-  dat <- list(GP = sim_gp, Parametric = sim_est, True = sim_true, Structural = sim_alt)
+  dat <- list(GP = sim_gp, Parametric = sim_est, 
+              True = sim_true, Structural = sim_alt)
   dat <- melt(dat, id=names(dat[[1]][[1]]))
   dt <- data.table(dat)
   setnames(dt, c("L1", "L2"), c("method", "reps")) 

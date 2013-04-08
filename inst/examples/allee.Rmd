@@ -131,7 +131,7 @@ Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and 
 
 
 ```{r}
-dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
+dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime=OptTime)
 sim_plots(dt, seed=seed_i)
 profits_stats(dt)
 ```

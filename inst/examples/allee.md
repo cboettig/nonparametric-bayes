@@ -103,7 +103,7 @@ Which estimates a Ricker model with $r =$ 2, $K =$ 6.77, and the Allen allee mod
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8535/8617059578_b528a1e51c_o.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8121/8633242428_7f3a8a551f_o.png) 
 
 
 
@@ -141,7 +141,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8540/8617059782_197bdf7edd_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8519/8633242600_ea942b7107_o.png) 
 
 
 
@@ -155,29 +155,34 @@ this.
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8265/8617060456_71afc3e4eb_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8402/8633250032_62e883a157_o.png) 
 
 
 
 
 
 ```r
-dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
+dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime=OptTime)
+```
+
+```
+Error: unused argument(s) (OptTime = OptTime)
+```
+
+```r
 sim_plots(dt, seed=seed_i)
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8113/8617060842_7c088c12d1_o.png) 
+```
+Error: ggplot2 doesn't know how to deal with data of class function
+```
 
 ```r
 profits_stats(dt)
 ```
 
 ```
-       method     V1     sd
-1:         GP 19.337 1.6314
-2: Parametric  6.446 0.3384
-3:       True 20.701 1.8012
-4: Structural  7.650 0.0000
+Error: invalid 'type' (closure) of argument
 ```
 
   
