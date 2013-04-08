@@ -125,7 +125,7 @@ these models reflect mechanistic underpinnings of biological
 interactions involved, in practice real mechanisms are often unknown and
 the true dynamics too complex to be captured by simple models
 {[}@refs{]}. While simple mechanistic models can nevertheless provide
-imporant insights into possible dynamics -- for instance, demonstrating
+important insights into possible dynamics -- for instance, demonstrating
 that a vaccine does not have to be 100\% effective to eliminate the
 transmission of a virus -- such approaches are not well-suited for use
 in forecasting outcomes of potential management options. Non-parametric
@@ -169,9 +169,9 @@ typically both complex and unknown {[}@refs{]}. Despite this,
 quantitative policy optimization in these systems has almost exclusively
 been based on simple, mechanistically motivated parametric models. There
 are several reasons for this. First, limited available data almost
-always percludes any accurate estimate of more complicated models.
-Second, the computational demands of determining an optimal stategy in a
-sequential decision-theory problem suffer from the ``curse of
+always precludes any accurate estimate of more complicated models.
+Second, the computational demands of determining an optimal strategy in
+a sequential decision-theory problem suffer from the ``curse of
 dimensionality'' that makes it difficult to consider more complicated
 models, states, or actions. Unfortunately, these challenges also make it
 particularly difficult to reflect the true uncertainty either in the
@@ -184,7 +184,7 @@ natural way to address these from a statistical standpoint, formulating
 reasonable parametric descriptions of each form of uncertainty is a
 challenging task in itself, let alone the computational difficulties of
 solving such a system. Cressie et al. (2009) provides a good account of
-the successess and challenges of the approach. Applying these approaches
+the successes and challenges of the approach. Applying these approaches
 in the management context of sequential decision making, in which
 forecasts must be obtained over a range of possible actions and updated
 regularly as new information arrives makes such an approach less
@@ -217,7 +217,7 @@ the predictions from a Gaussian process -- a machine learning
 approximation to the state dynamics.
 
 \textbf{\emph{Okay, perhaps that's novel, but it's pretty trivial. Isn't
-it obvious to everyon that it's trivial?}}
+it obvious to everyone that it's trivial?}}
 
 \textbf{\emph{paraphrase advantages of machine learning}}
 
@@ -295,7 +295,7 @@ et al. (2005). An accessible and thorough introduction to the
 formulation and use of GPs can be found in C. E. Rasmussen and Williams
 (2006).
 
-The essense of the GP approach can be captured in the following thought
+The essence of the GP approach can be captured in the following thought
 experiment: An exhaustive parametric approach to the challenge of
 structural uncertainty might proceed by writing down all possible
 functional forms for the underlying dynamical system with all possible
@@ -328,11 +328,11 @@ Once the posterior Gaussian process (GP) has been estimated (e.g.~see
 Munch et al. 2005), it is necessary to adapt it in place of the
 parametric equation for the stochastic dynamic programming (SDP)
 solution (see Mangel and Clark 1988 for a detailed description of
-parametric SDP methods) to the optimal policy. The essense of the idea
+parametric SDP methods) to the optimal policy. The essence of the idea
 is straight forward -- we will use the estimated GP in place of the
 parametric growth function to determine the stochastic transition matrix
 on which the SDP calculations are based. The SDP is solved in a
-discritized state space -- both the continuously valued population
+discretized state space -- both the continuously valued population
 densities $X$ and harvest quotas $h$ are first mapped to a bounded,
 discrete grid. (For simplicity we will consider a uniform grid, though
 for either parametric or GP-based SDP it is often advantageous to use a
@@ -344,12 +344,12 @@ demonstrate that calculation is just as straight forward based on the GP
 as it is in the classical context using the parametric model. The
 ${i,j}$ of the transition matrix $F$ entry gives the probability of
 transitioning into state $x_i$ given that the system is in state $x_j$
-in the previous timestep. To generate the transition matrix based on the
-posterior GP, we need only the expected values at each grid point and
-the corresponding variances (the diagonal of the covariance matrix), as
-shown in Figure 1. Given the mean of the GP posterior at each gridpoint
-as the vector $E$ and variance at that point as vector $V$, the
-probability of transitioning from state $x_i$ to state $x_j$ is
+in the previous time-step. To generate the transition matrix based on
+the posterior GP, we need only the expected values at each grid point
+and the corresponding variances (the diagonal of the covariance matrix),
+as shown in Figure 1. Given the mean of the GP posterior at each
+grid-point as the vector $E$ and variance at that point as vector $V$,
+the probability of transitioning from state $x_i$ to state $x_j$ is
 
 \[\mathcal{N}\left(x_j \vert  \mu = E_i, \sigma = \sqrt{V_i}\right)\]
 
@@ -362,7 +362,8 @@ density at $x_j$ and then row-normalize the transition matrix. The
 process can then be repeated for each possible discrete value of our
 control variable, (harvest $h$).
 
-\textbf{Pseudocode for the determining the transtion matrix from the GP}
+\textbf{Pseudocode for the determining the transition matrix from the
+GP}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -374,7 +375,7 @@ control variable, (harvest $h$).
 \end{Shaded}
 
 Using the discrete transition matrix we may write down the Bellman
-recursion defining the the stochastic dynamic programming iteration:
+recursion defining the stochastic dynamic programming iteration:
 
 \begin{equation}
 V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)
@@ -383,8 +384,8 @@ V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) 
 where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$ is
 control (harvest level) chosen. Numerically, the maximization is
 accomplished as follows. Consider the set of possible control values to
-be the discrete values corresponding the the grid of stock sizes. Then
-for each $h_t$ there is a corresponding transition matrix $\mathbf{F}_h$
+be the discrete values corresponding the grid of stock sizes. Then for
+each $h_t$ there is a corresponding transition matrix $\mathbf{F}_h$
 determined as described above but with mean $\mu = x_j - h_t$. Let
 $\vec{V_t}$ be the vector whose $i$th element corresponds to the value
 of having stock $x_i$ at time $t$. Then let $\Pi_h$ be the vector whose
@@ -430,10 +431,10 @@ Concerns over the potential for tipping points in ecological dynamics
 ecological management and pose a substantial challenge to existing
 decision-theoretic approaches (Brozović and Schlenker 2011). Because
 intervention is often too late after a tipping point has been crossed
-(but see @Hughes2013), management is most often concerned with avoiding
-potentially catostrophic tipping points before any data is available at
-or following a transition that would more clearly reveal these regime
-shift dyanmics {[}e.g. @Bestelmeyer2012{]}.
+(but see Hughes et al. (2013)), management is most often concerned with
+avoiding potentially catostrophic tipping points before any data is
+available at or following a transition that would more clearly reveal
+these regime shift dynamics (e.g. Bestelmeyer et al. 2012).
 
 To illustrate the value of the non-parametric Bayesian approach to
 management, we focus on example of a system containing such a tipping
@@ -481,13 +482,13 @@ The maximum likelihood estimates (MLE) will assume that the process
 noise $Z_t$ is log-normal, as in the simulation itself. In reality the
 noise structure might differ from this assumption, making this a
 best-case scenario for the MLE approach.\\The GP must also make an
-assumption about the noise structure -- in this case we assume additve
+assumption about the noise structure -- in this case we assume additive
 noise, though multiplicative noise would be more accurate. This will
 illustrate the flexibility of the GP in fitting different noise
 structures even without knowledge of the correct assumptions.
 
 The GP estimate is Bayesian approach which requires specification of
-prior distributions for the hyperparameters (see Appendix for details,
+prior distributions for the hyper-parameters (see Appendix for details,
 or @Rassmussen1996, Munch et al. 2005 for background), as given in Table
 1. Then given the data, both the GP and the MLE parametric models can be
 estimated as described above, as we implement in R in the code provided
@@ -496,13 +497,19 @@ in supplementary materials.
 \section{Results}
 
 Figure 1 shows the inferred Gaussian Process compared to the true and
-the MLE parametric models. The grey shading shows the uncertainty
-estimated by the GP. Unlike the MLE estimates, the GP uncertainty
-changes depending on where the data is available, allowing for a much
-greater level of uncertainty at low stock sizes. While it would be
-natural (and straight forward) to condition the GP on passing through
-the origin (0,0) (see appendix), the estimate shown here is based only
-on the observed data.
+the MLE parametric models, predicting the relationship between observed
+stock size (x-axis) to the stock size following recruitment the
+following year. The gray shading shows the uncertainty estimated by the
+GP. Unlike the MLE estimates, the GP uncertainty changes depending on
+where the data is available, allowing for a much greater level of
+uncertainty at low stock sizes. While it would be natural (and straight
+forward) to condition the GP on passing through the origin (0,0) (see
+appendix), the estimate shown here is based only on the observed data.
+The observed data from which each model is estimated is also shown. The
+observations come from only a limited region of state space
+corresponding to unharvested or weakly harvested system. No observations
+occur at the theoretical optimum (7.5 units, see Figure 2) or near the
+tipping point (5 units).
 
 \begin{figure}[htbp]
 \centering
@@ -514,34 +521,45 @@ deviations from the estimated Gaussian process covariance (grey shading)
 is also shown. The training data is also shown as black points.}
 \end{figure}
 
-\subsection{Figure 2:}
-
-\emph{The take-home message, showing that the GP is closest to the
-optimal strategy, while the parametric methods are less accurate.
-Visualizing the policy may be more useful for the technical reader, the
-general audience may prefer Figure 3 showing all replicates of the
-population collapse under the parametric model and not under the GP.}
+The resulting optimal management strategy based on each of the inferred
+models is shown in Figure 2, against the optimal strategy given the true
+underlying dynamics. Policies are shown in terms of target escapement,
+$S_t$. Under models such as this a constant escapement policy is
+expected to be optimal (Reed 1979), whereby population levels below a
+certain size $S$ are unharvested, while above that size the harvest
+strategy aims to return the population to $S$, resulting in the
+hockey-stick shaped policies shown. Only the GP policy deviates slightly
+from this. The MLE parametric model corresponding to parametric
+uncertainty alone (gold line labeled ``Parametric'', that is, using the
+same structural form as the underlying simulation) nevertheless
+overestimates the carrying capacity of the stock and therefore
+underestimates the harvest rates, always waiting for the stock to rise
+further than is actually possible. The Ricker model (green line, showing
+``Structural'' inaccuracies) does not foresee the tipping point dynamics
+reflected in the concavity of the other three models (Figure 1), and
+selects a much more aggressive harvesting strategy.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics{figure/policies_plot.png}
 \caption{The steady-state optimal policy (infinite boundary) calculated
-under each model. Policies are shown in terms of target escapement,
-$S_t$, as under models such as this a constant escapement policy is
-expected to be optimal (Reed 1979).}
+under each model.}
 \end{figure}
 
-\subsection{Figure 3:}
+The consequences of managing 100 replicate realizations of the simulated
+fishery under each of the policies estimated is shown in Figure 3. As
+expected from the policy curves, the structurally correct model
+(``Parametric'' uncertainty, gold) underharvests, leaving the stock to
+vary around it's unfished optimum. The GP overharvests the population
+slightly relative to the optimal value. The structurally incorrect
+Ricker model (``Structural'', green line) overharvests the population
+passed the tipping point consistently, resulting in the immediate crash
+of the stock and thus derives minimal profits.
 
-\emph{Figure 3 is a less abstract and more visceral visualization of the
-take-home message, with the structurally inaccurate model leading
-universally to a collapse of the fishery and very few profits, while the
-Gaussian process performs nearly optimally. The parametric approach even
-with the correct underlying structure does not perform optimally,
-choosing in this case to under-fish (may need to show harvest dynamics
-since that is not clear from the figure! Also isn't general, sometimes
-does optimally, sometimes over-fishes. Perhaps need to show more
-examples.) May need to show profits too?}
+\textbf{\emph{(may need to show harvest dynamics since that is not clear
+from the figure! Also isn't general, sometimes does optimally, sometimes
+over-fishes. Perhaps need to show more examples.) May need to show
+profits too?}}
 
 \begin{figure}[htbp]
 \centering
@@ -552,73 +570,76 @@ the policies derived from each of the estimated models, as well as the
 policy based on the exact underlying model.}
 \end{figure}
 
-\subsection{Figure 4:}
+The results shown in Figures 1-3 are not unique to the simulated data or
+models chosen here, but arises across a range of parameter values and
+simulations as shown in the supplemental figures. The results across
+this range can most easily be compared by the relative differences in
+net present value realized by each of the approaches, as shown in Figure
+4. The Gaussian Process most consistently realizes a value close to the
+optimal solution, and importantly avoids ever driving the system across
+the tipping point, which results in the near-zero value cases in the
+parametric models.
 
-\emph{Shows the sensitivity analysis. A histogram of distribution of
-yield over stochastic realizations, showing that the qualitative results
-do not depend on the stochastic realization of the training data here,
-or on the parameters of the underlying model, though quantitative
-differences are visible.}
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/figure4.png}
+\caption{Histograms of the realized net present value of the fishery
+over a range of simulated data and resulting parameter estimates. For
+each data set, the three models are estimated as described above. Values
+plotted are the averages of a given policy over 100 replicate
+simulations. Details and code provided in the supplement.}
+\end{figure}
 
-\subsubsection{Discussion on how we compare performance of policies}
+\section{Discussion}
 
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Replicate stochastic simulations
-\item
-  Sensitivity analysis (Figure 4).
-\end{itemize}
+Non-parametric Bayesian methods have received far too little attention
+in ecological modeling efforts that are aimed at improved conservation
+planning and decision making support. Such approaches may be
+particularly useful when the available data is restricted to a limited
+area of state-space, which can lead parametric models to underestimate
+the uncertainty in dynamics at population levels (states) which have not
+been observed. One reason for the relative absence of nonparametric
+approaches in the natural resource management context may be the lack of
+existing approaches for adapting the non-parametric Bayesian models
+previously proposed (Munch et al. 2005) to a decision-theoretic
+framework. Adapting a non-parametric approach requires modification of
+existing methods for decision theory. We have illustrated how this might
+be done for a classic stochastic dynamic programming problem, opening
+the door for substantial further research into how these applications
+might be improved.
 
-\section{Discussion / Conclusion}
+While non-parametric Bayesian approaches will not always be preferable
+to simple mechanistic models, we highlight three aspects of the problem
+consider here that make these methods particularly valuable. These
+aspects are common to many conservation decision making problems, which
+thus merit greater use of non-parametric machine learning approaches
+that can best take advantage of them.
 
-Non-parametric methods have received far too little attention in
-ecological modeling efforts that are aimed at improved conservation
-planning and decision making support.
+\subsubsection{1. Large uncertainty where the data is poor}
 
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Adapting a non-parametric approach requires modification of existing
-  methods for decision theory. We have illustrated how this might be
-  done in the context of stochastic dynamic programming, opening the
-  door for substantial further research into how these applications
-  might be improved.
-\end{itemize}
+The parametric models perform worst when they propose a management
+strategy outside the range of the observed data. The non-parametric
+Bayesian approach, in contrast, allows a predictive model that expresses
+a great deal of uncertainty about the probable dynamics outside the
+observed range, while retaining very good predictive accuracy in the
+range observed. The management policy dictated by the GP balance this
+uncertainty against the immediate value of the harvest, and act to
+stabilize the population dynamics in a region of state space in which
+the predictions can be reliably reflected by the data.
 
-Three elements contribute to the machine learning model performing as
-well or better than the mechanisitic models in this context.
+\subsubsection{2. Predictive accuracy where data is good}
 
-\subsubsection{1. Relevant state space}
-
-The dynamics occur over a range of state-space in which the machine
-learning model closely matches the predictions of y implausible model
-performs as well or better than the more plausible model.
-
-This is the most obvious and immediate reason why the shortcomings that
-appear to make the model implausible do not make it useless. This effect
-is enhanced in our example because the management actions help drive the
-system towards rather than away from this region of state-space.
-
-\subsubsection{2. Predictive accuracy}
-
-This application relies only on the predictive accuracy of the model,
-not an interpretation of the parameters.
-
- wow, run-on tangent? Predictive accuracy is not the goal of all
-modeling, as ecologists have been observing for as long as they made
-models (perhaps none more memorably than Levins (1969)). Mechanistic
-modeling is at its most powerful not when it is used to directly
-forecast future states but when it provides an understanding of how to
-approach a problem. SIR-type models from the epidemiological literature
-are a good example. While the simplest SIR models have little predictive
-power over the outbreak intensity or timing at a particular location,
-they provide a powerful understanding of the spread of an infection in
-terms of a single, biologically meaningful parameter: $R_0$, the basic
-reproductive number. From the model, it becomes clear that management
-need not vaccinate every member of the population to stop the spread,
-but rather it suffices to vaccinate a sufficient fraction of the
-population to reduce $R_0$ below 1.
+While expressing larger uncertainty outside the observed data, the GP
+can also provide a better fit with smaller uncertainty inside the range
+of the observed data. This arises from the greater flexibility of the
+Gaussian process, which describes a large family of possible
+curves.\\While in a parametric context this over-fitting would be more
+worrisome -- a high-degree polynomial could fit the data even better --
+those concerns are driven by the resulting parametric fit outside the
+data, which may involve wild oscillations unsupported by the data. As we
+have seen in \#1, the GP is less vulnerable to such unjustified
+predictions outside the data, and is meanwhile free to benefit from the
+greater fit where the data is available.
 
 \subsubsection{3. Time scale for new data}
 
@@ -640,17 +661,6 @@ machine learning algorithm that makes accurate year-ahead predictions
 that capture some of the high-frequency fluctuations that appear only as
 noise in a mechanistic model of the long-term population dynamics.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\setcounter{enumi}{1}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Better express ambiguity in regions where data is not available
-\end{enumerate}
-
-One of the greatest strengths of mechanistic models is their greatest
-weakness as well.
-
 \subsection{Future directions}
 
  Jargony and vague While we have highlighted certain generic of this
@@ -658,21 +668,19 @@ problem that allow the nonparametric approach to excel -- short
 timescales between successive observations and actions, the accuracy in
 the appropriate region of state space, the ability to express
 uncertainty outside the observed data -- there are equally several
-aspects for which the nonparametric approach is at a relative
-disadvantage.
+aspects for which the nonparametric Bayesian approach is nevertheless at
+a relative disadvantage. In this simulated example, the underlying
+dynamics are truly governed by a simple parametric model, allowing the
+parametric approaches to be more accurate. Similarly, because the
+dynamics are one-dimensional dynamics and lead to stable nodes (rather
+than other attractors such as limit-cycles resulting in oscillations),
+the training data provides relatively limited information about the
+dynamics. For these reasons, we anticipate that in higher-dimensional
+examples characteristic of ecosystem management problems that the
+machine learning approach will prove even more valuable.
 
- Model complexity In this simulated example, the underlying dynamics are
-truly governed by a simple parametric model, allowing the parametric
-approaches to be more accurate. Similarly, because the dynamics are
-one-dimensional dynamics and lead to stable nodes (rather than other
-attractors such as limit-cycles resulting in oscillations), the training
-data provides relatively limited information about the dynamics. For
-these reasons, we anticipate that in higher-dimensional examples
-characteristic of ecosystem management problems that the machine
-learning approach will prove even more valuable.
-
- Data complexity. Perhaps too far out of scope\ldots{} The machine
-learning approach is also better suited to complex and disparate data.
+ Data complexity. Perhaps too far out of scope\ldots{} The nonparametric
+Bayesian approach is also better suited to complex and disparate data.
 Incorporating various sources of information into mechanistic models can
 be an immensely difficult due to the increased complexity involved. Only
 thanks to tandem advances in increasing computational power and
@@ -687,32 +695,6 @@ algorithms can recognize unanticipated or subtle patterns in large data
 sets that enable more accurate predictions than mechanistic models that
 are formulated at a more macroscopic level.
 
- * Discuss constant escapement in model, in policies.
-
-\begin{itemize}
-\item
-  Limitations of this comparison: Are the maximum-likelihood solutions a
-  straw man?
-\item
-  Discussion of alternative related approaches: POMDP/MOMDP 
-\end{itemize}
-
-\begin{center}\rule{3in}{0.4pt}\end{center}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Multiple species
-\item
-  Online learning
-\item
-  Multiple step-ahead predictions
-\item
-  Explicitly accomidating additional uncertainties
-\item
-  Improving inference of optimal policy from the GP
-\end{itemize}
-
 \section{Acknowledgments}
 
 This work was partially supported by the Center for Stock Assessment
@@ -720,9 +702,31 @@ Research, a partnership between the University of California Santa Cruz
 and the Fisheries Ecology Division, Southwest Fisheries Science Center,
 Santa Cruz, CA and by NSF~grant EF-0924195 to MM.
 
+ \textbf{\emph{Possible additional discussion material?}}
+
+\begin{itemize}
+\item
+  Discuss constant escapement in model, in policies.
+\item
+  Limitations of this comparison: Are the maximum-likelihood solutions a
+  straw man?
+\item
+  Discussion of alternative related approaches: POMDP/MOMDP
+\item
+  Online learning
+\item
+  Multiple step-ahead predictions
+\item
+  Explicitly accomidating additional uncertainties
+\item
+  Improving inference of optimal policy from the GP 
+\end{itemize}
+
+\begin{center}\rule{3in}{0.4pt}\end{center}
+
 \section{Appendix / Supplementary Materials}
 
-\subsubsection{The Guassian process}
+\subsubsection{The Gaussian process}
 
 The Gaussian process is defined by a covariance kernel. By requiring our
 kernel to follow a generic functional form, we can compactly describe
@@ -784,32 +788,15 @@ on which the SDP calculations are based.
 
 The posterior Gaussian process is completely defined by the expected
 value and covariance matrix at a defined set of training points. For
-simplicty we will consider a these points to fall on a discrete, uniform
-grid $x$ of 101 points from 0 to 15 (1.5 times the positive equilibrium
-$K$). Again to keep things simple we will use this same grid
-discritization for the parametric approach. Other options for choosing
+simplicity we will consider a these points to fall on a discrete,
+uniform grid $x$ of 101 points from 0 to 15 (1.5 times the positive
+equilibrium $K$). Again to keep things simple we will use this same grid
+discretization for the parametric approach. Other options for choosing
 the grid points, including collocation methods and functional basis
-expansion (or even using Guassian processes in place of the discrete
+expansion (or even using Gaussian processes in place of the discrete
 optimization; an entirely different context in which GP can be used in
 SDP, see (Deisenroth, Rasmussen, and Peters 2009)) could also be
 considered.
-
-The transition matrix $\mathbf{F}$ is thus an 101 by 101 matrix for
-which the ${i,j}$ entry gives the probability of transitioning into
-state $x_i$ given that the system is in state $x_j$ in the previous
-timestep. To generate the transition matrix based on the posterior GP,
-we need only the expected values at each grid point and the
-corresponding variances (the diagonal of the covariance matrix), as
-shown in Figure 1. Given the mean at each gridpoint as the length 101
-vector $E$ and variance $V$, the probability of transitioning from state
-$x_i$ to state $x_j$ is simply
-$\mathcal{N}\left(x_j \vert  \mu = E_i, \sigma = \sqrt{V_i}\right)$,
-where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
-variance $\sigma^2$. Strictly speaking, the transition probability
-should be calculated by integrating the normal density over the bin of
-width $\Delta$ centered at $x_j$. For a sufficiently fine grid that
-$f(x_j) \approx f(x_j + \Delta)$, it is sufficient to calculate the
-density at $x_j$ and then row-normalize the transition matrix.
 
 \subsection{Pseudocode for the determining the transtion matrix from the
 GP}
@@ -875,6 +862,9 @@ the matrix multiplication $\mathbf{F} V_{t+1}$.
 
 \subsection{MCMC posterior distributions and convergence analysis}
 
+\textbf{\emph{Can we get this figure into the main text with appropriate
+discussion without getting too technical?}}
+
 \begin{figure}[htbp]
 \centering
 \includegraphics{figure/posteriors.png}
@@ -903,6 +893,12 @@ control with uncertain stock dynamics: When, and how, to be
 precautious.'' \emph{Journal of Environmental Economics and Management}
 63 (3) (may): 304--320. doi:10.1016/j.jeem.2011.11.001.
 \url{http://linkinghub.elsevier.com/retrieve/pii/S0095069611001409}.
+
+Bestelmeyer, Brandon T., Michael C. Duniway, Darren K. James, Laura M.
+Burkett, and Kris M. Havstad. 2012. ``A test of critical thresholds and
+their indicators in a desertification-prone ecosystem: more resilience
+than we thought.'' Ed. Katharine Suding. \emph{Ecology Letters} (dec).
+doi:10.1111/ele.12045. \url{http://doi.wiley.com/10.1111/ele.12045}.
 
 Brozović, Nicholas, and Wolfram Schlenker. 2011. ``Optimal management of
 an ecosystem with an unknown threshold.'' \emph{Ecological Economics}
@@ -952,16 +948,17 @@ Management.'' \emph{Ecosystems} 10 (8) (oct): 1362--1369.
 doi:10.1007/s10021-007-9100-5.
 \url{http://www.springerlink.com/index/10.1007/s10021-007-9100-5}.
 
+Hughes, Terry P., Cristina Linares, Vasilis Dakos, Ingrid a van de
+Leemput, and Egbert H. van Nes. 2013. ``Living dangerously on borrowed
+time during slow, unrecognized regime shifts.'' \emph{Trends in ecology
+\& evolution} 28 (3) (mar): 149--55. doi:10.1016/j.tree.2012.08.022.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/22995893}.
+
 Kocijan, Juš, Agathe Girard, Bla\textbackslash{}vz Banko, and Roderick
 Murray-Smith. 2005. ``Dynamic systems identification with Gaussian
 processes.'' \emph{Mathematical and Computer Modelling of Dynamical
 Systems} 11 (4) (dec): 411--424. doi:10.1080/13873950500068567.
 \url{http://www.tandfonline.com/doi/abs/10.1080/13873950500068567}.
-
-Levins, Richard. 1969. ``Some demographic and genetic consequences of
-environmental heterogeneity for biological control.'' \emph{Bulletin of
-the Entomological Society of America} 15 (3): 237--240.
-\url{http://www.ingentaconnect.com/content/esa/besa/1969/00000015/00000003/art00009}.
 
 Ludwig, Donald, and Carl J. Walters. 1982. ``Optimal harvesting with
 imprecise parameter estimates.'' \emph{Ecological Modelling} 14 (3-4)
