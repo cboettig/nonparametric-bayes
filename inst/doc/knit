@@ -1,0 +1,51 @@
+#!/usr/bin/Rscript
+
+## ./knit [epub|github|html|pdf|docx] to generate different types of output
+
+library(knitr)
+
+## Global options 
+opts_chunk$set(warning=FALSE, message=FALSE, comment=NA, tidy=FALSE, echo=FALSE)
+
+## verbose compile
+opts_knit$set(progress = TRUE, verbose = TRUE)
+
+local({
+  fmt = commandArgs(TRUE)
+  if (length(fmt) == 0L) fmt = 'github'
+  if (fmt %in% c('github', 'html')) {
+    # upload to flickr when output is for github or html
+    opts_chunk$set(cache=TRUE, fig.path='figure/', dev='Cairo_png',
+    fig.width=5, fig.height=5, cache.path = 'cache-local/', par=TRUE)
+    opts_knit$set(upload.fun = socialR::flickr.url)
+    opts_chunk$set(cache.path = 'cache-upload/')
+    options(xtable.type = 'html')
+    print(paste("Compiling using", opts_chunk$get("dev"), "images..."))
+  } else if (fmt == 'epub') {
+
+  } else if (fmt %in% c('odt', 'docx', 'doc')) {
+    options(xtable.type = 'html')
+    # xtable shouldn't print comments 
+    options(xtable.print.comment=FALSE)
+    # Journal probably wants eps formatted graphics.  
+    opts_chunk$set(dev = 'postscript', fig.width=5, fig.height=5, 
+                   cache.path = 'cache-doc/', cache=TRUE)
+    # try splitting the tables out with special options?
+    options(knitr.include=TRUE)
+    options(knitr.split=TRUE)
+    # For Word docs, we'll want plots to be external only:
+    knit_hooks$set(plot = function(x, options) "") 
+    print(paste("Compiling using", opts_chunk$get("dev"), "images..."))
+
+  } else if (fmt %in% c('tex','pdf')) {
+    options(xtable.print.comment=FALSE)
+    options(xtable.type = 'latex', table.placement="H")
+    opts_chunk$set(cache.path = 'cache-pdf/', cache=TRUE)
+    # use pdf graphics for PDF output
+    opts_chunk$set(dev = 'Cairo_pdf', fig.width=5.5, fig.height=4)
+    print(paste("Compiling using", opts_chunk$get("dev"), "images..."))
+  }
+  
+    knit("nonparametric-bayes.Rmd")
+})
+

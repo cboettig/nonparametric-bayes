@@ -1,108 +1,36 @@
 % Non-parametric approaches to optimal policy are more robust
 
 
-```{r libraries, include=FALSE}
-## Dargh these are ignored if not placed here!?
-options(xtable.type = 'latex', table.placement="H", xtable.print.comment=FALSE)
-opts_chunk$set(cache.path = 'cache-pdf/', cache=TRUE)
-opts_chunk$set(dev = 'Cairo_pdf', fig.width=5.5, fig.height=4)
 
 
-library(pdgControl)
-library(nonparametricbayes)
-library(reshape2)
-library(ggplot2)
-library(data.table)
-library(tgp)
-library(MCMCpack)
-library(plyr)
-library(knitcitations)
-```
-
-```{r plotting-options, echo=FALSE, include=FALSE}
-# This stuff should be handled by knit script(?) (load ggplot2 first though)!
-theme_set(theme_bw(base_size=10))
-theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
-             plot.background = element_rect(fill = "transparent",colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-```
-
-```{r stateeq}
-f <- RickerAllee
-p <- c(2, 10, 5) 
-K <- 10
-allee <- 5
-```
-
-```{r sdp-pars, dependson="stateeq"}
-sigma_g <- 0.05
-sigma_m <- 0.0
-z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
-x_grid <- seq(0, 1.5 * K, length=101)
-h_grid <- x_grid
-profit <- function(x,h) pmin(x, h)
-delta <- 0.01
-OptTime <- 20  # stationarity with unstable models is tricky thing
-reward <- 0
-xT <- 0
-seed_i <- 1
-Xo <- K # observations start from
-x0 <- Xo # simulation under policy starts from
-Tobs <- 35
-```
-
-```{r obs, dependson="sdp-pars"}
-obs <- sim_obs(Xo, z_g, f, p, Tobs=Tobs, nz=1, 
-                harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
-```
-
-```{r mle, dependson="obs"}
-alt <- par_est(obs,  init = c(r = p[1], 
-                              K = mean(obs$x[obs$x>0]), 
-                              s = sigma_g))
-est <- par_est_allee(obs, f, p,  
-                     init = c(r = p[1] + 1, 
-                              K = p[2] + 2, 
-                              C = p[3] + 2, 
-                              s = sigma_g))
-```
-
-```{r gp-priors}
-#inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
-s2.p <- c(5,5)  
-tau2.p <- c(5,1)
-d.p = c(10, 1/0.1, 10, 1/0.1)
-nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
-s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
-tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
-d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
-nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
-beta0_prior <- function(x, tau) dnorm(x, 0, tau)
-beta = c(0)
-priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
-```
-
-```{r gp, dependson=c("obs", "gp-priors")}
-  gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
-          m0r1=FALSE, corr="exp", trace=TRUE, 
-          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
-```
 
 
-```{r opt, dependson=c("gp", "mle")}
-  OPT <- optimal_policy(gp, f, est$f, alt$f,
-                        p, est$p, alt$p,
-                        x_grid, h_grid, sigma_g, 
-                        sigma_g, sigma_g, # est$sigma_g, alt$sigma_g, but those ests are poor
-                        delta, xT, profit, reward, OptTime)
-```
 
-```{r sim, dependson="opt"}
-dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -445,7 +373,7 @@ f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
 Where $Z_t$ is multiplicative noise function with mean 1, representing
 stochastic growth. We will consider log-normal noise with shape parameter
 $\sigma_g$.  We start with an example in which the parameters are $r =$
-`r p[1]`, $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g`.
+2, $K =$ 10, $C =$ 5, and  $\sigma_g =$ 0.05.
 
 
 As a low-dimensional system completely described by three parameters, this
@@ -456,7 +384,7 @@ population is not self-sustaining and shrinks to zero [@Courchamp2008].
 
 Both parametric and nonparametric approaches will require training
 data on which to base their model of the process.  We generate the
-training data under the model described in Eq 1 for `r Tobs` time
+training data under the model described in Eq 1 for 35 time
 steps, under a known but not necessarily optimal sequence of harvest
 intensities, $h_t$.  For simplicity we imagine a fishery that started
 from zero harvest pressure and has been gradually increasing the harvest.
@@ -518,32 +446,8 @@ here is based only on the observed data.
 
 <!-- with (light grey) and without (darker grey) measurement error -->
 
-```{r gp_plot, dependson=c("gp", "mle", "plotting-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance (grey shading)  is also shown.  The training data is also shown as black points. "}
-tgp_dat <- 
-    data.frame(  x = gp$XX[[1]], 
-                 y = gp$ZZ.km, 
-                 ymin = gp$ZZ.km - 2 * sqrt(gp$ZZ.ks2), 
-                 ymax = gp$ZZ.km + 2 * sqrt(gp$ZZ.ks2),
-                 ymin2 = gp$ZZ.mean - 2 * sqrt(gp$ZZ.vark), 
-                 ymax2 = gp$ZZ.mean + 2 * sqrt(gp$ZZ.vark))
-  true <- sapply(x_grid, f, 0, p)
-  alt_mean <- sapply(x_grid, alt$f, 0, alt$p)
-  est_mean <- sapply(x_grid, est$f, 0, est$p)
-  models <- data.frame(x=x_grid, GP=tgp_dat$y, 
-                       Parametric=est_mean, 
-                       True=true, 
-                       Structural=alt_mean)
-  models <- melt(models, id="x")
-  names(models) <- c("x", "method", "value")
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance (grey shading)  is also shown.  The training data is also shown as black points. ](figure/gp_plot.png) 
 
-ggplot(tgp_dat) + 
-#  geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +    # measurement error + process error
-  geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") + # process error only
-  geom_line(data=models, aes(x, value, col=method), alpha=0.8, lwd=1) + 
-  geom_point(data=obs, aes(x,y)) + 
-  xlab(expression(X[t])) + ylab(expression(X[t+1])) +
-  scale_colour_manual(values=cbPalette) 
-```
 
 
 ## Figure 2: 
@@ -554,21 +458,8 @@ policy may be more useful for the technical reader, the general audience
 may prefer Figure 3 showing all replicates of the population collapse
 under the parametric model and not under the GP._
 
-```{r policies_plot, dependson=c("opt", "plotting-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
-policies <- 
-  melt(data.frame(stock=x_grid, 
-                  GP = x_grid[OPT$gp_D], 
-                  Parametric = x_grid[OPT$est_D],
-                  True = x_grid[OPT$true_D],
-                  Structural = x_grid[OPT$alt_D]),
-       id="stock")
-names(policies) <- c("stock", "method", "value")
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/policies_plot.png) 
 
-ggplot(policies, aes(stock, stock - value, color=method)) +
-    geom_line(alpha=0.7, lwd=1) + 
-    xlab("stock size") + ylab("escapement")  +
-    scale_colour_manual(values=cbPalette)
-```
 
 ## Figure 3: 
 
@@ -582,14 +473,8 @@ that is not clear from the figure! Also isn't general, sometimes does
 optimally, sometimes over-fishes.  Perhaps need to show more examples.)
 May need to show profits too?_
 
-```{r sim_plot, dependson=c("sim", "plotting-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
-ggplot(dt) + 
-    geom_line(aes(time, fishstock, 
-                  group=interaction(reps, method), 
-                  color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, 
-                        guide = guide_legend(override.aes = list(alpha = 1)))
-```
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/sim_plot.png) 
+
 
 ## Figure 4:
 
@@ -744,9 +629,8 @@ a straw man?
 * Explicitly accomidating additional uncertainties 
 * Improving inference of optimal policy from the GP
 
-```{r echo=FALSE, results="asis"}
-#bibliography()
-```
+
+
 
 
 Acknowledgments
@@ -803,7 +687,7 @@ the stochastic transition matrix on which the SDP calculations are based.
 The posterior Gaussian process is completely defined by the expected value
 and covariance matrix at a defined set of training points.  For simplicty
 we will consider a these points to fall on a discrete, uniform grid $x$
-of `r length(x_grid)` points from `r min(x_grid)` to `r max(x_grid)`
+of 101 points from 0 to 15
 (1.5 times the positive equilibrium $K$).  Again to keep things simple
 we will use this same grid discritization for the parametric approach.
 Other options for choosing the grid points, including collocation methods
@@ -811,14 +695,14 @@ and functional basis expansion (or even using Guassian processes in place
 of the discrete optimization; an entirely different context in which GP
 can be used in SDP, see [@Deisenroth2009]) could also be considered.
 
-The transition matrix $\mathbf{F}$ is thus an `r length(x_grid)`
-by `r length(x_grid)` matrix for which the ${i,j}$ entry gives the
+The transition matrix $\mathbf{F}$ is thus an 101
+by 101 matrix for which the ${i,j}$ entry gives the
 probability of transitioning into state $x_i$ given that the system is
 in state $x_j$ in the previous timestep.  To generate the transition
 matrix based on the posterior GP, we need only the expected values
 at each grid point and the corresponding variances (the diagonal of
 the covariance matrix), as shown in Figure 1.  Given the mean at each
-gridpoint as the length `r length(x_grid)` vector $E$ and variance $V$,
+gridpoint as the length 101 vector $E$ and variance $V$,
 the probability of transitioning from state $x_i$ to state $x_j$ is
 simply $\mathcal{N}\left(x_j | \mu = E_i, \sigma = \sqrt{V_i}\right)$,
 where $\mathcal{N}$ is the Normal density at $x_j$ with mean $\mu$ and
@@ -853,7 +737,7 @@ V_t(x_t) = \max_h \mathbf{E} \left( h_t + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) 
 where $V(x_t)$ is the value of being at state $x$ at time $t$, $h$
 is control (harvest level) chosen. Numerically, the maximization is
 accomplished as follows. Consider the set of possible control values to
-be the discrete `r length(h_grid)` values corresponding the the grid of
+be the discrete 101 values corresponding the the grid of
 stock sizes.  Then for each $h_t$ there is a corresponding transition
 matrix $\mathbf{F}_h$ determined as described above but with mean 
 $\mu = x_j - h_t$. Let $\vec{V_t}$ be the vector whose $i$th element corresponds
@@ -890,19 +774,8 @@ _Currently this shows the literal R code, should be adapted_
 MCMC posterior distributions and convergence analysis
 ----------------------------------------------------------------------------
 
-```{r posteriors, dependson=c("gp", "plotting-options"), fig.cap = "Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid."}
-hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
-posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
-  prior_curves <- ddply(posteriors, "variable", function(dd){
-  grid <- seq(min(dd$value), max(dd$value), length = 100)
-  data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
-})
+![Histogram of posterior distributions for the estimated Gaussian Process shown in Figure 1.  Prior distributions overlaid.](figure/posteriors.png) 
 
-ggplot(posteriors) + 
-    geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
-    geom_line(data=prior_curves, aes(x=value, y=density), col="red") +
-    facet_wrap(~ variable, scale="free")
-```
  
  @Gramacy2005
  

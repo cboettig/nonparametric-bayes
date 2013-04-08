@@ -2,7 +2,7 @@
 \alias{par_est}
 \title{MLE estimate of parameters given by function f}
 \usage{
-  par_est(obs, init = c(r = 1.5, mean(obs$x), s = 1))
+  par_est(obs, init = c(r = 1.5, K = mean(obs$x), s = 1))
 }
 \arguments{
   \item{obs}{the observed data, two columns giving x_t,

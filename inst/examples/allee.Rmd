@@ -64,14 +64,14 @@ xT <- 0
 ```{r RickerAllee-exp}
 f <- RickerAllee
 # c(5, 10, 5) is 2-cycle, c(5.5, 10, 5) is 6 cycle, 5.3 is about 4
-p <- c(5.3, 10, 5) 
+p <- c(2, 10, 5) 
 K <- 10
 allee <- 5
 ```
 
 
 ```{r sdp-pars-explore}
-sigma_g <- 0.001
+sigma_g <- 0.05
 sigma_m <- 0.0
 z_g = function() rlnorm(1, 0, sigma_g)
 z_m = function() 1+(2*runif(1, 0,  1)-1) * sigma_m
@@ -97,8 +97,8 @@ seed_i <- 1
 
 
 ```{r}
-  alt <- par_est(obs,  init = c(r=2, K=mean(obs$x), s=1))
-  est <- par_est_allee(obs, f, p,  init = c(2, 6, 2, s = sigma_g))
+  alt <- par_est(obs,  init = c(r=p[1], K=mean(obs$x), s=sigma_g))
+  est <- par_est_allee(obs, f, p,  init = c(2, mean(obs$x), 2, s = sigma_g))
 ```
 
 
