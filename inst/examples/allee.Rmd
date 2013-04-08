@@ -18,7 +18,7 @@ require(plyr)
 ```
 
 ```{r graphing-options, include=FALSE}
-opts_knit$set(upload.fun = socialR::notebook.url)
+opts_knit$set(upload.fun = socialR::flickr.url)
 #opts_chunk$set(dev = 'Cairo_pdf', dev.args=list(""))
 opts_chunk$set(dev="png", dev.args=list(bg="transparent"))
 opts_chunk$set(comment=NA, tidy=FALSE)
@@ -131,14 +131,9 @@ Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and 
 
 
 ```{r}
-dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit)
+dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime=OptTime)
 sim_plots(dt, seed=seed_i)
 profits_stats(dt)
 ```
   
 
-
-
-```{r echo=FALSE, results="asis"}
-bibliography("html")
-```
