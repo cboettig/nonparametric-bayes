@@ -103,7 +103,7 @@ Which estimates a Ricker model with $r =$ 2, $K =$ 6.77, and the Allen allee mod
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8121/8633242428_7f3a8a551f_o.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8108/8634532339_59f6853207_o.png) 
 
 
 
@@ -141,7 +141,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8519/8633242600_ea942b7107_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8522/8635639424_e713c14ba1_o.png) 
 
 
 
@@ -155,7 +155,7 @@ this.
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8402/8633250032_62e883a157_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8544/8635647404_71b586e216_o.png) 
 
 
 
