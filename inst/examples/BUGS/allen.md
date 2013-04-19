@@ -84,15 +84,11 @@ library(R2jags)
 ```
 
 ```
-## linking to JAGS 3.3.0
+## Linked to JAGS 3.3.0
 ```
 
 ```
-## module basemod loaded
-```
-
-```
-## module bugs loaded
+## Loaded modules: basemod,bugs
 ```
 
 ```
@@ -178,13 +174,13 @@ tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
 print(xyplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8531/8643861412_025a46058c_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8258/8662939943_0e5faa9dc0_o.png) 
 
 ```r
 print(densityplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8261/8642765173_13aee46c8e_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8261/8662940039_3f5dbeee9d_o.png) 
 
 
 
@@ -193,35 +189,53 @@ print(densityplot(tfit_jags_m))
 ```r
 mcmc <- as.mcmc(jagsfit)
 mcmcall <- mcmc[, -2]
+who <- colnames(mcmcall)
 mcmcall <- cbind(mcmcall[, 1], mcmcall[, 2], mcmcall[, 3], mcmcall[, 
     4], mcmcall[, 5])
-## get parameter estimates (and transform inverse variances back to SDs)
-coef <- apply(mcmcall, 2, mean)
-coef[2:3] = log(sqrt(1/coef[2:3]))
-coef[4:5] = exp(coef[2:3])
-
-coef.median <- apply(mcmcall, 2, median)
-coef.median[2:3] = log(sqrt(1/coef.median[2:3]))
-coef.median[4:5] = exp(coef.median[4:5])
-
-dens <- apply(mcmcall, 2, density)
-coef.mode <- sapply(dens, function(x) x$x[which.max(x$y)])
-coef.mode[2:3] = log(sqrt(1/coef.mode[2:3]))
-coef.mode[4:5] = exp(coef.mode[4:5])
-
-ci.mc <- t(apply(mcmcall, 2, quantile, probs = c(0.025, 0.975)))
-## OBS remember that upper and lower are reversed!
-ci.mc[2:3, 2:1] = log(sqrt(1/ci.mc[2:3, ]))
-ci.mc[4:5, ] = exp(ci.mc[4:5, ])
-
-## reorder the stuff (K,Q,R,r0,theta)=>(theta r0 K Q R)
-myorder = c(5, 4, 1, 2, 3)
-coef = coef[myorder]
-coef.median = coef.median[myorder]
-coef.mode = coef.mode[myorder]
-ci.mc = ci.mc[myorder, ]
-
-
-convinfo = list(effsize = effectiveSize(mcmc), geweke = geweke.diag(mcmc))  ## MCMC convergence info
+colnames(mcmcall) <- who
 ```
+
+
+
+
+
+```r
+theta <- exp(mcmcall[, "logtheta"])
+theta_dist <- hist(theta, freq = FALSE)
+```
+
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8255/8662940161_6cfebf6a91_o.png) 
+
+```r
+theta_dist$mids
+```
+
+```
+##  [1] 0.25 0.75 1.25 1.75 2.25 2.75 3.25 3.75 4.25 4.75 5.25 5.75 6.25 6.75
+## [15] 7.25
+```
+
+```r
+theta_dist$density
+```
+
+```
+##  [1] 1.154 0.256 0.130 0.092 0.068 0.058 0.044 0.042 0.042 0.018 0.022
+## [12] 0.026 0.022 0.014 0.012
+```
+
+```r
+delta <- theta_dist$mids[2] - theta_dist$mids[1]
+```
+
+
+evaluating the value function given $f$ fixed at each of `theta_dist$mids` multiplied by  `theta_dist$density * delta` and summed over each $\theta$ is going to be slow for a single parameter but simply unrealistic for higher dimensions.  Instead we will rely on Monte Carlo sampling of parameter values from their posteriors,
+
+
+```r
+mc_n <- 100
+thetas <- sample(theta, mc_n, replace = T)
+```
+
+
 

@@ -117,34 +117,27 @@ print(densityplot(tfit_jags_m))
 ```{r}
 mcmc <- as.mcmc(jagsfit)
 mcmcall <- mcmc[,-2]
+who <- colnames(mcmcall)
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
-## get parameter estimates (and transform inverse variances back to SDs)
-coef <- apply(mcmcall,2,mean)
-coef[2:3]=log(sqrt(1/coef[2:3]));
-coef[4:5]=exp(coef[2:3]);
+colnames(mcmcall) <- who
+```
 
-coef.median<-apply(mcmcall,2,median)
-coef.median[2:3]=log(sqrt(1/coef.median[2:3]));
-coef.median[4:5]=exp(coef.median[4:5]);
 
-dens<-apply(mcmcall,2,density)
-coef.mode<-sapply(dens,function(x) x$x[which.max(x$y)] )
-coef.mode[2:3]=log(sqrt(1/coef.mode[2:3]));
-coef.mode[4:5]=exp(coef.mode[4:5]);
 
-ci.mc <- t(apply(mcmcall,2,quantile, probs=c(0.025,0.975)))
-## OBS remember that upper and lower are reversed!
-ci.mc[2:3,2:1]=log(sqrt(1/ci.mc[2:3,]));
-ci.mc[4:5,]=exp(ci.mc[4:5,]);
+```{r}
+theta <- exp(mcmcall[,"logtheta"])
+theta_dist <- hist(theta, freq=FALSE)
+theta_dist$mids
+theta_dist$density
+delta <- theta_dist$mids[2] - theta_dist$mids[1]
+```
 
-##reorder the stuff (K,Q,R,r0,theta)=>(theta r0 K Q R)
-myorder=c(5,4,1,2,3);
-coef=coef[myorder];
-coef.median=coef.median[myorder];
-coef.mode=coef.mode[myorder];
-ci.mc=ci.mc[myorder,];
+evaluating the value function given $f$ fixed at each of `theta_dist$mids` multiplied by  `theta_dist$density * delta` and summed over each $\theta$ is going to be slow for a single parameter but simply unrealistic for higher dimensions.  Instead we will rely on Monte Carlo sampling of parameter values from their posteriors,
 
-                
-convinfo=list(effsize=effectiveSize(mcmc), geweke=geweke.diag(mcmc))       ## MCMC convergence info
+```{r}
+mc_n <- 100
+thetas <- sample(theta, mc_n, replace=T)
 
-``` 
+```
+
+
