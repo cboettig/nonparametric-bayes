@@ -118,6 +118,7 @@ print(densityplot(tfit_jags_m))
 mcmc <- as.mcmc(jagsfit)
 mcmcall <- mcmc[,-2]
 who <- colnames(mcmcall)
+who 
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
 ```
