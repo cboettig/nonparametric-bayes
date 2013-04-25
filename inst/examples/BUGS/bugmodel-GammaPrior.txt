@@ -18,7 +18,7 @@ x[1] ~ dunif(0,10)
 
 # Loop over all states, 
 for(t in 1:(N-1)){
-  mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
+  mu[t] <- x[t] + exp(r0 * (1 - x[t] / K) * (x[t] - theta) )
   x[t+1] ~ dnorm(mu[t],iQ)
 }
 

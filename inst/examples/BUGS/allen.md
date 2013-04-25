@@ -7,53 +7,109 @@
 
 
 
+### Model and parameters
 
 
 ```r
 f <- RickerAllee
-p <- c(2, 10, 5)
-K <- 10
-allee <- 5
+p <- c(2, 10, 5) 
+K <- p[2]
+allee <- p[3]
 ```
 
 
 
 ```r
 sigma_g <- 0.05
-sigma_m <- 0
+sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1 + (2 * runif(1, 0, 1) - 1) * sigma_m
-x_grid <- seq(0, 1.5 * K, length = 101)
+z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
+x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
-profit <- function(x, h) pmin(x, h)
+profit <- function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime <- 20  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
 seed_i <- 1
-Xo <- K  # observations start from
-x0 <- Xo  # simulation under policy starts from
+Xo <- K # observations start from
+x0 <- Xo # simulation under policy starts from
 Tobs <- 35
 ```
 
 
+### Sample Data
+
 
 ```r
-obs <- sim_obs(Xo, z_g, f, p, Tobs = Tobs, nz = 1, harvest = sort(rep(seq(0, 
-    0.5, length = 7), 5)), seed = seed_i)
+obs <- sim_obs(Xo, z_g, f, p, Tobs=Tobs, nz=15, 
+                harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
 ```
 
 
 
+## Maximum Likelihood
+
+
 ```r
-alt <- par_est(obs, init = c(r = p[1], K = mean(obs$x[obs$x > 0]), 
-    s = sigma_g))
-est <- par_est_allee(obs, f, p, init = c(r = p[1] + 1, K = p[2] + 
-    2, C = p[3] + 2, s = sigma_g))
+alt <- par_est(obs,  init = c(r = p[1], 
+                              K = mean(obs$x[obs$x>0]), 
+                              s = sigma_g))
+est <- par_est_allee(obs, f, p,  
+                     init = c(r = p[1] + 1, 
+                              K = p[2] + 2, 
+                              C = p[3] + 2, 
+                              s = sigma_g))
 ```
 
 
 
+## Non-parametric Bayes
+
+
+
+```r
+#inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
+s2.p <- c(5,5)  
+tau2.p <- c(5,1)
+d.p = c(10, 1/0.1, 10, 1/0.1)
+nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
+s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
+tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
+nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
+beta0_prior <- function(x, tau) dnorm(x, 0, tau)
+beta = c(0)
+priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+```
+
+
+
+
+
+```r
+  gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
+          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          m0r1=FALSE, corr="exp", trace=TRUE, 
+          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
+          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
+```
+
+![plot of chunk unnamed-chunk-2](http://farm9.staticflickr.com/8113/8681044257_167925297e_o.png) 
+
+
+
+```r
+  posteriors_plot(gp, priors) # needs trace=TRUE!
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8539/8682157988_f69043e8c7_o.png) 
+
+
+
+
+#### Parametric Bayes
 
 
 
@@ -61,67 +117,19 @@ est <- par_est_allee(obs, f, p, init = c(r = p[1] + 1, K = p[2] +
 library(R2jags)
 ```
 
-```
-## Loading required package: R2WinBUGS
-```
-
-```
-## Loading required package: boot
-```
-
-```
-## Attaching package: 'boot'
-```
-
-```
-## The following object(s) are masked from 'package:lattice':
-## 
-## melanoma
-```
-
-```
-## Loading required package: rjags
-```
-
-```
-## Linked to JAGS 3.3.0
-```
-
-```
-## Loaded modules: basemod,bugs
-```
-
-```
-## Loading required package: abind
-```
-
-```
-## Loading required package: parallel
-```
-
-```
-## Attaching package: 'R2jags'
-```
-
-```
-## The following object(s) are masked from 'package:coda':
-## 
-## traceplot
-```
-
 
 
 ```r
 init_p = est$p
 names(init_p) = c("r0", "K", "theta")
-y <- obs$y[-1]
-N = length(y)
+y <- obs$y[-1] 
+N=length(y);
 ```
 
 
 
 ```r
-jags.data <- list("N", "y")
+jags.data <- list("N","y")
 n.chains = 1
 n.iter = 20000
 n.burnin = floor(n.iter/2)
@@ -136,7 +144,7 @@ n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 
 
 ```r
-jags.params=c("K","logr0","logtheta","iR","iQ"); # Don't need to save "x"
+jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
 jags.inits <- function(){
   list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
@@ -148,19 +156,12 @@ time<-system.time(
 ```
 
 ```
-## module glm loaded
-```
-
-```
 ## Compiling model graph
 ##    Resolving undeclared variables
 ##    Allocating nodes
-##    Graph Size: 282
+##    Graph Size: 394
 ## 
 ## Initializing model
-## 
-##   |                                                          |                                                  |   0%  |                                                          |++                                                |   4%  |                                                          |++++                                              |   8%  |                                                          |++++++                                            |  12%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++                                        |  20%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++                                    |  28%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++                                |  36%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++                            |  44%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++                        |  52%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++                    |  60%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++                |  68%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++            |  76%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++        |  84%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++    |  92%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-##   |                                                          |                                                  |   0%  |                                                          |**                                                |   4%  |                                                          |****                                              |   8%  |                                                          |******                                            |  12%  |                                                          |********                                          |  16%  |                                                          |**********                                        |  20%  |                                                          |************                                      |  24%  |                                                          |**************                                    |  28%  |                                                          |****************                                  |  32%  |                                                          |******************                                |  36%  |                                                          |********************                              |  40%  |                                                          |**********************                            |  44%  |                                                          |************************                          |  48%  |                                                          |**************************                        |  52%  |                                                          |****************************                      |  56%  |                                                          |******************************                    |  60%  |                                                          |********************************                  |  64%  |                                                          |**********************************                |  68%  |                                                          |************************************              |  72%  |                                                          |**************************************            |  76%  |                                                          |****************************************          |  80%  |                                                          |******************************************        |  84%  |                                                          |********************************************      |  88%  |                                                          |**********************************************    |  92%  |                                                          |************************************************  |  96%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -168,6 +169,8 @@ time <- unname(time["elapsed"]);
 ```
 
 
+
+#### Convergence diagnostics for parametric bayes
 
 
 ```r
@@ -177,23 +180,22 @@ tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
 print(xyplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-61.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8545/8681045457_cb6cb0aeb4_o.png) 
 
 ```r
 print(densityplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-62.png) 
-
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8544/8682158798_7a19990693_o.png) 
 
 
 
 
 ```r
 mcmc <- as.mcmc(jagsfit)
-mcmcall <- mcmc[, -2]
+mcmcall <- mcmc[,-2]
 who <- colnames(mcmcall)
-who
+who 
 ```
 
 ```
@@ -201,8 +203,7 @@ who
 ```
 
 ```r
-mcmcall <- cbind(mcmcall[, 1], mcmcall[, 2], mcmcall[, 3], mcmcall[, 
-    4], mcmcall[, 5])
+mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
 ```
 
@@ -211,42 +212,88 @@ colnames(mcmcall) <- who
 
 
 ```r
-theta <- exp(mcmcall[, "logtheta"])
-theta_dist <- hist(theta, freq = FALSE)
-```
+MaxT = 1000
+matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
+opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
+opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
-```r
-theta_dist$mids
-```
+matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
+opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
-```
-##  [1] 0.25 0.75 1.25 1.75 2.25 2.75 3.25 3.75 4.25 4.75 5.25 5.75 6.25 6.75
-## [15] 7.25
-```
+matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
+opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
-```r
-theta_dist$density
-```
 
-```
-##  [1] 1.154 0.256 0.130 0.092 0.068 0.058 0.044 0.042 0.042 0.018 0.022
-## [12] 0.026 0.022 0.014 0.012
-```
+pardist <- mcmcall
+pardist[,4] = exp(pardist[,4])
+pardist[,5] = exp(pardist[,5])
 
-```r
-delta <- theta_dist$mids[2] - theta_dist$mids[1]
+
+matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
+opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+
+
+OPT = list(gp_D = opt_gp$D, true_D = opt_true$D, est_D = opt_estimated$D, alt_D = opt_alt$D, par_bayes = opt_par_bayes$D)
 ```
 
 
-evaluating the value function given $f$ fixed at each of `theta_dist$mids` multiplied by  `theta_dist$density * delta` and summed over each $\theta$ is going to be slow for a single parameter but simply unrealistic for higher dimensions.  Instead we will rely on Monte Carlo sampling of parameter values from their posteriors,
+
 
 
 ```r
-mc_n <- 100
-thetas <- sample(theta, mc_n, replace = T)
+policies <- melt(data.frame(stock=x_grid, 
+                            GP = x_grid[opt_gp$D], 
+                            MLE = x_grid[opt_estimated$D],
+                            True = x_grid[opt_true$D],
+                            Ricker_MLE = x_grid[opt_alt$D],
+                            Parametric.Bayes = x_grid[opt_par_bayes$D]),
+                   id="stock")
+names(policies) <- c("stock", "method", "value")
+policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=1.2, alpha=0.8) + 
+  xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=cbPalette)
 ```
 
+
+
+
+
+```r
+sims <- lapply(OPT, function(D){
+  set.seed(1)
+  lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
+  )
+})
+
+  
+dat <- melt(sims, id=names(sims[[1]][[1]]))
+dt <- data.table(dat)
+setnames(dt, c("L1", "L2"), c("method", "reps")) 
+setkey(dt, method) # change the ordering
+
+
+ggplot(dt) + 
+    geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+```
+
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8113/8682175856_c06589db98_o.png) 
+
+```r
+
+ggplot(dt) + 
+    geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
+    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+```
+
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8406/8682175938_a91a4fd45e_o.png) 
+
+```r
+
+```
 
 

@@ -6,6 +6,24 @@ tags:
 
 ---
 
+```{r libs, include=FALSE, cache=FALSE}
+library(pdgControl)
+library(nonparametricbayes)
+library(reshape2)
+library(ggplot2)
+library(knitcitations)
+```
+
+```{r setupall, echo=FALSE}
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE)
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size=10))
+theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
+             plot.background = element_rect(fill = "transparent",colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+```
+
 Adapting the parametric uncertainty represented by the posterior distributions of the Bayesian estimate (see [earlier notes](http://carlboettiger.info/2013/04/12/parametric-bayesian-example.html)) to the stochastic dynamic programming solution for the optimal policy.  Simply requires evaluating the expectation over the distribution, but is computationally intensive given the spread and the three parameters.  
 
 
@@ -23,31 +41,28 @@ par_F <- function(h, f, p, x_grid, sigma_g, pardist, n_mc = 100){
   d <- dim(pardist)
   indices <- round(runif(n_mc,1, d[1]))
   
-  # compute mean with monte carlo samples
-  mu <- sapply(indices, function(i) { # Cols are parameter samples
-    p <- unname(pardist[i,c(4,1,5)])          # Only, we need to add the measurement and process noise  
-    unname(sapply(x_grid, f, h, p))   # rows are possible values of x_t
-  })
-  mu <- data.frame(t(mu)) # Let's have cols as possible x_t, rows as parameters, and type as data.frame
-      
+  # Compute the matrix
   F_true <- 
-    sapply(mu, function(cur_state){    # For each x_t
-      
-      bypar <- sapply(cur_state, function(m){ # For each parameter value
-        if(snap_to_grid(m,x_grid) < x_grid[2]){ # 
+    sapply(x_grid, function(x_t){           # For each x_t  
+
+      bypar <- sapply(indices, function(i){ # For each parameter value
+        p <- unname(pardist[i,c(4,1,5)])    # parameters for the mean, at current sample 
+        mu <- f(x_t,h,p)
+        est_sigma_g <- pardist[i,2]         # Variance parameter 
+
+        if(snap_to_grid(mu,x_grid) < x_grid[2]){ # handle the degenerate case 
           out <- numeric(length(x_grid))
           out[1] <- 1
           out
         } else {
-          out <- dlnorm(x_grid/m, 0, sigma_g) # should be using the estimate process noise!
-        }})  
+          out <- dlnorm(x_grid/mu, 0, est_sigma_g) 
+        }
+      })  
       ave_over_pars <- apply(bypar, 1, sum) # collapse by weighted average over possible parameters    
       ave_over_pars / sum(ave_over_pars)
       })
-  
   F_true <- t(F_true)
-         
-         
+        
 }
 
 
@@ -81,6 +96,7 @@ First, sanity test. Use the correct parameter values (slightly perturbed).
 pardist <- mcmcall
 pardist[,1] = p[2] + rnorm(100, 0, 0.000001)
 pardist[,4] = p[1] + rnorm(100, 0, 0.000001)
+pardist[,2] = sigma_g + rnorm(100, 0, 0.000001)
 pardist[,5] = p[3] + rnorm(100, 0, 0.000001)
 ```
 
