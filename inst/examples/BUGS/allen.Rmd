@@ -13,8 +13,8 @@ library(plyr)
 library(knitcitations)
 ```
 
-```{r plotting-options, echo=FALSE, include=FALSE, cache=TRUE}
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE)
+```{r plotting-options}
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE)
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=10))
 theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
@@ -43,7 +43,7 @@ delta <- 0.01
 OptTime <- 20  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-seed_i <- 1
+seed_i <- 111
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
 Tobs <- 35
@@ -114,7 +114,8 @@ library(R2jags)
 ```
 
 ```{r}
-init_p = est$p
+# a bit unfair to start with the correct values, but anyhow...
+init_p = p
 names(init_p) = c("r0", "K", "theta")
 y <- obs$y[-1] 
 N=length(y);

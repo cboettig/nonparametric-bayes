@@ -5,6 +5,15 @@
 
 
 
+```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size = 10))
+theme_update(panel.background = element_rect(fill = "transparent", 
+    colour = NA), plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
+    "#0072B2", "#D55E00", "#CC79A7")
+```
 
 
 ### Model and parameters
@@ -31,7 +40,7 @@ delta <- 0.01
 OptTime <- 20  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-seed_i <- 1
+seed_i <- 111
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
 Tobs <- 35
@@ -96,7 +105,7 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-2](http://farm9.staticflickr.com/8113/8681044257_167925297e_o.png) 
+![plot of chunk unnamed-chunk-2](http://farm9.staticflickr.com/8115/8682465554_b2015d36b9_o.png) 
 
 
 
@@ -104,7 +113,7 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
   posteriors_plot(gp, priors) # needs trace=TRUE!
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8539/8682157988_f69043e8c7_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8116/8682465736_0fe1557e5b_o.png) 
 
 
 
@@ -120,7 +129,8 @@ library(R2jags)
 
 
 ```r
-init_p = est$p
+# a bit unfair to start with the correct values, but anyhow...
+init_p = p
 names(init_p) = c("r0", "K", "theta")
 y <- obs$y[-1] 
 N=length(y);
@@ -180,13 +190,13 @@ tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
 print(xyplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8545/8681045457_cb6cb0aeb4_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8524/8682466588_db50662d7d_o.png) 
 
 ```r
 print(densityplot(tfit_jags_m))
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8544/8682158798_7a19990693_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8396/8681355375_39e73ba28b_o.png) 
 
 
 
@@ -281,7 +291,7 @@ ggplot(dt) +
     scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8113/8682175856_c06589db98_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8400/8682482276_1a75ac7286_o.png) 
 
 ```r
 
@@ -290,7 +300,7 @@ ggplot(dt) +
     scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8406/8682175938_a91a4fd45e_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8382/8682482350_ef0a4ebfb3_o.png) 
 
 ```r
 
