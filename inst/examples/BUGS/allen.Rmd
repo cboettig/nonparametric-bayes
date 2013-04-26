@@ -101,7 +101,19 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 ```
 
 ```{r}
-  posteriors_plot(gp, priors) # needs trace=TRUE!
+hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
+posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
+ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free")
+
+
+prior_curves <- ddply(posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
+})
+
+ggplot(posteriors) + geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
+    geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
+    facet_wrap(~ variable, scale="free")
 ```
 
 
@@ -156,6 +168,8 @@ library(coda)
 tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
 print(xyplot(tfit_jags_m))
 print(densityplot(tfit_jags_m))
+
+par_posteriors <- as.data.frame(tfit_jags_m)
 ```
 
 
