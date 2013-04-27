@@ -1,19 +1,25 @@
+# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
+Load necessary libraries,
 
-
-```{r libraries, include=FALSE, cache=FALSE}
-library(pdgControl)
-library(nonparametricbayes)
-library(reshape2)
-library(ggplot2)
-library(data.table)
-library(tgp)
-library(MCMCpack)
-library(plyr)
-library(knitcitations)
+```{r libraries, cache=FALSE}
+library(pdgControl) # custom SDP functions
+library(nonparametricbayes) # custom 
+library(reshape2) # data manipulation
+library(data.table) # data manipulation
+library(plyr) # data manipulation
+library(ggplot2) # plotting 
+library(tgp) # Gaussian Processes
+library(MCMCpack) # Markov Chain Monte Carlo tools 
+library(R2jags) # Markov Chain Monte Carlo tools 
+library(emdbook) # Markov Chain Monte Carlo tools 
+library(coda) # Markov Chain Monte Carlo tools 
 ```
 
+Plotting and knitr options, (can generally be ignored)
+
 ```{r plotting-options}
+library(knitcitations)
 opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE)
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=10))
@@ -24,12 +30,18 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 
 ### Model and parameters
 
+Uses the model derived in `r citet("")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+
+
 ```{r}
 f <- RickerAllee
 p <- c(2, 10, 5) 
 K <- p[2]
 allee <- p[3]
 ```
+
+
+Various parameters defining noise dynamics, grid, and policy costs.  
 
 ```{r sdp-pars, dependson="stateeq"}
 sigma_g <- 0.05
@@ -93,17 +105,18 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 
 ```{r}
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          meanfn="constant", bprior="b0", BTE=c(2000,20000,2),
           m0r1=FALSE, corr="exp", trace=TRUE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
-  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
 ```{r}
 hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
 posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
-ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free")
+
+# Traces 
+ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 
 
 prior_curves <- ddply(posteriors, "variable", function(dd){
@@ -111,19 +124,21 @@ prior_curves <- ddply(posteriors, "variable", function(dd){
     data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
 })
 
+# 
 ggplot(posteriors) + geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
     geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
     facet_wrap(~ variable, scale="free")
+
+ggplot(posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
 
 
 #### Parametric Bayes
 
-
-```{r}
-library(R2jags)
-```
+We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
 ```{r}
 # a bit unfair to start with the correct values, but anyhow...
@@ -132,6 +147,10 @@ names(init_p) = c("r0", "K", "theta")
 y <- obs$y[-1] 
 N=length(y);
 ```
+
+
+We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
+
 
 ```{r}
 jags.data <- list("N","y")
@@ -142,9 +161,17 @@ n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 ```
 
 
+The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
 
 
-## Gamma priors on precision
+```{r}
+cat(readLines(con="bugmodel-GammaPrior.txt"), sep="\n")
+```
+
+
+
+We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
+
 
 ```{r}
 jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
@@ -163,13 +190,15 @@ time <- unname(time["elapsed"]);
 #### Convergence diagnostics for parametric bayes
 
 ```{r}
-library(emdbook)
-library(coda)
-tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
-print(xyplot(tfit_jags_m))
-print(densityplot(tfit_jags_m))
+jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
+par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
 
-par_posteriors <- as.data.frame(tfit_jags_m)
+# Traces
+ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
+
+# posterior distributiosn
+ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
 
@@ -183,6 +212,17 @@ colnames(mcmcall) <- who
 ```
 
 
+
+#### Phase-space diagram of the expected dynamics
+
+```{r}
+  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
+```
+
+
+## Optimal policies by value iteration
+
+Compute the optimal policy under each model using stochastic dynamic programming.
 
 ```{r}
 MaxT = 1000
@@ -200,7 +240,7 @@ opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profi
 
 
 pardist <- mcmcall
-pardist[,4] = exp(pardist[,4])
+pardist[,4] = exp(pardist[,4]) # transform model parameters back first
 pardist[,5] = exp(pardist[,5])
 
 
@@ -208,29 +248,32 @@ matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
 
-OPT = list(gp_D = opt_gp$D, true_D = opt_true$D, est_D = opt_estimated$D, alt_D = opt_alt$D, par_bayes = opt_par_bayes$D)
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
+colorkey=cbPalette
+names(colorkey) = names(OPT) 
 ```
 
 
 
+
+## Graph of the optimal policies
+
 ```{r}
-policies <- melt(data.frame(stock=x_grid, 
-                            GP = x_grid[opt_gp$D], 
-                            MLE = x_grid[opt_estimated$D],
-                            True = x_grid[opt_true$D],
-                            Ricker_MLE = x_grid[opt_alt$D],
-                            Parametric.Bayes = x_grid[opt_par_bayes$D]),
-                   id="stock")
+policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
-policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2, alpha=0.8) + 
-  xlab("stock size") + ylab("escapement")  +
-  scale_colour_manual(values=cbPalette)
+ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=colorkey)
 ```
 
 
 
+## Simulate 100 realizations managed under each of the policies
+
+
 ```{r}
+
+
 sims <- lapply(OPT, function(D){
   set.seed(1)
   lapply(1:100, function(i) 
@@ -242,16 +285,17 @@ sims <- lapply(OPT, function(D){
 dat <- melt(sims, id=names(sims[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-setkey(dt, method) # change the ordering
-
-
-ggplot(dt) + 
-    geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+# Legend in original ordering please, not alphabetical: 
+dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
 
 ggplot(dt) + 
-    geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
+
+ggplot(dt) + 
+  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
+  
 
 
 ```

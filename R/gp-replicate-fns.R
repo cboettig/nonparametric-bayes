@@ -130,7 +130,9 @@ simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime){
 sim_plots <- function(dt, seed=1, harvest=FALSE){
   fish_plot <- ggplot(dt) + 
     geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))+
+    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1))) +
+    scale_colour_manual(values=c("GP" = cbPalette[1], "Parametric" = cbPalette[2], "True" = cbPalette[3], "Structural" = cbPalette[4]),  
+                        guide = guide_legend(override.aes = list(alpha = 1))) +
     ggtitle(paste("seed", seed))
   print(fish_plot)
   harvest_plot <- ggplot(dt) +

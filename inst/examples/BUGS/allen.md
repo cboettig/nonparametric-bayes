@@ -1,11 +1,111 @@
+# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
-
-
-
-
+Load necessary libraries,
 
 
 ```r
+library(pdgControl)  # custom SDP functions
+library(nonparametricbayes)  # custom
+library(reshape2)  # data manipulation
+library(data.table)  # data manipulation
+library(plyr)  # data manipulation
+library(ggplot2)  # plotting
+library(tgp)  # Gaussian Processes
+library(MCMCpack)  # Markov Chain Monte Carlo tools
+```
+
+```
+## Loading required package: coda
+```
+
+```
+## Loading required package: lattice
+```
+
+```
+## Loading required package: MASS
+```
+
+```
+## ## ## Markov Chain Monte Carlo Package (MCMCpack)
+```
+
+```
+## ## Copyright (C) 2003-2013 Andrew D. Martin, Kevin M. Quinn, and Jong Hee
+## Park
+```
+
+```
+## ## ## Support provided by the U.S. National Science Foundation
+```
+
+```
+## ## (Grants SES-0350646 and SES-0350613) ##
+```
+
+```r
+library(R2jags)  # Markov Chain Monte Carlo tools
+```
+
+```
+## Loading required package: R2WinBUGS
+```
+
+```
+## Loading required package: boot
+```
+
+```
+## Attaching package: 'boot'
+```
+
+```
+## The following object(s) are masked from 'package:lattice':
+## 
+## melanoma
+```
+
+```
+## Loading required package: rjags
+```
+
+```
+## Linked to JAGS 3.3.0
+```
+
+```
+## Loaded modules: basemod,bugs
+```
+
+```
+## Loading required package: abind
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## Attaching package: 'R2jags'
+```
+
+```
+## The following object(s) are masked from 'package:coda':
+## 
+## traceplot
+```
+
+```r
+library(emdbook)  # Markov Chain Monte Carlo tools
+library(coda)  # Markov Chain Monte Carlo tools
+```
+
+
+Plotting and knitr options, (can generally be ignored)
+
+
+```r
+library(knitcitations)
 opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
@@ -18,6 +118,17 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
 
 ### Model and parameters
 
+Uses the model derived in 
+
+```
+
+Error in out$doi : $ operator is invalid for atomic vectors
+
+```
+
+, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+
+
 
 ```r
 f <- RickerAllee
@@ -26,6 +137,9 @@ K <- p[2]
 allee <- p[3]
 ```
 
+
+
+Various parameters defining noise dynamics, grid, and policy costs.  
 
 
 ```r
@@ -98,34 +212,55 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 
 ```r
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          meanfn="constant", bprior="b0", BTE=c(2000,20000,2),
           m0r1=FALSE, corr="exp", trace=TRUE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
-  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
-
-![plot of chunk unnamed-chunk-2](http://farm9.staticflickr.com/8115/8682465554_b2015d36b9_o.png) 
 
 
 
 ```r
-  posteriors_plot(gp, priors) # needs trace=TRUE!
+hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
+posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
+
+# Traces 
+ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8116/8682465736_0fe1557e5b_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8261/8685360238_353dbc5894_o.png) 
+
+```r
+
+
+prior_curves <- ddply(posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
+})
+
+# 
+ggplot(posteriors) + geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
+    geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
+    facet_wrap(~ variable, scale="free")
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8521/8685360484_e2ce943ebd_o.png) 
+
+```r
+
+ggplot(posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8398/8685360552_d9ba680ff7_o.png) 
 
 
 
 
 #### Parametric Bayes
 
-
-
-```r
-library(R2jags)
-```
-
+We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
 
 ```r
@@ -135,6 +270,10 @@ names(init_p) = c("r0", "K", "theta")
 y <- obs$y[-1] 
 N=length(y);
 ```
+
+
+
+We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
 
 
 
@@ -148,9 +287,52 @@ n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 
 
 
+The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
 
 
-## Gamma priors on precision
+
+```r
+cat(readLines(con="bugmodel-GammaPrior.txt"), sep="\n")
+```
+
+```
+## # Allen's Allee model based on a Ricker
+## 
+## model{
+## 
+## # Define prior densities for parameters
+## K     ~ dunif(1.0, 22000.0)
+## logr0    ~ dunif(-4.0, 2.0)
+## logtheta ~ dunif(-4.0, 2.0)
+## iQ ~ dgamma(0.0001,0.0001)
+## iR ~ dgamma(0.0001,0.0001)
+## 
+## # Transform parameters to fit in the model
+## r0 <- exp(logr0)
+## theta <- exp(logtheta)
+## 
+## # Initial state
+## x[1] ~ dunif(0,10)
+## 
+## # Loop over all states, 
+## for(t in 1:(N-1)){
+##   mu[t] <- x[t] + exp(r0 * (1 - x[t] / K) * (x[t] - theta) )
+##   x[t+1] ~ dnorm(mu[t],iQ)
+## }
+## 
+## # Loop over all observations, 
+## for(t in 1:(N)){
+##   y[t] ~ dnorm(x[t],iR)
+## }
+## 
+## }
+```
+
+
+
+
+We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
+
 
 
 ```r
@@ -184,19 +366,23 @@ time <- unname(time["elapsed"]);
 
 
 ```r
-library(emdbook)
-library(coda)
-tfit_jags_m <- as.mcmc.bugs(jagsfit$BUGSoutput)
-print(xyplot(tfit_jags_m))
+jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
+par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
+
+# Traces
+ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8524/8682466588_db50662d7d_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8401/8684242957_c1958f5a03_o.png) 
 
 ```r
-print(densityplot(tfit_jags_m))
+
+# posterior distributiosn
+ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8396/8681355375_39e73ba28b_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8255/8684243073_7a0daf0466_o.png) 
 
 
 
@@ -220,6 +406,21 @@ colnames(mcmcall) <- who
 
 
 
+#### Phase-space diagram of the expected dynamics
+
+
+```r
+  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
+```
+
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8535/8684243227_41391fdd48_o.png) 
+
+
+
+## Optimal policies by value iteration
+
+Compute the optimal policy under each model using stochastic dynamic programming.
+
 
 ```r
 MaxT = 1000
@@ -237,7 +438,7 @@ opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profi
 
 
 pardist <- mcmcall
-pardist[,4] = exp(pardist[,4])
+pardist[,4] = exp(pardist[,4]) # transform model parameters back first
 pardist[,5] = exp(pardist[,5])
 
 
@@ -245,33 +446,38 @@ matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
 
-OPT = list(gp_D = opt_gp$D, true_D = opt_true$D, est_D = opt_estimated$D, alt_D = opt_alt$D, par_bayes = opt_par_bayes$D)
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
+colorkey=cbPalette
+names(colorkey) = names(OPT) 
 ```
 
 
 
 
 
+## Graph of the optimal policies
+
+
 ```r
-policies <- melt(data.frame(stock=x_grid, 
-                            GP = x_grid[opt_gp$D], 
-                            MLE = x_grid[opt_estimated$D],
-                            True = x_grid[opt_true$D],
-                            Ricker_MLE = x_grid[opt_alt$D],
-                            Parametric.Bayes = x_grid[opt_par_bayes$D]),
-                   id="stock")
+policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
-policy_plot <- ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2, alpha=0.8) + 
-  xlab("stock size") + ylab("escapement")  +
-  scale_colour_manual(values=cbPalette)
+ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=colorkey)
 ```
 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8542/8685372902_e8719a0c51_o.png) 
 
+
+
+
+## Simulate 100 realizations managed under each of the policies
 
 
 
 ```r
+
+
 sims <- lapply(OPT, function(D){
   set.seed(1)
   lapply(1:100, function(i) 
@@ -283,26 +489,27 @@ sims <- lapply(OPT, function(D){
 dat <- melt(sims, id=names(sims[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-setkey(dt, method) # change the ordering
-
+# Legend in original ordering please, not alphabetical: 
+dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
 
 ggplot(dt) + 
-    geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8400/8682482276_1a75ac7286_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8400/8685373300_18931d5055_o.png) 
 
 ```r
 
 ggplot(dt) + 
-    geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-    scale_colour_manual(values=cbPalette, guide = guide_legend(override.aes = list(alpha = 1)))
+  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8382/8682482350_ef0a4ebfb3_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8535/8685373378_da45da3cbd_o.png) 
 
 ```r
+  
 
 ```
 
