@@ -5,6 +5,7 @@ logr0    ~ dunif(-4.0, 2.0)
 logtheta ~ dunif(-4.0, 2.0)
 stdQ ~ dunif(0,100)
 stdR ~ dunif(0,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
 iQ <- 1/(stdQ*stdQ);
 iR <- 1/(stdR*stdR);
 
@@ -16,7 +17,7 @@ x[1] ~ dunif(0,10)
 
 for(t in 1:(N-1)){
   mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
-  x[t+1] ~ dnorm(mu[t],iQ)
+  x[t+1] ~ dnorm(mu[t],iQ) 
 }
 
 

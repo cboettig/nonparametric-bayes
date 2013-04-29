@@ -26,10 +26,6 @@ theme_set(theme_bw(base_size=16))
 theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
              plot.background = element_rect(fill = "transparent",colour = NA))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-#sha <- gsub("^commit ", "", system("git log -n 1", intern=TRUE)[1])
-#short_sha <- gsub("(^.{10}).*", "\\1", sha)
-#date <- format(Sys.time(), "%Y-%m-%d-%H-%M-%S")
-#opts_chunk$set(fig.path = paste("figure/", date, "-", short_sha, "-", sep=""))
 ```
 
 
