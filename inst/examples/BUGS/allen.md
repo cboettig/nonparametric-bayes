@@ -1,5 +1,7 @@
 # Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
+(replicate with uniform priors on SD, as per Gelman) 
+
 Load necessary libraries,
 
 
@@ -12,90 +14,7 @@ library(plyr)  # data manipulation
 library(ggplot2)  # plotting
 library(tgp)  # Gaussian Processes
 library(MCMCpack)  # Markov Chain Monte Carlo tools
-```
-
-```
-## Loading required package: coda
-```
-
-```
-## Loading required package: lattice
-```
-
-```
-## Loading required package: MASS
-```
-
-```
-## ## ## Markov Chain Monte Carlo Package (MCMCpack)
-```
-
-```
-## ## Copyright (C) 2003-2013 Andrew D. Martin, Kevin M. Quinn, and Jong Hee
-## Park
-```
-
-```
-## ## ## Support provided by the U.S. National Science Foundation
-```
-
-```
-## ## (Grants SES-0350646 and SES-0350613) ##
-```
-
-```r
-library(R2jags)  # Markov Chain Monte Carlo tools
-```
-
-```
-## Loading required package: R2WinBUGS
-```
-
-```
-## Loading required package: boot
-```
-
-```
-## Attaching package: 'boot'
-```
-
-```
-## The following object(s) are masked from 'package:lattice':
-## 
-## melanoma
-```
-
-```
-## Loading required package: rjags
-```
-
-```
-## Linked to JAGS 3.3.0
-```
-
-```
-## Loaded modules: basemod,bugs
-```
-
-```
-## Loading required package: abind
-```
-
-```
-## Loading required package: parallel
-```
-
-```
-## Attaching package: 'R2jags'
-```
-
-```
-## The following object(s) are masked from 'package:coda':
-## 
-## traceplot
-```
-
-```r
+lbrary(rjags)  # Markov Chain Monte Carlo tools
 library(emdbook)  # Markov Chain Monte Carlo tools
 library(coda)  # Markov Chain Monte Carlo tools
 ```
@@ -118,15 +37,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
 
 ### Model and parameters
 
-Uses the model derived in 
-
-```
-
-Error in out$doi : $ operator is invalid for atomic vectors
-
-```
-
-, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 
@@ -228,7 +139,7 @@ posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8261/8685360238_353dbc5894_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8260/8692284727_90a4d59b9b_o.png) 
 
 ```r
 
@@ -244,7 +155,7 @@ ggplot(posteriors) + geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
     facet_wrap(~ variable, scale="free")
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8521/8685360484_e2ce943ebd_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8118/8692284967_99619508db_o.png) 
 
 ```r
 
@@ -253,7 +164,7 @@ ggplot(posteriors, aes(value)) + stat_density(geom="path", position="identity", 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8398/8685360552_d9ba680ff7_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8119/8693401744_026bf3f358_o.png) 
 
 
 
@@ -292,35 +203,32 @@ The actual model is defined in a `model.file` that contains an R function that i
 
 
 ```r
-cat(readLines(con="bugmodel-GammaPrior.txt"), sep="\n")
+cat(readLines(con="bugmodel-UPrior.txt"), sep="\n")
 ```
 
 ```
-## # Allen's Allee model based on a Ricker
-## 
 ## model{
 ## 
-## # Define prior densities for parameters
 ## K     ~ dunif(1.0, 22000.0)
 ## logr0    ~ dunif(-4.0, 2.0)
 ## logtheta ~ dunif(-4.0, 2.0)
-## iQ ~ dgamma(0.0001,0.0001)
-## iR ~ dgamma(0.0001,0.0001)
+## stdQ ~ dunif(0,100)
+## stdR ~ dunif(0,100)
+## iQ <- 1/(stdQ*stdQ);
+## iR <- 1/(stdR*stdR);
 ## 
-## # Transform parameters to fit in the model
 ## r0 <- exp(logr0)
 ## theta <- exp(logtheta)
 ## 
-## # Initial state
+## 
 ## x[1] ~ dunif(0,10)
 ## 
-## # Loop over all states, 
 ## for(t in 1:(N-1)){
-##   mu[t] <- x[t] + exp(r0 * (1 - x[t] / K) * (x[t] - theta) )
+##   mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
 ##   x[t+1] ~ dnorm(mu[t],iQ)
 ## }
 ## 
-## # Loop over all observations, 
+## 
 ## for(t in 1:(N)){
 ##   y[t] ~ dnorm(x[t],iR)
 ## }
@@ -337,13 +245,18 @@ We define which parameters to keep track of, and set the initial values of param
 
 ```r
 jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
+#jags.inits <- function(){ list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123) }
+
+jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
-  list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+  list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
+
 set.seed(12345)
+
 time<-system.time(       
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
-                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-GammaPrior.txt")
+                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
 ```
 
@@ -351,7 +264,7 @@ time<-system.time(
 ## Compiling model graph
 ##    Resolving undeclared variables
 ##    Allocating nodes
-##    Graph Size: 394
+##    Graph Size: 398
 ## 
 ## Initializing model
 ```
@@ -373,7 +286,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8401/8684242957_c1958f5a03_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8265/8692286981_5a470b4184_o.png) 
 
 ```r
 
@@ -382,7 +295,7 @@ ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identit
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8255/8684243073_7a0daf0466_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8395/8693403546_2b26993b97_o.png) 
 
 
 
@@ -395,25 +308,61 @@ who
 ```
 
 ```
-## [1] "K"        "iQ"       "iR"       "logr0"    "logtheta"
+## [1] "K"        "logr0"    "logtheta" "stdQ"     "stdR"
 ```
 
 ```r
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
+
+pardist <- mcmcall
+pardist[,4] = exp(pardist[,4]) # transform model parameters back first
+pardist[,5] = exp(pardist[,5])
+
+
+bayes_coef <- apply(mcmcall,2,mean)
+bayes_pars <- c(bayes_coef[4], bayes_coef[1], bayes_coef[5])
 ```
 
 
-
-
-#### Phase-space diagram of the expected dynamics
+### Phase-space diagram of the expected dynamics
 
 
 ```r
-  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
+# Summarize the GP model
+tgp_dat <- 
+    data.frame(  x = gp$XX[[1]], 
+                 y = gp$ZZ.km, 
+                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2),
+                 ymin2 = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.vark), 
+                 ymax2 = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.vark))
+
+
+  true_means <- sapply(x_grid, f, 0, p)
+  alt_means <- sapply(x_grid, alt$f, 0, alt$p)
+  est_means <- sapply(x_grid, est$f, 0, est$p)
+  par_bayes_means <- sapply(x_grid, est$f, 0, bayes_pars)
+
+
+
+models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
+                     MLE=est_means, Ricker.MLE=alt_means, 
+                     Parametric.Bayes = par_bayes_means)
+
+  models <- melt(models, id="x")
+  names(models) <- c("x", "method", "value")
+
+  plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
+    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette) 
+  print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8535/8684243227_41391fdd48_o.png) 
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8253/8693403732_d878973263_o.png) 
 
 
 
@@ -435,11 +384,6 @@ opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=Max
 
 matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
-
-pardist <- mcmcall
-pardist[,4] = exp(pardist[,4]) # transform model parameters back first
-pardist[,5] = exp(pardist[,5])
 
 
 matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
@@ -466,7 +410,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8542/8685372902_e8719a0c51_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8540/8693427708_d69ed3f1ac_o.png) 
 
 
 
@@ -497,7 +441,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8400/8685373300_18931d5055_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8404/8693428346_b52ca6f8b9_o.png) 
 
 ```r
 
@@ -506,7 +450,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8535/8685373378_da45da3cbd_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8533/8692312169_44a15215a4_o.png) 
 
 ```r
   

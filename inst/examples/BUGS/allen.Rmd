@@ -2,7 +2,7 @@
 
 Load necessary libraries,
 
-```{r libraries, cache=FALSE}
+```{r libraries, cache=FALSE, message=FALSE, warning=FALSE}
 library(pdgControl) # custom SDP functions
 library(nonparametricbayes) # custom 
 library(reshape2) # data manipulation
@@ -30,7 +30,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 
 ### Model and parameters
 
-Uses the model derived in `r citet("")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses the model derived in `r citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 ```{r}
@@ -165,8 +165,8 @@ The actual model is defined in a `model.file` that contains an R function that i
 
 
 ```{r}
-cat(readLines(con="bugmodel-GammaPrior.txt"), sep="\n")
-```
+cat(readLines(con="bugmodel-UPrior.txt"), sep="\n")
+``` 
 
 
 
@@ -175,13 +175,18 @@ We define which parameters to keep track of, and set the initial values of param
 
 ```{r}
 jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
+#jags.inits <- function(){ list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123) }
+
+jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
-  list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+  list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
+
 set.seed(12345)
+
 time<-system.time(       
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
-                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-GammaPrior.txt")
+                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
 time <- unname(time["elapsed"]);
 ```
@@ -209,14 +214,51 @@ who <- colnames(mcmcall)
 who 
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
+
+pardist <- mcmcall
+pardist[,4] = exp(pardist[,4]) # transform model parameters back first
+pardist[,5] = exp(pardist[,5])
+
+
+bayes_coef <- apply(mcmcall,2,mean)
+bayes_pars <- c(bayes_coef[4], bayes_coef[1], bayes_coef[5])
+
 ```
 
-
-
-#### Phase-space diagram of the expected dynamics
+### Phase-space diagram of the expected dynamics
 
 ```{r}
-  gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
+# Summarize the GP model
+tgp_dat <- 
+    data.frame(  x = gp$XX[[1]], 
+                 y = gp$ZZ.km, 
+                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
+                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2),
+                 ymin2 = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.vark), 
+                 ymax2 = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.vark))
+
+
+  true_means <- sapply(x_grid, f, 0, p)
+  alt_means <- sapply(x_grid, alt$f, 0, alt$p)
+  est_means <- sapply(x_grid, est$f, 0, est$p)
+  par_bayes_means <- sapply(x_grid, est$f, 0, bayes_pars)
+
+
+
+models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
+                     MLE=est_means, Ricker.MLE=alt_means, 
+                     Parametric.Bayes = par_bayes_means)
+
+  models <- melt(models, id="x")
+  names(models) <- c("x", "method", "value")
+
+  plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
+    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette) 
+  print(plot_gp)
 ```
 
 
@@ -237,11 +279,6 @@ opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=Max
 
 matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
-
-pardist <- mcmcall
-pardist[,4] = exp(pardist[,4]) # transform model parameters back first
-pardist[,5] = exp(pardist[,5])
 
 
 matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
