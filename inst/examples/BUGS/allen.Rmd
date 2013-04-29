@@ -6,10 +6,10 @@ Plotting and knitr options, (can generally be ignored)
 ```{r plotting-options}
 opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA)
 
-library(knitcitations)
+#library(knitcitations)
 
 library(ggplot2) # plotting 
-opts_knit$set(upload.fun = socialR::flickr.url)
+#opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=10))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
              plot.background = element_rect(fill = "transparent", colour = NA))
@@ -26,7 +26,7 @@ library(nonparametricbayes) # loads the rest as dependencies
 
 ### Model and parameters
 
-Uses the model derived in `r citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 ```{r}
