@@ -1,29 +1,16 @@
 # Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
-Load necessary libraries,
-
-
-```r
-library(pdgControl)  # custom SDP functions
-library(nonparametricbayes)  # custom
-library(reshape2)  # data manipulation
-library(data.table)  # data manipulation
-library(plyr)  # data manipulation
-library(ggplot2)  # plotting
-library(tgp)  # Gaussian Processes
-library(MCMCpack)  # Markov Chain Monte Carlo tools
-library(R2jags)  # Markov Chain Monte Carlo tools
-library(emdbook)  # Markov Chain Monte Carlo tools
-library(coda)  # Markov Chain Monte Carlo tools
-```
-
 
 Plotting and knitr options, (can generally be ignored)
 
 
 ```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA)
+
 library(knitcitations)
-opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
+
+library(ggplot2)  # plotting
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
 theme_update(panel.background = element_rect(fill = "transparent", 
@@ -32,10 +19,19 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
     "#0072B2", "#D55E00", "#CC79A7")
 ```
 
+Load necessary libraries,
+
+
+```r
+library(nonparametricbayes) # loads the rest as dependencies
+```
+
+
+
 
 ### Model and parameters
 
-Uses the model derived in <span class="showtooltip" title="Allen L, Fagan J, H&lt;U+00F6&gt;gn&lt;U+00E4&gt;s G and Fagerholm H (2005). 'Population Extinction in Discrete-Time Stochastic Population Models With an Allee Effect.' Journal of Difference Equations And Applications, 11, pp. 273-293. ISSN 1023-6198."><a href="http://dx.doi.org/10.1080/10236190412331335373">Allen et al. (2005)</a></span> , of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses the model derived in <span class="showtooltip" title="Allen L, Fagan J, Högnäs G and Fagerholm H (2005). 'Population Extinction in Discrete-Time Stochastic Population Models With an Allee Effect.' Journal of Difference Equations And Applications, 11, pp. 273-293. ISSN 1023-6198."><a href="http://dx.doi.org/10.1080/10236190412331335373">Allen et al. (2005)</a></span> , of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 
@@ -117,16 +113,20 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 
 
 
+Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 
 ```r
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,20000,2),
-          m0r1=FALSE, corr="exp", trace=TRUE, 
+          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
 ```
 
+
+
+Show traces and posteriors against priors
 
 
 ```r
@@ -135,13 +135,9 @@ posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 
 # Traces 
 ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
-```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8259/8693874088_8ccab55ca1_o.png) 
-
-```r
-
-
+## A list of functions has been defined in "priors", 
+## Here we just make sure to compute priors over the range of values returned by the posteriors
 prior_curves <- ddply(posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100)
     data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
@@ -154,9 +150,8 @@ ggplot(posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8257/8692756173_ef57266af1_o.png) 
 
-
+(Note that I keep thinking this should be done with `stat_function`, but cannot `facet_wrap` across different functions, see [SO/1376967](http://stackoverflow.com/questions/1376967/using-stat-function-and-facet-wrap-together-in-ggplot2-in-r)
 
 
 #### Parametric Bayes
@@ -197,34 +192,34 @@ cat(readLines(con="bugmodel-UPrior.txt"), sep="\n")
 ```
 
 ```
-## model{
-## 
-## K     ~ dunif(1.0, 22000.0)
-## logr0    ~ dunif(-4.0, 2.0)
-## logtheta ~ dunif(-4.0, 2.0)
-## stdQ ~ dunif(0,100)
-## stdR ~ dunif(0,100)
-## # JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
-## iQ <- 1/(stdQ*stdQ);
-## iR <- 1/(stdR*stdR);
-## 
-## r0 <- exp(logr0)
-## theta <- exp(logtheta)
-## 
-## 
-## x[1] ~ dunif(0,10)
-## 
-## for(t in 1:(N-1)){
-##   mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
-##   x[t+1] ~ dlnorm(mu[t],iQ) 
-## }
-## 
-## 
-## for(t in 1:(N)){
-##   y[t] ~ dnorm(x[t],iR)
-## }
-## 
-## }
+model{
+
+K     ~ dunif(1.0, 22000.0)
+logr0    ~ dunif(-4.0, 2.0)
+logtheta ~ dunif(-4.0, 2.0)
+stdQ ~ dunif(0,100)
+stdR ~ dunif(0,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
+iQ <- 1/(stdQ*stdQ);
+iR <- 1/(stdR*stdR);
+
+r0 <- exp(logr0)
+theta <- exp(logtheta)
+
+
+x[1] ~ dunif(0,10)
+
+for(t in 1:(N-1)){
+  mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
+  x[t+1] ~ dnorm(mu[t],iQ) 
+}
+
+
+for(t in 1:(N)){
+  y[t] ~ dnorm(x[t],iR)
+}
+
+}
 ```
 
 
@@ -236,9 +231,7 @@ We define which parameters to keep track of, and set the initial values of param
 
 ```r
 jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
-#jags.inits <- function(){ list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123) }
-# For gamma, invert result
-
+# Uniform priors on standard deviation terms
 jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
   list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -246,37 +239,23 @@ jags.inits <- function(){
 
 set.seed(12345)
 
-time<-system.time(       
+time_jags <- system.time(       
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
 ```
 
 ```
-## Compiling model graph
-##    Resolving undeclared variables
-##    Allocating nodes
-##    Graph Size: 398
-## 
-## Initializing model
-## Deleting model
-```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 398
 
-```
-## Error: Error in node x[2] Unobserved node inconsistent with unobserved
-## parents at initialization
-```
-
-```
-## Timing stopped at: 0.036 0 0.036
+Initializing model
 ```
 
 ```r
-time <- unname(time["elapsed"]);
-```
-
-```
-## Error: object of type 'closure' is not subsettable
+time_jags <- unname(time_jags["elapsed"]);
 ```
 
 
@@ -286,133 +265,74 @@ time <- unname(time["elapsed"]);
 
 ```r
 jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
-```
-
-```
-## Error: object 'jagsfit' not found
-```
-
-```r
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
-```
-
-```
-## Error: object 'jags_matrix' not found
-```
-
-```r
 
 # Traces
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```
-## Error: object 'par_posteriors' not found
-```
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8254/8693312927_38fb0bac80_o.png) 
 
 ```r
 
-# posterior distributiosn
-ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+
+## priors (untransformed variables)
+K_prior <- function(x) dunif(x, 1, 22000)
+logr_prior <- function(x) dunif(x, -4, 2)
+logtheta_prior <- function(x) dunif(x, -4, 2)
+stdQ_prior <- function(x) dunif(0, 100)
+stdR_prior <- function(x) dunif(0, 100)
+
+par_priors <- list(K = K_prior, logr0 = logr_prior, logtheta = logtheta_prior, 
+     stdQ = stdQ_prior, stdR = stdR_prior, deviance = function(x) 0)
+
+par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+
+# posterior distributions
+ggplot(par_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-```
-## Error: object 'par_posteriors' not found
-```
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8257/8694431058_4d84b9d078_o.png) 
 
 
 
 
 ```r
+# um, cleaner if we were just be using the long form, par_posterior
 mcmc <- as.mcmc(jagsfit)
-```
-
-```
-## Error: object 'jagsfit' not found
-```
-
-```r
 mcmcall <- mcmc[,-2]
-```
-
-```
-## Error: object of type 'closure' is not subsettable
-```
-
-```r
 who <- colnames(mcmcall)
-```
-
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
 who 
 ```
 
 ```
-## Error: object 'who' not found
+[1] "K"        "logr0"    "logtheta" "stdQ"     "stdR"    
 ```
 
 ```r
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
-```
-
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
 colnames(mcmcall) <- who
-```
 
-```
-## Error: object 'who' not found
-```
-
-```r
 
 pardist <- mcmcall
+pardist[,2] = exp(pardist[,2]) # transform model parameters back first
+pardist[,3] = exp(pardist[,3])
+
+
+bayes_coef <- apply(pardist,2,mean)
+bayes_pars <- c(bayes_coef[2], bayes_coef[1], bayes_coef[3])
+bayes_pars
 ```
 
 ```
-## Error: object 'mcmcall' not found
-```
-
-```r
-pardist[,4] = exp(pardist[,4]) # transform model parameters back first
-```
-
-```
-## Error: object 'pardist' not found
-```
-
-```r
-pardist[,5] = exp(pardist[,5])
-```
-
-```
-## Error: object 'pardist' not found
-```
-
-```r
-
-
-bayes_coef <- apply(mcmcall,2,mean)
-```
-
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
-bayes_pars <- c(bayes_coef[4], bayes_coef[1], bayes_coef[5])
-```
-
-```
-## Error: object 'bayes_coef' not found
+   logr0        K logtheta 
+  6.3281   5.8098   0.5277 
 ```
 
 
@@ -434,43 +354,15 @@ tgp_dat <-
   alt_means <- sapply(x_grid, alt$f, 0, alt$p)
   est_means <- sapply(x_grid, est$f, 0, est$p)
   par_bayes_means <- sapply(x_grid, est$f, 0, bayes_pars)
-```
-
-```
-## Error: object 'bayes_pars' not found
-```
-
-```r
 
 
 
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
                      MLE=est_means, Ricker.MLE=alt_means, 
                      Parametric.Bayes = par_bayes_means)
-```
-
-```
-## Error: object 'par_bayes_means' not found
-```
-
-```r
 
   models <- melt(models, id="x")
-```
-
-```
-## Error: object 'models' not found
-```
-
-```r
   names(models) <- c("x", "method", "value")
-```
-
-```
-## Error: object 'models' not found
-```
-
-```r
 
   plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
     geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
@@ -478,19 +370,10 @@ models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means,
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     scale_colour_manual(values=cbPalette) 
-```
-
-```
-## Error: object 'models' not found
-```
-
-```r
   print(plot_gp)
 ```
 
-```
-## Error: object 'plot_gp' not found
-```
+![plot of chunk unnamed-chunk-10](http://farm9.staticflickr.com/8538/8694431228_da296eba1f_o.png) 
 
 
 
@@ -515,37 +398,12 @@ opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profi
 
 
 matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
-```
-
-```
-## Error: object 'pardist' not found
-```
-
-```r
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-## Error: object 'matrices_par_bayes' not found
-```
-
-```r
 
 
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
-```
-
-```
-## Error: object 'opt_par_bayes' not found
-```
-
-```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
-```
-
-```
-## Error: object 'OPT' not found
 ```
 
 
@@ -557,29 +415,13 @@ names(colorkey) = names(OPT)
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-```
-
-```
-## Error: object 'OPT' not found
-```
-
-```r
 names(policies) <- c("stock", "method", "value")
-```
-
-```
-## Error: object 'policies' not found
-```
-
-```r
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-```
-## Error: object 'policies' not found
-```
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8540/8694452816_ca9c906117_o.png) 
 
 
 
@@ -597,57 +439,20 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-```
-
-```
-## Error: object 'OPT' not found
-```
-
-```r
 
   
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-```
-
-```
-## Error: object 'sims' not found
-```
-
-```r
 dt <- data.table(dat)
-```
-
-```
-## Error: object 'dat' not found
-```
-
-```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-```
-
-```
-## Error: x is not a data.table or data.frame
-```
-
-```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
-```
-
-```
-## Error: object of type 'closure' is not subsettable
-```
-
-```r
 
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-## Error: ggplot2 doesn't know how to deal with data of class function
-```
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8125/8693335407_7dc29cd6ba_o.png) 
 
 ```r
 
@@ -656,9 +461,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-## Error: ggplot2 doesn't know how to deal with data of class function
-```
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8255/8693335517_39d46bce80_o.png) 
 
 ```r
   

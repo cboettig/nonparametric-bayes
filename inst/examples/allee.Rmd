@@ -101,7 +101,7 @@ Which estimates a Ricker model with $r =$ `r alt$p[1]`, $K =$ `r alt$p[2]`, and 
 
 ```{r}
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          meanfn="constant", bprior="b0", BTE=c(10,1600,2),
           m0r1=FALSE, corr="exp", trace=TRUE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      

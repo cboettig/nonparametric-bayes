@@ -3,9 +3,9 @@
 model{
 
 # Define prior densities for parameters
-K     ~ dunif(1.0, 22000.0)
-logr0    ~ dunif(-4.0, 2.0)
-logtheta ~ dunif(-4.0, 2.0)
+K     ~ dunif(1.0, 100.0)
+logr0    ~ dunif(-5.0, 5.0)
+logtheta ~ dunif(-5.0, 5.0)
 
 # JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
 iQ ~ dgamma(0.0001,0.0001)

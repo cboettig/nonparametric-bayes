@@ -102,8 +102,8 @@ Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 ```{r}
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,10000,10),
-          m0r1=FALSE, corr="exp", trace=TRUE, 
+          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          m0r1=FALSE, corr="exp", trace=FALSE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
 ```
@@ -111,7 +111,7 @@ Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 Show traces and posteriors against priors
 
-```{r}
+```{r, eval=FALSE}
 hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
 posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 
@@ -124,12 +124,7 @@ prior_curves <- ddply(posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100)
     data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
 })
-```
 
-(Note that I keep thinking this should be done with `stat_function`, but cannot `facet_wrap` across different functions, see [SO/1376967](http://stackoverflow.com/questions/1376967/using-stat-function-and-facet-wrap-together-in-ggplot2-in-r)
-
-
-```{r}
 # Posteriors (easier to read than histograms)
 ggplot(posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -137,6 +132,7 @@ ggplot(posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
+(Note that I keep thinking this should be done with `stat_function`, but cannot `facet_wrap` across different functions, see [SO/1376967](http://stackoverflow.com/questions/1376967/using-stat-function-and-facet-wrap-together-in-ggplot2-in-r)
 
 
 #### Parametric Bayes
@@ -190,7 +186,7 @@ time_jags <- system.time(
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
-time <- unname(time["elapsed"]);
+time_jags <- unname(time_jags["elapsed"]);
 ```
 
 
@@ -242,7 +238,7 @@ pardist[,2] = exp(pardist[,2]) # transform model parameters back first
 pardist[,3] = exp(pardist[,3])
 
 
-bayes_coef <- apply(mcmcall,2,mean)
+bayes_coef <- apply(pardist,2,mean)
 bayes_pars <- c(bayes_coef[2], bayes_coef[1], bayes_coef[3])
 bayes_pars
 ```
