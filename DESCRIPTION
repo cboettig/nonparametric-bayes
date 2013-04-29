@@ -8,6 +8,17 @@ Author: Carl Boettiger
 Maintainer: Carl Boettiger, <cboettig@gmail.com>
 URL: https://github.com/cboettig/nonparametric-bayes
 BugReports: https://github.com/cboettig/nonparametric-bayes/issues
+Depends:
+  coda,
+  emdbook,
+  R2jags,
+  MCMCpack,
+  tgp,
+  plyr,
+  data.table,
+  reshape2,
+  pdgControl,
+  ggplot2
 Collate:
     'gp_fit.R'
     'gp_plot.R'

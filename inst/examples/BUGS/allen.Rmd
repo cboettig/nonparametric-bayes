@@ -1,32 +1,28 @@
 # Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
-Load necessary libraries,
-
-```{r libraries, cache=FALSE, message=FALSE, warning=FALSE}
-library(pdgControl) # custom SDP functions
-library(nonparametricbayes) # custom 
-library(reshape2) # data manipulation
-library(data.table) # data manipulation
-library(plyr) # data manipulation
-library(ggplot2) # plotting 
-library(tgp) # Gaussian Processes
-library(MCMCpack) # Markov Chain Monte Carlo tools 
-library(R2jags) # Markov Chain Monte Carlo tools 
-library(emdbook) # Markov Chain Monte Carlo tools 
-library(coda) # Markov Chain Monte Carlo tools 
-```
 
 Plotting and knitr options, (can generally be ignored)
 
 ```{r plotting-options}
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA)
+
 library(knitcitations)
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE)
+
+library(ggplot2) # plotting 
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=10))
-theme_update(panel.background = element_rect(fill = "transparent",colour = NA),
-             plot.background = element_rect(fill = "transparent",colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
+             plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
+Load necessary libraries,
+
+```{r libraries, cache=FALSE, message=FALSE, warning=FALSE}
+library(nonparametricbayes) # loads the rest as dependencies
+```
+
+
 
 ### Model and parameters
 
@@ -102,14 +98,18 @@ priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior,
 ```
 
 
+Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 ```{r}
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,20000,2),
+          meanfn="constant", bprior="b0", BTE=c(2000,10000,10),
           m0r1=FALSE, corr="exp", trace=TRUE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
 ```
+
+
+Show traces and posteriors against priors
 
 ```{r}
 hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
@@ -118,18 +118,21 @@ posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 # Traces 
 ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 
-
+## A list of functions has been defined in "priors", 
+## Here we just make sure to compute priors over the range of values returned by the posteriors
 prior_curves <- ddply(posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100)
     data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
 })
+```
 
-# 
-ggplot(posteriors) + geom_histogram(aes(x=value, y=..density..), alpha=0.7) +
-    geom_line(data=prior_curves, aes(x=value, y=density), col="red", lwd=2) +
-    facet_wrap(~ variable, scale="free")
+(Note that I keep thinking this should be done with `stat_function`, but cannot `facet_wrap` across different functions, see [SO/1376967](http://stackoverflow.com/questions/1376967/using-stat-function-and-facet-wrap-together-in-ggplot2-in-r)
 
-ggplot(posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+
+```{r}
+# Posteriors (easier to read than histograms)
+ggplot(posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
@@ -175,8 +178,7 @@ We define which parameters to keep track of, and set the initial values of param
 
 ```{r}
 jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
-#jags.inits <- function(){ list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123) }
-
+# Uniform priors on standard deviation terms
 jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
   list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -184,7 +186,7 @@ jags.inits <- function(){
 
 set.seed(12345)
 
-time<-system.time(       
+time_jags <- system.time(       
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
@@ -201,13 +203,32 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 # Traces
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 
-# posterior distributiosn
-ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+
+## priors (untransformed variables)
+K_prior <- function(x) dunif(x, 1, 22000)
+logr_prior <- function(x) dunif(x, -4, 2)
+logtheta_prior <- function(x) dunif(x, -4, 2)
+stdQ_prior <- function(x) dunif(0, 100)
+stdR_prior <- function(x) dunif(0, 100)
+
+par_priors <- list(K = K_prior, logr0 = logr_prior, logtheta = logtheta_prior, 
+     stdQ = stdQ_prior, stdR = stdR_prior, deviance = function(x) 0)
+
+par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+
+# posterior distributions
+ggplot(par_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
 
 ```{r}
+# um, cleaner if we were just be using the long form, par_posterior
 mcmc <- as.mcmc(jagsfit)
 mcmcall <- mcmc[,-2]
 who <- colnames(mcmcall)
@@ -215,14 +236,15 @@ who
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
 
+
 pardist <- mcmcall
-pardist[,4] = exp(pardist[,4]) # transform model parameters back first
-pardist[,5] = exp(pardist[,5])
+pardist[,2] = exp(pardist[,2]) # transform model parameters back first
+pardist[,3] = exp(pardist[,3])
 
 
 bayes_coef <- apply(mcmcall,2,mean)
-bayes_pars <- c(bayes_coef[4], bayes_coef[1], bayes_coef[5])
-
+bayes_pars <- c(bayes_coef[2], bayes_coef[1], bayes_coef[3])
+bayes_pars
 ```
 
 ### Phase-space diagram of the expected dynamics
