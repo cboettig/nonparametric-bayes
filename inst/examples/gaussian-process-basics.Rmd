@@ -1,9 +1,15 @@
-`ro comment=NA, message=FALSE, cache.path="gpb/", tidy=FALSE or`
 
-```{r include=FALSE}
-opts_knit$set(upload.fun = socialR::notebook.url)
-theme_update(plot.background = element_rect(fill = "transparent",colour = NA))
+
+
+```{r plotting-options}
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA)
+library(ggplot2) # plotting 
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size=10))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
+             plot.background = element_rect(fill = "transparent", colour = NA))
 ```
+
 
 Basic regression in Gaussian processes  
 ---------------------------------------
@@ -17,7 +23,6 @@ Required R libraries (for multivariate normal, also for plotting):
 ```{r results="hide"}
 require(MASS)
 require(reshape2)
-require(ggplot2)
 ```
 
 
@@ -200,4 +205,98 @@ pars <- c(l=1, sigma.n=1)
 o <- optim(pars, minusloglik)
 o$par
 ```
+
+```{r}
+lpriors <- function(pars){
+   d.p <- c(5, 5)
+  s2.p <- c(5, 5)  
+   
+  prior <- unname(
+    dgamma(exp(pars[1]), d.p[1], scale = d.p[2]) *
+    dgamma(exp(pars[2]), s2.p[1], s2.p[2]) 
+#    dunif(exp(pars[1]), 0, 100) * 
+#    dunif(exp(pars[2]), 0, 100)
+  )
+  
+  log(prior)
+}
+
+posterior <- function(pars, x, y){
+  
+  l <- exp(pars[1])
+  sigma.n <- exp(pars[2])
+  
+  cov <- function(X, Y) outer(X, Y, SE, l)
+  I <- diag(1, length(x))
+  K <- cov(x, x) 
+  
+  loglik <- - 0.5 * t(y) %*% solve(K + sigma.n^2 * I) %*% y -
+    log(det(K + sigma.n^2*I)) -
+    length(y) * log(2 * pi) / 2
+
+  loglik + lpriors(pars)
+}
+  
+```
+
+```{r}
+posterior(log(pars), obs$x, obs$y)
+posterior(log(o$par), obs$x, obs$y)
+```
+
+```{r}
+require(mcmc)
+n <- 1e4
+out <- metrop(posterior, log(pars), n, x = obs$x, y = obs$y)
+out$accept
+```
+
+
+```{r}
+postdist <- cbind(index=1:n, as.data.frame(exp(out$batch)))
+names(postdist) <- c("index", names(pars))
+df <- melt(postdist, id="index")
+# TRACES
+ggplot(df) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
+
+ggplot(df) + geom_line(aes(index, log(value))) + facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+```{r}
+
+d.p <- c(5, 5)
+s2.p <- c(5, 5)  
+   
+s2_prior <- function(x) dgamma(x, s2.p[1], s2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2])
+prior_fns <- list(l = d_prior, sigma.n = s2_prior)
+
+
+require(plyr)
+prior_curves <- ddply(df, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = prior_fns[[dd$variable[1]]](grid))
+})
+
+# Posteriors (easier to read than histograms)
+ggplot(df, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+
+
+```{r}
+prior_curves <- ddply(df, "variable", function(dd){
+    grid <- seq(-4, 4, length = 100)
+    data.frame(value = grid, density = prior_fns[[dd$variable[1]]](grid))
+})
+
+ggplot(prior_curves, aes(value, density)) + 
+  geom_line(data=prior_curves, col="red") + 
+  facet_wrap(~ variable, ncol=1, scale="free_y")
+```
+
 

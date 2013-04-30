@@ -2,6 +2,17 @@
 
 
 
+```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA)
+library(ggplot2)  # plotting
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size = 10))
+theme_update(panel.background = element_rect(fill = "transparent", 
+    colour = NA), plot.background = element_rect(fill = "transparent", colour = NA))
+```
+
+
 
 Basic regression in Gaussian processes  
 ---------------------------------------
@@ -16,7 +27,6 @@ Required R libraries (for multivariate normal, also for plotting):
 ```r
 require(MASS)
 require(reshape2)
-require(ggplot2)
 ```
 
 
@@ -94,7 +104,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8122/8696148119_6c9d27f155_o.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +169,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8546/8696148309_94363dde5b_o.png) 
 
 
 Additive noise
@@ -204,7 +214,7 @@ fig2c <- ggplot(dat,aes(x=x,y=value)) +
 fig2c
 ```
 
-![plot of chunk unnamed-chunk-16](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-15](http://farm9.staticflickr.com/8544/8697269800_b1a3db9500_o.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -252,5 +262,13 @@ o$par
        l  sigma.n 
 0.703891 0.002685 
 ```
+
+
+
+
+```r
+#out <- metrop(lupost, beta.init, 1e3, x = x, y = y)
+```
+
 
 
