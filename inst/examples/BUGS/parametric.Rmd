@@ -79,7 +79,7 @@ par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
 # posterior distributions
 ggplot(par_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+  #geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 
 ```

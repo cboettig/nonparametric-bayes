@@ -68,4 +68,5 @@ Tobs <- 35
                           pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
                     y = c(rep(0,nz), 
                           x[2:Tobs]))
+write.csv(obs, "obs.txt")
 ```
