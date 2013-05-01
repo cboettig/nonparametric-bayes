@@ -12,17 +12,24 @@ gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){
     h_grid <- x_grid
   
   if(is.matrix(Ef)){ # loop over posteriors
+    
     n_samples <- dim(Ef)[2]
-    loop_over_h <- function(h){
-      F_s <- lapply(1:n_samples, function(i){
-        gp_calc_F(h, Ef[,i], V[,i], x_grid)
-      })
+    loop_over_h <-function(h){
       # Average across matrices in list, and then normalize
+      F_s <- gp_calc_F(h, Ef[,1], V[,1], x_grid)
+      for(i in 2:n_samples){
+        F_s <- F_s + gp_calc_F(h, Ef[,i], V[,i], x_grid)
+      })
+      F_s <- rownorm(F_s)
     }
-    lapply(h_grid, loop_over_h)  
+    out <- lapply(h_grid, loop_over_h)  
+
   } else { 
-  lapply(h_grid, gp_calc_F, Ef, V, x_grid)
+    
+    out <- lapply(h_grid, gp_calc_F, Ef, V, x_grid)
+  
   }
+  out
 }
 
 
