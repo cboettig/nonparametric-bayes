@@ -287,16 +287,3 @@ ggplot(df, aes(value)) +
 
 
 
-
-```{r}
-prior_curves <- ddply(df, "variable", function(dd){
-    grid <- seq(-4, 4, length = 100)
-    data.frame(value = grid, density = prior_fns[[dd$variable[1]]](grid))
-})
-
-ggplot(prior_curves, aes(value, density)) + 
-  geom_line(data=prior_curves, col="red") + 
-  facet_wrap(~ variable, ncol=1, scale="free_y")
-```
-
-
