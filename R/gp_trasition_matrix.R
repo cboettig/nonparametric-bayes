@@ -10,12 +10,26 @@
 gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){  
   if(is.null(h_grid))
     h_grid <- x_grid
+  
+  if(is.matrix(Ef)){ # loop over posteriors
+    n_samples <- dim(Ef)[2]
+    loop_over_h <- function(h){
+      F_s <- lapply(1:n_samples, function(i){
+        gp_calc_F(h, Ef[,i], V[,i], x_grid)
+      })
+      # Average across matrices in list, and then normalize
+    }
+    lapply(h_grid, loop_over_h)  
+  } else { 
   lapply(h_grid, gp_calc_F, Ef, V, x_grid)
+  }
 }
 
 
 
 gp_calc_F <- function(h, Ef, V, x_grid){
+  
+  
   j <- which.min(abs(x_grid - h))
   indices <- 1:length(Ef)
   shift <- pmax(indices-j,1)

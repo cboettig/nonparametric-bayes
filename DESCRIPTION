@@ -9,19 +9,20 @@ Maintainer: Carl Boettiger, <cboettig@gmail.com>
 URL: https://github.com/cboettig/nonparametric-bayes
 BugReports: https://github.com/cboettig/nonparametric-bayes/issues
 Depends:
-  coda,
-  emdbook,
-  R2jags,
-  MCMCpack,
-  tgp,
-  plyr,
-  data.table,
-  reshape2,
-  pdgControl,
-  ggplot2
+    coda,
+    emdbook,
+    R2jags,
+    MCMCpack,
+    tgp,
+    plyr,
+    data.table,
+    reshape2,
+    pdgControl,
+    ggplot2
 Collate:
     'gp_fit.R'
     'gp_plot.R'
     'gp_trasition_matrix.R'
     'nonparametric-bayes.R'
     'gp-replicate-fns.R'
+    'gp_mcmc.R'
