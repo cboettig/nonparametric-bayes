@@ -53,7 +53,7 @@ priors <- melt(priors, id="x")
 ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
 ```
 
-![plot of chunk unnamed-chunk-4](http://carlboettiger.info/assets/figures/2012-12-10-f46bed7eaa-unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8404/8694391470_8ac745ba0f_o.png) 
 
 
 
@@ -117,7 +117,7 @@ ggplot(tgp_dat) +
     theme_bw() + theme(plot.background = element_rect(fill = "transparent",colour = NA))
 ```
 
-![plot of chunk gp-plot](http://carlboettiger.info/assets/figures/2012-12-10-f46bed7eaa-gp-plot.png) 
+![plot of chunk gp-plot](http://farm9.staticflickr.com/8405/8693273719_aa17e176c7_o.png) 
 
 
 
@@ -132,7 +132,7 @@ posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
 ggplot(posteriors) + geom_histogram(aes(value)) + facet_wrap(~variable, scales="free")
 ```
 
-![plot of chunk unnamed-chunk-8](http://carlboettiger.info/assets/figures/2012-12-10-f46bed7eaa-unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8115/8693274145_a84a10948c_o.png) 
 
 
 Hmm... posteriors indeed show a huge value for the length scale `d`, and for the nugget `nug`.  Looks supiciously like the mixed Gamma prior when the scale parameter is used as the rate parameter (it's inverse):
@@ -149,7 +149,7 @@ priors <- melt(priors, id="x")
 ggplot(priors) + geom_line(aes(x, value)) + facet_wrap(~variable, scale="free")
 ```
 
-![plot of chunk density_prior](http://carlboettiger.info/assets/figures/2012-12-10-f46bed7eaa-density_prior.png) 
+![plot of chunk density_prior](http://farm9.staticflickr.com/8393/8693274295_a568f0da02_o.png) 
 
 
 

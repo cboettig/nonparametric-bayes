@@ -96,14 +96,14 @@ Which estimates a Ricker model with $r =$ 2, $K =$ 6.77, and the Allen allee mod
 
 ```r
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,16000,2),
+          meanfn="constant", bprior="b0", BTE=c(10,1600,2),
           m0r1=FALSE, corr="exp", trace=TRUE, 
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
           s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8108/8634532339_59f6853207_o.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8401/8693278143_1b8d80d884_o.png) 
 
 
 
@@ -141,7 +141,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8522/8635639424_e713c14ba1_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8254/8693278361_6a8c45c339_o.png) 
 
 
 
@@ -155,7 +155,7 @@ this.
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8544/8635647404_71b586e216_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8260/8693286775_966faae4ca_o.png) 
 
 
 
@@ -163,26 +163,26 @@ this.
 
 ```r
 dt <- simulate_opt(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime=OptTime)
-```
-
-```
-Error: unused argument(s) (OptTime = OptTime)
-```
-
-```r
 sim_plots(dt, seed=seed_i)
 ```
 
 ```
-Error: ggplot2 doesn't know how to deal with data of class function
+Scale for 'colour' is already present. Adding another scale for 'colour',
+which will replace the existing scale.
 ```
+
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8118/8693287195_e1ff8acbc6_o.png) 
 
 ```r
 profits_stats(dt)
 ```
 
 ```
-Error: invalid 'type' (closure) of argument
+       method     V1     sd
+1:         GP 19.337 1.6314
+2: Parametric  6.446 0.3384
+3:       True 20.701 1.8012
+4: Structural  7.650 0.0000
 ```
 
   

@@ -2,6 +2,17 @@
 
 
 
+```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA)
+library(ggplot2)  # plotting
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size = 10))
+theme_update(panel.background = element_rect(fill = "transparent", 
+    colour = NA), plot.background = element_rect(fill = "transparent", colour = NA))
+```
+
+
 
 Basic regression in Gaussian processes  
 ---------------------------------------
@@ -16,7 +27,6 @@ Required R libraries (for multivariate normal, also for plotting):
 ```r
 require(MASS)
 require(reshape2)
-require(ggplot2)
 ```
 
 
@@ -94,7 +104,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-9](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8118/8699031943_8f8cd632d7_o.png) 
 
 
 ### Posterior distribution given the data
@@ -159,7 +169,7 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-13](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8271/8700154506_499e5cac25_o.png) 
 
 
 Additive noise
@@ -204,7 +214,7 @@ fig2c <- ggplot(dat,aes(x=x,y=value)) +
 fig2c
 ```
 
-![plot of chunk unnamed-chunk-16](http://carlboettiger.info/assets/figures/2012-12-07-9b3f10e11e-unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-15](http://farm9.staticflickr.com/8551/8700154678_7120d75302_o.png) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -252,5 +262,122 @@ o$par
        l  sigma.n 
 0.703891 0.002685 
 ```
+
+
+
+```r
+lpriors <- function(pars){
+   d.p <- c(5, 5)
+  s2.p <- c(5, 5)  
+   
+  prior <- unname(
+    dgamma(exp(pars[1]), d.p[1], scale = d.p[2]) *
+    dgamma(exp(pars[2]), s2.p[1], s2.p[2]) 
+#    dunif(exp(pars[1]), 0, 100) * 
+#    dunif(exp(pars[2]), 0, 100)
+  )
+  
+  log(prior)
+}
+
+posterior <- function(pars, x, y){
+  
+  l <- exp(pars[1])
+  sigma.n <- exp(pars[2])
+  
+  cov <- function(X, Y) outer(X, Y, SE, l)
+  I <- diag(1, length(x))
+  K <- cov(x, x) 
+  
+  loglik <- - 0.5 * t(y) %*% solve(K + sigma.n^2 * I) %*% y -
+    log(det(K + sigma.n^2*I)) -
+    length(y) * log(2 * pi) / 2
+
+  loglik + lpriors(pars)
+}
+  
+```
+
+
+
+```r
+posterior(log(pars), obs$x, obs$y)
+```
+
+```
+       [,1]
+[1,] -21.87
+```
+
+```r
+posterior(log(o$par), obs$x, obs$y)
+```
+
+```
+       [,1]
+[1,] -40.78
+```
+
+
+
+```r
+require(mcmc)
+n <- 1e4
+out <- metrop(posterior, log(pars), n, x = obs$x, y = obs$y)
+out$accept
+```
+
+```
+[1] 0.1509
+```
+
+
+
+
+```r
+postdist <- cbind(index=1:n, as.data.frame(exp(out$batch)))
+names(postdist) <- c("index", names(pars))
+df <- melt(postdist, id="index")
+# TRACES
+ggplot(df) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+![plot of chunk unnamed-chunk-21](http://farm9.staticflickr.com/8395/8699032953_76e91621c7_o.png) 
+
+```r
+
+ggplot(df) + geom_line(aes(index, log(value))) + facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+![plot of chunk unnamed-chunk-21](http://farm9.staticflickr.com/8265/8699033067_631d27e6f7_o.png) 
+
+
+
+```r
+
+d.p <- c(5, 5)
+s2.p <- c(5, 5)  
+   
+s2_prior <- function(x) dgamma(x, s2.p[1], s2.p[2])
+d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2])
+prior_fns <- list(l = d_prior, sigma.n = s2_prior)
+
+
+require(plyr)
+prior_curves <- ddply(df, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100)
+    data.frame(value = grid, density = prior_fns[[dd$variable[1]]](grid))
+})
+
+# Posteriors (easier to read than histograms)
+ggplot(df, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+![plot of chunk unnamed-chunk-22](http://farm9.staticflickr.com/8405/8700155554_67aa26e564_o.png) 
+
+
 
 

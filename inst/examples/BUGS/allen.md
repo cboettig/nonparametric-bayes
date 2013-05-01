@@ -1,29 +1,23 @@
 # Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
-Load necessary libraries,
-
 
 ```r
-library(pdgControl)  # custom SDP functions
-library(nonparametricbayes)  # custom
-library(reshape2)  # data manipulation
-library(data.table)  # data manipulation
-library(plyr)  # data manipulation
-library(ggplot2)  # plotting
-library(tgp)  # Gaussian Processes
-library(MCMCpack)  # Markov Chain Monte Carlo tools
-library(R2jags)  # Markov Chain Monte Carlo tools
-library(emdbook)  # Markov Chain Monte Carlo tools
-library(coda)  # Markov Chain Monte Carlo tools
+setwd("~/Documents/code/nonparametric-bayes/inst/examples/BUGS/")
 ```
+
+
 
 
 Plotting and knitr options, (can generally be ignored)
 
 
 ```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA)
+
 library(knitcitations)
-opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
+
+library(ggplot2)  # plotting
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
 theme_update(panel.background = element_rect(fill = "transparent", 
@@ -32,16 +26,25 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
     "#0072B2", "#D55E00", "#CC79A7")
 ```
 
+Load necessary libraries,
+
+
+```r
+library(nonparametricbayes) # loads the rest as dependencies
+```
+
+
+
 
 ### Model and parameters
 
-Uses the model derived in <span class="showtooltip" title="Allen L, Fagan J, H&lt;U+00F6&gt;gn&lt;U+00E4&gt;s G and Fagerholm H (2005). 'Population Extinction in Discrete-Time Stochastic Population Models With an Allee Effect.' Journal of Difference Equations And Applications, 11, pp. 273-293. ISSN 1023-6198."><a href="http://dx.doi.org/10.1080/10236190412331335373">Allen et al. (2005)</a></span> , of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 
 ```r
 f <- RickerAllee
-p <- c(2, 10, 5) 
+p <- c(2, 8, 5)
 K <- p[2]
 allee <- p[3]
 ```
@@ -60,7 +63,7 @@ x_grid <- seq(0, 1.5 * K, length=101)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime <- 20  # stationarity with unstable models is tricky thing
+OptTime <- 30  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
 seed_i <- 111
@@ -74,8 +77,16 @@ Tobs <- 35
 
 
 ```r
-obs <- sim_obs(Xo, z_g, f, p, Tobs=Tobs, nz=15, 
-                harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
+  #harvest <- sort(rep(seq(0, .5, length=7), 5))
+  x <- numeric(Tobs)
+  x[1] <- 6
+  nz <- 1
+  for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+  obs <- data.frame(x = c(rep(0,nz), 
+                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
+                    y = c(rep(0,nz), 
+                          x[2:Tobs]))
 ```
 
 
@@ -103,63 +114,57 @@ est <- par_est_allee(obs, f, p,
 ```r
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
 s2.p <- c(5,5)  
-tau2.p <- c(5,1)
-d.p = c(10, 1/0.1, 10, 1/0.1)
-nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
-s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
-tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
-d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
-nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
-beta0_prior <- function(x, tau) dnorm(x, 0, tau)
-beta = c(0)
-priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+d.p = c(10, 1/0.1)
 ```
 
+
+
+Estimate the Gaussian Process (nonparametric Bayesian fit)
+
+
+```r
+gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
+gp_dat <- gp_predict(gp, x_grid)
+          
+```
+
+
+
+Show traces and posteriors against priors
+
+
+```r
+plots <- summary_gp_mcmc(gp)
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8119/8698882867_4dbf9c25ab_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8267/8698883195_dd5d124f6f_o.png) 
+
+```r
+plots[[1]]
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8407/8698883329_07fd494b02_o.png) 
+
+```r
+plots[[2]]
+```
+
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8544/8698883429_6fbca7bc7c_o.png) 
 
 
 
 
 ```r
-  gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(2000,20000,2),
-          m0r1=FALSE, corr="exp", trace=TRUE, 
-          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+# Summarize the GP model
+tgp_dat <- 
+    data.frame(  x = x_grid, 
+                 y = gp_dat$E_Ef, 
+                 ymin = gp_dat$E_Ef - 2 * sqrt(gp_dat$E_Vf), 
+                 ymax = gp_dat$E_Ef + 2 * sqrt(gp_dat$E_Vf) )
 ```
 
 
-
-```r
-hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
-posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
-
-# Traces 
-ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
-```
-
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8259/8693874088_8ccab55ca1_o.png) 
-
-```r
-
-
-prior_curves <- ddply(posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100)
-    data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
-})
-
-# Posteriors (easier to read than histograms)
-ggplot(posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8257/8692756173_ef57266af1_o.png) 
-
-
-
-
-#### Parametric Bayes
+### Parametric Bayes
 
 We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
@@ -168,7 +173,7 @@ We initiate the MCMC chain (`init_p`) using the true values of the parameters `p
 # a bit unfair to start with the correct values, but anyhow...
 init_p = p
 names(init_p) = c("r0", "K", "theta")
-y <- obs$y[-1] 
+y <- obs$x[-1] 
 N=length(y);
 ```
 
@@ -181,8 +186,8 @@ We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation 
 ```r
 jags.data <- list("N","y")
 n.chains = 1
-n.iter = 20000
-n.burnin = floor(n.iter/2)
+n.iter = 40000
+n.burnin = floor(10000)
 n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 ```
 
@@ -197,34 +202,34 @@ cat(readLines(con="bugmodel-UPrior.txt"), sep="\n")
 ```
 
 ```
-## model{
-## 
-## K     ~ dunif(1.0, 22000.0)
-## logr0    ~ dunif(-4.0, 2.0)
-## logtheta ~ dunif(-4.0, 2.0)
-## stdQ ~ dunif(0,100)
-## stdR ~ dunif(0,100)
-## # JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
-## iQ <- 1/(stdQ*stdQ);
-## iR <- 1/(stdR*stdR);
-## 
-## r0 <- exp(logr0)
-## theta <- exp(logtheta)
-## 
-## 
-## x[1] ~ dunif(0,10)
-## 
-## for(t in 1:(N-1)){
-##   mu[t] <- x[t] + exp(r0 * (1 - x[t]/K)* (x[t] - theta) )
-##   x[t+1] ~ dlnorm(mu[t],iQ) 
-## }
-## 
-## 
-## for(t in 1:(N)){
-##   y[t] ~ dnorm(x[t],iR)
-## }
-## 
-## }
+model{
+
+K     ~ dunif(0.01, 40.0)
+logr0    ~ dunif(-6.0, 6.0)
+logtheta ~ dunif(-6.0, 6.0)
+stdQ ~ dunif(0.0001,100)
+stdR ~ dunif(0.0001,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
+iQ <- 1/(stdQ*stdQ);
+iR <- 1/(stdR*stdR);
+
+r0 <- exp(logr0)
+theta <- exp(logtheta)
+
+
+x[1] ~ dunif(0,10)
+
+for(t in 1:(N-1)){
+  mu[t] <- x[t] * exp(r0 * (1 - x[t]/K)* (x[t] - theta) / K )
+  x[t+1] ~ dnorm(mu[t],iQ) 
+}
+
+
+for(t in 1:(N)){
+  y[t] ~ dnorm(x[t],iR)
+}
+
+}
 ```
 
 
@@ -235,10 +240,7 @@ We define which parameters to keep track of, and set the initial values of param
 
 
 ```r
-jags.params=c("K","logr0","logtheta","iR","iQ") # Don't need to save "x"
-#jags.inits <- function(){ list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]),"iQ"=1/0.05,"iR"=1/0.1,"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123) }
-# For gamma, invert result
-
+# Uniform priors on standard deviation terms
 jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
   list("K"=init_p["K"],"logr0"=log(init_p["r0"]),"logtheta"=log(init_p["theta"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -246,37 +248,23 @@ jags.inits <- function(){
 
 set.seed(12345)
 
-time<-system.time(       
+time_jags <- system.time(       
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
 ```
 
 ```
-## Compiling model graph
-##    Resolving undeclared variables
-##    Allocating nodes
-##    Graph Size: 398
-## 
-## Initializing model
-## Deleting model
-```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 320
 
-```
-## Error: Error in node x[2] Unobserved node inconsistent with unobserved
-## parents at initialization
-```
-
-```
-## Timing stopped at: 0.036 0 0.036
+Initializing model
 ```
 
 ```r
-time <- unname(time["elapsed"]);
-```
-
-```
-## Error: object of type 'closure' is not subsettable
+time_jags <- unname(time_jags["elapsed"]);
 ```
 
 
@@ -286,211 +274,114 @@ time <- unname(time["elapsed"]);
 
 ```r
 jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
-```
-
-```
-## Error: object 'jagsfit' not found
-```
-
-```r
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
-```
-
-```
-## Error: object 'jags_matrix' not found
-```
-
-```r
 
 # Traces
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```
-## Error: object 'par_posteriors' not found
-```
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8395/8700007528_e4feacfa36_o.png) 
 
 ```r
 
-# posterior distributiosn
-ggplot(par_posteriors, aes(value)) + stat_density(geom="path", position="identity", alpha=0.7) +
+
+## priors (untransformed variables)
+K_prior <- function(x) dunif(x, 0.01, 40)
+logr_prior <- function(x) dunif(x, -6, 6)
+logtheta_prior <- function(x) dunif(x, -6, 6)
+stdQ_prior <- function(x) dunif(x, 0.001, 100)
+stdR_prior <- function(x) dunif(x, 0.001, 100)
+
+par_priors <- list(K = K_prior, deviance = function(x) 0 * x, logr0 = logr_prior, logtheta = logtheta_prior, stdQ = stdQ_prior, stdR = stdR_prior)
+
+
+par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+
+
+# posterior distributions
+ggplot(par_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-```
-## Error: object 'par_posteriors' not found
-```
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8115/8698885329_5e1f26eaf5_o.png) 
 
 
 
 
 ```r
+# um, cleaner if we were just be using the long form, par_posterior
 mcmc <- as.mcmc(jagsfit)
-```
-
-```
-## Error: object 'jagsfit' not found
-```
-
-```r
 mcmcall <- mcmc[,-2]
-```
-
-```
-## Error: object of type 'closure' is not subsettable
-```
-
-```r
 who <- colnames(mcmcall)
-```
-
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
 who 
 ```
 
 ```
-## Error: object 'who' not found
+[1] "K"        "logr0"    "logtheta" "stdQ"     "stdR"    
 ```
 
 ```r
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
-```
-
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
 colnames(mcmcall) <- who
-```
 
-```
-## Error: object 'who' not found
-```
-
-```r
 
 pardist <- mcmcall
+pardist[,2] = exp(pardist[,2]) # transform model parameters back first
+pardist[,3] = exp(pardist[,3])
+
+
+bayes_coef <- apply(pardist,2,mean)
+bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3]))
+bayes_pars
 ```
 
 ```
-## Error: object 'mcmcall' not found
+[1] 1.353 8.048 1.540
 ```
 
-```r
-pardist[,4] = exp(pardist[,4]) # transform model parameters back first
-```
 
-```
-## Error: object 'pardist' not found
-```
 
-```r
-pardist[,5] = exp(pardist[,5])
-```
 
-```
-## Error: object 'pardist' not found
-```
 
 ```r
-
-
-bayes_coef <- apply(mcmcall,2,mean)
+par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 ```
 
-```
-## Error: object 'mcmcall' not found
-```
-
-```r
-bayes_pars <- c(bayes_coef[4], bayes_coef[1], bayes_coef[5])
-```
-
-```
-## Error: object 'bayes_coef' not found
-```
 
 
 ### Phase-space diagram of the expected dynamics
 
 
 ```r
-# Summarize the GP model
-tgp_dat <- 
-    data.frame(  x = gp$XX[[1]], 
-                 y = gp$ZZ.km, 
-                 ymin = gp$ZZ.km - 1.96 * sqrt(gp$ZZ.ks2), 
-                 ymax = gp$ZZ.km + 1.96 * sqrt(gp$ZZ.ks2),
-                 ymin2 = gp$ZZ.mean - 1.96 * sqrt(gp$ZZ.vark), 
-                 ymax2 = gp$ZZ.mean + 1.96 * sqrt(gp$ZZ.vark))
-
 
   true_means <- sapply(x_grid, f, 0, p)
   alt_means <- sapply(x_grid, alt$f, 0, alt$p)
   est_means <- sapply(x_grid, est$f, 0, est$p)
-  par_bayes_means <- sapply(x_grid, est$f, 0, bayes_pars)
-```
-
-```
-## Error: object 'bayes_pars' not found
-```
-
-```r
+  par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 
 
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
                      MLE=est_means, Ricker.MLE=alt_means, 
                      Parametric.Bayes = par_bayes_means)
-```
 
-```
-## Error: object 'par_bayes_means' not found
-```
+models <- melt(models, id="x")
+names(models) <- c("x", "method", "value")
 
-```r
-
-  models <- melt(models, id="x")
-```
-
-```
-## Error: object 'models' not found
-```
-
-```r
-  names(models) <- c("x", "method", "value")
-```
-
-```
-## Error: object 'models' not found
-```
-
-```r
-
-  plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-    geom_ribbon(aes(x,y,ymin=ymin2,ymax=ymax2), fill="gray60") +
+plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
     geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     scale_colour_manual(values=cbPalette) 
+print(plot_gp)
 ```
 
-```
-## Error: object 'models' not found
-```
-
-```r
-  print(plot_gp)
-```
-
-```
-## Error: object 'plot_gp' not found
-```
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8277/8698885529_70bd7ed356_o.png) 
 
 
 
@@ -501,7 +392,7 @@ Compute the optimal policy under each model using stochastic dynamic programming
 
 ```r
 MaxT = 1000
-matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
@@ -515,37 +406,12 @@ opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profi
 
 
 matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
-```
-
-```
-## Error: object 'pardist' not found
-```
-
-```r
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-## Error: object 'matrices_par_bayes' not found
-```
-
-```r
 
 
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
-```
-
-```
-## Error: object 'opt_par_bayes' not found
-```
-
-```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
-```
-
-```
-## Error: object 'OPT' not found
 ```
 
 
@@ -557,29 +423,14 @@ names(colorkey) = names(OPT)
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-```
-
-```
-## Error: object 'OPT' not found
-```
-
-```r
 names(policies) <- c("stock", "method", "value")
-```
 
-```
-## Error: object 'policies' not found
-```
-
-```r
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-```
-## Error: object 'policies' not found
-```
+![plot of chunk unnamed-chunk-14](http://farm9.staticflickr.com/8552/8700032818_56e376de3e_o.png) 
 
 
 
@@ -597,72 +448,19 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-```
-
-```
-## Error: object 'OPT' not found
-```
-
-```r
 
   
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-```
-
-```
-## Error: object 'sims' not found
-```
-
-```r
 dt <- data.table(dat)
-```
-
-```
-## Error: object 'dat' not found
-```
-
-```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-```
-
-```
-## Error: x is not a data.table or data.frame
-```
-
-```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
-```
-
-```
-## Error: object of type 'closure' is not subsettable
-```
-
-```r
 
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-## Error: ggplot2 doesn't know how to deal with data of class function
-```
-
-```r
-
-ggplot(dt) + 
-  geom_line(aes(time, harvest, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
-```
-
-```
-## Error: ggplot2 doesn't know how to deal with data of class function
-```
-
-```r
-  
-
-```
+![plot of chunk unnamed-chunk-15](http://farm9.staticflickr.com/8136/8700033632_dba691020a_o.png) 
 
 
