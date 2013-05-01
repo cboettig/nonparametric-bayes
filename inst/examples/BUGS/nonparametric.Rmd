@@ -1,54 +1,64 @@
 ## Non-parametric Bayes
 
+```{r}
+setwd("~/Documents/code/nonparametric-bayes/inst/examples/BUGS/")
+knit("setup.Rmd")
+```
+
 
 ```{r gp-priors}
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
 s2.p <- c(5,5)  
-tau2.p <- c(5,1)
-d.p = c(10, 1/0.1, 10, 1/0.1)
-nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
-s2_prior <- function(x) dinvgamma(x, s2.p[1], s2.p[2])
-tau2_prior <- function(x) dinvgamma(x, tau2.p[1], tau2.p[2])
-d_prior <- function(x) dgamma(x, d.p[1], scale = d.p[2]) + dgamma(x, d.p[3], scale = d.p[4])
-nug_prior <- function(x) dgamma(x, nug.p[1], scale = nug.p[2]) + dgamma(x, nug.p[3], scale = nug.p[4])
-beta0_prior <- function(x, tau) dnorm(x, 0, tau)
-beta = c(0)
-priors <- list(s2 = s2_prior, tau2 = tau2_prior, beta0 = dnorm, nug = nug_prior, d = d_prior, ldetK = function(x) 0)
+d.p = c(10, 1/0.1)
 ```
 
 
 Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 ```{r}
-  gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
-          meanfn="constant", bprior="b0", BTE=c(20,16000,2),
-          m0r1=FALSE, corr="exp", trace=F, 
-          beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
+gp_dat <- gp_predict(gp, x_grid)
+          
 ```
 
 
 Show traces and posteriors against priors
 
-```{r, eval=FALSE}
-hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
-posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
-
-# Traces 
-ggplot(posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
-
-## A list of functions has been defined in "priors", 
-## Here we just make sure to compute priors over the range of values returned by the posteriors
-prior_curves <- ddply(posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100)
-    data.frame(value = grid, density = priors[[dd$variable[1]]](grid))
-})
-
-# Posteriors (easier to read than histograms)
-ggplot(posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=2)
+```{r}
+plots <- summary_gp_mcmc(gp)
+plots[[1]]
+plots[[2]]
 ```
 
-(Note that I keep thinking this should be done with `stat_function`, but cannot `facet_wrap` across different functions, see [SO/1376967](http://stackoverflow.com/questions/1376967/using-stat-function-and-facet-wrap-together-in-ggplot2-in-r)
+
+```{r}
+# Summarize the GP model
+tgp_dat <- 
+    data.frame(  x = x_grid, 
+                 y = gp_dat$E_Ef, 
+                 ymin = gp_dat$E_Ef - 2 * sqrt(gp_dat$E_Vf), 
+                 ymax = gp_dat$E_Ef + 2 * sqrt(gp_dat$E_Vf) )
+
+
+  true_means <- sapply(x_grid, f, 0, p)
+  alt_means <- sapply(x_grid, alt$f, 0, alt$p)
+  est_means <- sapply(x_grid, est$f, 0, est$p)
+  par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
+
+
+
+models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
+                     MLE=est_means, Ricker.MLE=alt_means, 
+                     Parametric.Bayes = par_bayes_means)
+
+models <- melt(models, id="x")
+names(models) <- c("x", "method", "value")
+
+plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette) 
+print(plot_gp)
+
+```

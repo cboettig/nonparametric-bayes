@@ -29,7 +29,7 @@ Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-l
 
 ```{r}
 f <- RickerAllee
-p <- c(.2, 7.5, 5)
+p <- c(.2, 8, 5)
 K <- p[2]
 allee <- p[3]
 ```
