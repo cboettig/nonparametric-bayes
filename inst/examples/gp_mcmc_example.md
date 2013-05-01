@@ -25,7 +25,7 @@ obs <- data.frame(x = c(-4, -3, -1,  0,  2),
 
 
 ```r
-gp <- gp_mcmc(obs$x, obs$y, d.p = c(1,1), s2.p = c(1,1))
+gp <- gp_mcmc(obs$x, obs$y, d.p = c(2,.5), s2.p = c(2,.5))
 ```
 
 
@@ -35,7 +35,7 @@ gp <- gp_mcmc(obs$x, obs$y, d.p = c(1,1), s2.p = c(1,1))
 summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8547/8697972652_6675357011_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8133/8696849683_73d96bdb06_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8268/8699038171_f89f3d5ff4_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8277/8699038281_503ccd606b_o.png) 
 
 
 
@@ -60,5 +60,5 @@ ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
     xlab(expression(X[t])) + ylab(expression(X[t+1])) 
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8417/8696850575_cd27c70ac8_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8538/8699039223_863d2f447a_o.png) 
 
