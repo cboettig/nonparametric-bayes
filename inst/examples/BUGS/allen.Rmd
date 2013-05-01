@@ -280,10 +280,10 @@ Compute the optimal policy under each model using stochastic dynamic programming
 ```{r}
 MaxT = 1000
 # uses expected values from GP, instead of integrating over posterior
-# matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
 
 # Integrate over posteriors 
-matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+#matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
 
 # Solve the SDP using the GP-derived transition matrix
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
