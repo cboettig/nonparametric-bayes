@@ -131,8 +131,7 @@ Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 ```r
 gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
-gp_dat <- gp_predict(gp, x_grid)
-          
+gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
 ```
 
 
@@ -144,19 +143,19 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8278/8700547840_9514f7dd54_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8265/8699425117_14c20439ec_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8116/8701908727_1f26038467_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8128/8701908805_eb0aa9b9d0_o.png) 
 
 ```r
 plots[[1]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8539/8700548020_19dff9d6dd_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8132/8701909107_8f46ebff49_o.png) 
 
 ```r
 plots[[2]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8400/8700548302_b9ac9f9421_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8271/8701909193_843d39124e_o.png) 
 
 
 
@@ -287,7 +286,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8553/8699426149_01c8b3ced2_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8280/8703031988_4e10322232_o.png) 
 
 ```r
 
@@ -315,7 +314,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8552/8700549024_e9418496e3_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8268/8703032290_b8401b0833_o.png) 
 
 
 
@@ -348,7 +347,7 @@ bayes_pars
 ```
 
 ```
-[1]  0.3359 15.5951  2.1264
+[1] 0.8769 7.9415 1.0357
 ```
 
 
@@ -361,20 +360,73 @@ par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 
 
+```r
+knit("bayesian-ricker.Rmd")
+```
+
+```
+  |                                                                         |                                                                 |   0%  |                                                                         |>>>>                                                             |   7%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>                                                        |  13%
+label: unnamed-chunk-21
+  |                                                                         |>>>>>>>>>>>>>                                                    |  20%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>                                                |  27%
+label: unnamed-chunk-22
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>                                           |  33%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>                                       |  40%
+label: unnamed-chunk-23
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                                   |  47%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                              |  53%
+label: unnamed-chunk-24
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                          |  60%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                      |  67%
+label: unnamed-chunk-25
+```
+
+```
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                 |  73%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>             |  80%
+label: unnamed-chunk-26
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>         |  87%
+  ordinary text without R code
+
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    |  93%
+label: unnamed-chunk-27
+  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>| 100%
+  ordinary text without R code
+```
+
+```
+[1] "bayesian-ricker.md"
+```
+
+
+
 ### Phase-space diagram of the expected dynamics
 
 
 ```r
 
   true_means <- sapply(x_grid, f, 0, p)
-  alt_means <- sapply(x_grid, alt$f, 0, alt$p)
+  alt_means <- sapply(x_grid, alt$f, 0, ricker_bayes_pars[c(1,2)])
   est_means <- sapply(x_grid, est$f, 0, est$p)
   par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 
 
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
-                     MLE=est_means, Ricker.MLE=alt_means, 
+                     MLE=est_means, Ricker=alt_means, 
                      Parametric.Bayes = par_bayes_means)
 
 models <- melt(models, id="x")
@@ -388,7 +440,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8117/8699426295_6fa8133d93_o.png) 
+![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8542/8703033180_d767ced54c_o.png) 
 
 
 
@@ -421,9 +473,6 @@ opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, pro
 
 matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
 opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
-matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
-opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
 
 
@@ -436,11 +485,20 @@ opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=Max
 ```
 
 
+Bayesian Ricker
+
+
+```r
+matrices_alt <- parameter_uncertainty_SDP(alt$f, ricker_bayes_pars[1,2], x_grid, h_grid, ricker_pardist)
+opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
+
+
 Assemble the data
 
 
 ```r
-OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
 ```
@@ -460,7 +518,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-17](http://farm9.staticflickr.com/8547/8700041907_280cf5a3a9_o.png) 
+![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8402/8701916537_8288af1c4f_o.png) 
 
 
 
@@ -491,6 +549,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-18](http://farm9.staticflickr.com/8126/8701165364_b83b2fd8c7_o.png) 
+![plot of chunk unnamed-chunk-20](http://farm9.staticflickr.com/8279/8703038862_e759825141_o.png) 
 
 

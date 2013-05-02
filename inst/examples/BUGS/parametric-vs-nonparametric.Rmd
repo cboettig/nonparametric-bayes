@@ -106,7 +106,7 @@ Estimate the Gaussian Process (nonparametric Bayesian fit)
 
 ```{r}
 gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
-gp_dat <- gp_predict(gp, x_grid)
+gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
           
 ```
 
