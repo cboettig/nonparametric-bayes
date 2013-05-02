@@ -59,7 +59,7 @@ xT <- 0
 seed_i <- 111
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
-Tobs <- 35
+Tobs <- 30
 ```
 
 ### Sample Data
@@ -67,7 +67,7 @@ Tobs <- 35
 ```{r obs, dependson="sdp-pars"}
   #harvest <- sort(rep(seq(0, .5, length=7), 5))
   x <- numeric(Tobs)
-  x[1] <- 6
+  x[1] <- 5.5
   nz <- 1
   for(t in 1:(Tobs-1))
     x[t+1] = z_g() * f(x[t], h=0, p=p)

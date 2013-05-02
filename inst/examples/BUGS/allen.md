@@ -76,7 +76,7 @@ xT <- 0
 seed_i <- 111
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
-Tobs <- 35
+Tobs <- 30
 ```
 
 
@@ -86,7 +86,7 @@ Tobs <- 35
 ```r
   #harvest <- sort(rep(seq(0, .5, length=7), 5))
   x <- numeric(Tobs)
-  x[1] <- 6
+  x[1] <- 5.5
   nz <- 1
   for(t in 1:(Tobs-1))
     x[t+1] = z_g() * f(x[t], h=0, p=p)
@@ -143,19 +143,19 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8280/8703292718_5e83a7595a_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8121/8702170583_c0eb11a759_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8538/8703501350_edceb7dc6f_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8126/8703501412_672aa3deb6_o.png) 
 
 ```r
 plots[[1]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8257/8702170677_2f94734191_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8545/8702380303_513999264f_o.png) 
 
 ```r
 plots[[2]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8545/8702170775_8e08937ef6_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8413/8702380369_2a77eb047a_o.png) 
 
 
 
@@ -264,7 +264,7 @@ time_jags <- system.time(
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 320
+   Graph Size: 275
 
 Initializing model
 ```
@@ -286,7 +286,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8406/8703293640_a54a822e72_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8533/8703501940_6661b2d6cc_o.png) 
 
 ```r
 
@@ -314,7 +314,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8125/8702171493_91c588bfd2_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8406/8702380883_5af796b89e_o.png) 
 
 
 
@@ -347,7 +347,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.9502 8.0142 0.9583
+[1] 0.4568 8.7403 1.0374
 ```
 
 
@@ -452,7 +452,7 @@ time_jags <- system.time(
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 285
+   Graph Size: 245
 
 Initializing model
 ```
@@ -474,7 +474,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8139/8702171997_a3cd4170e4_o.png) 
+![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8398/8702381263_227fe860c3_o.png) 
 
 ```r
 
@@ -501,7 +501,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8556/8703294344_7c7b242478_o.png) 
+![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8258/8702381319_d2a8cc9ee9_o.png) 
 
 
 
@@ -538,7 +538,7 @@ ricker_bayes_pars
 ```
 
 ```
-[1] 3.985 8.404
+[1] 2.379 9.175
 ```
 
 
@@ -571,7 +571,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8556/8702172219_4e9e136a1e_o.png) 
+![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8552/8702381417_0eea85b719_o.png) 
 
 
 
@@ -649,7 +649,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-25](http://farm9.staticflickr.com/8140/8703299758_1dbd81e456_o.png) 
+![plot of chunk unnamed-chunk-25](http://farm9.staticflickr.com/8407/8703506648_08b62b6fb3_o.png) 
 
 
 
@@ -680,6 +680,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-26](http://farm9.staticflickr.com/8539/8703299970_cae51e10c2_o.png) 
+![plot of chunk unnamed-chunk-26](http://farm9.staticflickr.com/8259/8702385687_895721773d_o.png) 
 
 
