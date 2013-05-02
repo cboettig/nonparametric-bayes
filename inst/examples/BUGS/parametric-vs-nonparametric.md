@@ -12,25 +12,17 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
-opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA)
 
 library(knitcitations)
-```
 
-```
-## Loading required package: bibtex
-```
-
-```r
-
-library(ggplot2)  # plotting
+library(ggplot2) # plotting 
 opts_knit$set(upload.fun = socialR::flickr.url)
-theme_set(theme_bw(base_size = 10))
-theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
-    plot.background = element_rect(fill = "transparent", colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
-    "#D55E00", "#CC79A7")
+theme_set(theme_bw(base_size=10))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
+             plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
 Load necessary libraries,
@@ -62,7 +54,7 @@ Various parameters defining noise dynamics, grid, and policy costs.
 
 
 ```r
-sigma_g <- 0.05
+sigma_g <- 0.1
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
@@ -144,19 +136,19 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8113/8699343597_77957eef05_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8125/8699343665_d4a3ddb263_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8124/8699424919_cfb90d466f_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8403/8700547758_c62d8eb3ce_o.png) 
 
 ```r
 plots[[1]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8408/8700466268_728cb53063_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8113/8700547836_3891caf345_o.png) 
 
 ```r
 plots[[2]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8401/8699344021_00c9e8c324_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8412/8700547918_986dbef39c_o.png) 
 
 
 
@@ -268,6 +260,9 @@ Compiling model graph
    Graph Size: 320
 
 Initializing model
+
+  |                                                          |                                                  |   0%  |                                                          |++++                                              |   8%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+  |                                                          |                                                  |   0%  |                                                          |*                                                 |   3%  |                                                          |***                                               |   5%  |                                                          |****                                              |   8%  |                                                          |*****                                             |  11%  |                                                          |*******                                           |  13%  |                                                          |********                                          |  16%  |                                                          |*********                                         |  19%  |                                                          |***********                                       |  21%  |                                                          |************                                      |  24%  |                                                          |*************                                     |  27%  |                                                          |***************                                   |  29%  |                                                          |****************                                  |  32%  |                                                          |*****************                                 |  35%  |                                                          |*******************                               |  37%  |                                                          |********************                              |  40%  |                                                          |*********************                             |  43%  |                                                          |***********************                           |  45%  |                                                          |************************                          |  48%  |                                                          |*************************                         |  51%  |                                                          |***************************                       |  53%  |                                                          |****************************                      |  56%  |                                                          |*****************************                     |  59%  |                                                          |*******************************                   |  61%  |                                                          |********************************                  |  64%  |                                                          |*********************************                 |  67%  |                                                          |***********************************               |  69%  |                                                          |************************************              |  72%  |                                                          |*************************************             |  75%  |                                                          |***************************************           |  77%  |                                                          |****************************************          |  80%  |                                                          |*****************************************         |  83%  |                                                          |*******************************************       |  85%  |                                                          |********************************************      |  88%  |                                                          |*********************************************     |  91%  |                                                          |***********************************************   |  93%  |                                                          |************************************************  |  96%  |                                                          |************************************************* |  99%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -287,7 +282,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8395/8699344663_9d253d4a3e_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8275/8699425907_16ac158003_o.png) 
 
 ```r
 
@@ -315,7 +310,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8405/8700467242_b36063b1cb_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8533/8700548752_de9823835a_o.png) 
 
 
 
@@ -348,7 +343,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.4514 7.6706 1.3467
+[1]  0.7034 11.9443  2.1760
 ```
 
 
@@ -388,7 +383,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8262/8699344997_1655dca5ac_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8560/8700548848_6aa4923f11_o.png) 
 
 
 
@@ -460,7 +455,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-17](http://farm9.staticflickr.com/8395/8699346859_cc319909ec_o.png) 
+![plot of chunk unnamed-chunk-17](http://farm9.staticflickr.com/8393/8700550512_6b5ebd03fd_o.png) 
 
 
 
@@ -491,6 +486,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-18](http://farm9.staticflickr.com/8129/8700469754_62c2a13bc7_o.png) 
+![plot of chunk unnamed-chunk-18](http://farm9.staticflickr.com/8257/8699427917_676cc38265_o.png) 
 
 

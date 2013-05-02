@@ -45,7 +45,7 @@ allee <- p[3]
 Various parameters defining noise dynamics, grid, and policy costs.  
 
 ```{r sdp-pars, dependson="stateeq"}
-sigma_g <- 0.05
+sigma_g <- 0.1
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
