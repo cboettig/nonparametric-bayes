@@ -143,19 +143,19 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8116/8701908727_1f26038467_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8128/8701908805_eb0aa9b9d0_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8280/8703292718_5e83a7595a_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8121/8702170583_c0eb11a759_o.png) 
 
 ```r
 plots[[1]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8132/8701909107_8f46ebff49_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8257/8702170677_2f94734191_o.png) 
 
 ```r
 plots[[2]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8271/8701909193_843d39124e_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8545/8702170775_8e08937ef6_o.png) 
 
 
 
@@ -286,7 +286,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8280/8703031988_4e10322232_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8406/8703293640_a54a822e72_o.png) 
 
 ```r
 
@@ -314,7 +314,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8268/8703032290_b8401b0833_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8125/8702171493_91c588bfd2_o.png) 
 
 
 
@@ -347,7 +347,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.8769 7.9415 1.0357
+[1] 0.9502 8.0142 0.9583
 ```
 
 
@@ -360,56 +360,187 @@ par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 
 
+## Parametric Bayes based on the structurally wrong model
+
+We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
+
+
 ```r
-knit("bayesian-ricker.Rmd")
+# a bit unfair to start with the correct values, but anyhow...
+init_p = p
+names(init_p) = c("r0", "K")
+y <- obs$x[-1] 
+N=length(y);
+```
+
+
+
+We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
+
+
+
+```r
+jags.data <- list("N","y")
+n.chains = 1
+n.iter = 40000
+n.burnin = floor(10000)
+n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
+```
+
+
+
+The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
+
+
+
+```r
+cat(readLines(con="ricker-UPrior.txt"), sep="\n")
 ```
 
 ```
-  |                                                                         |                                                                 |   0%  |                                                                         |>>>>                                                             |   7%
-  ordinary text without R code
+model{
 
-  |                                                                         |>>>>>>>>>                                                        |  13%
-label: unnamed-chunk-21
-  |                                                                         |>>>>>>>>>>>>>                                                    |  20%
-  ordinary text without R code
+K     ~ dunif(0.01, 40.0)
+logr0    ~ dunif(-6.0, 6.0)
+stdQ ~ dunif(0.0001,100)
+stdR ~ dunif(0.0001,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
+iQ <- 1/(stdQ*stdQ);
+iR <- 1/(stdR*stdR);
 
-  |                                                                         |>>>>>>>>>>>>>>>>>                                                |  27%
-label: unnamed-chunk-22
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>                                           |  33%
-  ordinary text without R code
+r0 <- exp(logr0)
 
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>                                       |  40%
-label: unnamed-chunk-23
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                                   |  47%
-  ordinary text without R code
 
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                              |  53%
-label: unnamed-chunk-24
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                          |  60%
-  ordinary text without R code
+x[1] ~ dunif(0,10)
 
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                      |  67%
-label: unnamed-chunk-25
+for(t in 1:(N-1)){
+  mu[t] <- x[t] * exp(r0 * (1 - x[t]/K) / K )
+  x[t+1] ~ dnorm(mu[t],iQ) 
+}
+
+
+for(t in 1:(N)){
+  y[t] ~ dnorm(x[t],iR)
+}
+
+}
+```
+
+
+
+
+We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
+
+
+
+```r
+# Uniform priors on standard deviation terms
+jags.params=c("K","logr0", "stdQ", "stdR")
+jags.inits <- function(){
+  list("K"=init_p["K"],"logr0"=log(init_p["r0"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+
+set.seed(12345)
+
+time_jags <- system.time(       
+  jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
+                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="ricker-UPrior.txt")
+)         
 ```
 
 ```
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>                 |  73%
-  ordinary text without R code
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 285
 
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>             |  80%
-label: unnamed-chunk-26
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>         |  87%
-  ordinary text without R code
+Initializing model
+```
 
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    |  93%
-label: unnamed-chunk-27
-  |                                                                         |>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>| 100%
-  ordinary text without R code
+```r
+time_jags <- unname(time_jags["elapsed"]);
+```
+
+
+
+#### Convergence diagnostics for parametric bayes
+
+
+```r
+jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
+par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
+
+# Traces
+ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8139/8702171997_a3cd4170e4_o.png) 
+
+```r
+
+
+## priors (untransformed variables)
+K_prior <- function(x) dunif(x, 0.01, 40)
+logr_prior <- function(x) dunif(x, -6, 6)
+stdQ_prior <- function(x) dunif(x, 0.001, 100)
+stdR_prior <- function(x) dunif(x, 0.001, 100)
+
+par_priors <- list(K = K_prior, deviance = function(x) 0 * x, logr0 = logr_prior, stdQ = stdQ_prior, stdR = stdR_prior)
+
+
+par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+
+
+# posterior distributions
+ggplot(par_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8556/8703294344_7c7b242478_o.png) 
+
+
+
+
+```r
+# um, cleaner if we were just be using the long form, par_posterior
+mcmc <- as.mcmc(jagsfit)
+mcmcall <- mcmc[,-2]
+who <- colnames(mcmcall)
+who 
 ```
 
 ```
-[1] "bayesian-ricker.md"
+[1] "K"     "logr0" "stdQ"  "stdR" 
 ```
+
+```r
+mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4])
+colnames(mcmcall) <- who
+```
+
+
+
+
+```r
+ricker_pardist <- mcmcall
+ricker_pardist[,2] = exp(ricker_pardist[,2]) # transform model parameters back first
+
+
+
+bayes_coef <- apply(ricker_pardist,2,mean)
+ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
+ricker_bayes_pars
+```
+
+```
+[1] 3.985 8.404
+```
+
 
 
 
@@ -440,7 +571,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-13](http://farm9.staticflickr.com/8542/8703033180_d767ced54c_o.png) 
+![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8556/8702172219_4e9e136a1e_o.png) 
 
 
 
@@ -518,7 +649,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8402/8701916537_8288af1c4f_o.png) 
+![plot of chunk unnamed-chunk-25](http://farm9.staticflickr.com/8140/8703299758_1dbd81e456_o.png) 
 
 
 
@@ -549,6 +680,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-20](http://farm9.staticflickr.com/8279/8703038862_e759825141_o.png) 
+![plot of chunk unnamed-chunk-26](http://farm9.staticflickr.com/8539/8703299970_cae51e10c2_o.png) 
 
 
