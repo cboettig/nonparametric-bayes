@@ -16,14 +16,21 @@ opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE,
     comment = NA)
 
 library(knitcitations)
+```
+
+```
+## Loading required package: bibtex
+```
+
+```r
 
 library(ggplot2)  # plotting
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
-theme_update(panel.background = element_rect(fill = "transparent", 
-    colour = NA), plot.background = element_rect(fill = "transparent", colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
-    "#0072B2", "#D55E00", "#CC79A7")
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
+    plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
+    "#D55E00", "#CC79A7")
 ```
 
 Load necessary libraries,
@@ -59,7 +66,7 @@ sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
-x_grid <- seq(0, 1.5 * K, length=101)
+x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
@@ -137,19 +144,19 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8119/8698882867_4dbf9c25ab_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8267/8698883195_dd5d124f6f_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8278/8700547840_9514f7dd54_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8265/8699425117_14c20439ec_o.png) 
 
 ```r
 plots[[1]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8407/8698883329_07fd494b02_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8539/8700548020_19dff9d6dd_o.png) 
 
 ```r
 plots[[2]]
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8544/8698883429_6fbca7bc7c_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8400/8700548302_b9ac9f9421_o.png) 
 
 
 
@@ -280,7 +287,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8395/8700007528_e4feacfa36_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8553/8699426149_01c8b3ced2_o.png) 
 
 ```r
 
@@ -308,7 +315,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8115/8698885329_5e1f26eaf5_o.png) 
+![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8552/8700549024_e9418496e3_o.png) 
 
 
 
@@ -341,7 +348,7 @@ bayes_pars
 ```
 
 ```
-[1] 1.353 8.048 1.540
+[1]  0.3359 15.5951  2.1264
 ```
 
 
@@ -381,20 +388,34 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8277/8698885529_70bd7ed356_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8117/8699426295_6fa8133d93_o.png) 
 
 
 
 ## Optimal policies by value iteration
 
-Compute the optimal policy under each model using stochastic dynamic programming.
+Compute the optimal policy under each model using stochastic dynamic programming. We begin with the policy based on the GP model,
+
 
 
 ```r
 MaxT = 1000
-matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
-opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
+# uses expected values from GP, instead of integrating over posterior
+#matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
 
+# Integrate over posteriors 
+matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+
+# Solve the SDP using the GP-derived transition matrix
+opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
+```
+
+
+
+Determine the optimal policy based on the true and MLE models
+
+
+```r
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
 opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
@@ -403,17 +424,26 @@ opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=Max
 
 matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
 
 
+Determine the optimal policy based on parametric Bayesian model
+
+
+```r
 matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
 
 
+Assemble the data
+
+
+```r
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
 ```
-
 
 
 
@@ -430,7 +460,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-14](http://farm9.staticflickr.com/8552/8700032818_56e376de3e_o.png) 
+![plot of chunk unnamed-chunk-17](http://farm9.staticflickr.com/8547/8700041907_280cf5a3a9_o.png) 
 
 
 
@@ -461,6 +491,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-15](http://farm9.staticflickr.com/8136/8700033632_dba691020a_o.png) 
+![plot of chunk unnamed-chunk-18](http://farm9.staticflickr.com/8126/8701165364_b83b2fd8c7_o.png) 
 
 
