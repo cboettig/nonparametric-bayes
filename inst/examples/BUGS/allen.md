@@ -13,19 +13,12 @@ Plotting and knitr options, (can generally be ignored)
 
 ```r
 opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA)
+    comment = NA, fig.width = 6, fig.height = 4, dev = "CairoPDF")
 
 library(knitcitations)
-```
-
-```
-## Loading required package: bibtex
-```
-
-```r
 
 library(ggplot2)  # plotting
-opts_knit$set(upload.fun = socialR::flickr.url)
+# opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
     plot.background = element_rect(fill = "transparent", colour = NA))
@@ -73,10 +66,9 @@ delta <- 0.01
 OptTime <- 30  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-seed_i <- 111
 Xo <- K # observations start from
 x0 <- Xo # simulation under policy starts from
-Tobs <- 30
+Tobs <- 40
 ```
 
 
@@ -84,9 +76,10 @@ Tobs <- 30
 
 
 ```r
+  set.seed(1234)
   #harvest <- sort(rep(seq(0, .5, length=7), 5))
   x <- numeric(Tobs)
-  x[1] <- 5.5
+  x[1] <- 6
   nz <- 1
   for(t in 1:(Tobs-1))
     x[t+1] = z_g() * f(x[t], h=0, p=p)
@@ -143,19 +136,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8538/8703501350_edceb7dc6f_o.png) ![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8126/8703501412_672aa3deb6_o.png) 
-
-```r
-plots[[1]]
-```
-
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8545/8702380303_513999264f_o.png) 
-
-```r
-plots[[2]]
-```
-
-![plot of chunk unnamed-chunk-3](http://farm9.staticflickr.com/8413/8702380369_2a77eb047a_o.png) 
+![plot of chunk gp.traces.densities](figure/gp.traces.densities1.pdf) ![plot of chunk gp.traces.densities](figure/gp.traces.densities2.pdf) 
 
 
 
@@ -264,9 +245,12 @@ time_jags <- system.time(
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 275
+   Graph Size: 365
 
 Initializing model
+
+  |                                                          |                                                  |   0%  |                                                          |++++                                              |   8%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+  |                                                          |                                                  |   0%  |                                                          |*                                                 |   3%  |                                                          |***                                               |   5%  |                                                          |****                                              |   8%  |                                                          |*****                                             |  11%  |                                                          |*******                                           |  13%  |                                                          |********                                          |  16%  |                                                          |*********                                         |  19%  |                                                          |***********                                       |  21%  |                                                          |************                                      |  24%  |                                                          |*************                                     |  27%  |                                                          |***************                                   |  29%  |                                                          |****************                                  |  32%  |                                                          |*****************                                 |  35%  |                                                          |*******************                               |  37%  |                                                          |********************                              |  40%  |                                                          |*********************                             |  43%  |                                                          |***********************                           |  45%  |                                                          |************************                          |  48%  |                                                          |*************************                         |  51%  |                                                          |***************************                       |  53%  |                                                          |****************************                      |  56%  |                                                          |*****************************                     |  59%  |                                                          |*******************************                   |  61%  |                                                          |********************************                  |  64%  |                                                          |*********************************                 |  67%  |                                                          |***********************************               |  69%  |                                                          |************************************              |  72%  |                                                          |*************************************             |  75%  |                                                          |***************************************           |  77%  |                                                          |****************************************          |  80%  |                                                          |*****************************************         |  83%  |                                                          |*******************************************       |  85%  |                                                          |********************************************      |  88%  |                                                          |*********************************************     |  91%  |                                                          |***********************************************   |  93%  |                                                          |************************************************  |  96%  |                                                          |************************************************* |  99%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -281,16 +265,21 @@ time_jags <- unname(time_jags["elapsed"]);
 ```r
 jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
+```
 
+
+
+```r
 # Traces
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8533/8703501940_6661b2d6cc_o.png) 
+![plot of chunk parametric.bayes.traces](figure/parametric.bayes.traces.pdf) 
+
+
+
 
 ```r
-
-
 ## priors (untransformed variables)
 K_prior <- function(x) dunif(x, 0.01, 40)
 logr_prior <- function(x) dunif(x, -6, 6)
@@ -298,14 +287,14 @@ logtheta_prior <- function(x) dunif(x, -6, 6)
 stdQ_prior <- function(x) dunif(x, 0.001, 100)
 stdR_prior <- function(x) dunif(x, 0.001, 100)
 
-par_priors <- list(K = K_prior, deviance = function(x) 0 * x, logr0 = logr_prior, logtheta = logtheta_prior, stdQ = stdQ_prior, stdR = stdR_prior)
-
+par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
+                   logr0 = logr_prior, logtheta = logtheta_prior, 
+                   stdQ = stdQ_prior, stdR = stdR_prior)
 
 par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
 
 # posterior distributions
 ggplot(par_posteriors, aes(value)) + 
@@ -314,7 +303,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-9](http://farm9.staticflickr.com/8406/8702380883_5af796b89e_o.png) 
+![plot of chunk parametric.bayes.posteriors](figure/parametric.bayes.posteriors.pdf) 
 
 
 
@@ -347,7 +336,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.4568 8.7403 1.0374
+[1]  0.2158 15.0810  2.6258
 ```
 
 
@@ -452,9 +441,12 @@ time_jags <- system.time(
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 245
+   Graph Size: 325
 
 Initializing model
+
+  |                                                          |                                                  |   0%  |                                                          |++++                                              |   8%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+  |                                                          |                                                  |   0%  |                                                          |*                                                 |   3%  |                                                          |***                                               |   5%  |                                                          |****                                              |   8%  |                                                          |*****                                             |  11%  |                                                          |*******                                           |  13%  |                                                          |********                                          |  16%  |                                                          |*********                                         |  19%  |                                                          |***********                                       |  21%  |                                                          |************                                      |  24%  |                                                          |*************                                     |  27%  |                                                          |***************                                   |  29%  |                                                          |****************                                  |  32%  |                                                          |*****************                                 |  35%  |                                                          |*******************                               |  37%  |                                                          |********************                              |  40%  |                                                          |*********************                             |  43%  |                                                          |***********************                           |  45%  |                                                          |************************                          |  48%  |                                                          |*************************                         |  51%  |                                                          |***************************                       |  53%  |                                                          |****************************                      |  56%  |                                                          |*****************************                     |  59%  |                                                          |*******************************                   |  61%  |                                                          |********************************                  |  64%  |                                                          |*********************************                 |  67%  |                                                          |***********************************               |  69%  |                                                          |************************************              |  72%  |                                                          |*************************************             |  75%  |                                                          |***************************************           |  77%  |                                                          |****************************************          |  80%  |                                                          |*****************************************         |  83%  |                                                          |*******************************************       |  85%  |                                                          |********************************************      |  88%  |                                                          |*********************************************     |  91%  |                                                          |***********************************************   |  93%  |                                                          |************************************************  |  96%  |                                                          |************************************************* |  99%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -463,7 +455,7 @@ time_jags <- unname(time_jags["elapsed"]);
 
 
 
-#### Convergence diagnostics for parametric bayes
+#### Convergence diagnostics for parametric bayes Ricker model
 
 
 ```r
@@ -474,11 +466,11 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8398/8702381263_227fe860c3_o.png) 
+![plot of chunk ricker.traces](figure/ricker.traces.pdf) 
+
+
 
 ```r
-
-
 ## priors (untransformed variables)
 K_prior <- function(x) dunif(x, 0.01, 40)
 logr_prior <- function(x) dunif(x, -6, 6)
@@ -501,7 +493,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-16](http://farm9.staticflickr.com/8258/8702381319_d2a8cc9ee9_o.png) 
+![plot of chunk ricker.posteriors](figure/ricker.posteriors.pdf) 
 
 
 
@@ -538,7 +530,7 @@ ricker_bayes_pars
 ```
 
 ```
-[1] 2.379 9.175
+[1]  0.7254 17.1876
 ```
 
 
@@ -548,13 +540,10 @@ ricker_bayes_pars
 
 
 ```r
-
-  true_means <- sapply(x_grid, f, 0, p)
-  alt_means <- sapply(x_grid, alt$f, 0, ricker_bayes_pars[c(1,2)])
-  est_means <- sapply(x_grid, est$f, 0, est$p)
-  par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
-
-
+true_means <- sapply(x_grid, f, 0, p)
+alt_means <- sapply(x_grid, alt$f, 0, ricker_bayes_pars[c(1,2)])
+est_means <- sapply(x_grid, est$f, 0, est$p)
+par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
                      MLE=est_means, Ricker=alt_means, 
@@ -562,16 +551,21 @@ models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means,
 
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
+```
 
+
+
+
+```r
 plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-    geom_line(data=models, aes(x, value, col=method), lwd=2, alpha=0.8) + 
+    geom_line(data=models, aes(x, value, col=method), lwd=1, alpha=0.8) + 
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     scale_colour_manual(values=cbPalette) 
 print(plot_gp)
 ```
 
-![plot of chunk unnamed-chunk-19](http://farm9.staticflickr.com/8552/8702381417_0eea85b719_o.png) 
+![plot of chunk Figure1](figure/Figure1.pdf) 
 
 
 
@@ -649,7 +643,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk unnamed-chunk-25](http://farm9.staticflickr.com/8407/8703506648_08b62b6fb3_o.png) 
+![plot of chunk Figure2](figure/Figure2.pdf) 
 
 
 
@@ -659,8 +653,6 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
 
 
 ```r
-
-
 sims <- lapply(OPT, function(D){
   set.seed(1)
   lapply(1:100, function(i) 
@@ -668,18 +660,21 @@ sims <- lapply(OPT, function(D){
   )
 })
 
-  
 dat <- melt(sims, id=names(sims[[1]][[1]]))
 dt <- data.table(dat)
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
+```
 
+
+
+```r
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk unnamed-chunk-26](http://farm9.staticflickr.com/8259/8702385687_895721773d_o.png) 
+![plot of chunk Figure3](figure/Figure3.pdf) 
 
 
