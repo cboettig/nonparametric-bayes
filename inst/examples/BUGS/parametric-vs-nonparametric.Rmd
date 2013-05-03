@@ -45,7 +45,7 @@ allee <- p[3]
 Various parameters defining noise dynamics, grid, and policy costs.  
 
 ```{r sdp-pars, dependson="stateeq"}
-sigma_g <- 0.05
+sigma_g <- 0.1
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
@@ -107,6 +107,7 @@ Estimate the Gaussian Process (nonparametric Bayesian fit)
 ```{r}
 gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
 gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
+          
 ```
 
 
@@ -244,131 +245,19 @@ par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 ```
 
 
-## Parametric Bayes based on the structurally wrong model
-
-We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
-
-```{r}
-# a bit unfair to start with the correct values, but anyhow...
-init_p = p
-names(init_p) = c("r0", "K")
-y <- obs$x[-1] 
-N=length(y);
-```
-
-
-We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
-
-
-```{r}
-jags.data <- list("N","y")
-n.chains = 1
-n.iter = 40000
-n.burnin = floor(10000)
-n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
-```
-
-
-The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
-
-
-```{r}
-cat(readLines(con="ricker-UPrior.txt"), sep="\n")
-``` 
-
-
-
-We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
-
-
-```{r}
-# Uniform priors on standard deviation terms
-jags.params=c("K","logr0", "stdQ", "stdR")
-jags.inits <- function(){
-  list("K"=init_p["K"],"logr0"=log(init_p["r0"]), "stdQ"=sqrt(0.05),"stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-
-set.seed(12345)
-
-time_jags <- system.time(       
-  jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
-                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="ricker-UPrior.txt")
-)         
-time_jags <- unname(time_jags["elapsed"]);
-```
-
-
-#### Convergence diagnostics for parametric bayes
-
-```{r}
-jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
-par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
-
-# Traces
-ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
-
-
-## priors (untransformed variables)
-K_prior <- function(x) dunif(x, 0.01, 40)
-logr_prior <- function(x) dunif(x, -6, 6)
-stdQ_prior <- function(x) dunif(x, 0.001, 100)
-stdR_prior <- function(x) dunif(x, 0.001, 100)
-
-par_priors <- list(K = K_prior, deviance = function(x) 0 * x, logr0 = logr_prior, stdQ = stdQ_prior, stdR = stdR_prior)
-
-
-par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100) 
-    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
-})
-
-
-# posterior distributions
-ggplot(par_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=2)
-
-```
-
-
-```{r}
-# um, cleaner if we were just be using the long form, par_posterior
-mcmc <- as.mcmc(jagsfit)
-mcmcall <- mcmc[,-2]
-who <- colnames(mcmcall)
-who 
-mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4])
-colnames(mcmcall) <- who
-```
-
-
-```{r}
-ricker_pardist <- mcmcall
-ricker_pardist[,2] = exp(ricker_pardist[,2]) # transform model parameters back first
-
-
-
-bayes_coef <- apply(ricker_pardist,2,mean)
-ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
-ricker_bayes_pars
-```
-
-
-
 ### Phase-space diagram of the expected dynamics
 
 ```{r}
 
   true_means <- sapply(x_grid, f, 0, p)
-  alt_means <- sapply(x_grid, alt$f, 0, ricker_bayes_pars[c(1,2)])
+  alt_means <- sapply(x_grid, alt$f, 0, alt$p)
   est_means <- sapply(x_grid, est$f, 0, est$p)
   par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
 
 
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
-                     MLE=est_means, Ricker=alt_means, 
+                     MLE=est_means, Ricker.MLE=alt_means, 
                      Parametric.Bayes = par_bayes_means)
 
 models <- melt(models, id="x")
@@ -391,10 +280,10 @@ Compute the optimal policy under each model using stochastic dynamic programming
 ```{r}
 MaxT = 1000
 # uses expected values from GP, instead of integrating over posterior
-#matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
 
 # Integrate over posteriors 
-matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+#matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
 
 # Solve the SDP using the GP-derived transition matrix
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
@@ -410,6 +299,8 @@ opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, pro
 matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
 opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
+matrices_alt <- f_transition_matrix(alt$f, alt$p, x_grid, h_grid, alt$sigma_g)
+opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
 
 Determine the optimal policy based on parametric Bayesian model
@@ -419,17 +310,10 @@ matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
 
-Bayesian Ricker
-
-```{r}
-matrices_alt <- parameter_uncertainty_SDP(alt$f, ricker_bayes_pars[1,2], x_grid, h_grid, ricker_pardist)
-opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
 Assemble the data
 
 ```{r}
-OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker.MLE = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
 ```
