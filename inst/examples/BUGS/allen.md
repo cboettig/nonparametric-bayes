@@ -13,12 +13,19 @@ Plotting and knitr options, (can generally be ignored)
 
 ```r
 opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA, fig.width = 6, fig.height = 4, dev = "CairoPDF")
+    comment = NA, fig.width = 6, fig.height = 4)
 
 library(knitcitations)
+```
+
+```
+## Loading required package: bibtex
+```
+
+```r
 
 library(ggplot2)  # plotting
-# opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
     plot.background = element_rect(fill = "transparent", colour = NA))
@@ -136,7 +143,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp.traces.densities](figure/gp.traces.densities1.pdf) ![plot of chunk gp.traces.densities](figure/gp.traces.densities2.pdf) 
+![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8126/8703645490_41343368ef_o.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8256/8702526313_3ca9e7c813_o.png) 
 
 
 
@@ -248,9 +255,6 @@ Compiling model graph
    Graph Size: 365
 
 Initializing model
-
-  |                                                          |                                                  |   0%  |                                                          |++++                                              |   8%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-  |                                                          |                                                  |   0%  |                                                          |*                                                 |   3%  |                                                          |***                                               |   5%  |                                                          |****                                              |   8%  |                                                          |*****                                             |  11%  |                                                          |*******                                           |  13%  |                                                          |********                                          |  16%  |                                                          |*********                                         |  19%  |                                                          |***********                                       |  21%  |                                                          |************                                      |  24%  |                                                          |*************                                     |  27%  |                                                          |***************                                   |  29%  |                                                          |****************                                  |  32%  |                                                          |*****************                                 |  35%  |                                                          |*******************                               |  37%  |                                                          |********************                              |  40%  |                                                          |*********************                             |  43%  |                                                          |***********************                           |  45%  |                                                          |************************                          |  48%  |                                                          |*************************                         |  51%  |                                                          |***************************                       |  53%  |                                                          |****************************                      |  56%  |                                                          |*****************************                     |  59%  |                                                          |*******************************                   |  61%  |                                                          |********************************                  |  64%  |                                                          |*********************************                 |  67%  |                                                          |***********************************               |  69%  |                                                          |************************************              |  72%  |                                                          |*************************************             |  75%  |                                                          |***************************************           |  77%  |                                                          |****************************************          |  80%  |                                                          |*****************************************         |  83%  |                                                          |*******************************************       |  85%  |                                                          |********************************************      |  88%  |                                                          |*********************************************     |  91%  |                                                          |***********************************************   |  93%  |                                                          |************************************************  |  96%  |                                                          |************************************************* |  99%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -274,7 +278,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric.bayes.traces](figure/parametric.bayes.traces.pdf) 
+![plot of chunk parametric_bayes_traces](http://farm9.staticflickr.com/8271/8702526797_9354232818_o.png) 
 
 
 
@@ -303,7 +307,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk parametric.bayes.posteriors](figure/parametric.bayes.posteriors.pdf) 
+![plot of chunk parametric_bayes_posteriors](http://farm9.staticflickr.com/8440/8702526867_a63f68827b_o.png) 
 
 
 
@@ -444,9 +448,6 @@ Compiling model graph
    Graph Size: 325
 
 Initializing model
-
-  |                                                          |                                                  |   0%  |                                                          |++++                                              |   8%  |                                                          |++++++++                                          |  16%  |                                                          |++++++++++++                                      |  24%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++++                              |  40%  |                                                          |++++++++++++++++++++++++                          |  48%  |                                                          |++++++++++++++++++++++++++++                      |  56%  |                                                          |++++++++++++++++++++++++++++++++                  |  64%  |                                                          |++++++++++++++++++++++++++++++++++++              |  72%  |                                                          |++++++++++++++++++++++++++++++++++++++++          |  80%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++      |  88%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-  |                                                          |                                                  |   0%  |                                                          |*                                                 |   3%  |                                                          |***                                               |   5%  |                                                          |****                                              |   8%  |                                                          |*****                                             |  11%  |                                                          |*******                                           |  13%  |                                                          |********                                          |  16%  |                                                          |*********                                         |  19%  |                                                          |***********                                       |  21%  |                                                          |************                                      |  24%  |                                                          |*************                                     |  27%  |                                                          |***************                                   |  29%  |                                                          |****************                                  |  32%  |                                                          |*****************                                 |  35%  |                                                          |*******************                               |  37%  |                                                          |********************                              |  40%  |                                                          |*********************                             |  43%  |                                                          |***********************                           |  45%  |                                                          |************************                          |  48%  |                                                          |*************************                         |  51%  |                                                          |***************************                       |  53%  |                                                          |****************************                      |  56%  |                                                          |*****************************                     |  59%  |                                                          |*******************************                   |  61%  |                                                          |********************************                  |  64%  |                                                          |*********************************                 |  67%  |                                                          |***********************************               |  69%  |                                                          |************************************              |  72%  |                                                          |*************************************             |  75%  |                                                          |***************************************           |  77%  |                                                          |****************************************          |  80%  |                                                          |*****************************************         |  83%  |                                                          |*******************************************       |  85%  |                                                          |********************************************      |  88%  |                                                          |*********************************************     |  91%  |                                                          |***********************************************   |  93%  |                                                          |************************************************  |  96%  |                                                          |************************************************* |  99%  |                                                          |**************************************************| 100%
 ```
 
 ```r
@@ -466,7 +467,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker.traces](figure/ricker.traces.pdf) 
+![plot of chunk ricker_traces](http://farm9.staticflickr.com/8260/8702527255_2d5f02f920_o.png) 
 
 
 
@@ -493,7 +494,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker.posteriors](figure/ricker.posteriors.pdf) 
+![plot of chunk ricker_posteriors](http://farm9.staticflickr.com/8535/8702527309_cb8a25c7ba_o.png) 
 
 
 
@@ -565,7 +566,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](figure/Figure1.pdf) 
+![plot of chunk Figure1](http://farm9.staticflickr.com/8539/8703646624_f42acd4c0a_o.png) 
 
 
 
@@ -643,7 +644,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](figure/Figure2.pdf) 
+![plot of chunk Figure2](http://farm9.staticflickr.com/8544/8702530503_14ac7c7651_o.png) 
 
 
 
@@ -675,6 +676,6 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](figure/Figure3.pdf) 
+![plot of chunk Figure3](http://farm9.staticflickr.com/8417/8702530633_aca96b4ed5_o.png) 
 
 
