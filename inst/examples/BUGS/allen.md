@@ -12,25 +12,18 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
-opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA, fig.width = 6, fig.height = 4)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA,
+               fig.width=6, fig.height=4)
 
 library(knitcitations)
-```
 
-```
-## Loading required package: bibtex
-```
-
-```r
-
-library(ggplot2)  # plotting
-opts_knit$set(upload.fun = socialR::flickr.url)
-theme_set(theme_bw(base_size = 10))
-theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
-    plot.background = element_rect(fill = "transparent", colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
-    "#D55E00", "#CC79A7")
+library(ggplot2) # plotting 
+#opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size=10))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
+             plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
 Load necessary libraries,
@@ -70,7 +63,7 @@ x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime <- 30  # stationarity with unstable models is tricky thing
+OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
 Xo <- K # observations start from
@@ -143,7 +136,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8126/8703645490_41343368ef_o.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8256/8702526313_3ca9e7c813_o.png) 
+![plot of chunk gp_traces_densities](figure/gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7345/8718080058_caa3352cdd_o.png) 
 
 
 
@@ -229,7 +222,7 @@ for(t in 1:(N)){
 
 
 
-We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
+We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate. 
 
 
 
@@ -255,6 +248,115 @@ Compiling model graph
    Graph Size: 365
 
 Initializing model
+
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |++++                                              |   8%
+  |                                                        
+  |++++++++                                          |  16%
+  |                                                        
+  |++++++++++++                                      |  24%
+  |                                                        
+  |++++++++++++++++                                  |  32%
+  |                                                        
+  |++++++++++++++++++++                              |  40%
+  |                                                        
+  |++++++++++++++++++++++++                          |  48%
+  |                                                        
+  |++++++++++++++++++++++++++++                      |  56%
+  |                                                        
+  |++++++++++++++++++++++++++++++++                  |  64%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++              |  72%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++          |  80%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++      |  88%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |*                                                 |   3%
+  |                                                        
+  |***                                               |   5%
+  |                                                        
+  |****                                              |   8%
+  |                                                        
+  |*****                                             |  11%
+  |                                                        
+  |*******                                           |  13%
+  |                                                        
+  |********                                          |  16%
+  |                                                        
+  |*********                                         |  19%
+  |                                                        
+  |***********                                       |  21%
+  |                                                        
+  |************                                      |  24%
+  |                                                        
+  |*************                                     |  27%
+  |                                                        
+  |***************                                   |  29%
+  |                                                        
+  |****************                                  |  32%
+  |                                                        
+  |*****************                                 |  35%
+  |                                                        
+  |*******************                               |  37%
+  |                                                        
+  |********************                              |  40%
+  |                                                        
+  |*********************                             |  43%
+  |                                                        
+  |***********************                           |  45%
+  |                                                        
+  |************************                          |  48%
+  |                                                        
+  |*************************                         |  51%
+  |                                                        
+  |***************************                       |  53%
+  |                                                        
+  |****************************                      |  56%
+  |                                                        
+  |*****************************                     |  59%
+  |                                                        
+  |*******************************                   |  61%
+  |                                                        
+  |********************************                  |  64%
+  |                                                        
+  |*********************************                 |  67%
+  |                                                        
+  |***********************************               |  69%
+  |                                                        
+  |************************************              |  72%
+  |                                                        
+  |*************************************             |  75%
+  |                                                        
+  |***************************************           |  77%
+  |                                                        
+  |****************************************          |  80%
+  |                                                        
+  |*****************************************         |  83%
+  |                                                        
+  |*******************************************       |  85%
+  |                                                        
+  |********************************************      |  88%
+  |                                                        
+  |*********************************************     |  91%
+  |                                                        
+  |***********************************************   |  93%
+  |                                                        
+  |************************************************  |  96%
+  |                                                        
+  |************************************************* |  99%
+  |                                                        
+  |**************************************************| 100%
 ```
 
 ```r
@@ -278,7 +380,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric_bayes_traces](http://farm9.staticflickr.com/8271/8702526797_9354232818_o.png) 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7418/8718080184_88677216f9_o.png) 
 
 
 
@@ -307,7 +409,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk parametric_bayes_posteriors](http://farm9.staticflickr.com/8440/8702526867_a63f68827b_o.png) 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7439/8716958631_e0ae1d5181_o.png) 
 
 
 
@@ -359,7 +461,6 @@ We initiate the MCMC chain (`init_p`) using the true values of the parameters `p
 
 
 ```r
-# a bit unfair to start with the correct values, but anyhow...
 init_p = p
 names(init_p) = c("r0", "K")
 y <- obs$x[-1] 
@@ -375,7 +476,7 @@ We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation 
 ```r
 jags.data <- list("N","y")
 n.chains = 1
-n.iter = 40000
+n.iter = 400000
 n.burnin = floor(10000)
 n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 ```
@@ -422,7 +523,7 @@ for(t in 1:(N)){
 
 
 
-We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate.  Because our priors on the noise parameters are inverse gamma distributed.  
+We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate. 
 
 
 
@@ -448,6 +549,115 @@ Compiling model graph
    Graph Size: 325
 
 Initializing model
+
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++          |  80%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |*                                                 |   2%
+  |                                                        
+  |**                                                |   4%
+  |                                                        
+  |***                                               |   6%
+  |                                                        
+  |****                                              |   8%
+  |                                                        
+  |*****                                             |  10%
+  |                                                        
+  |******                                            |  12%
+  |                                                        
+  |*******                                           |  14%
+  |                                                        
+  |********                                          |  16%
+  |                                                        
+  |*********                                         |  18%
+  |                                                        
+  |**********                                        |  21%
+  |                                                        
+  |***********                                       |  23%
+  |                                                        
+  |************                                      |  25%
+  |                                                        
+  |*************                                     |  27%
+  |                                                        
+  |**************                                    |  29%
+  |                                                        
+  |***************                                   |  31%
+  |                                                        
+  |****************                                  |  33%
+  |                                                        
+  |*****************                                 |  35%
+  |                                                        
+  |******************                                |  37%
+  |                                                        
+  |*******************                               |  39%
+  |                                                        
+  |*********************                             |  41%
+  |                                                        
+  |**********************                            |  43%
+  |                                                        
+  |***********************                           |  45%
+  |                                                        
+  |************************                          |  47%
+  |                                                        
+  |*************************                         |  49%
+  |                                                        
+  |**************************                        |  51%
+  |                                                        
+  |***************************                       |  53%
+  |                                                        
+  |****************************                      |  55%
+  |                                                        
+  |*****************************                     |  57%
+  |                                                        
+  |******************************                    |  59%
+  |                                                        
+  |*******************************                   |  62%
+  |                                                        
+  |********************************                  |  64%
+  |                                                        
+  |*********************************                 |  66%
+  |                                                        
+  |**********************************                |  68%
+  |                                                        
+  |***********************************               |  70%
+  |                                                        
+  |************************************              |  72%
+  |                                                        
+  |*************************************             |  74%
+  |                                                        
+  |**************************************            |  76%
+  |                                                        
+  |***************************************           |  78%
+  |                                                        
+  |****************************************          |  80%
+  |                                                        
+  |*****************************************         |  82%
+  |                                                        
+  |******************************************        |  84%
+  |                                                        
+  |*******************************************       |  86%
+  |                                                        
+  |********************************************      |  88%
+  |                                                        
+  |*********************************************     |  90%
+  |                                                        
+  |**********************************************    |  92%
+  |                                                        
+  |***********************************************   |  94%
+  |                                                        
+  |************************************************  |  96%
+  |                                                        
+  |************************************************* |  98%
+  |                                                        
+  |**************************************************| 100%
 ```
 
 ```r
@@ -464,10 +674,11 @@ jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
 
 # Traces
-ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
+ggplot(par_posteriors) + geom_line(aes(index, value)) + 
+  facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm9.staticflickr.com/8260/8702527255_2d5f02f920_o.png) 
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7442/8716958751_19ef62fc85_o.png) 
 
 
 
@@ -480,12 +691,10 @@ stdR_prior <- function(x) dunif(x, 0.001, 100)
 
 par_priors <- list(K = K_prior, deviance = function(x) 0 * x, logr0 = logr_prior, stdQ = stdQ_prior, stdR = stdR_prior)
 
-
 par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
 
 # posterior distributions
 ggplot(par_posteriors, aes(value)) + 
@@ -494,45 +703,359 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm9.staticflickr.com/8535/8702527309_cb8a25c7ba_o.png) 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7292/8716958867_4e82169e7a_o.png) 
 
-
-
-
-```r
-# um, cleaner if we were just be using the long form, par_posterior
-mcmc <- as.mcmc(jagsfit)
-mcmcall <- mcmc[,-2]
-who <- colnames(mcmcall)
-who 
-```
-
-```
-[1] "K"     "logr0" "stdQ"  "stdR" 
-```
-
-```r
-mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4])
-colnames(mcmcall) <- who
-```
 
 
 
 
 ```r
-ricker_pardist <- mcmcall
-ricker_pardist[,2] = exp(ricker_pardist[,2]) # transform model parameters back first
+ricker_pardist <- jags_matrix[! names(jags_matrix) == "deviance" ]
+ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
 
+posterior.mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
 
+apply(ricker_pardist,2,mean)
+```
 
-bayes_coef <- apply(ricker_pardist,2,mean)
+```
+      K   logr0    stdQ    stdR 
+16.9717  0.7427  0.3145  0.2028 
+```
+
+```r
+bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates
 ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
 ricker_bayes_pars
 ```
 
 ```
-[1]  0.7254 17.1876
+[1]  0.006786 13.040682
 ```
+
+
+
+
+
+
+## Write the external bugs file
+
+
+```r
+logr0_prior_p <- c(-6.0, 6.0)
+logtheta_prior_p <- c(-6.0, 6.0)
+logK_prior_p <- c(-6.0, 6.0)
+stdQ_prior_p <- c(0.0001, 100)
+stdR_prior_p <- c(0.0001, 100)
+
+bugs.model <- 
+paste(sprintf(
+"model{
+  logr0    ~ dunif(%s, %s)
+  logtheta    ~ dunif(%s, %s)
+  logK    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)
+  stdR ~ dunif(%s, %s)", 
+  logr0_prior_p[1], logr0_prior_p[2],
+  logtheta_prior_p[1], logtheta_prior_p[2],
+  logK_prior_p[1], logK_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2],
+  stdR_prior_p[1], stdR_prior_p[2]), 
+  "
+  
+  iQ <- 1 / (stdQ * stdQ);
+  iR <- 1 / (stdR * stdR);
+
+  r0 <- exp(logr0)
+  theta <- exp(logtheta)
+  K <- exp(logK)
+
+  x[1] ~ dunif(0, 10)
+
+  for(t in 1:(N-1)){
+    mu[t] <- r0 * pow(abs(x[t]), theta) / (1 + pow(abs(x[t]), theta) / K)
+    x[t+1] ~ dnorm(mu[t], iQ) 
+  }
+
+  for(t in 1:(N)){
+    y[t] ~ dnorm(x[t], iR)
+  }
+}")
+
+writeLines(bugs.model, "myers.bugs")
+```
+
+
+
+
+
+```r
+
+## priors (untransformed variables)
+logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
+logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
+logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
+stdQ_prior     <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
+stdR_prior     <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
+```
+
+
+
+
+### Parametric Bayes based on myers model 
+
+Contains the 
+
+
+
+```r
+
+init_p = c(1, 1, 1)
+names(init_p) = c("r0", "theta", "K")
+y <- obs$x[-1] 
+N=length(y);
+```
+
+
+
+We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
+
+
+
+```r
+jags.data <- list("N","y")
+n.chains = 1
+n.iter = 40000
+n.burnin = floor(10000)
+n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
+```
+
+
+
+
+```r
+jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
+jags.inits <- function(){
+  list("logr0"=log(init_p["r0"]), "logtheta" = log(init_p["theta"]),  
+       "logK"=log(init_p["K"]), "stdQ"=sqrt(0.05), 
+       "stdR"=sqrt(0.1),"x"=y,.RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+```
+
+
+
+
+```r
+set.seed(12345)
+time_jags <- system.time(       
+  jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, 
+                  n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
+                  n.burnin=n.burnin, model.file="myers.bugs")
+)         
+```
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 326
+
+Initializing model
+
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |++++                                              |   8%
+  |                                                        
+  |++++++++                                          |  16%
+  |                                                        
+  |++++++++++++                                      |  24%
+  |                                                        
+  |++++++++++++++++                                  |  32%
+  |                                                        
+  |++++++++++++++++++++                              |  40%
+  |                                                        
+  |++++++++++++++++++++++++                          |  48%
+  |                                                        
+  |++++++++++++++++++++++++++++                      |  56%
+  |                                                        
+  |++++++++++++++++++++++++++++++++                  |  64%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++              |  72%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++          |  80%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++      |  88%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%
+  |                                                        
+  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+
+  |                                                        
+  |                                                  |   0%
+  |                                                        
+  |*                                                 |   3%
+  |                                                        
+  |***                                               |   5%
+  |                                                        
+  |****                                              |   8%
+  |                                                        
+  |*****                                             |  11%
+  |                                                        
+  |*******                                           |  13%
+  |                                                        
+  |********                                          |  16%
+  |                                                        
+  |*********                                         |  19%
+  |                                                        
+  |***********                                       |  21%
+  |                                                        
+  |************                                      |  24%
+  |                                                        
+  |*************                                     |  27%
+  |                                                        
+  |***************                                   |  29%
+  |                                                        
+  |****************                                  |  32%
+  |                                                        
+  |*****************                                 |  35%
+  |                                                        
+  |*******************                               |  37%
+  |                                                        
+  |********************                              |  40%
+  |                                                        
+  |*********************                             |  43%
+  |                                                        
+  |***********************                           |  45%
+  |                                                        
+  |************************                          |  48%
+  |                                                        
+  |*************************                         |  51%
+  |                                                        
+  |***************************                       |  53%
+  |                                                        
+  |****************************                      |  56%
+  |                                                        
+  |*****************************                     |  59%
+  |                                                        
+  |*******************************                   |  61%
+  |                                                        
+  |********************************                  |  64%
+  |                                                        
+  |*********************************                 |  67%
+  |                                                        
+  |***********************************               |  69%
+  |                                                        
+  |************************************              |  72%
+  |                                                        
+  |*************************************             |  75%
+  |                                                        
+  |***************************************           |  77%
+  |                                                        
+  |****************************************          |  80%
+  |                                                        
+  |*****************************************         |  83%
+  |                                                        
+  |*******************************************       |  85%
+  |                                                        
+  |********************************************      |  88%
+  |                                                        
+  |*********************************************     |  91%
+  |                                                        
+  |***********************************************   |  93%
+  |                                                        
+  |************************************************  |  96%
+  |                                                        
+  |************************************************* |  99%
+  |                                                        
+  |**************************************************| 100%
+```
+
+```r
+time_jags <- unname(time_jags["elapsed"]);
+```
+
+
+Convergence diagnostics for parametric bayes
+
+
+```r
+jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
+par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
+
+## Traces
+ggplot(par_posteriors) + geom_line(aes(index, value)) +
+  facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7304/8716958997_f77e1b2f30_o.png) 
+
+
+
+```r
+## prior curve functions, must be in order
+par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
+                    logr0 = logr_prior, logtheta = logtheta_prior, 
+                    stdQ = stdQ_prior, stdR = stdR_prior)
+
+## calculate points along the prior curve
+par_prior_curves <- ddply(par_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+```
+
+
+
+```r
+## posterior distributions
+ggplot(par_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7370/8718081562_bf3c75077a_o.png) 
+
+
+
+```r
+myers_pardist <- as.matrix(jags_matrix[2:6])
+myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
+myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
+myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
+colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
+
+
+apply(myers_pardist,2,mean)
+```
+
+```
+       K       r0    theta     stdQ     stdR 
+106.1745   2.6296   0.5955   0.3232   0.1778 
+```
+
+```r
+bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
+
+myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -546,9 +1069,12 @@ alt_means <- sapply(x_grid, alt$f, 0, ricker_bayes_pars[c(1,2)])
 est_means <- sapply(x_grid, est$f, 0, est$p)
 par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 
+myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
+
 models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
                      MLE=est_means, Ricker=alt_means, 
-                     Parametric.Bayes = par_bayes_means)
+                     Parametric.Bayes = par_bayes_means,
+                     Myers = myers_means)
 
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
@@ -566,7 +1092,9 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm9.staticflickr.com/8539/8703646624_f42acd4c0a_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7410/8718081698_fbcdbf2130_o.png) 
+
+
 
 
 
@@ -606,8 +1134,20 @@ Determine the optimal policy based on parametric Bayesian model
 
 
 ```r
-matrices_par_bayes <- parameter_uncertainty_SDP(f, p, x_grid, h_grid, pardist)
+allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
+matrices_par_bayes <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
+```
+
+```
+Error: invalid arguments
+```
+
+```r
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
+
+```
+Error: object 'matrices_par_bayes' not found
 ```
 
 
@@ -615,18 +1155,64 @@ Bayesian Ricker
 
 
 ```r
-matrices_alt <- parameter_uncertainty_SDP(alt$f, ricker_bayes_pars[1,2], x_grid, h_grid, ricker_pardist)
+ricker_f <- function(x, h, p) alt$f(x, h, unname(p[c(2, 1)]))
+matrices_alt <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
+```
+
+```
+Error: invalid arguments
+```
+
+```r
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
+
+```
+Error: object 'matrices_alt' not found
+```
+
+
+
+Bayesian Myers model
+
+
+```r
+myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
+matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
+```
+
+```
+Error: invalid arguments
+```
+
+```r
+myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
+
+```
+Error: object 'matrices_myers' not found
+```
+
 
 
 Assemble the data
 
 
 ```r
-OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D)
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D, Myers = myers_alt$D)
+```
+
+```
+Error: object 'opt_alt' not found
+```
+
+```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
+```
+
+```
+Error: object 'OPT' not found
 ```
 
 
@@ -637,14 +1223,30 @@ names(colorkey) = names(OPT)
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
+```
+
+```
+Error: object 'OPT' not found
+```
+
+```r
 names(policies) <- c("stock", "method", "value")
+```
+
+```
+Error: object 'policies' not found
+```
+
+```r
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm9.staticflickr.com/8544/8702530503_14ac7c7651_o.png) 
+```
+Error: object 'policies' not found
+```
 
 
 
@@ -660,12 +1262,44 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
+```
+
+```
+Error: object 'OPT' not found
+```
+
+```r
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
+```
+
+```
+Error: object 'sims' not found
+```
+
+```r
 dt <- data.table(dat)
+```
+
+```
+Error: object 'dat' not found
+```
+
+```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
+```
+
+```
+Error: x is not a data.table or data.frame
+```
+
+```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
+```
+
+```
+Error: object of type 'closure' is not subsettable
 ```
 
 
@@ -676,6 +1310,38 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm9.staticflickr.com/8417/8702530633_aca96b4ed5_o.png) 
+```
+Error: ggplot2 doesn't know how to deal with data of class function
+```
 
+
+
+
+
+```r
+Profit <- dt[, sum(profit), by=c("reps", "method")]
+```
+
+```
+Error: invalid 'type' (closure) of argument
+```
+
+```r
+Profit[, mean(V1), by="method"]
+```
+
+```
+Error: object 'Profit' not found
+```
+
+
+
+```r
+ggplot(Profit, aes(V1)) + geom_histogram() + 
+  facet_wrap(~method, scales = "free_y") + guides(legend.position = "none")
+```
+
+```
+Error: object 'Profit' not found
+```
 

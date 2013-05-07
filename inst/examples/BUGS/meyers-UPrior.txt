@@ -2,7 +2,7 @@ model{
 
 
 logr0    ~ dunif(-6.0, 6.0)
-logtheta    ~ dunif(-6.0, 6.0)
+logtheta    ~ dunif(-1.0, 1.0)
 logK    ~ dunif(-6.0, 6.0)
 stdQ ~ dunif(0.0001,100)
 stdR ~ dunif(0.0001,100)
@@ -17,8 +17,8 @@ K <- exp(logK)
 x[1] ~ dunif(0,10)
 
 for(t in 1:(N-1)){
-  mu[t] <- r0 * x^theta / (1 + x[t] ^ theta / K)
-  x[t+1] ~ dnorm(mu[t],iQ) 
+  mu[t] <- r0 * pow(abs(x[t]), theta) / (1 + pow(abs(x[t]), theta) / K)
+  x[t+1] ~ dnorm(mu[t], iQ) 
 }
 
 
