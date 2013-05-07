@@ -655,6 +655,11 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
+```{r Figure3a}
+ggplot(dt[method %in% c("True", "Ricker", "MLE")]) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
+```
 
 
 ```{r profits}
