@@ -12,18 +12,25 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA,
-               fig.width=6, fig.height=4)
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA, fig.width = 6, fig.height = 4)
 
 library(knitcitations)
+```
 
-library(ggplot2) # plotting 
-#opts_knit$set(upload.fun = socialR::flickr.url)
-theme_set(theme_bw(base_size=10))
-theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
-             plot.background = element_rect(fill = "transparent", colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
-               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+## Loading required package: bibtex
+```
+
+```r
+
+library(ggplot2)  # plotting
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size = 10))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
+    plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
+    "#D55E00", "#CC79A7")
 ```
 
 Load necessary libraries,
@@ -136,7 +143,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7345/8718080058_caa3352cdd_o.png) 
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7360/8717471473_15903aba8d_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7405/8717471721_4cc10faa46_o.png) 
 
 
 
@@ -248,115 +255,6 @@ Compiling model graph
    Graph Size: 365
 
 Initializing model
-
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |++++                                              |   8%
-  |                                                        
-  |++++++++                                          |  16%
-  |                                                        
-  |++++++++++++                                      |  24%
-  |                                                        
-  |++++++++++++++++                                  |  32%
-  |                                                        
-  |++++++++++++++++++++                              |  40%
-  |                                                        
-  |++++++++++++++++++++++++                          |  48%
-  |                                                        
-  |++++++++++++++++++++++++++++                      |  56%
-  |                                                        
-  |++++++++++++++++++++++++++++++++                  |  64%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++              |  72%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++          |  80%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++      |  88%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |*                                                 |   3%
-  |                                                        
-  |***                                               |   5%
-  |                                                        
-  |****                                              |   8%
-  |                                                        
-  |*****                                             |  11%
-  |                                                        
-  |*******                                           |  13%
-  |                                                        
-  |********                                          |  16%
-  |                                                        
-  |*********                                         |  19%
-  |                                                        
-  |***********                                       |  21%
-  |                                                        
-  |************                                      |  24%
-  |                                                        
-  |*************                                     |  27%
-  |                                                        
-  |***************                                   |  29%
-  |                                                        
-  |****************                                  |  32%
-  |                                                        
-  |*****************                                 |  35%
-  |                                                        
-  |*******************                               |  37%
-  |                                                        
-  |********************                              |  40%
-  |                                                        
-  |*********************                             |  43%
-  |                                                        
-  |***********************                           |  45%
-  |                                                        
-  |************************                          |  48%
-  |                                                        
-  |*************************                         |  51%
-  |                                                        
-  |***************************                       |  53%
-  |                                                        
-  |****************************                      |  56%
-  |                                                        
-  |*****************************                     |  59%
-  |                                                        
-  |*******************************                   |  61%
-  |                                                        
-  |********************************                  |  64%
-  |                                                        
-  |*********************************                 |  67%
-  |                                                        
-  |***********************************               |  69%
-  |                                                        
-  |************************************              |  72%
-  |                                                        
-  |*************************************             |  75%
-  |                                                        
-  |***************************************           |  77%
-  |                                                        
-  |****************************************          |  80%
-  |                                                        
-  |*****************************************         |  83%
-  |                                                        
-  |*******************************************       |  85%
-  |                                                        
-  |********************************************      |  88%
-  |                                                        
-  |*********************************************     |  91%
-  |                                                        
-  |***********************************************   |  93%
-  |                                                        
-  |************************************************  |  96%
-  |                                                        
-  |************************************************* |  99%
-  |                                                        
-  |**************************************************| 100%
 ```
 
 ```r
@@ -380,7 +278,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7418/8718080184_88677216f9_o.png) 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7299/8717473381_c29b1e8886_o.png) 
 
 
 
@@ -409,7 +307,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7439/8716958631_e0ae1d5181_o.png) 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7299/8717473637_067f94cbe4_o.png) 
 
 
 
@@ -549,115 +447,6 @@ Compiling model graph
    Graph Size: 325
 
 Initializing model
-
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++          |  80%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |*                                                 |   2%
-  |                                                        
-  |**                                                |   4%
-  |                                                        
-  |***                                               |   6%
-  |                                                        
-  |****                                              |   8%
-  |                                                        
-  |*****                                             |  10%
-  |                                                        
-  |******                                            |  12%
-  |                                                        
-  |*******                                           |  14%
-  |                                                        
-  |********                                          |  16%
-  |                                                        
-  |*********                                         |  18%
-  |                                                        
-  |**********                                        |  21%
-  |                                                        
-  |***********                                       |  23%
-  |                                                        
-  |************                                      |  25%
-  |                                                        
-  |*************                                     |  27%
-  |                                                        
-  |**************                                    |  29%
-  |                                                        
-  |***************                                   |  31%
-  |                                                        
-  |****************                                  |  33%
-  |                                                        
-  |*****************                                 |  35%
-  |                                                        
-  |******************                                |  37%
-  |                                                        
-  |*******************                               |  39%
-  |                                                        
-  |*********************                             |  41%
-  |                                                        
-  |**********************                            |  43%
-  |                                                        
-  |***********************                           |  45%
-  |                                                        
-  |************************                          |  47%
-  |                                                        
-  |*************************                         |  49%
-  |                                                        
-  |**************************                        |  51%
-  |                                                        
-  |***************************                       |  53%
-  |                                                        
-  |****************************                      |  55%
-  |                                                        
-  |*****************************                     |  57%
-  |                                                        
-  |******************************                    |  59%
-  |                                                        
-  |*******************************                   |  62%
-  |                                                        
-  |********************************                  |  64%
-  |                                                        
-  |*********************************                 |  66%
-  |                                                        
-  |**********************************                |  68%
-  |                                                        
-  |***********************************               |  70%
-  |                                                        
-  |************************************              |  72%
-  |                                                        
-  |*************************************             |  74%
-  |                                                        
-  |**************************************            |  76%
-  |                                                        
-  |***************************************           |  78%
-  |                                                        
-  |****************************************          |  80%
-  |                                                        
-  |*****************************************         |  82%
-  |                                                        
-  |******************************************        |  84%
-  |                                                        
-  |*******************************************       |  86%
-  |                                                        
-  |********************************************      |  88%
-  |                                                        
-  |*********************************************     |  90%
-  |                                                        
-  |**********************************************    |  92%
-  |                                                        
-  |***********************************************   |  94%
-  |                                                        
-  |************************************************  |  96%
-  |                                                        
-  |************************************************* |  98%
-  |                                                        
-  |**************************************************| 100%
 ```
 
 ```r
@@ -678,7 +467,7 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7442/8716958751_19ef62fc85_o.png) 
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7286/8718606318_dc826d5c4b_o.png) 
 
 
 
@@ -703,7 +492,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7292/8716958867_4e82169e7a_o.png) 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7415/8718606536_a02e3f907e_o.png) 
 
 
 
@@ -864,115 +653,6 @@ Compiling model graph
    Graph Size: 326
 
 Initializing model
-
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |++++                                              |   8%
-  |                                                        
-  |++++++++                                          |  16%
-  |                                                        
-  |++++++++++++                                      |  24%
-  |                                                        
-  |++++++++++++++++                                  |  32%
-  |                                                        
-  |++++++++++++++++++++                              |  40%
-  |                                                        
-  |++++++++++++++++++++++++                          |  48%
-  |                                                        
-  |++++++++++++++++++++++++++++                      |  56%
-  |                                                        
-  |++++++++++++++++++++++++++++++++                  |  64%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++              |  72%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++          |  80%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++      |  88%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++++++  |  96%
-  |                                                        
-  |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-
-  |                                                        
-  |                                                  |   0%
-  |                                                        
-  |*                                                 |   3%
-  |                                                        
-  |***                                               |   5%
-  |                                                        
-  |****                                              |   8%
-  |                                                        
-  |*****                                             |  11%
-  |                                                        
-  |*******                                           |  13%
-  |                                                        
-  |********                                          |  16%
-  |                                                        
-  |*********                                         |  19%
-  |                                                        
-  |***********                                       |  21%
-  |                                                        
-  |************                                      |  24%
-  |                                                        
-  |*************                                     |  27%
-  |                                                        
-  |***************                                   |  29%
-  |                                                        
-  |****************                                  |  32%
-  |                                                        
-  |*****************                                 |  35%
-  |                                                        
-  |*******************                               |  37%
-  |                                                        
-  |********************                              |  40%
-  |                                                        
-  |*********************                             |  43%
-  |                                                        
-  |***********************                           |  45%
-  |                                                        
-  |************************                          |  48%
-  |                                                        
-  |*************************                         |  51%
-  |                                                        
-  |***************************                       |  53%
-  |                                                        
-  |****************************                      |  56%
-  |                                                        
-  |*****************************                     |  59%
-  |                                                        
-  |*******************************                   |  61%
-  |                                                        
-  |********************************                  |  64%
-  |                                                        
-  |*********************************                 |  67%
-  |                                                        
-  |***********************************               |  69%
-  |                                                        
-  |************************************              |  72%
-  |                                                        
-  |*************************************             |  75%
-  |                                                        
-  |***************************************           |  77%
-  |                                                        
-  |****************************************          |  80%
-  |                                                        
-  |*****************************************         |  83%
-  |                                                        
-  |*******************************************       |  85%
-  |                                                        
-  |********************************************      |  88%
-  |                                                        
-  |*********************************************     |  91%
-  |                                                        
-  |***********************************************   |  93%
-  |                                                        
-  |************************************************  |  96%
-  |                                                        
-  |************************************************* |  99%
-  |                                                        
-  |**************************************************| 100%
 ```
 
 ```r
@@ -992,7 +672,7 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7304/8716958997_f77e1b2f30_o.png) 
+![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7325/8717488991_303856760e_o.png) 
 
 
 
@@ -1019,7 +699,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7370/8718081562_bf3c75077a_o.png) 
+![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7456/8717489325_5a445b73da_o.png) 
 
 
 
@@ -1092,7 +772,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7410/8718081698_fbcdbf2130_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7373/8717489491_af8c8afdaf_o.png) 
 
 
 
@@ -1136,18 +816,7 @@ Determine the optimal policy based on parametric Bayesian model
 ```r
 allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
 matrices_par_bayes <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
-```
-
-```
-Error: invalid arguments
-```
-
-```r
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_par_bayes' not found
 ```
 
 
@@ -1157,18 +826,7 @@ Bayesian Ricker
 ```r
 ricker_f <- function(x, h, p) alt$f(x, h, unname(p[c(2, 1)]))
 matrices_alt <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
-```
-
-```
-Error: invalid arguments
-```
-
-```r
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_alt' not found
 ```
 
 
@@ -1179,18 +837,7 @@ Bayesian Myers model
 ```r
 myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
 matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
-```
-
-```
-Error: invalid arguments
-```
-
-```r
 myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_myers' not found
 ```
 
 
@@ -1200,19 +847,8 @@ Assemble the data
 
 ```r
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D, Myers = myers_alt$D)
-```
-
-```
-Error: object 'opt_alt' not found
-```
-
-```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
-```
-
-```
-Error: object 'OPT' not found
 ```
 
 
@@ -1223,30 +859,14 @@ Error: object 'OPT' not found
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 names(policies) <- c("stock", "method", "value")
-```
-
-```
-Error: object 'policies' not found
-```
-
-```r
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-```
-Error: object 'policies' not found
-```
+![plot of chunk Figure2](http://farm8.staticflickr.com/7318/8717506103_c455ec567f_o.png) 
 
 
 
@@ -1262,44 +882,12 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-```
-
-```
-Error: object 'sims' not found
-```
-
-```r
 dt <- data.table(dat)
-```
-
-```
-Error: object 'dat' not found
-```
-
-```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-```
-
-```
-Error: x is not a data.table or data.frame
-```
-
-```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
-```
-
-```
-Error: object of type 'closure' is not subsettable
 ```
 
 
@@ -1310,9 +898,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-Error: ggplot2 doesn't know how to deal with data of class function
-```
+![plot of chunk Figure3](http://farm8.staticflickr.com/7359/8718626296_cc0814de9e_o.png) 
 
 
 
@@ -1320,18 +906,17 @@ Error: ggplot2 doesn't know how to deal with data of class function
 
 ```r
 Profit <- dt[, sum(profit), by=c("reps", "method")]
-```
-
-```
-Error: invalid 'type' (closure) of argument
-```
-
-```r
 Profit[, mean(V1), by="method"]
 ```
 
 ```
-Error: object 'Profit' not found
+             method     V1
+1:               GP 23.417
+2:             True 24.671
+3:              MLE  7.432
+4:           Ricker  7.347
+5: Parametric.Bayes 21.742
+6:            Myers  6.805
 ```
 
 
@@ -1341,7 +926,5 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none")
 ```
 
-```
-Error: object 'Profit' not found
-```
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7418/8718626524_c0d923f93a_o.png) 
 
