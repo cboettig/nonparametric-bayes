@@ -1,31 +1,44 @@
 # Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
-```{r runsetup}
+
+```r
 setwd("~/Documents/code/nonparametric-bayes/inst/examples/BUGS/")
 ```
 
 
 
+
 Plotting and knitr options, (can generally be ignored)
 
-```{r plotting-options}
-library(knitcitations)
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA,
-               fig.width=6, fig.height=4)
 
-library(ggplot2) # plotting 
-opts_knit$set(upload.fun = socialR::flickr.url)
-theme_set(theme_bw(base_size=10))
-theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
-             plot.background = element_rect(fill = "transparent", colour = NA))
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
-               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```r
+library(knitcitations)
 ```
+
+```
+## Loading required package: bibtex
+```
+
+```r
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
+    comment = NA, fig.width = 6, fig.height = 4)
+
+library(ggplot2)  # plotting
+opts_knit$set(upload.fun = socialR::flickr.url)
+theme_set(theme_bw(base_size = 10))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
+    plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
+    "#D55E00", "#CC79A7")
+```
+
 Load necessary libraries,
 
-```{r libraries, cache=FALSE, message=FALSE, warning=FALSE}
+
+```r
 library(nonparametricbayes) # loads the rest as dependencies
 ```
+
 
 
 
@@ -34,7 +47,8 @@ library(nonparametricbayes) # loads the rest as dependencies
 Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
-```{r}
+
+```r
 f <- Ricker
 p <- c(1, 10)
 K <- p[2]
@@ -42,9 +56,11 @@ C <- 5 # policy threshold
 ```
 
 
+
 Various parameters defining noise dynamics, grid, and policy costs.  
 
-```{r sdp-pars, dependson="stateeq"}
+
+```r
 sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
@@ -61,9 +77,11 @@ x0 <- Xo # simulation under policy starts from
 Tobs <- 40
 ```
 
+
 ### Sample Data
 
-```{r obs, dependson="sdp-pars"}
+
+```r
   set.seed(1234)
   #harvest <- sort(rep(seq(0, .5, length=7), 5))
   x <- numeric(Tobs)
@@ -79,42 +97,53 @@ Tobs <- 40
 ```
 
 
+
 ## Maximum Likelihood
 
-```{r mle, dependson="obs"}
+
+```r
 est <- par_est(obs,  init = c(r = p[1], 
                               K = mean(obs$x[obs$x>0]), 
                               s = sigma_g))
-
 ```
+
 
 
 ## Non-parametric Bayes
 
 
-```{r gp-priors}
+
+```r
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
 s2.p <- c(5,5)  
 d.p = c(10, 1/0.1)
 ```
 
 
+
 Estimate the Gaussian Process (nonparametric Bayesian fit)
 
-```{r}
+
+```r
 gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
 gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
 ```
 
 
+
 Show traces and posteriors against priors
 
-```{r gp_traces_densities}
+
+```r
 plots <- summary_gp_mcmc(gp)
 ```
 
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7354/8718686585_0efbdce3ac_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7369/8719805896_460bee8385_o.png) 
 
-```{r}
+
+
+
+```r
 # Summarize the GP model
 tgp_dat <- 
     data.frame(  x = x_grid, 
@@ -123,23 +152,34 @@ tgp_dat <-
                  ymax = gp_dat$E_Ef + 2 * sqrt(gp_dat$E_Vf) )
 ```
 
+
 ### Parametric Bayes
 
 We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
-```{r}
+
+```r
 # a bit unfair to start with the correct values, but anyhow...
 init_p = p
 names(init_p) = c("r0", "K", "theta")
+```
+
+```
+Error: 'names' attribute [3] must be the same length as the vector [2]
+```
+
+```r
 y <- obs$x[-1] 
 N=length(y);
 ```
 
 
+
 We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
 
 
-```{r}
+
+```r
 jags.data <- list("N","y")
 n.chains = 1
 n.iter = 40000
@@ -148,19 +188,54 @@ n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 ```
 
 
+
 The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
 
 
-```{r}
+
+```r
 cat(readLines(con="bugmodel-UPrior.txt"), sep="\n")
-``` 
+```
+
+```
+model{
+
+K     ~ dunif(0.01, 40.0)
+logr0    ~ dunif(-6.0, 6.0)
+logtheta ~ dunif(-6.0, 6.0)
+stdQ ~ dunif(0.0001,100)
+stdR ~ dunif(0.0001,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
+iQ <- 1/(stdQ*stdQ);
+iR <- 1/(stdR*stdR);
+
+r0 <- exp(logr0)
+theta <- exp(logtheta)
+
+
+x[1] ~ dunif(0,10)
+
+for(t in 1:(N-1)){
+  mu[t] <- x[t] * exp(r0 * (1 - x[t]/K)* (x[t] - theta) / K )
+  x[t+1] ~ dnorm(mu[t],iQ) 
+}
+
+
+for(t in 1:(N)){
+  y[t] ~ dnorm(x[t],iR)
+}
+
+}
+```
+
 
 
 
 We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate. 
 
 
-```{r}
+
+```r
 # Uniform priors on standard deviation terms
 jags.params=c("K","logr0","logtheta","stdQ", "stdR")
 jags.inits <- function(){
@@ -173,24 +248,44 @@ time_jags <- system.time(
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="bugmodel-UPrior.txt")
 )         
+```
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 365
+
+Initializing model
+```
+
+```r
 time_jags <- unname(time_jags["elapsed"]);
 ```
 
 
+
 #### Convergence diagnostics for parametric bayes
 
-```{r}
+
+```r
 jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
 ```
 
-```{r parametric_bayes_traces}
+
+
+```r
 # Traces
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7332/8718687667_3941affddd_o.png) 
 
-```{r parametric_bayes_posteriors}
+
+
+
+```r
 ## priors (untransformed variables)
 K_prior <- function(x) dunif(x, 0.01, 40)
 logr_prior <- function(x) dunif(x, -6, 6)
@@ -212,16 +307,26 @@ ggplot(par_posteriors, aes(value)) +
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
-
 ```
 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7358/8719807244_2a9dfde37a_o.png) 
 
-```{r}
+
+
+
+```r
 # um, cleaner if we were just be using the long form, par_posterior
 mcmc <- as.mcmc(jagsfit)
 mcmcall <- mcmc[,-2]
 who <- colnames(mcmcall)
 who 
+```
+
+```
+[1] "K"        "logr0"    "logtheta" "stdQ"     "stdR"    
+```
+
+```r
 mcmcall <- cbind(mcmcall[,1],mcmcall[,2],mcmcall[,3],mcmcall[,4],mcmcall[,5])
 colnames(mcmcall) <- who
 
@@ -236,18 +341,26 @@ bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3]))
 bayes_pars
 ```
 
+```
+[1] 1.270 9.818 0.314
+```
 
 
-```{r}
+
+
+
+```r
 par_bayes_means <- sapply(x_grid, f, 0, bayes_pars)
 ```
+
 
 
 ## Parametric Bayes based on the structurally wrong model
 
 We initiate the MCMC chain (`init_p`) using the true values of the parameters `p` from the simulation.  While impossible in real data, this gives the parametric Bayesian approach the best chance at succeeding.  `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
-```{r}
+
+```r
 init_p = p
 names(init_p) = c("r0", "K")
 y <- obs$x[-1] 
@@ -255,10 +368,12 @@ N=length(y);
 ```
 
 
+
 We'll be using the JAGS Gibbs sampler, a recent open source BUGS implementation with an R interface that works on most platforms.  We initialize the usual MCMC parameters; see `?jags` for details.  
 
 
-```{r}
+
+```r
 jags.data <- list("N","y")
 n.chains = 1
 n.iter = 40000
@@ -267,19 +382,52 @@ n.thin = max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 ```
 
 
+
 The actual model is defined in a `model.file` that contains an R function that is automatically translated into BUGS code by *R2WinBUGS*.  The file defines the priors and the model, as seen when read in here
 
 
-```{r}
+
+```r
 cat(readLines(con="ricker-UPrior.txt"), sep="\n")
-``` 
+```
+
+```
+model{
+
+K     ~ dunif(0.01, 40.0)
+logr0    ~ dunif(-6.0, 6.0)
+stdQ ~ dunif(0.0001,100)
+stdR ~ dunif(0.0001,100)
+# JAGS notation, mean, and precision ( reciprical of the variance, 1/sigma^2)
+iQ <- 1/(stdQ*stdQ);
+iR <- 1/(stdR*stdR);
+
+r0 <- exp(logr0)
+
+
+x[1] ~ dunif(0,10)
+
+for(t in 1:(N-1)){
+  mu[t] <- x[t] * exp(r0 * (1 - x[t]/K) / K )
+  x[t+1] ~ dnorm(mu[t],iQ) 
+}
+
+
+for(t in 1:(N)){
+  y[t] ~ dnorm(x[t],iR)
+}
+
+}
+```
+
 
 
 
 We define which parameters to keep track of, and set the initial values of parameters in the transformed space used by the MCMC.  We use logarithms to maintain strictly positive values of parameters where appropriate. 
 
 
-```{r}
+
+```r
 # Uniform priors on standard deviation terms
 jags.params=c("K","logr0", "stdQ", "stdR")
 jags.inits <- function(){
@@ -292,13 +440,27 @@ time_jags <- system.time(
   jagsfit <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
                   n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,model.file="ricker-UPrior.txt")
 )         
+```
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 325
+
+Initializing model
+```
+
+```r
 time_jags <- unname(time_jags["elapsed"]);
 ```
 
 
+
 #### Convergence diagnostics for parametric bayes Ricker model
 
-```{r ricker_traces}
+
+```r
 jags_matrix <- as.data.frame(as.mcmc.bugs(jagsfit$BUGSoutput))
 par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "index")
 
@@ -307,7 +469,11 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```{r ricker_posteriors}
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7381/8719808374_cd74a3a808_o.png) 
+
+
+
+```r
 ## priors (untransformed variables)
 K_prior <- function(x) dunif(x, 0.01, 40)
 logr_prior <- function(x) dunif(x, -6, 6)
@@ -328,9 +494,13 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7390/8718689057_99977bc522_o.png) 
 
 
-```{r}
+
+
+
+```r
 ricker_pardist <- jags_matrix[! names(jags_matrix) == "deviance" ]
 ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
 
@@ -340,10 +510,23 @@ posterior.mode <- function(x) {
 }
 
 apply(ricker_pardist,2,mean)
+```
+
+```
+     K  logr0   stdQ   stdR 
+9.8075 9.0975 0.3128 0.3167 
+```
+
+```r
 bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates
 ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
 ricker_bayes_pars
 ```
+
+```
+[1] 10.73  9.73
+```
+
 
 
 
@@ -351,7 +534,8 @@ ricker_bayes_pars
 
 ## Write the external bugs file
 
-```{r}
+
+```r
 logr0_prior_p <- c(-6.0, 6.0)
 logtheta_prior_p <- c(-6.0, 6.0)
 logK_prior_p <- c(-6.0, 6.0)
@@ -397,7 +581,9 @@ writeLines(bugs.model, "myers.bugs")
 
 
 
-```{r}
+
+
+```r
 
 ## priors (untransformed variables)
 logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
@@ -405,13 +591,14 @@ logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
 logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
 stdQ_prior     <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
 stdR_prior     <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
-
 ```
+
 
 
 ### Phase-space diagram of the expected dynamics
 
-```{r}
+
+```r
 true_means <- sapply(x_grid, f, 0, p)
 mle_means <- sapply(x_grid, est$f, 0, est$p)
 ricker_means <- sapply(x_grid, est$f, 0, ricker_bayes_pars[c(1,2)])
@@ -428,7 +615,9 @@ names(models) <- c("x", "method", "value")
 ```
 
 
-```{r Figure1}
+
+
+```r
 plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
     geom_line(data=models, aes(x, value, col=method), lwd=1, alpha=0.8) + 
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
@@ -436,6 +625,9 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
     scale_colour_manual(values=cbPalette) 
 print(plot_gp)
 ```
+
+![plot of chunk Figure1](http://farm8.staticflickr.com/7398/8719808640_91eefa5567_o.png) 
+
 
 
 
@@ -445,7 +637,8 @@ print(plot_gp)
 Compute the optimal policy under each model using stochastic dynamic programming. We begin with the policy based on the GP model,
 
 
-```{r}
+
+```r
 MaxT = 1000
 # uses expected values from GP, instead of integrating over posterior
 #matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
@@ -458,28 +651,33 @@ opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, 
 ```
 
 
+
 Determine the optimal policy based on the true and MLE models
 
-```{r}
+
+```r
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
 opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
 matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
 opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
 ```
+
 
 Determine the optimal policy based on parametric Bayesian model
 
-```{r}
+
+```r
 allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
 matrices_par_bayes <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
 opt_par_bayes <- value_iteration(matrices_par_bayes, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
 
+
 Bayesian Ricker
 
-```{r}
+
+```r
 ricker_f <- function(x, h, p) est$f(x, h, unname(p[c(2, 1)]))
 matrices_alt <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
 opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
@@ -487,9 +685,11 @@ opt_alt <- value_iteration(matrices_alt, x_grid, h_grid, OptTime=MaxT, xT, profi
 
 
 
+
 Assemble the data
 
-```{r}
+
+```r
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Allen = opt_par_bayes$D)
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
@@ -497,9 +697,11 @@ names(colorkey) = names(OPT)
 
 
 
+
 ## Graph of the optimal policies
 
-```{r Figure2}
+
+```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
@@ -508,12 +710,16 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7282/8719817262_d5aef366bd_o.png) 
+
+
 
 
 ## Simulate 100 realizations managed under each of the policies
 
 
-```{r sims}
+
+```r
 sims <- lapply(OPT, function(D){
   set.seed(1)
   lapply(1:100, function(i) 
@@ -528,25 +734,49 @@ setnames(dt, c("L1", "L2"), c("method", "reps"))
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
 ```
 
-```{r Figure3}
+
+
+```r
 ggplot(dt) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```{r Figure3a}
+![plot of chunk Figure3](http://farm8.staticflickr.com/7434/8719817734_3140a4c28f_o.png) 
+
+
+
+```r
 ggplot(dt[method %in% c("True", "Ricker", "MLE")]) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
+![plot of chunk Figure3a](http://farm8.staticflickr.com/7422/8718698349_816ee74710_o.png) 
 
-```{r profits}
+
+
+
+```r
 Profit <- dt[, sum(profit), by=c("reps", "method")]
 Profit[, mean(V1), by="method"]
 ```
 
-```{r totalprofits}
+```
+   method     V1
+1:     GP 120.07
+2:   True 164.66
+3:    MLE 160.76
+4: Ricker  24.57
+5:  Allen 159.16
+```
+
+
+
+```r
 ggplot(Profit, aes(V1)) + geom_histogram() + 
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none")
 ```
+
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7374/8718698451_9d35274a4e_o.png) 
+
