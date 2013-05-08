@@ -655,10 +655,35 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
+
+```{r}
+dt
+
+```
+
+
 ```{r Figure3a}
-ggplot(dt[method %in% c("True", "Ricker", "MLE")]) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
+dt$reps <- as.factor(dt$reps) 
+setkey(dt, method, reps)
+
+
+
+require(animation)
+saveMovie({
+  for(j in sample(dt$reps, 10)){
+    ricker <- dt[J("Ricker", j)]
+    for (i in seq(1, max(dt$time), by=5)) {
+      print(
+        ggplot(subset(ricker, time <= i), 
+               aes(time, fishstock, group=interaction(reps,method), color = method), alpha=.9) + 
+          geom_line() + xlim(0, max(dt$time)))
+    }
+  }
+}, interval = 0.1, movie.name = "wrong-model.gif", ani.width = 600, ani.height = 600)
+
+
+
+
 ```
 
 
