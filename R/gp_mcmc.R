@@ -47,9 +47,10 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
 #' predict the expected values and posterior distributions of the Gaussian Process
 #' 
 #' @param x_predict the values at which we desire predictions
+#' @param covs if TRUE, return covariances instead of variances (set high thinning as this is memory intensive)
 #' @import reshape2
 #' @export
-gp_predict <- function(gp, x_predict, burnin=0, thin=1){
+gp_predict <- function(gp, x_predict, burnin=0, thin=1, covs=FALSE){
 
   postdist <- cbind(index=1:gp$nbatch, as.data.frame(exp(gp$batch)))
   s <- seq(burnin+1, gp$nbatch, by=thin)
@@ -66,18 +67,25 @@ gp_predict <- function(gp, x_predict, burnin=0, thin=1){
     cov_xx_inv <- solve(cov(obs$x, obs$x) + sigma.n^2 * diag(1, length(obs$x)))
     Ef <- cov(x_predict, obs$x) %*% cov_xx_inv %*% obs$y
     Cf <- cov(x_predict, x_predict) - cov(x_predict, obs$x)  %*% cov_xx_inv %*% cov(obs$x, x_predict)
-  
-    list(Ef = Ef, Vf = diag(Cf))
+    list(Ef = Ef, Cf = Cf, Vf = diag(Cf))
   })
   
   Ef_posterior <- sapply(out, `[[`, "Ef")
+  Cf_posterior <- sapply(out, `[[`, "Cf")
   Vf_posterior <- sapply(out, `[[`, "Vf")
   
-  E_Ef <- rowMeans(Ef_posterior)
-  E_Vf <- rowMeans(Vf_posterior)
   
-  list(Ef_posterior = Ef_posterior, Vf_posterior = Vf_posterior,
-       E_Ef = E_Ef, E_Vf = E_Vf)
+  E_Ef <- rowMeans(Ef_posterior)
+  E_Cf <- matrix( apply(Cf_posterior, 1, sum) / dim(Cf_posterior)[2], ncol = sqrt(dim(Cf_posterior)[1]) )
+  E_Vf <- diag(E_Cf) # same as rowMeans(Vf_posterior)
+  
+  # list format better for return
+  Cf_posterior <- lapply(out, `[[`, "Cf")
+  
+  list(Ef_posterior = Ef_posterior, 
+       Vf_posterior = Vf_posterior,
+       Cf_posterior = Cf_posterior,
+       E_Ef = E_Ef, E_Cf = E_Cf, E_Vf = E_Vf)
   
 }  
   
