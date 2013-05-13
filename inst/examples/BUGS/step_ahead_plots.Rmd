@@ -1,0 +1,30 @@
+One-step ahead predictor plots
+
+
+```{r}
+
+step_ahead <- function(x, f, p){
+  h = 0
+  x_predict <- sapply(x, f, h, p)
+  n <- length(x_predict) - 1
+  y <- c(x[1], x_predict[1:n])
+  y
+}
+
+df <- melt(data.frame(time = 1:length(x), stock = x, 
+                True = step_ahead(x,f,p)
+                ,  
+                MLE = step_ahead(x,f,est$p)
+                , 
+                Parametric.Bayes = step_ahead(x, f, bayes_pars)
+                , 
+                Ricker = step_ahead(x,alt$f, ricker_bayes_pars)
+                , 
+                Myers = step_ahead(x, Myer_harvest, myers_bayes_pars)
+                 ), id=c("time", "stock"))
+
+ggplot(df) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable)) +
+    scale_colour_manual(values=colorkey) 
+
+```
