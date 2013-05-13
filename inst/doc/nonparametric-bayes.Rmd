@@ -178,7 +178,7 @@ from fist principles by @Allen2005a] as our underlying "reality".
 \begin{align}
 X_{t+1} &= Z_t f(S_t) \\
 S_t &= X_t - h_t \\
-f(S_t) &= e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
+f(S_t) &= S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
 \end{align}
 
 Where $Z_t$ is multiplicative noise function with mean 1, representing
