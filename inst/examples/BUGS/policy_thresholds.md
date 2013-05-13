@@ -67,7 +67,7 @@ z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
-profit <- function(x,h) pmin(x, h) * (x > C) # no money for violating threshold
+profit <- function(x,h) pmin(x, h) - 10*(x > C) # big penalty for violating threshold
 delta <- 0.01
 OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
@@ -138,7 +138,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7354/8718686585_0efbdce3ac_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7369/8719805896_460bee8385_o.png) 
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7329/8718779437_63aba61900_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7299/8718779597_4b76ed12f1_o.png) 
 
 
 
@@ -280,7 +280,7 @@ par_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = "
 ggplot(par_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7332/8718687667_3941affddd_o.png) 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7337/8719901018_2114587740_o.png) 
 
 
 
@@ -309,7 +309,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7358/8719807244_2a9dfde37a_o.png) 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7374/8719901148_d384cef8de_o.png) 
 
 
 
@@ -469,7 +469,7 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7381/8719808374_cd74a3a808_o.png) 
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7441/8718781901_74f50fb4a1_o.png) 
 
 
 
@@ -494,7 +494,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7390/8718689057_99977bc522_o.png) 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7346/8719902204_66d2aa33e1_o.png) 
 
 
 
@@ -626,7 +626,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7398/8719808640_91eefa5567_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7398/8719902302_f22ee79c24_o.png) 
 
 
 
@@ -710,7 +710,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7282/8719817262_d5aef366bd_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7443/8719910432_dede0d7740_o.png) 
 
 
 
@@ -742,7 +742,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm8.staticflickr.com/7434/8719817734_3140a4c28f_o.png) 
+![plot of chunk Figure3](http://farm8.staticflickr.com/7359/8718790783_6c8a089ecf_o.png) 
 
 
 
@@ -752,7 +752,7 @@ ggplot(dt[method %in% c("True", "Ricker", "MLE")]) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3a](http://farm8.staticflickr.com/7422/8718698349_816ee74710_o.png) 
+![plot of chunk Figure3a](http://farm8.staticflickr.com/7360/8718790881_e2cab9f0cf_o.png) 
 
 
 
@@ -763,12 +763,12 @@ Profit[, mean(V1), by="method"]
 ```
 
 ```
-   method     V1
-1:     GP 120.07
-2:   True 164.66
-3:    MLE 160.76
-4: Ricker  24.57
-5:  Allen 159.16
+   method      V1
+1:     GP -329.48
+2:   True  109.25
+3:    MLE   48.82
+4: Ricker   23.09
+5:  Allen   54.30
 ```
 
 
@@ -778,5 +778,5 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7374/8718698451_9d35274a4e_o.png) 
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7410/8718790969_652b3d7ddf_o.png) 
 

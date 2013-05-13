@@ -36,7 +36,7 @@ Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-l
 
 ```{r}
 f <- Ricker
-p <- c(1, 10)
+p <- c(.5, 10)
 K <- p[2]
 C <- 5 # policy threshold
 ```
@@ -51,7 +51,7 @@ z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
 x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
-profit <- function(x,h) pmin(x, h) * (x > C) # no money for violating threshold
+profit <- function(x,h) pmin(x, h) - 10*(x > C) # big penalty for violating threshold
 delta <- 0.01
 OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
