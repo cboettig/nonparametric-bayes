@@ -534,6 +534,34 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
+##
+
+```{r step_ahead}
+gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+
+
+step_ahead <- function(x, f, p){
+  h = 0
+  x_predict <- sapply(x, f, h, p)
+  n <- length(x_predict) - 1
+  y <- c(x[1], x_predict[1:n])
+  y
+}
+
+df <- melt(data.frame(time = 1:length(x), stock = x, 
+                GP = gp_f_at_obs$E_Ef,
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Parametric.Bayes = step_ahead(x, f, bayes_pars), 
+                Ricker = step_ahead(x,alt$f, ricker_bayes_pars), 
+                Myers = step_ahead(x, Myer_harvest, myers_bayes_pars)
+                 ), id=c("time", "stock"))
+
+ggplot(df) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable)) +
+    scale_colour_manual(values=colorkey) 
+```
+
 
 
 
@@ -595,9 +623,9 @@ myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, p
 Assemble the data
 
 ```{r}
-OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D, Myers = myers_alt$D)
-colorkey=cbPalette
-names(colorkey) = names(OPT) 
+OPT = data.frame(opt_gp$D, opt_true$D, opt_estimated$D, opt_alt$D, opt_par_bayes$D, myers_alt$D)
+
+names(OPT) = names(colorkey)[1:6]
 ```
 
 
@@ -640,57 +668,6 @@ ggplot(dt) +
 ```
 
 
-```{r}
-model = "MLE"
-ggplot(subset(dt, method == model)) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) +
-  ylim(0, 9)
-ggsave(paste(model, "_sim.pdf", sep=""), width=6, height=4)
-
-```
-
-
-```{r Figure3a}
-dt$reps <- as.integer(dt$reps) 
-
-require(animation)
-ani.options(loop=TRUE)
-saveMovie({    
-    for (i in seq(1, OptTime, by=2)) {
-      print(
-        ggplot(subset(dt, method %in% c("True", "Ricker") & reps < 5 & time <= i), 
-               aes(time, fishstock, group=interaction(reps,method), color = method), alpha=.9) + 
-          geom_line() + xlim(0, OptTime)
-        )
-    }
-}, interval = 0.1, movie.name = "wrong-model.gif", ani.width = 600, ani.height = 600)
-
-
-
-
-
-require(MASS)
-s <- length(gp_dat$Cf_posterior)
-
-# Samples from the posterior of GPs
-draws <- sapply(1:s, function(i)
-  mvrnorm(1, gp_dat$Ef_posterior[,i], gp_dat$Cf_posterior[[i]]))
-draws <- melt(data.frame(x=x_grid, draws), id="x")
-
-
-## Samples from the expected GP
-gp_draws <- mvrnorm(6, gp_dat$E_Ef, gp_dat$E_Cf)
-gp_draws <- melt(data.frame(x=x_grid, t(gp_draws)), id="x")
-
-ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-  geom_line(aes(x,y,ymin=ymin,ymax=ymax)) +
-  # geom_line(data=gp_draws, aes(x=x, y=value, col=variable))  +  
-  geom_line(data=draws, aes(x=x, y=value, index=variable), alpha=.1)
-  
-
-
-```
 
 
 ```{r profits}
@@ -700,5 +677,5 @@ Profit[, mean(V1), by="method"]
 
 ```{r totalprofits}
 ggplot(Profit, aes(V1)) + geom_histogram() + 
-  facet_wrap(~method, scales = "free_y") + guides(legend.position = "none")
+  facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
