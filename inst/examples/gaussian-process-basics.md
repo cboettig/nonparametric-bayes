@@ -4,12 +4,14 @@
 
 ```r
 opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA)
+    comment = NA, dev = "CairoPDF", fig.width = 6, fig.height = 4)
 library(ggplot2)  # plotting
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size = 10))
-theme_update(panel.background = element_rect(fill = "transparent", 
-    colour = NA), plot.background = element_rect(fill = "transparent", colour = NA))
+theme_update(panel.background = element_rect(fill = "transparent", colour = NA), 
+    plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", 
+    "#D55E00", "#CC79A7")
 ```
 
 
@@ -104,7 +106,7 @@ fig2a <- ggplot(dat,aes(x=x,y=value)) +
 fig2a
 ```
 
-![plot of chunk unnamed-chunk-8](http://farm9.staticflickr.com/8118/8699031943_8f8cd632d7_o.png) 
+![plot of chunk fig2a](http://farm8.staticflickr.com/7283/8738379037_e1314a3c34_o.jpg) 
 
 
 ### Posterior distribution given the data
@@ -153,6 +155,7 @@ values <- mvrnorm(3, Ef, Cf)
 and plot our solution (mean, 2 standard deviations, and the ranom samples.)
 
 
+
 ```r
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
@@ -169,7 +172,20 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
 fig2b
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm9.staticflickr.com/8271/8700154506_499e5cac25_o.png) 
+![plot of chunk fig2b](http://farm8.staticflickr.com/7288/8738379253_b298f9e11a_o.jpg) 
+
+
+
+
+
+
+```r
+ggplot(data=obs,aes(x=x,y=y)) +
+  geom_point()   #OBSERVED DATA
+```
+
+![plot of chunk fig2_data](http://farm8.staticflickr.com/7281/8739499454_0b63134241_o.jpg) 
+
 
 
 Additive noise
@@ -214,7 +230,7 @@ fig2c <- ggplot(dat,aes(x=x,y=value)) +
 fig2c
 ```
 
-![plot of chunk unnamed-chunk-15](http://farm9.staticflickr.com/8551/8700154678_7120d75302_o.png) 
+![plot of chunk fig2c](http://farm8.staticflickr.com/7284/8739499586_dfe825b0e4_o.jpg) 
 
 
 Note that unlike the previous case, the posterior no longer collapses completely around the neighborhood of the test points.  
@@ -342,14 +358,14 @@ df <- melt(postdist, id="index")
 ggplot(df) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-21](http://farm9.staticflickr.com/8395/8699032953_76e91621c7_o.png) 
+![plot of chunk gp_mcmc](http://farm8.staticflickr.com/7285/8738380125_14bb7a3296_o.jpg) 
 
 ```r
 
 ggplot(df) + geom_line(aes(index, log(value))) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-21](http://farm9.staticflickr.com/8265/8699033067_631d27e6f7_o.png) 
+![plot of chunk gp_mcmc](http://farm8.staticflickr.com/7285/8739500886_70b018f8ab_o.jpg) 
 
 
 
@@ -376,7 +392,7 @@ ggplot(df, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk unnamed-chunk-22](http://farm9.staticflickr.com/8405/8700155554_67aa26e564_o.png) 
+![plot of chunk gp_posteriors](http://farm8.staticflickr.com/7281/8738381585_dc0bd82493_o.jpg) 
 
 
 

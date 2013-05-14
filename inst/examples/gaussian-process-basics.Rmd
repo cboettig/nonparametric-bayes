@@ -2,12 +2,14 @@
 
 
 ```{r plotting-options}
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA, dev="CairoPDF", fig.width=6, fig.height=4)
 library(ggplot2) # plotting 
 opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=10))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
              plot.background = element_rect(fill = "transparent", colour = NA))
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
 
@@ -67,7 +69,7 @@ head(dat)
 
 Plot the result
 
-```{r}
+```{r fig2a}
 fig2a <- ggplot(dat,aes(x=x,y=value)) +
   geom_rect(xmin=-Inf, xmax=Inf, ymin=-2, ymax=2, fill="grey80") +
   geom_line(aes(group=variable)) +  
@@ -115,7 +117,8 @@ values <- mvrnorm(3, Ef, Cf)
 
 and plot our solution (mean, 2 standard deviations, and the ranom samples.)
 
-```{r}
+
+```{r fig2b}
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
 
@@ -130,6 +133,15 @@ fig2b <- ggplot(dat,aes(x=x,y=value)) +
   xlab("input, x")
 fig2b
 ```
+
+
+
+
+```{r fig2_data}
+ggplot(data=obs,aes(x=x,y=y)) +
+  geom_point()   #OBSERVED DATA
+```
+
 
 Additive noise
 --------------
@@ -152,7 +164,7 @@ values <- mvrnorm(3, Ef, Cf)
 
 and plot 
 
-```{r}
+```{r fig2c}
 dat <- data.frame(x=x_predict, t(values))
 dat <- melt(dat, id="x")
 Ey <- data.frame(x=x_predict, y=(Ef), ymin=(Ef-2*sqrt(diag(Cf))), ymax=(Ef+2*sqrt(diag(Cf))))
@@ -252,7 +264,7 @@ out$accept
 ```
 
 
-```{r}
+```{r gp_mcmc}
 postdist <- cbind(index=1:n, as.data.frame(exp(out$batch)))
 names(postdist) <- c("index", names(pars))
 df <- melt(postdist, id="index")
@@ -262,7 +274,7 @@ ggplot(df) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free",
 ggplot(df) + geom_line(aes(index, log(value))) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```{r}
+```{r gp_posteriors}
 
 d.p <- c(5, 5)
 s2.p <- c(5, 5)  
