@@ -91,7 +91,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm8.staticflickr.com/7284/8738394039_d6bc6c26e7_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7281/8740320996_2d41b19e10_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7285/8739520826_c006f61127_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7287/8738400333_046ea5f20e_o.png) 
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7283/8740325618_c504c358b3_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7288/8740326228_34cb7aeabf_o.png) 
 
 
 
@@ -278,7 +278,7 @@ true_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = 
 ggplot(true_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7282/8739522788_a0e30b13dc_o.png) 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7293/8740327858_e5a3118865_o.png) 
 
 
 
@@ -307,7 +307,7 @@ ggplot(true_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7283/8738402353_56410c7176_o.png) 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7286/8740328362_928a2ca2a5_o.png) 
 
 
 
@@ -440,8 +440,6 @@ time_jags <- system.time(
 )         
 ```
 
-![plot of chunk unnamed-chunk-14](http://farm8.staticflickr.com/7287/8739536180_9bc3a48747_o.png) 
-
 ```
 Compiling model graph
    Resolving undeclared variables
@@ -473,7 +471,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7284/8738416179_55648ebce0_o.png) 
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7289/8739220439_fa259a0928_o.png) 
 
 
 
@@ -498,7 +496,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7286/8739536760_66f696a89a_o.png) 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7282/8739220727_fb32bc53e0_o.png) 
 
 
 
@@ -674,7 +672,7 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7288/8739538844_9471df2790_o.png) 
+![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7286/8739222117_9709cc84dd_o.png) 
 
 
 
@@ -701,7 +699,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7285/8739539128_7c71363960_o.png) 
+![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7293/8739222269_f0269dcd8d_o.png) 
 
 
 
@@ -762,7 +760,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7284/8738418931_aa81d9dddb_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7282/8740340782_ed6a18c518_o.png) 
 
 
 ##
@@ -794,7 +792,7 @@ ggplot(df) + geom_point(aes(time, stock)) +
     scale_colour_manual(values=colorkey) 
 ```
 
-![plot of chunk step_ahead](http://farm8.staticflickr.com/7282/8739539640_190d554b90_o.png) 
+![plot of chunk step_ahead](http://farm8.staticflickr.com/7293/8740340938_aedd52e68b_o.png) 
 
 
 
@@ -888,7 +886,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7287/8738434727_0b06285637_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7288/8740433288_1b7c078ab7_o.png) 
 
 
 
@@ -920,7 +918,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm8.staticflickr.com/7285/8738435679_ab1e33daaf_o.png) 
+![plot of chunk Figure3](http://farm8.staticflickr.com/7283/8739317285_e7130ce804_o.png) 
 
 
 
@@ -934,7 +932,7 @@ Profit[, mean(V1), by="method"]
 
 ```
              method     V1
-1:               GP 23.417
+1:               GP 24.407
 2:             True 24.671
 3:              MLE  7.432
 4:           Ricker  4.163
@@ -949,5 +947,5 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7282/8739556108_56944a3ff3_o.png) 
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7293/8740434912_7239c50c7f_o.png) 
 

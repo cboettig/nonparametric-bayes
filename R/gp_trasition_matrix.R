@@ -9,10 +9,8 @@
 #' @export
 gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){  
   if(is.null(h_grid))
-    h_grid <- x_grid
-  
+    h_grid <- x_grid  
   if(is.matrix(Ef)){ # loop over posteriors
-    
     n_samples <- dim(Ef)[2]
     loop_over_h <-function(h){
       # Average across matrices in list, and then normalize
@@ -23,11 +21,8 @@ gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){
       F_s <- rownorm(F_s)
     }
     out <- lapply(h_grid, loop_over_h)  
-
   } else { 
-    
     out <- lapply(h_grid, gp_calc_F, Ef, V, x_grid)
-  
   }
   out
 }
@@ -35,8 +30,6 @@ gp_transition_matrix <- function(Ef, V, x_grid, h_grid=NULL){
 
 
 gp_calc_F <- function(h, Ef, V, x_grid){
-  
-  
   j <- which.min(abs(x_grid - h))
   indices <- 1:length(Ef)
   shift <- pmax(indices-j,1)
@@ -48,11 +41,15 @@ gp_calc_F <- function(h, Ef, V, x_grid){
       out[1] <- 1
       out
     } else {
-      out <- dnorm(x_grid, mu[i], V[i])
+      out <- dnorm(x_grid, mu[i], sqrt(V[i]))
     }
   }))
   F_ <- rownorm(F_)
 }
+
+
+
+
 
 #' calculate transition matrix at each harvest level based on parameterized function
 #' 
