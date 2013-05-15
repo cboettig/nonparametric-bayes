@@ -4,7 +4,7 @@ One-step ahead predictor plots
 
 ```{r plotting-opts}
 opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA,
-               fig.width=6, fig.height=4)
+               fig.width=7, fig.height=4)
 
 library(knitcitations)
 
@@ -31,6 +31,7 @@ step_ahead <- function(x, f, p){
   y
 }
 
+
 df <- melt(data.frame(time = 1:length(x), stock = x, 
                 GP = gp_f_at_obs$E_Ef,
                 True = step_ahead(x,f,p),  
@@ -43,5 +44,153 @@ df <- melt(data.frame(time = 1:length(x), stock = x,
 ggplot(df) + geom_point(aes(time, stock)) + 
   geom_line(aes(time, value, col=variable)) +
     scale_colour_manual(values=colorkey) 
-
 ```
+
+
+
+
+
+
+```{r}
+gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p[2] * (1 - x / p[1] )) )
+  })
+}
+
+
+
+require(MASS)
+df_post <- melt(lapply(sample(100), 
+  function(i){
+    data.frame(time = 1:length(x), stock = x, 
+                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Parametric.Bayes = step_ahead(x, allen_f, pardist[i,]), 
+                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
+                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
+  }), id=c("time", "stock"))
+
+
+
+df <- df_post
+#df <- subset(df_post, variable %in% c("GP"))
+#df <- subset(df_post, variable %in% c("Parametric.Bayes"))
+#df <- subset(df_post, variable %in% c("Ricker", "Parametric.Bayes", "Myers"))
+
+fig1 <- ggplot(df) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+#  geom_point(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1, pch="+") + 
+  facet_wrap(~variable) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+fig1
+```
+
+
+
+
+
+```{r}
+Tobs <- 8
+x <- numeric(Tobs)
+x[1] = 5.5
+for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+y <- x
+x <- numeric(Tobs)
+x[1] = 4.5
+for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+x <- c(y,x)
+```
+
+
+
+```{r}
+gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p[2] * (1 - x / p[1] )) )
+  })
+}
+
+
+
+require(MASS)
+df_post <- melt(lapply(sample(100), 
+  function(i){
+    data.frame(time = 1:length(x), stock = x, 
+                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Parametric.Bayes = step_ahead(x, allen_f, pardist[i,]), 
+                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
+                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
+  }), id=c("time", "stock"))
+
+
+
+df <- df_post
+#df <- subset(df_post, variable %in% c("GP"))
+#df <- subset(df_post, variable %in% c("Parametric.Bayes"))
+#df <- subset(df_post, variable %in% c("Ricker", "Parametric.Bayes", "Myers"))
+
+fig1 <- ggplot(df) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+#  geom_point(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1, pch="+") + 
+  facet_wrap(~variable) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+fig1
+```
+
+
+```{r}
+i <- 15
+Tobs <- 5
+h_i <- 1  
+
+df <- data.frame(
+  x = x_grid,  
+  GP = matrices_gp[[h_i]][i,], 
+  True = matrices_true[[h_i]][i,], 
+  MLE = matrices_estimated[[h_i]][i,], 
+  Parametric.Bayes = matrices_par_bayes[[h_i]][i,], 
+  Ricker = matrices_alt[[h_i]][i,],
+  Myers = matrices_myers[[h_i]][i,])
+
+df2 <- data.frame(
+  x = x_grid,
+  GP = (matrices_gp[[h_i]] %^% Tobs)[i,], 
+  True = (matrices_true[[h_i]] %^% Tobs)[i,], 
+  MLE = (matrices_estimated[[h_i]] %^% Tobs)[i,],
+  Parametric.Bayes = (matrices_par_bayes[[h_i]] %^% Tobs)[i,], 
+  Ricker = (matrices_alt[[h_i]] %^% Tobs)[i,], 
+  Myers = (matrices_myers[[h_i]] %^% Tobs)[i,])
+
+T2 <- 2 * Tobs
+
+df4 <- data.frame(
+  x = x_grid,
+  GP = (matrices_gp[[h_i]] %^% T2)[i,], 
+  True = (matrices_true[[h_i]] %^% T2)[i,], 
+  MLE = (matrices_estimated[[h_i]] %^% T2)[i,],
+  Parametric.Bayes = (matrices_par_bayes[[h_i]] %^% T2)[i,], 
+  Ricker = (matrices_alt[[h_i]] %^% T2)[i,], 
+  Myers = (matrices_myers[[h_i]] %^% T2)[i,])
+
+
+forecasts <- melt(list(T_start = df, T_mid = df2, T_end = df4), id="x")
+
+
+ggplot(forecasts) + geom_line(aes(x, value, group=interaction(variable, L1), col=variable, lty=L1)) +
+  facet_wrap(~ variable, scale="free_y", ncol=2) + 
+  scale_colour_manual(values=colorkey) 
+```
+
+
