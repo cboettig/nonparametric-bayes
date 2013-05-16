@@ -100,6 +100,15 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
 ```
 
 
+alternately, try the plot without facets
+
+```{r}
+ggplot(df_post) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+```
+
+
 ## Performance on data outside of observations
 
 Of course it is hardly suprising that all models do reasonably well on the data on which they were trained.  A crux of the problem is the model performance on data outside the observed range.  (Though we might also wish to repeat the above plot on data in the observed range but a different sequence from the observed data).  
@@ -108,6 +117,7 @@ First we generate some data from the underlying model coming from below the tipp
 
 
 ```{r}
+Tobs <- 8
 y <- numeric(Tobs)
 y[1] = 4.5
 for(t in 1:(Tobs-1))
@@ -117,21 +127,13 @@ for(t in 1:(Tobs-1))
 Proceed as before on this data: 
 
 ```{r}
-df_post <- step_ahead_predictors(y)
+crash_data <- step_ahead_posteriors(y)
 
-ggplot(df_post) + geom_point(aes(time, stock)) + 
+ggplot(crash_data) + geom_point(aes(time, stock)) + 
   geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
   facet_wrap(~variable) + 
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 
-```
-
-alternately, try the plot without facets
-
-```{r}
-ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
 
@@ -144,6 +146,7 @@ Another way to visualize this is to look directly at the distribution predicted 
 
 
 ```{r}
+library(expm)
 get_forecasts <- function(i, Tobs, h_i){
 
 df <- data.frame(

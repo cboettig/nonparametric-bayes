@@ -60,7 +60,7 @@ ggplot(df) + geom_point(aes(time, stock)) +
     scale_colour_manual(values=colorkey) 
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm8.staticflickr.com/7283/8741083767_cb39364f39_o.png) 
+![plot of chunk unnamed-chunk-3](http://farm8.staticflickr.com/7294/8743766846_a5d6b20f15_o.png) 
 
 
 
@@ -111,7 +111,20 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm8.staticflickr.com/7291/8741085295_a3b39b4468_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm8.staticflickr.com/7290/8742650211_92d087672b_o.png) 
+
+
+
+alternately, try the plot without facets
+
+
+```r
+ggplot(df_post) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+```
+
+![plot of chunk unnamed-chunk-6](http://farm8.staticflickr.com/7284/8743767710_17a0bc6428_o.png) 
 
 
 
@@ -124,6 +137,7 @@ First we generate some data from the underlying model coming from below the tipp
 
 
 ```r
+Tobs <- 8
 y <- numeric(Tobs)
 y[1] = 4.5
 for(t in 1:(Tobs-1))
@@ -135,34 +149,15 @@ Proceed as before on this data:
 
 
 ```r
-df_post <- step_ahead_predictors(y)
-```
+crash_data <- step_ahead_posteriors(y)
 
-```
-Error: could not find function "step_ahead_predictors"
-```
-
-```r
-
-ggplot(df_post) + geom_point(aes(time, stock)) + 
+ggplot(crash_data) + geom_point(aes(time, stock)) + 
   geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
   facet_wrap(~variable) + 
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm8.staticflickr.com/7286/8742201658_0d93ca01d4_o.png) 
-
-
-alternately, try the plot without facets
-
-
-```r
-ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
-```
-
-![plot of chunk unnamed-chunk-8](http://farm8.staticflickr.com/7284/8742201996_648946d8eb_o.png) 
+![plot of chunk unnamed-chunk-8](http://farm8.staticflickr.com/7282/8742650625_efd126ef62_o.png) 
 
 
 
@@ -176,6 +171,7 @@ Another way to visualize this is to look directly at the distribution predicted 
 
 
 ```r
+library(expm)
 get_forecasts <- function(i, Tobs, h_i){
 
 df <- data.frame(
@@ -228,7 +224,7 @@ ggplot(forecasts) +
   scale_colour_manual(values=colorkey) 
 ```
 
-![plot of chunk unnamed-chunk-10](http://farm8.staticflickr.com/7287/8742202218_4efb297402_o.png) 
+![plot of chunk unnamed-chunk-10](http://farm8.staticflickr.com/7283/8743768066_ae4cb1a63d_o.png) 
 
 
 
@@ -253,7 +249,7 @@ ggplot(forecasts) +
   scale_colour_manual(values=colorkey) 
 ```
 
-![plot of chunk unnamed-chunk-12](http://farm8.staticflickr.com/7285/8742202444_63e6a633d0_o.png) 
+![plot of chunk unnamed-chunk-12](http://farm8.staticflickr.com/7289/8743768174_106af587ce_o.png) 
 
 
 
