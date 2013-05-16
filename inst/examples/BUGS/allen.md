@@ -12,8 +12,8 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
-opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
-    comment = NA, fig.width = 6, fig.height = 4)
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = TRUE, 
+    comment = NA, fig.width = 6, fig.height = 4, cache.path = "allencache/")
 
 library(knitcitations)
 
@@ -91,7 +91,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm8.staticflickr.com/7281/8740320996_2d41b19e10_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7281/8741877243_ec8fa5ccde_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7283/8740325618_c504c358b3_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7288/8740326228_34cb7aeabf_o.png) 
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7284/8741955871_69b60905a8_o.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7288/8741955937_2f71f7218b_o.png) 
 
 
 
@@ -278,7 +278,7 @@ true_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id = 
 ggplot(true_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7293/8740327858_e5a3118865_o.png) 
+![plot of chunk parametric_bayes_traces](http://farm8.staticflickr.com/7289/8741957021_2f1b191f59_o.png) 
 
 
 
@@ -307,7 +307,7 @@ ggplot(true_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7286/8740328362_928a2ca2a5_o.png) 
+![plot of chunk parametric_bayes_posteriors](http://farm8.staticflickr.com/7287/8743073264_a9b4dbc7cc_o.png) 
 
 
 
@@ -471,7 +471,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7289/8739220439_fa259a0928_o.png) 
+![plot of chunk ricker_traces](http://farm8.staticflickr.com/7293/8741968443_b835d10c11_o.png) 
 
 
 
@@ -496,7 +496,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7282/8739220727_fb32bc53e0_o.png) 
+![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7291/8743084974_d060d90516_o.png) 
 
 
 
@@ -672,7 +672,7 @@ ggplot(par_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7286/8739222117_9709cc84dd_o.png) 
+![plot of chunk unnamed-chunk-22](http://farm8.staticflickr.com/7286/8741970601_79b93aa877_o.png) 
 
 
 
@@ -699,7 +699,7 @@ ggplot(par_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7293/8739222269_f0269dcd8d_o.png) 
+![plot of chunk unnamed-chunk-24](http://farm8.staticflickr.com/7283/8743087102_c966920efe_o.png) 
 
 
 
@@ -760,39 +760,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7282/8740340782_ed6a18c518_o.png) 
-
-
-##
-
-
-```r
-gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
-
-
-step_ahead <- function(x, f, p){
-  h = 0
-  x_predict <- sapply(x, f, h, p)
-  n <- length(x_predict) - 1
-  y <- c(x[1], x_predict[1:n])
-  y
-}
-
-df <- melt(data.frame(time = 1:length(x), stock = x, 
-                GP = gp_f_at_obs$E_Ef,
-                True = step_ahead(x,f,p),  
-                MLE = step_ahead(x,f,est$p), 
-                Parametric.Bayes = step_ahead(x, f, bayes_pars), 
-                Ricker = step_ahead(x,alt$f, ricker_bayes_pars), 
-                Myers = step_ahead(x, Myer_harvest, myers_bayes_pars)
-                 ), id=c("time", "stock"))
-
-ggplot(df) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable)) +
-    scale_colour_manual(values=colorkey) 
-```
-
-![plot of chunk step_ahead](http://farm8.staticflickr.com/7293/8740340938_aedd52e68b_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7286/8743087306_8612856dcf_o.png) 
 
 
 
@@ -866,9 +834,9 @@ Assemble the data
 
 
 ```r
-OPT = data.frame(opt_gp$D, opt_true$D, opt_estimated$D, opt_alt$D, opt_par_bayes$D, myers_alt$D)
-
-names(OPT) = names(colorkey)[1:6]
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_alt$D, Parametric.Bayes = opt_par_bayes$D, Myers = myers_alt$D)
+colorkey=cbPalette
+names(colorkey) = names(OPT) 
 ```
 
 
@@ -886,7 +854,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7288/8740433288_1b7c078ab7_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7290/8743180438_130a44db68_o.png) 
 
 
 
@@ -918,7 +886,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm8.staticflickr.com/7283/8739317285_e7130ce804_o.png) 
+![plot of chunk Figure3](http://farm8.staticflickr.com/7281/8742065207_042d1bbe85_o.png) 
 
 
 
@@ -947,5 +915,5 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7293/8740434912_7239c50c7f_o.png) 
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7291/8743181344_e8a653bb3e_o.png) 
 
