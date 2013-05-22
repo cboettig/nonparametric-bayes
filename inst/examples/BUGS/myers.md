@@ -190,8 +190,7 @@ gives the parametric Bayesian approach the best chance at succeeding.
 
 
 ```r
-# a bit unfair to start with the correct values, but anyhow...
-init_p = p
+init_p = c(1, 10, 2)
 names(init_p) = c("r0", "K", "theta")
 ```
 
@@ -292,7 +291,7 @@ allen_posteriors <- melt(cbind(index = 1:dim(jags_matrix)[1], jags_matrix), id =
 ggplot(allen_posteriors) + geom_line(aes(index, value)) + facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm8.staticflickr.com/7313/8772645113_1b1858446e_o.png) 
+![plot of chunk allen-traces](http://farm9.staticflickr.com/8402/8773469333_4c942a23d4_o.png) 
 
 
 
@@ -309,7 +308,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3707/8779208996_9caab81725_o.png) 
+![plot of chunk allen-posteriors](http://farm3.staticflickr.com/2860/8780034812_544366df0c_o.png) 
 
 
 
@@ -422,7 +421,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm3.staticflickr.com/2873/8779218746_08f33c3e5b_o.png) 
+![plot of chunk ricker_traces](http://farm6.staticflickr.com/5443/8779834416_edf36f90c6_o.png) 
 
 
 
@@ -438,7 +437,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm4.staticflickr.com/3675/8779220516_3f503bd4ed_o.png) 
+![plot of chunk ricker_posteriors](http://farm3.staticflickr.com/2876/8773471105_6c24d9964f_o.png) 
 
 
 
@@ -515,7 +514,7 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 
 
 ```r
-init_p = c(1, 1, 1)
+init_p = c(p[1], p[3], p[2])
 names(init_p) = c("r0", "theta", "K")
 jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
 jags.inits <- function(){
@@ -536,13 +535,6 @@ Compiling model graph
    Graph Size: 326
 
 Initializing model
-
-
-Deleting model
-```
-
-```
-Error: Error in node x[39] Failure to calculate log density
 ```
 
 
@@ -556,7 +548,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm8.staticflickr.com/7445/8779222440_1c36f295c6_o.png) 
+![plot of chunk myers-traces](http://farm4.staticflickr.com/3823/8773276181_e93de0b792_o.png) 
 
 
 
@@ -574,20 +566,13 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm6.staticflickr.com/5446/8779224062_05746c11d7_o.png) 
+![plot of chunk myers-posteriors](http://farm3.staticflickr.com/2868/8779842238_1ec64ddca9_o.png) 
 
 
 
 
 ```r
 myers_pardist <- as.matrix(jags_matrix[2:6])
-```
-
-```
-Error: undefined columns selected
-```
-
-```r
 myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
 myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
 myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
@@ -611,6 +596,10 @@ models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means,
 
 models <- melt(models, id="x")
 names(models) <- c("x", "method", "value")
+
+model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
+colorkey=cbPalette
+names(colorkey) = model_names 
 ```
 
 
@@ -625,8 +614,63 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm3.staticflickr.com/2822/8772663395_cff4ed50cc_o.png) 
+![plot of chunk Figure1](http://farm6.staticflickr.com/5448/8788169454_e7e6c4e74b_o.png) 
 
+
+## Step-ahead predictors
+
+
+## Posterior predictive curves
+
+This shows only the mean predictions.  For the Bayesian cases, we can instead loop over the posteriors of the parameters (or samples from the GP posterior) to get the distribution of such curves in each case.  
+
+We will need a vector version (`pmin` in place of `min`) of the parametric growth functions that can operate on the posteriors, (with appropriate ordering of parameters as they are in the posterior):
+
+
+```r
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p[2] * (1 - x / p[1] )) )
+  })
+}
+allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
+myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
+```
+
+
+
+```r
+require(MASS)
+step_ahead <- function(x, f, p){
+  h = 0
+  x_predict <- sapply(x, f, h, p)
+  n <- length(x_predict) - 1
+  y <- c(x[1], x_predict[1:n])
+  y
+}
+step_ahead_posteriors <- function(x){
+gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+df_post <- melt(lapply(sample(100), 
+  function(i){
+    data.frame(time = 1:length(x), stock = x, 
+                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Allen = step_ahead(x, allen_f, pardist[i,]), 
+                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
+                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
+  }), id=c("time", "stock"))
+}
+
+df_post <- step_ahead_posteriors(x)
+
+ggplot(df_post) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+```
+
+![plot of chunk Figureb](http://farm8.staticflickr.com/7334/8788172910_61a7f71642_o.png) 
 
 
 
@@ -719,7 +763,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm9.staticflickr.com/8119/8779384440_33f33207b2_o.png) 
+![plot of chunk Figure2](http://farm6.staticflickr.com/5468/8780539694_c36d288af0_o.png) 
 
 
 
@@ -751,7 +795,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm8.staticflickr.com/7334/8779389508_7429c8a9dd_o.png) 
+![plot of chunk Figure3](http://farm4.staticflickr.com/3743/8773978095_6f6afd7215_o.png) 
 
 
 
@@ -766,9 +810,9 @@ Profit[, mean(V1), by="method"]
 1:     GP 31.06
 2:   True 31.14
 3:    MLE 14.94
-4: Ricker 25.58
+4: Ricker 26.16
 5:  Allen  5.00
-6:  Myers  5.00
+6:  Myers 28.30
 ```
 
 
@@ -778,5 +822,5 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7419/8772826363_db47abe5fe_o.png) 
+![plot of chunk totalprofits](http://farm6.staticflickr.com/5463/8773978831_196046eb16_o.png) 
 
