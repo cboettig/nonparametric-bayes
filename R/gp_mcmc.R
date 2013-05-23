@@ -9,7 +9,7 @@
 #' the squared exponential (also called radial basis or Gaussian, 
 #' though it is not this that gives Gaussian process it's name; 
 #' any covariance function would do) as the covariance function, 
-#' $\operatorname{cov}(X_i, X_j) = \exp\left(-\frac{(X_i - X_j)^2}{2 \ell ^ 2}\right)$
+#' \deqn{\operatorname{cov}(X_i, X_j) = \exp\left(-\frac{(X_i - X_j)^2}{2 \ell ^ 2}\right)}{}
 #' @return the MCMC output, as constructed by \link{metrop} from the mcmc package.
 #' @export
 #' @import mcmc  
