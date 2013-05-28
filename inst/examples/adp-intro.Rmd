@@ -115,7 +115,7 @@ omega_n <- rlnorm(T, 0, sigma)
 
   - Solve:
 
-$$V_t(S_t) = \max_{x_t \in \chi_t} \left(C(S_t, x_t) + \gamma \sum_{s^{\prime} \in mathcal{S}} \mathbb{P}(s^{\prime} | S_t^n, x_t) V_{t+1}^{n-1} s^{\prime} \right)$$
+$$V_t(S_t) = \max_{x_t \in \chi_t} \left(C(S_t, x_t) + \gamma \sum_{s^{\prime} \in \mathcal{S}} \mathbb{P}(s^{\prime} | S_t^n, x_t) V_{t+1}^{n-1} s^{\prime} \right)$$
 
 
 That is, choose action $x_t$ that maximizes the value of the next step. 
@@ -227,49 +227,59 @@ We have time, iterations, and state/action space to keep track over.  eek.
 
 
 ```{r}
-N <- 5 # iterations
-M <- 10 # gridsize 
+N <- 50000 # iterations
+M <- 20 # gridsize 
 Tmax <- 5 # Time horizon
 
 gamma <- 0.95 # Discount
 # f 
 # p 
 
+sigma_g <- 0.5 # larger variation in random draws helps
 chi <- seq(0, 1, length.out = M)
 S <- seq(0, 1, length.out = M)
 
 sdp_matrix <- determine_SDP_matrix(f, p, x_grid=S, h_grid=chi, sigma_g)
 
-V <- matrix(rep(chi, Tmax), nrow=M) # matrix(0, M, Tmax)
-X <- matrix(0, M, Tmax)
+V <- matrix(0, M, Tmax) # matrix(rep(chi, Tmax), nrow=M) # 
+V[,1] <- chi   # fails to explore if it doesn't have at least some non-zero values
+
 C <- function(S, X) pmin(S, X)
 S_0 <- 0.5 
-
+alpha <- 1 # learning rate
 
 
 for(n in 1:N){
   
   omega_n <- rlnorm(Tmax, 0, sigma_g)
-  S_current  <- S_0
-  
-  for(t in 1:(Tmax-1)){
-  
+  S_current <- S_0 #runif(1,0,1) # explores faster when this is random
+
+  for(t in 1:Tmax){
     # index of the state we're considering
     s <- which.min(abs(S-S_current)) 
+    
     # Find the action maximizing the value
     values <- sapply(1:length(chi), function(x)
       C(S[s], chi[x]) + gamma * sdp_matrix[[x]][s,] %*% V[,t])
     hat <-  c(x_nt = which.max(values), v_nt = max(values))
 
-    # Update value V 
-    V[hat["x_nt"], t] <- hat["v_nt"] 
-        
+    # Update value V as mixture of new value and previous value
+    V[hat["x_nt"], t] <- (1 - alpha) * V[hat["x_nt"],t] + alpha * hat["v_nt"] 
+    
     # Advance the state in time along random path  
-    S_current <- omega_n[t] * f(S_current, chi[x_nt], p)
+    S_current <- omega_n[t] * f(S_current, chi[hat["x_nt"]], p)
+
   }
-  
 }
 ```
+
+for comparison: the SDP solution
+
+```{r}
+opt <- find_dp_optim(sdp_matrix, S, chi, 70, 0.5, C, 1-gamma, reward=0)
+opt$V
+```
+
 
 ### Problems arising from the discretization
 
