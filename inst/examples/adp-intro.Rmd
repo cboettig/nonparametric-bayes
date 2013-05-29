@@ -227,7 +227,7 @@ We have time, iterations, and state/action space to keep track over.  eek.
 
 
 ```{r}
-N <- 50000 # iterations
+N <- 5000 # iterations
 M <- 20 # gridsize 
 Tmax <- 5 # Time horizon
 
@@ -241,7 +241,9 @@ S <- seq(0, 1, length.out = M)
 
 sdp_matrix <- determine_SDP_matrix(f, p, x_grid=S, h_grid=chi, sigma_g)
 
-V <- matrix(0, M, Tmax) # matrix(rep(chi, Tmax), nrow=M) # 
+V <- matrix(1, M, Tmax)  # A* strategy
+# Fails to explore at matrix(0, M, Tmax)
+# consider: # V <- matrix(rep(chi, Tmax), nrow=M) # 
 # V[,1] <- chi   # fails to explore if it doesn't have at least some non-zero values
 
 C <- function(S, X) pmin(S, X)
