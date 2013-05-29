@@ -4,12 +4,12 @@ Plotting and knitr options, (can generally be ignored)
 
 ```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 setwd("~/Documents/code/nonparametric-bayes/inst/examples/BUGS/")
-library(knitcitations)
+#library(knitcitations)
 library(ggplot2) 
 library(nonparametricbayes) 
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=TRUE, comment=NA,
-               fig.width=6, fig.height=4, cache.path="myers/", verbose=TRUE)
-opts_knit$set(upload.fun = socialR::flickr.url)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=TRUE, comment=NA, fig.path="figure/parametric-"
+               fig.width=6, fig.height=4, cache.path="parametric-vs-nonparametric/", verbose=TRUE)
+#opts_knit$set(upload.fun = socialR::flickr.url)
 theme_set(theme_bw(base_size=12))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
              plot.background = element_rect(fill = "transparent", colour = NA))
@@ -31,7 +31,7 @@ posterior.mode <- function(x) {
 
 ### Model and parameters
 
-Uses the model derived in `r citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
+Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
 
 ```{r stateeq}
@@ -485,8 +485,7 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 ```{r myers-mcmc, dependson="myers-model"}
 jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
 jags.inits <- function(){
-  list
-  ("logr0"=log(1 * rlnorm(1,0,.5)), 
+  list("logr0"=log(rlnorm(1,0,.5)), 
        "logK"=log(10* rlnorm(1,0,.5)),
        "logtheta" = log(5 * rlnorm(1,0,.5)),  
        "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
