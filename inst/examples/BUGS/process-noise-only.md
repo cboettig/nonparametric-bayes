@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm6.staticflickr.com/5334/8819322640_4ce811fa03_o.png) 
+![plot of chunk obs](figure/obs.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3754/8819322948_46e6e0a286_o.png) 
+![plot of chunk gp_traces_densities](figure/gp_traces_densities1.png) ![plot of chunk gp_traces_densities](figure/gp_traces_densities2.png) 
 
 
 
@@ -297,7 +297,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm9.staticflickr.com/8547/8808737365_fe6754101d_o.png) 
+![plot of chunk allen-traces](figure/allen-traces.png) 
 
 
 
@@ -314,7 +314,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm9.staticflickr.com/8542/8819323604_6c805b404b_o.png) 
+![plot of chunk allen-posteriors](figure/allen-posteriors.png) 
 
 
 
@@ -454,7 +454,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7435/8808738203_7a6b18fa1f_o.png) 
+![plot of chunk ricker_traces](figure/ricker_traces.png) 
 
 
 
@@ -470,7 +470,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm9.staticflickr.com/8268/8808738525_c945e9ca28_o.png) 
+![plot of chunk ricker_posteriors](figure/ricker_posteriors.png) 
 
 
 
@@ -555,15 +555,26 @@ jags.inits <- function(){
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
-myers_jags <- do.call(jags.parallel, 
+myers_jags <- do.call(jags, 
                       list(data=jags.data, inits=jags.inits, jags.params, 
                            n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
                            n.burnin=n.burnin, model.file="myers_process.bugs"))
 ```
 
 ```
-Error: one node produced an error: Error in node y[17] Failure to
-calculate log density
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 287
+
+Initializing model
+
+
+Deleting model
+```
+
+```
+Error: Error in node y[24] Failure to calculate log density
 ```
 
 ```r
@@ -596,7 +607,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm4.staticflickr.com/3776/8819324784_fe1dd4144b_o.png) 
+![plot of chunk myers-traces](figure/myers-traces.png) 
 
 
 
@@ -614,7 +625,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7414/8819325114_c0ff0d3ff2_o.png) 
+![plot of chunk myers-posteriors](figure/myers-posteriors.png) 
 
 
 
@@ -671,7 +682,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm6.staticflickr.com/5464/8808739451_ff40e1e5e4_o.png) 
+![plot of chunk Figure1](figure/Figure1.png) 
 
 
 ## Step-ahead predictors
@@ -727,7 +738,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm6.staticflickr.com/5330/8808739935_d570f64c74_o.png) 
+![plot of chunk Figureb](figure/Figureb.png) 
 
 
 
@@ -820,7 +831,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm4.staticflickr.com/3665/8808740251_8f41f537f9_o.png) 
+![plot of chunk Figure2](figure/Figure2.png) 
 
 
 
@@ -852,7 +863,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm6.staticflickr.com/5321/8808740595_ef85419c64_o.png) 
+![plot of chunk Figure3](figure/Figure3.png) 
 
 
 
@@ -879,7 +890,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7366/8819326866_62ff1f2eb1_o.png) 
+![plot of chunk totalprofits](figure/totalprofits.png) 
 
 
 

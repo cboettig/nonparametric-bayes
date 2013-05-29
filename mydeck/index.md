@@ -22,7 +22,7 @@ mode        : selfcontained # {standalone, draft}
 
 
 Solve: 
- 
+
 $$V_t(S_t) = \max_{x_t \in \chi_t} \left(C(S_t, x_t) + 
             \gamma \sum_{s^{\prime} \in \mathcal{S}} \mathbb{P}(s^{\prime} | S_t^n, x_t) V_{t+1}^{n-1} s^{\prime} \right)$$
 

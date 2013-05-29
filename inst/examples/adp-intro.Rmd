@@ -242,7 +242,7 @@ S <- seq(0, 1, length.out = M)
 sdp_matrix <- determine_SDP_matrix(f, p, x_grid=S, h_grid=chi, sigma_g)
 
 V <- matrix(0, M, Tmax) # matrix(rep(chi, Tmax), nrow=M) # 
-V[,1] <- chi   # fails to explore if it doesn't have at least some non-zero values
+# V[,1] <- chi   # fails to explore if it doesn't have at least some non-zero values
 
 C <- function(S, X) pmin(S, X)
 S_0 <- 0.5 
