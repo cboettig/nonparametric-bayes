@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](figure/parametric-vs-nonparametric-obs.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7340/8893940588_a003b94bd7_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/parametric-vs-nonparametric-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](figure/parametric-vs-nonparametric-gp_traces_densities2.png) 
+![plot of chunk gp_traces_densities](figure/parametric-vs-nonparametric-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3741/8893321517_b5cc6553aa_o.png) 
 
 
 
@@ -170,7 +170,7 @@ All parametric Bayesian estimates use the following basic parameters for the JAG
 ```r
 y <- obs$x[-1] 
 N <- length(y);
-jags.data <- list("N"=N,"y"=y)
+jags.data <- list("N","y")
 n.chains <- 6
 n.iter <- 5e5
 n.burnin <- floor(10000)
@@ -282,29 +282,11 @@ allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits,
                                           jags.params, n.chains=n.chains, 
                                           n.iter=n.iter, n.thin=n.thin, 
                                           n.burnin=n.burnin, model.file="allen.bugs"))
-```
-
-```
-Error: invalid first argument
-```
-
-```r
 
 #Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
 recompile(allen_jags) # required for parallel
-```
-
-```
-Error: object 'allen_jags' not found
-```
-
-```r
 allen_jags <- do.call(autojags, list(object=allen_jags, n.update=n.update, 
                                      n.iter=n.iter, n.thin = n.thin))
-```
-
-```
-Error: object 'allen_jags' not found
 ```
 
 
@@ -316,36 +298,13 @@ R notes: this strips classes from the `mcmc.list` object (so that we have list o
 
 ```r
 tmp <- lapply(as.mcmc(allen_jags), as.matrix) # strip classes the hard way...
-```
-
-```
-Error: object 'allen_jags' not found
-```
-
-```r
 allen_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-```
-
-```
-Error: object 'tmp' not found
-```
-
-```r
 names(allen_posteriors) = c("index", "variable", "value", "chain")
-```
-
-```
-Error: object 'allen_posteriors' not found
-```
-
-```r
 ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```
-Error: object 'allen_posteriors' not found
-```
+![plot of chunk allen-traces](http://farm9.staticflickr.com/8420/8893321933_049f7b6506_o.png) 
 
 
 
@@ -355,13 +314,6 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-```
-
-```
-Error: object 'allen_posteriors' not found
-```
-
-```r
 
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -369,9 +321,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-```
-Error: object 'allen_posteriors' not found
-```
+![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3678/8893322327_e69d28edc5_o.png) 
 
 
 
@@ -383,50 +333,11 @@ Reshape the posterior parameter distribution data, transform back into original 
 # A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 # pardist <- acast(A[-4], index ~ variable, subset=.(variable != "deviance") )
 pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable, subset=.(variable!="deviance")) 
-```
-
-```
-Error: object 'allen_posteriors' not found
-```
-
-```r
 pardist[,2] = exp(pardist[,2]) # transform model parameters back first
-```
-
-```
-Error: object 'pardist' not found
-```
-
-```r
 pardist[,3] = exp(pardist[,3])
-```
-
-```
-Error: object 'pardist' not found
-```
-
-```r
 bayes_coef <- apply(pardist,2, posterior.mode) 
-```
-
-```
-Error: object 'pardist' not found
-```
-
-```r
 bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3])) # parameters formatted for f
-```
-
-```
-Error: object 'bayes_coef' not found
-```
-
-```r
 allen_means <- sapply(x_grid, f, 0, bayes_pars)
-```
-
-```
-Error: object 'bayes_pars' not found
 ```
 
 
@@ -508,28 +419,10 @@ ricker_jags <- do.call(jags.parallel,
                             jags.params, n.chains=n.chains, 
                             n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
                             model.file="ricker.bugs"))
-```
-
-```
-Error: invalid first argument
-```
-
-```r
 recompile(ricker_jags)
-```
-
-```
-Error: object 'ricker_jags' not found
-```
-
-```r
 ricker_jags <- do.call(autojags, 
                        list(object=ricker_jags, n.update=n.update, n.iter=n.iter, 
                             n.thin = n.thin))
-```
-
-```
-Error: object 'ricker_jags' not found
 ```
 
 
@@ -539,37 +432,14 @@ Error: object 'ricker_jags' not found
 
 ```r
 tmp <- lapply(as.mcmc(ricker_jags), as.matrix) # strip classes the hard way...
-```
-
-```
-Error: object 'ricker_jags' not found
-```
-
-```r
 ricker_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-```
-
-```
-Error: object 'tmp' not found
-```
-
-```r
 names(ricker_posteriors) = c("index", "variable", "value", "chain")
-```
-
-```
-Error: object 'ricker_posteriors' not found
-```
-
-```r
 
 ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```
-Error: object 'ricker_posteriors' not found
-```
+![plot of chunk ricker_traces](http://farm6.staticflickr.com/5340/8893322679_0375f1611f_o.png) 
 
 
 
@@ -578,13 +448,6 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-```
-
-```
-Error: object 'ricker_posteriors' not found
-```
-
-```r
 # plot posterior distributions
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -592,9 +455,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-```
-Error: object 'ricker_posteriors' not found
-```
+![plot of chunk ricker_posteriors](http://farm4.staticflickr.com/3827/8893942428_9ca62154c9_o.png) 
 
 
 
@@ -605,42 +466,10 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 ricker_pardist <- acast(ricker_posteriors[2:3], 
                         1:table(ricker_posteriors$variable) ~ variable, 
                         subset=.(variable!="deviance")) 
-```
-
-```
-Error: object 'ricker_posteriors' not found
-```
-
-```r
 ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
-```
-
-```
-Error: object 'ricker_pardist' not found
-```
-
-```r
 bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
-```
-
-```
-Error: object 'ricker_pardist' not found
-```
-
-```r
 ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
-```
-
-```
-Error: object 'bayes_coef' not found
-```
-
-```r
 ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
-```
-
-```
-Error: object 'ricker_bayes_pars' not found
 ```
 
 
@@ -706,9 +535,9 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 ```r
 jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
 jags.inits <- function(){
-  list("logr0" 		=        rnorm(1, 1, .5), 
-       "logK" 		= 10   * rnorm(1, 1, .2),
-       "logtheta" = 2    * rnorm(1, 1, .2),  
+  list("logr0" 		= log(rlnorm(1, 0, .5)), 
+       "logK" 		= log(10 * rlnorm(1, 1, .2)),
+       "logtheta" = log(2 * rnorm(1, 1, .2)),  
        "stdQ"			= 0.2  * rlnorm(1, 0, .1),
        "stdR"			= 1e-5 * rlnorm(1, 0, .1),
        "x" 				= y,
@@ -722,7 +551,8 @@ myers_jags <- do.call(jags.parallel,
 ```
 
 ```
-Error: invalid first argument
+Error: 2 nodes produced errors; first error: Error in node x[25] Failure
+to calculate log density
 ```
 
 ```r
@@ -757,29 +587,13 @@ Error: object 'myers_jags' not found
 
 ```r
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-```
-
-```
-Error: object 'tmp' not found
-```
-
-```r
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-```
-
-```
-Error: object 'myers_posteriors' not found
-```
-
-```r
 
 ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-```
-Error: object 'myers_posteriors' not found
-```
+![plot of chunk myers-traces](http://farm8.staticflickr.com/7361/8893942748_16c651157c_o.png) 
 
 
 
@@ -790,13 +604,6 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-```
-
-```
-Error: object 'myers_posteriors' not found
-```
-
-```r
 
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -804,9 +611,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-```
-Error: object 'myers_posteriors' not found
-```
+![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7285/8893943074_6a5c651d2f_o.png) 
 
 
 
@@ -815,66 +620,20 @@ Error: object 'myers_posteriors' not found
 myers_pardist <- acast(myers_posteriors[2:3], 
                         1:table(myers_posteriors$variable) ~ variable, 
                         subset=.(variable!="deviance")) 
-```
-
-```
-Error: object 'myers_posteriors' not found
-```
-
-```r
 myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
-```
-
-```
-Error: object 'myers_pardist' not found
-```
-
-```r
 myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
-```
-
-```
-Error: object 'myers_pardist' not found
-```
-
-```r
 myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
-```
-
-```
-Error: object 'myers_pardist' not found
-```
-
-```r
 colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
 ```
 
 ```
-Error: object 'myers_pardist' not found
+Error: length of 'dimnames' [2] not equal to array extent
 ```
 
 ```r
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
-```
-
-```
-Error: object 'myers_pardist' not found
-```
-
-```r
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
-```
-
-```
-Error: object 'bayes_coef' not found
-```
-
-```r
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
-```
-
-```
-Error: object 'myers_bayes_pars' not found
 ```
 
 
@@ -888,30 +647,9 @@ models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means,
                      MLE=est_means, Ricker=ricker_means, 
                      Allen = allen_means,
                      Myers = myers_means)
-```
-
-```
-Error: object 'ricker_means' not found
-```
-
-```r
 
 models <- melt(models, id="x")
-```
-
-```
-Error: object 'models' not found
-```
-
-```r
 names(models) <- c("x", "method", "value")
-```
-
-```
-Error: object 'models' not found
-```
-
-```r
 
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
@@ -927,19 +665,10 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
     geom_point(data=obs, aes(x,y), alpha=0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     scale_colour_manual(values=cbPalette) 
-```
-
-```
-Error: object 'models' not found
-```
-
-```r
 print(plot_gp)
 ```
 
-```
-Error: object 'plot_gp' not found
-```
+![plot of chunk Figure1](http://farm6.staticflickr.com/5337/8893944010_22599433e4_o.png) 
 
 
 ## Step-ahead predictors
@@ -989,22 +718,13 @@ df_post <- melt(lapply(sample(100),
 }
 
 df_post <- step_ahead_posteriors(x)
-```
-
-```
-Error: object 'pardist' not found
-```
-
-```r
 
 ggplot(df_post) + geom_point(aes(time, stock)) + 
   geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-```
-Error: object 'df_post' not found
-```
+![plot of chunk Figureb](http://farm6.staticflickr.com/5464/8893324851_5d85044b1d_o.png) 
 
 
 
@@ -1047,18 +767,7 @@ Determine the optimal policy based on Bayesian Allen model
 ```r
 allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
 matrices_allen <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
-```
-
-```
-Error: object 'pardist' not found
-```
-
-```r
 opt_allen <- value_iteration(matrices_allen, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_allen' not found
 ```
 
 
@@ -1071,7 +780,7 @@ matrices_ricker <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix
 ```
 
 ```
-Error: object 'ricker_pardist' not found
+Error: missing value where TRUE/FALSE needed
 ```
 
 ```r
@@ -1090,18 +799,7 @@ Bayesian Myers model
 ```r
 myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
 matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
-```
-
-```
-Error: object 'myers_pardist' not found
-```
-
-```r
 myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_myers' not found
 ```
 
 
@@ -1262,79 +960,16 @@ Error: object 'Profit' not found
 
 ```r
 df <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable) 
-```
-
-```
-Error: object 'allen_posteriors' not found
-```
-
-```r
 modes <- apply(df, 2, posterior.mode)
-```
-
-```
-Error: dim(X) must have a positive length
-```
-
-```r
 allen_deviance <- modes[['deviance']]
-```
-
-```
-Error: object 'modes' not found
-```
-
-```r
 
 df <- acast(ricker_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-```
-
-```
-Error: object 'ricker_posteriors' not found
-```
-
-```r
 modes <- apply(df, 2, posterior.mode)
-```
-
-```
-Error: dim(X) must have a positive length
-```
-
-```r
 ricker_deviance <- modes[['deviance']]
-```
-
-```
-Error: object 'modes' not found
-```
-
-```r
 
 df <- acast(myers_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-```
-
-```
-Error: object 'myers_posteriors' not found
-```
-
-```r
 modes <- apply(df, 2, posterior.mode)
-```
-
-```
-Error: dim(X) must have a positive length
-```
-
-```r
 myers_deviance <- modes[['deviance']]
-```
-
-```
-Error: object 'modes' not found
-```
-
-```r
 
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
@@ -1345,6 +980,7 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 ```
 
 ```
-Error: object 'allen_deviance' not found
+  allen  ricker   myers    true     mle 
+   0.00 -125.63 -125.63  -59.62 -471.23 
 ```
 

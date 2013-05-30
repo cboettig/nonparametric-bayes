@@ -476,9 +476,9 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 ```{r myers-mcmc, dependson="myers-model", results="hide"}
 jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
 jags.inits <- function(){
-  list("logr0" 		=        rnorm(1, 1, .5), 
-       "logK" 		= 10   * rnorm(1, 1, .2),
-       "logtheta" = 2    * rnorm(1, 1, .2),  
+  list("logr0" 		= log(rlnorm(1, 0, .5)), 
+       "logK" 		= log(10 * rlnorm(1, 1, .2)),
+       "logtheta" = log(2 * rnorm(1, 1, .2)),  
        "stdQ"			= 0.2  * rlnorm(1, 0, .1),
        "stdR"			= 1e-5 * rlnorm(1, 0, .1),
        "x" 				= y,
