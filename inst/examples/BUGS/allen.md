@@ -8,9 +8,9 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
+require(modeest)
 posterior.mode <- function(x) {
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
+  mlv(x, method="shorth")$M
 }
 ```
 
@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm9.staticflickr.com/8398/8894230030_925042491a_o.png) 
+![plot of chunk obs](figure/allen-obs.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7459/8894230628_0436d6c36c_o.png) 
+![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities2.png) 
 
 
 
@@ -185,7 +185,7 @@ We will use the same priors for process and observation noise in each model,
 
 ```r
 stdQ_prior_p <- c(0.0001, 100)
-stdR_prior_p <- c(1e-6, .1)
+stdR_prior_p <- c(1e-4, .1)
 stdQ_prior  <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
 stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
 ```
@@ -299,7 +299,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm4.staticflickr.com/3777/8893610879_f5fe654910_o.png) 
+![plot of chunk allen-traces](figure/allen-allen-traces.png) 
 
 
 
@@ -316,7 +316,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3719/8894231304_05d774bc42_o.png) 
+![plot of chunk allen-posteriors](figure/allen-allen-posteriors.png) 
 
 
 
@@ -324,12 +324,41 @@ Reshape the posterior parameter distribution data, transform back into original 
 
 
 ```r
-pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable, subset=.(variable!="deviance")) 
-pardist[,2] = exp(pardist[,2]) # transform model parameters back first
-pardist[,3] = exp(pardist[,3])
+A <- allen_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+pardist <- acast(A, index ~ variable)
+# pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable)[1] ~ variable) # NOT SURE WHY THIS FAILS 
+
+# transform model parameters back first
+pardist[,"logr0"] = exp(pardist[,"logr0"]) 
+pardist[,"logtheta"] = exp(pardist[,"logtheta"])
+colnames(pardist)[colnames(pardist)=="logtheta"] = "theta"
+colnames(pardist)[colnames(pardist)=="logr0"] = "r0"
+
 bayes_coef <- apply(pardist,2, posterior.mode) 
-bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3])) # parameters formatted for f
+bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
+allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
 allen_means <- sapply(x_grid, f, 0, bayes_pars)
+
+bayes_pars
+```
+
+```
+[1]  0.007972 11.445605  0.045210
+```
+
+```r
+head(pardist)
+```
+
+```
+         K deviance       r0    theta   stdQ     stdR
+501  7.001  -111.75 0.021017 0.006289 0.3877 0.059035
+502 22.447   -98.45 0.040087 2.884673 0.4394 0.063044
+503  5.609  -172.94 0.004384 0.004793 0.4072 0.030175
+504 25.883  -233.44 0.034580 1.824202 0.4878 0.016392
+505  9.101  -112.51 0.084205 0.010972 0.3729 0.060964
+506 13.454  -251.53 0.002722 0.015669 0.4796 0.009156
 ```
 
 
@@ -426,7 +455,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm3.staticflickr.com/2879/8894231782_9b4f98a892_o.png) 
+![plot of chunk ricker-traces](figure/allen-ricker-traces.png) 
 
 
 
@@ -442,7 +471,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm6.staticflickr.com/5456/8894232438_e42056c2d9_o.png) 
+![plot of chunk ricker-posteriors](figure/allen-ricker-posteriors.png) 
 
 
 
@@ -451,13 +480,40 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 
 ```r
 ricker_pardist <- acast(ricker_posteriors[2:3], 
-                        1:table(ricker_posteriors$variable) ~ variable, 
-                        subset=.(variable!="deviance")) 
+                        1:table(ricker_posteriors$variable) ~ variable) 
 
 ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
+colnames(ricker_pardist)[colnames(ricker_pardist)=="logr0"] = "r0"
 bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
-ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
+ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
+
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p["r0"] * (1 - x / p["K"] )) )
+  })
+}
 ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
+
+head(ricker_pardist)
+```
+
+```
+       K deviance       r0   stdQ     stdR
+1 24.309  -174.54 0.002534 0.3964 0.041420
+2 20.540  -137.85 0.009967 0.3962 0.032129
+3 10.191  -110.75 0.046838 0.4686 0.015987
+4  8.653  -124.68 0.021977 0.3618 0.009573
+5 17.213  -106.11 0.007509 0.3411 0.017565
+6 31.392   -82.84 0.007654 0.4120 0.013045
+```
+
+```r
+ricker_bayes_pars
+```
+
+```
+[1]  0.006414 11.621799
 ```
 
 
@@ -551,7 +607,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm3.staticflickr.com/2825/8894232800_3d2cd44192_o.png) 
+![plot of chunk myers-traces](figure/allen-myers-traces.png) 
 
 
 
@@ -569,7 +625,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8541/8894233504_aba8ee5ea2_o.png) 
+![plot of chunk myers-posteriors](figure/allen-myers-posteriors.png) 
 
 
 
@@ -585,6 +641,26 @@ colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
+myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
+head(myers_pardist)
+```
+
+```
+      K     r0 theta   stdQ     stdR
+1 33.72 0.6024 1.508 0.5139 0.018699
+2 42.95 0.6916 1.455 0.4322 0.074122
+3 39.32 0.7158 1.569 0.3583 0.003878
+4 33.15 0.6036 1.685 0.4299 0.077658
+5 42.11 0.6781 1.885 0.4678 0.082098
+6 29.00 0.7379 1.617 0.4269 0.088728
+```
+
+```r
+myers_bayes_pars
+```
+
+```
+[1]  0.9365  1.0997 38.0375
 ```
 
 
@@ -606,7 +682,7 @@ models <- melt(models, id="x")
 # some labels
 names(models) <- c("x", "method", "value")
 
-# labesl for the colorkey too
+# labels for the colorkey too
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
@@ -624,7 +700,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7338/8893613793_b9b674dfaf_o.png) 
+![plot of chunk Figure1](figure/allen-Figure1.png) 
 
 
 ## Step-ahead predictors
@@ -635,18 +711,6 @@ print(plot_gp)
 This shows only the mean predictions.  For the Bayesian cases, we can instead loop over the posteriors of the parameters (or samples from the GP posterior) to get the distribution of such curves in each case.  
 
 We will need a vector version (`pmin` in place of `min`) of the parametric growth functions that can operate on the posteriors, (with appropriate ordering of parameters as they are in the posterior):
-
-
-```r
-ricker_f <- function(x,h,p){
-  sapply(x, function(x){ 
-    x <- pmax(0, x-h) 
-    pmax(0, x * exp(p[2] * (1 - x / p[1] )) )
-  })
-}
-allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
-myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
-```
 
 
 
@@ -680,7 +744,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm8.staticflickr.com/7338/8893614179_85d8d34deb_o.png) 
+![plot of chunk Figureb](figure/allen-Figureb.png) 
 
 
 
@@ -721,7 +785,6 @@ Determine the optimal policy based on Bayesian Allen model
 
 
 ```r
-allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
 matrices_allen <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
 opt_allen <- value_iteration(matrices_allen, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -731,20 +794,8 @@ Bayesian Ricker
 
 
 ```r
-ricker_f <- function(x, h, p) Ricker(x, h, unname(p[c(2, 1)])) # defined by pdgControl 
 matrices_ricker <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
-```
-
-```
-Error: missing value where TRUE/FALSE needed
-```
-
-```r
 opt_ricker <- value_iteration(matrices_ricker, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_ricker' not found
 ```
 
 
@@ -753,7 +804,6 @@ Bayesian Myers model
 
 
 ```r
-myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
 matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
 myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -765,19 +815,8 @@ Assemble the data
 
 ```r
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_ricker$D, Allen = opt_allen$D, Myers = myers_alt$D)
-```
-
-```
-Error: object 'opt_ricker' not found
-```
-
-```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
-```
-
-```
-Error: object 'OPT' not found
 ```
 
 
@@ -788,30 +827,14 @@ Error: object 'OPT' not found
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 names(policies) <- c("stock", "method", "value")
-```
-
-```
-Error: object 'policies' not found
-```
-
-```r
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-```
-Error: object 'policies' not found
-```
+![plot of chunk Figure2](figure/allen-Figure2.png) 
 
 
 
@@ -827,44 +850,12 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-```
-
-```
-Error: object 'sims' not found
-```
-
-```r
 dt <- data.table(dat)
-```
-
-```
-Error: object 'dat' not found
-```
-
-```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-```
-
-```
-Error: x is not a data.table or data.frame
-```
-
-```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
-```
-
-```
-Error: object of type 'closure' is not subsettable
 ```
 
 
@@ -875,27 +866,24 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-Error: ggplot2 doesn't know how to deal with data of class function
-```
+![plot of chunk Figure3](figure/allen-Figure3.png) 
 
 
 
 
 ```r
 Profit <- dt[, sum(profit), by=c("reps", "method")]
-```
-
-```
-Error: invalid 'type' (closure) of argument
-```
-
-```r
 Profit[, mean(V1), by="method"]
 ```
 
 ```
-Error: object 'Profit' not found
+   method     V1
+1:     GP 26.284
+2:   True 26.284
+3:    MLE 21.435
+4: Ricker 25.748
+5:  Allen  7.347
+6:  Myers  7.652
 ```
 
 
@@ -905,9 +893,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-```
-Error: object 'Profit' not found
-```
+![plot of chunk totalprofits](figure/allen-totalprofits.png) 
 
 
 
@@ -915,28 +901,24 @@ Error: object 'Profit' not found
 
 
 ```r
-df <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable) 
-modes <- apply(df, 2, posterior.mode)
-allen_deviance <- modes[['deviance']]
+allen_deviance <- pardist[,'deviance']
+ricker_deviance <- ricker_pardist[,'deviance']
+myers_deviance <- myers_pardist[,'deviance']
+```
 
-df <- acast(ricker_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-modes <- apply(df, 2, posterior.mode)
-ricker_deviance <- modes[['deviance']]
+```
+Error: subscript out of bounds
+```
 
-df <- acast(myers_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-modes <- apply(df, 2, posterior.mode)
-myers_deviance <- modes[['deviance']]
-
+```r
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
 
 
 c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
 ```
 
 ```
-  allen  ricker   myers    true     mle 
-   0.00 -174.54    2.00  -59.62 -471.23 
+Error: object 'myers_deviance' not found
 ```
 
