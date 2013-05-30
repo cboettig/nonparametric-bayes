@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](figure/allen-obs.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7371/8895981970_e0cbd8b352_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities2.png) 
+![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm6.staticflickr.com/5335/8895982262_c3591a046a_o.png) 
 
 
 
@@ -299,7 +299,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](figure/allen-allen-traces.png) 
+![plot of chunk allen-traces](http://farm9.staticflickr.com/8404/8895982540_397dab0d1b_o.png) 
 
 
 
@@ -316,7 +316,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](figure/allen-allen-posteriors.png) 
+![plot of chunk allen-posteriors](http://farm6.staticflickr.com/5460/8895982850_31f7637df2_o.png) 
 
 
 
@@ -455,7 +455,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](figure/allen-ricker-traces.png) 
+![plot of chunk ricker-traces](http://farm3.staticflickr.com/2863/8895361067_b83d945312_o.png) 
 
 
 
@@ -471,7 +471,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](figure/allen-ricker-posteriors.png) 
+![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5449/8895983428_dbaef457ea_o.png) 
 
 
 
@@ -607,7 +607,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](figure/allen-myers-traces.png) 
+![plot of chunk myers-traces](http://farm8.staticflickr.com/7405/8895361617_f13e22857f_o.png) 
 
 
 
@@ -625,7 +625,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](figure/allen-myers-posteriors.png) 
+![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7313/8895361875_898b76644b_o.png) 
 
 
 
@@ -700,7 +700,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](figure/allen-Figure1.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7380/8895984202_5fd2207f7c_o.png) 
 
 
 ## Step-ahead predictors
@@ -744,7 +744,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](figure/allen-Figureb.png) 
+![plot of chunk Figureb](http://farm4.staticflickr.com/3748/8895984496_80823edde1_o.png) 
 
 
 
@@ -834,7 +834,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](figure/allen-Figure2.png) 
+![plot of chunk Figure2](http://farm9.staticflickr.com/8275/8895362783_e1cc89e502_o.png) 
 
 
 
@@ -866,7 +866,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](figure/allen-Figure3.png) 
+![plot of chunk Figure3](http://farm9.staticflickr.com/8271/8895363053_5e4b73c25f_o.png) 
 
 
 
@@ -893,7 +893,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](figure/allen-totalprofits.png) 
+![plot of chunk totalprofits](http://farm3.staticflickr.com/2829/8895363359_3f3ddabf4d_o.png) 
 
 
 
