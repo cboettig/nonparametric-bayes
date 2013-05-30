@@ -525,14 +525,19 @@ myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
 ### Phase-space diagram of the expected dynamics
 
 ```{r assemble-models, dependson=c("myers-output", "ricker-output", "allen-output", "gp-output", "mle-output")}
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
-                     MLE=est_means, Ricker=ricker_means, 
+models <- data.frame(x=x_grid, 
+										 GP=tgp_dat$y, 
+										 True=true_means, 
+                     MLE=est_means, 
+										 Ricker=ricker_means, 
                      Allen = allen_means,
                      Myers = myers_means)
-
 models <- melt(models, id="x")
+
+# some labels
 names(models) <- c("x", "method", "value")
 
+# labesl for the colorkey too
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 

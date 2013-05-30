@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm6.staticflickr.com/5456/8892899056_d1405d0ab8_o.png) 
+![plot of chunk obs](http://farm9.staticflickr.com/8398/8894230030_925042491a_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp)
 ```
 
-![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7398/8892899404_a8fd38258a_o.png) 
+![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7459/8894230628_0436d6c36c_o.png) 
 
 
 
@@ -299,7 +299,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm8.staticflickr.com/7293/8892899840_436eee9852_o.png) 
+![plot of chunk allen-traces](http://farm4.staticflickr.com/3777/8893610879_f5fe654910_o.png) 
 
 
 
@@ -316,7 +316,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3665/8892900268_4edbc2c5f4_o.png) 
+![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3719/8894231304_05d774bc42_o.png) 
 
 
 
@@ -426,7 +426,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm8.staticflickr.com/7308/8892900626_77872a8030_o.png) 
+![plot of chunk ricker_traces](http://farm3.staticflickr.com/2879/8894231782_9b4f98a892_o.png) 
 
 
 
@@ -442,7 +442,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm4.staticflickr.com/3728/8892902808_a3622a808c_o.png) 
+![plot of chunk ricker_posteriors](http://farm6.staticflickr.com/5456/8894232438_e42056c2d9_o.png) 
 
 
 
@@ -551,7 +551,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm8.staticflickr.com/7381/8892903236_00edf5dbd6_o.png) 
+![plot of chunk myers-traces](http://farm3.staticflickr.com/2825/8894232800_3d2cd44192_o.png) 
 
 
 
@@ -569,7 +569,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3814/8892903594_81216cb9cd_o.png) 
+![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8541/8894233504_aba8ee5ea2_o.png) 
 
 
 
@@ -594,14 +594,19 @@ myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
 
 
 ```r
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
-                     MLE=est_means, Ricker=ricker_means, 
+models <- data.frame(x=x_grid, 
+										 GP=tgp_dat$y, 
+										 True=true_means, 
+                     MLE=est_means, 
+										 Ricker=ricker_means, 
                      Allen = allen_means,
                      Myers = myers_means)
-
 models <- melt(models, id="x")
+
+# some labels
 names(models) <- c("x", "method", "value")
 
+# labesl for the colorkey too
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
@@ -619,7 +624,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7426/8892903958_c7dba2250b_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7338/8893613793_b9b674dfaf_o.png) 
 
 
 ## Step-ahead predictors
@@ -675,7 +680,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm9.staticflickr.com/8118/8892285167_5fc3b6eb23_o.png) 
+![plot of chunk Figureb](http://farm8.staticflickr.com/7338/8893614179_85d8d34deb_o.png) 
 
 
 
