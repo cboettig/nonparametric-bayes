@@ -291,15 +291,15 @@ ggplot(allen_posteriors, aes(value)) +
 Reshape the posterior parameter distribution data, transform back into original space, and calculate the mean parameters and mean function
 
 ```{r allen-output, dependson="allen-traces"}
-# A <- allen_posteriors
-# A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-# pardist <- acast(A[-4], index ~ variable, subset=.(variable != "deviance") )
-pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable, subset=.(variable!="deviance")) 
-pardist[,2] = exp(pardist[,2]) # transform model parameters back first
-pardist[,3] = exp(pardist[,3])
+pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable)[1] ~ variable) 
+pardist[,"logr0"] = exp(pardist[,"logr0"]) # transform model parameters back first
+pardist[,"logtheta"] = exp(pardist[,"logtheta"])
+colnames(pardist)[colnames(pardist)=="logtheta"] = "theta"
+colnames(pardist)[colnames(pardist)=="logr0"] = "r0"
 bayes_coef <- apply(pardist,2, posterior.mode) 
-bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3])) # parameters formatted for f
+bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
 allen_means <- sapply(x_grid, f, 0, bayes_pars)
+
 ```
 
 
@@ -476,9 +476,9 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 ```{r myers-mcmc, dependson="myers-model", results="hide"}
 jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
 jags.inits <- function(){
-  list("logr0" 		= log(rlnorm(1, 0, .5)), 
-       "logK" 		= log(10 * rlnorm(1, 1, .2)),
-       "logtheta" = log(2 * rnorm(1, 1, .2)),  
+  list("logr0" 		= log(rlnorm(1, 0, .3)), 
+       "logK" 		= log(10 * rlnorm(1, 1, .1)),
+       "logtheta" = log(2 * rnorm(1, 1, .1)),  
        "stdQ"			= 0.2  * rlnorm(1, 0, .1),
        "stdR"			= 1e-5 * rlnorm(1, 0, .1),
        "x" 				= y,
@@ -526,10 +526,12 @@ ggplot(myers_posteriors, aes(value)) +
 myers_pardist <- acast(myers_posteriors[2:3], 
                         1:table(myers_posteriors$variable) ~ variable, 
                         subset=.(variable!="deviance")) 
-myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
-myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
-myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
-colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
+# robust to ordering
+myers_pardist[,1] = exp(myers_pardist[,"logK"]) # transform model parameters back first
+myers_pardist[,2] = exp(myers_pardist[,"logr0"]) # transform model parameters back first
+myers_pardist[,3] = exp(myers_pardist[,"logtheta"]) # transform model parameters back first
+
+colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR") # assumes they are in this order...
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
