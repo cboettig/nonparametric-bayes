@@ -1,11 +1,11 @@
-# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
+# Learning ADMB
 
 Plotting and knitr options, (can generally be ignored)
 
 ```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 source("~/.knitr_defaults.R")
 opts_chunk$set(warning=TRUE, message=TRUE, cache=FALSE)
-#opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
 
@@ -48,7 +48,7 @@ Tobs <- 40
                           pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
                     y = c(rep(0,nz), 
                           x[2:Tobs]))
-raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
+raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line() + geom_point()
 raw_plot
 ```
 
