@@ -307,9 +307,9 @@ ggplot(ricker_posteriors, aes(value)) +
 
 
 ## @knitr ricker-output
-ricker_pardist <- acast(ricker_posteriors[2:3], 
-                        1:table(ricker_posteriors$variable) ~ variable) 
-
+A <- ricker_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+ricker_pardist <- acast(A, index ~ variable)
 ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
 colnames(ricker_pardist)[colnames(ricker_pardist)=="logr0"] = "r0"
 bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
