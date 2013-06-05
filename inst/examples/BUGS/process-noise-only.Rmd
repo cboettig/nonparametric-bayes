@@ -113,7 +113,7 @@ defines the priors and the model. We write the file from R as follows:
 
 ```{r allen-model-local}
 K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
+logr0_prior_p <- c(-3.0, 6.0)
 logtheta_prior_p <- c(-6.0, 6.0)
 
 bugs.model <- 

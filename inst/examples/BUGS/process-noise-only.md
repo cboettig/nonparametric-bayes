@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm8.staticflickr.com/7406/8954616307_5e7a9d3e27_o.png) 
+![plot of chunk obs](http://farm4.staticflickr.com/3706/8960351156_045633010a_o.png) 
 
 
 
@@ -137,7 +137,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3687/8954616527_4c7cefe499_o.png) 
+![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8277/8960351500_050b69b74b_o.png) 
 
 
 
@@ -204,7 +204,7 @@ defines the priors and the model. We write the file from R as follows:
 
 ```r
 K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
+logr0_prior_p <- c(-3.0, 6.0)
 logtheta_prior_p <- c(-6.0, 6.0)
 
 bugs.model <- 
@@ -291,7 +291,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm8.staticflickr.com/7432/8954617241_ee7c8ab2c6_o.png) 
+![plot of chunk allen-traces](http://farm4.staticflickr.com/3805/8960351832_0eee23308b_o.png) 
 
 
 
@@ -308,7 +308,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm9.staticflickr.com/8128/8954617519_134c3da154_o.png) 
+![plot of chunk allen-posteriors](http://farm3.staticflickr.com/2839/8960352266_bd29c3c322_o.png) 
 
 
 
@@ -333,7 +333,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.01929 7.72010 0.06654
+[1] 0.17049 7.64996 0.05799
 ```
 
 ```r
@@ -341,13 +341,13 @@ head(pardist)
 ```
 
 ```
-         K deviance       r0    theta   stdQ
-170 21.327    45.03 0.010484 3.826031 0.3737
-171 14.261    45.02 0.029587 0.019707 0.4387
-172  7.828    40.50 0.129248 2.769482 0.3795
-173 29.450    45.66 0.044378 0.006615 0.4461
-174 37.580    44.89 0.006334 1.252886 0.3766
-175 20.168    45.05 0.033854 0.144171 0.4294
+         K deviance      r0   theta   stdQ
+170  7.862    34.73 0.35270 0.31866 0.3903
+171  7.560    36.05 0.53365 0.72477 0.4014
+172  7.661    33.64 0.29229 0.03928 0.3740
+173  7.756    40.56 0.14306 0.09321 0.4541
+174 37.267    46.10 0.06256 0.02401 0.4509
+175  7.568    44.22 0.11092 2.93159 0.3181
 ```
 
 
@@ -488,7 +488,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm8.staticflickr.com/7354/8954617787_8743f7915f_o.png) 
+![plot of chunk ricker-traces](http://farm6.staticflickr.com/5461/8960352876_1e6ba59092_o.png) 
 
 
 
@@ -504,7 +504,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5326/8954618029_911b481fc8_o.png) 
+![plot of chunk ricker-posteriors](http://farm8.staticflickr.com/7296/8960353564_96409f38d8_o.png) 
 
 
 
@@ -681,7 +681,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm9.staticflickr.com/8134/8955814112_feb5f6abb2_o.png) 
+![plot of chunk myers-traces](http://farm4.staticflickr.com/3700/8959158205_38578ec183_o.png) 
 
 
 
@@ -699,7 +699,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3772/8955814344_b654594c98_o.png) 
+![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3746/8960354278_2a3873e193_o.png) 
 
 
 
@@ -779,7 +779,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm4.staticflickr.com/3820/8954618731_61ebc877be_o.png) 
+![plot of chunk Figure1](http://farm6.staticflickr.com/5441/8959158991_3ddb6374fe_o.png) 
 
 
 
@@ -818,7 +818,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm4.staticflickr.com/3792/8954618965_9b92db0892_o.png) 
+![plot of chunk Figureb](http://farm4.staticflickr.com/3687/8960355024_74dc8233ac_o.png) 
 
 
 
@@ -908,7 +908,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7348/8954619233_e007f06eab_o.png) 
+![plot of chunk Figure2](http://farm6.staticflickr.com/5465/8959159715_b27edd9842_o.png) 
 
 
 
@@ -940,7 +940,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm4.staticflickr.com/3808/8955815586_814e0c50d6_o.png) 
+![plot of chunk Figure3](http://farm8.staticflickr.com/7330/8960355768_9b1a8c0a6a_o.png) 
 
 
 
@@ -967,7 +967,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm3.staticflickr.com/2881/8954620001_2722b7d9d9_o.png) 
+![plot of chunk totalprofits](http://farm6.staticflickr.com/5324/8959160505_8e9aff2fe3_o.png) 
 
 
 
@@ -984,6 +984,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  45.26   44.78   34.48  -61.08 -287.60 
+  34.87   44.78   34.48  -61.08 -287.60 
 ```
 
