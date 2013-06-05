@@ -161,15 +161,15 @@ to maintain strictly positive values of parameters where appropriate.
 jags.params=c("K","logr0","logtheta","stdQ") # be sensible about the order here
 jags.inits <- function(){
   list("K"= 8 * rlnorm(1,0, 0.1),
-       "logr0"=log(2 * rlnorm(1,0, 0.5) ),
+       "logr0"=log(2 * rlnorm(1,0, 0.1) ),
        "logtheta"=log(  5 * rlnorm(1,0, 0.1) ), 
-       "stdQ"= abs( 0.2 * rlnorm(1,0, 0.1)),
+       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 
 set.seed(1234)
 # parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- do.call(jags, list(data=jags.data, inits=jags.inits, 
+allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
                                       jags.params, n.chains=n.chains, 
                                       n.iter=n.iter, n.thin=n.thin, 
                                       n.burnin=n.burnin, 
@@ -342,7 +342,7 @@ jags.inits <- function(){
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
-myers_jags <- do.call(jags, 
+myers_jags <- do.call(jags.parallel, 
                       list(data=jags.data, inits=jags.inits, jags.params, 
                            n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
                            n.burnin=n.burnin, model.file="myers_process.bugs"))

@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm4.staticflickr.com/3736/8907861054_6193590483_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7406/8954616307_5e7a9d3e27_o.png) 
 
 
 
@@ -137,7 +137,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7450/8907861414_fd268d9e70_o.png) 
+![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3687/8954616527_4c7cefe499_o.png) 
 
 
 
@@ -256,15 +256,15 @@ to maintain strictly positive values of parameters where appropriate.
 jags.params=c("K","logr0","logtheta","stdQ") # be sensible about the order here
 jags.inits <- function(){
   list("K"= 8 * rlnorm(1,0, 0.1),
-       "logr0"=log(2 * rlnorm(1,0, 0.5) ),
+       "logr0"=log(2 * rlnorm(1,0, 0.1) ),
        "logtheta"=log(  5 * rlnorm(1,0, 0.1) ), 
-       "stdQ"= abs( 0.2 * rlnorm(1,0, 0.1)),
+       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 
 set.seed(1234)
 # parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- do.call(jags, list(data=jags.data, inits=jags.inits, 
+allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
                                       jags.params, n.chains=n.chains, 
                                       n.iter=n.iter, n.thin=n.thin, 
                                       n.burnin=n.burnin, 
@@ -272,19 +272,8 @@ allen_jags <- do.call(jags, list(data=jags.data, inits=jags.inits,
 
 # Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
 recompile(allen_jags) # required for parallel
-```
-
-```
-Error: cannot open the connection
-```
-
-```r
 allen_jags <- do.call(autojags, list(object=allen_jags, n.update=n.update, 
                                      n.iter=n.iter, n.thin = n.thin))
-```
-
-```
-Error: No valid monitors set
 ```
 
 
@@ -302,7 +291,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm4.staticflickr.com/3820/8907239207_13a3079203_o.png) 
+![plot of chunk allen-traces](http://farm8.staticflickr.com/7432/8954617241_ee7c8ab2c6_o.png) 
 
 
 
@@ -319,7 +308,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm8.staticflickr.com/7410/8907239483_a7a6d51665_o.png) 
+![plot of chunk allen-posteriors](http://farm9.staticflickr.com/8128/8954617519_134c3da154_o.png) 
 
 
 
@@ -344,7 +333,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.01967 7.71901 0.05642
+[1] 0.01929 7.72010 0.06654
 ```
 
 ```r
@@ -352,13 +341,13 @@ head(pardist)
 ```
 
 ```
-         K deviance      r0    theta   stdQ
-168  4.445    30.87 0.31723 7.685424 0.3394
-169  7.917    37.64 0.35035 0.023309 0.4365
-170 21.629    46.64 0.01042 0.189431 0.4815
-171  7.507    40.81 0.24800 0.009661 0.4863
-172  7.466    34.54 0.32619 1.714424 0.3503
-173  7.588    33.34 0.58011 3.897989 0.3310
+         K deviance       r0    theta   stdQ
+170 21.327    45.03 0.010484 3.826031 0.3737
+171 14.261    45.02 0.029587 0.019707 0.4387
+172  7.828    40.50 0.129248 2.769482 0.3795
+173 29.450    45.66 0.044378 0.006615 0.4461
+174 37.580    44.89 0.006334 1.252886 0.3766
+175 20.168    45.05 0.033854 0.144171 0.4294
 ```
 
 
@@ -499,7 +488,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm4.staticflickr.com/3668/8907862404_42aa6e2c85_o.png) 
+![plot of chunk ricker-traces](http://farm8.staticflickr.com/7354/8954617787_8743f7915f_o.png) 
 
 
 
@@ -515,7 +504,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5321/8907862720_215c3c7806_o.png) 
+![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5326/8954618029_911b481fc8_o.png) 
 
 
 
@@ -622,22 +611,10 @@ jags.inits <- function(){
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
-myers_jags <- do.call(jags, 
+myers_jags <- do.call(jags.parallel, 
                       list(data=jags.data, inits=jags.inits, jags.params, 
                            n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
                            n.burnin=n.burnin, model.file="myers_process.bugs"))
-```
-
-```
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 291
-
-Initializing model
-```
-
-```r
 recompile(myers_jags)
 ```
 
@@ -648,10 +625,41 @@ Compiling model graph
    Graph Size: 291
 
 Initializing model
-```
 
-```
-[1] TRUE
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 291
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 291
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 291
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 291
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 291
+
+Initializing model
 ```
 
 ```r
@@ -673,7 +681,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm8.staticflickr.com/7424/8907240383_262b10aec3_o.png) 
+![plot of chunk myers-traces](http://farm9.staticflickr.com/8134/8955814112_feb5f6abb2_o.png) 
 
 
 
@@ -691,7 +699,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3825/8907863294_1a3dc05182_o.png) 
+![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3772/8955814344_b654594c98_o.png) 
 
 
 
@@ -717,13 +725,13 @@ head(myers_pardist)
 ```
 
 ```
-    deviance     K      r0 theta   stdQ
-170    33.07 154.4 0.05866 3.285 0.3488
-171    34.82 158.2 0.05610 3.351 0.3420
-172    33.37 218.7 0.04269 3.418 0.2969
-173    34.14 149.2 0.06370 3.199 0.3419
-174    34.90 340.5 0.02681 3.680 0.4252
-175    41.50 284.7 0.03420 3.442 0.2877
+    deviance      K      r0 theta   stdQ
+170    37.69  32.42 0.32913 2.156 0.2818
+171    32.99  51.72 0.20896 2.373 0.3612
+172    40.26  52.83 0.22398 2.260 0.4654
+173    32.80  76.54 0.12968 2.749 0.3711
+174    32.81 216.04 0.04136 3.512 0.3907
+175    32.55 330.07 0.02654 3.813 0.3118
 ```
 
 ```r
@@ -731,7 +739,7 @@ myers_bayes_pars
 ```
 
 ```
-[1] 29.8477  0.1173 35.5938
+[1] 31.8192  0.1065 34.4760
 ```
 
 
@@ -771,7 +779,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm9.staticflickr.com/8280/8907240961_b2c3b124e3_o.png) 
+![plot of chunk Figure1](http://farm4.staticflickr.com/3820/8954618731_61ebc877be_o.png) 
 
 
 
@@ -810,7 +818,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm8.staticflickr.com/7401/8907863836_1035dc848e_o.png) 
+![plot of chunk Figureb](http://farm4.staticflickr.com/3792/8954618965_9b92db0892_o.png) 
 
 
 
@@ -900,7 +908,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7351/8907864084_5ff7bf4d86_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7348/8954619233_e007f06eab_o.png) 
 
 
 
@@ -932,7 +940,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm4.staticflickr.com/3808/8907241843_43f4483e4a_o.png) 
+![plot of chunk Figure3](http://farm4.staticflickr.com/3808/8955815586_814e0c50d6_o.png) 
 
 
 
@@ -947,9 +955,9 @@ Profit[, mean(V1), by="method"]
 1:     GP 24.908
 2:   True 26.532
 3:    MLE  4.420
-4: Ricker 13.044
-5:  Allen  6.732
-6:  Myers  7.041
+4: Ricker  8.363
+5:  Allen  7.041
+6:  Myers  7.347
 ```
 
 
@@ -959,7 +967,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm4.staticflickr.com/3778/8907864724_4c79a917f5_o.png) 
+![plot of chunk totalprofits](http://farm3.staticflickr.com/2881/8954620001_2722b7d9d9_o.png) 
 
 
 
@@ -976,6 +984,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  45.03   44.78   35.59  -61.08 -287.60 
+  45.26   44.78   34.48  -61.08 -287.60 
 ```
 
