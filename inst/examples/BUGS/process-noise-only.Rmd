@@ -135,7 +135,7 @@ paste(sprintf(
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
     mu[t] <- y[t] * exp(r0 * (1 - y[t]/K)* (y[t] - theta) / K )
-    y[t+1] ~ dnorm(mu[t], iQ) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
 writeLines(bugs.model, "allen_process.bugs")
@@ -228,7 +228,7 @@ paste(sprintf(
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
     mu[t] <- y[t] * exp(r0 * (1 - y[t]/K) )
-    y[t+1] ~ dnorm(mu[t], iQ) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
 writeLines(bugs.model, "ricker_process.bugs")
@@ -314,7 +314,7 @@ paste(sprintf(
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
     mu[t] <- r0 * pow(abs(y[t]), theta) / (1 + pow(abs(y[t]), theta) / K)
-    y[t+1] ~ dnorm(mu[t], iQ) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
 writeLines(bugs.model, "myers_process.bugs")
