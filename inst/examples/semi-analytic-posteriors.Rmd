@@ -6,7 +6,7 @@ source("~/.knitr_defaults.R")
 require(reshape2)
 require(data.table)
 opts_chunk$set(warning=TRUE, message=TRUE, cache=FALSE)
-#opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = socialR::flickr.url)
 ```
 
 
