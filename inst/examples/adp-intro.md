@@ -24,29 +24,13 @@ f <- function(x, h, p){
     s <- pmax(x-h, 0)
     A * s/(1 + B * s)
 }
-p <- c(1.5, 0.5)
+p <- pars <- c(1.5, 0.5)
 K <- (p[1] - 1)/p[2]
 sigma_g <- 0.2
 ```
 
 
-We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = 
-
-```
-
-Error in eval(expr, envir, enclos) : object 'pars' not found
-
-```
-
- and b = 
-
-```
-
-Error in eval(expr, envir, enclos) : object 'pars' not found
-
-```
-
-.  We define a statespace $S$
+We begin with a simulation method $X_{t+1} = f(X_t, Z_t)$.  For illustration, let us consider $f(X_t, Z_t) = Z_t \frac{a X_t}{b + X_t}$ with a = 1.5 and b = 0.5.  We define a statespace $S$
 
 
 

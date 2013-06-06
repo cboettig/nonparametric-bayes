@@ -47,7 +47,7 @@ f <- function(x, h, p){
     s <- pmax(x-h, 0)
     A * s/(1 + B * s)
 }
-p <- c(1.5, 0.5)
+p <- pars <- c(1.5, 0.5)
 K <- (p[1] - 1)/p[2]
 sigma_g <- 0.2
 ```
