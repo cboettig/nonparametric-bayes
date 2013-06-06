@@ -1,0 +1,58 @@
+## Custom plotting 
+
+For presentation figures for allen.Rmd script
+
+
+```{r }
+model = "MLE"
+ggplot(subset(dt, method == model)) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) +
+  ylim(0, 9)
+ggsave(paste(model, "_sim.pdf", sep=""), width=6, height=4)
+
+```
+
+
+```{r Figure3a}
+dt$reps <- as.integer(dt$reps) 
+
+require(animation)
+ani.options(loop=TRUE)
+saveMovie({    
+    for (i in seq(1, OptTime, by=2)) {
+      print(
+        ggplot(subset(dt, method %in% c("True", "Ricker") & reps < 5 & time <= i), 
+               aes(time, fishstock, group=interaction(reps,method), color = method), alpha=.9) + 
+          geom_line() + xlim(0, OptTime)
+        )
+    }
+}, interval = 0.1, movie.name = "wrong-model.gif", ani.width = 600, ani.height = 600)
+
+
+
+
+
+require(MASS)
+s <- length(gp_dat$Cf_posterior)
+
+# Samples from the posterior of GPs
+draws <- sapply(1:s, function(i)
+  mvrnorm(1, gp_dat$Ef_posterior[,i], gp_dat$Cf_posterior[[i]]))
+draws <- melt(data.frame(x=x_grid, draws), id="x")
+
+
+mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]])
+
+## Samples from the expected GP
+gp_draws <- mvrnorm(6, gp_dat$E_Ef, gp_dat$E_Cf)
+gp_draws <- melt(data.frame(x=x_grid, t(gp_draws)), id="x")
+
+ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+  geom_line(aes(x,y,ymin=ymin,ymax=ymax)) +
+  # geom_line(data=gp_draws, aes(x=x, y=value, col=variable))  +  
+  geom_line(data=draws, aes(x=x, y=value, index=variable), alpha=.1)
+  
+
+
+```
