@@ -134,7 +134,7 @@ paste(sprintf(
   theta <- exp(logtheta)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- y[t] * exp(r0 * (1 - y[t]/K)* (y[t] - theta) / K )
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -227,7 +227,7 @@ paste(sprintf(
   r0 <- exp(logr0)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- y[t] * exp(r0 * (1 - y[t]/K) )
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -313,7 +313,7 @@ paste(sprintf(
 
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- r0 * pow(abs(y[t]), theta) / (1 + pow(abs(y[t]), theta) / K)
+    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
