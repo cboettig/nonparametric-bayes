@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm9.staticflickr.com/8405/8965082362_f866975027_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7407/8979192379_8862e88fe1_o.png) 
 
 
 
@@ -137,7 +137,8 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7371/8963888593_b469e86738_o.png) 
+![plot of chunk gp_traces_densities](http://farm6.staticflickr.com/5452/8979192641_6cec3355b6_o.png)
+![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7459/8980386876_605218075e_o.png) 
 
 
 
@@ -225,7 +226,7 @@ paste(sprintf(
   theta <- exp(logtheta)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- y[t] * exp(r0 * (1 - y[t]/K)* (y[t] - theta) / K )
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -291,7 +292,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm6.staticflickr.com/5442/8963889023_d261599ba9_o.png) 
+![plot of chunk allen-traces](http://farm6.staticflickr.com/5321/8979193249_a88f2311ea_o.png) 
 
 
 
@@ -308,7 +309,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm8.staticflickr.com/7397/8965083216_93654b09c9_o.png) 
+![plot of chunk allen-posteriors](http://farm9.staticflickr.com/8553/8979193499_c42e5dc822_o.png) 
 
 
 
@@ -333,7 +334,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.05775 1.41143 0.01654
+[1] 0.13533 7.68891 0.05298
 ```
 
 ```r
@@ -341,13 +342,13 @@ head(pardist)
 ```
 
 ```
-        K deviance      r0    theta   stdQ
-170 1.487    210.7 0.06448 0.008213 0.5087
-171 1.482    212.0 0.06522 0.004861 0.5438
-172 2.019    215.9 0.12884 0.014303 0.5048
-173 1.343    208.6 0.05128 0.017753 0.4291
-174 1.630    217.4 0.07792 0.005790 0.6247
-175 1.488    212.5 0.06523 0.127935 0.3982
+         K deviance      r0    theta    stdQ
+170  7.458    33.73 0.29784 1.375401 0.05024
+171  7.260    40.88 0.10384 0.005763 0.06147
+172  8.062    35.60 0.33299 0.945562 0.05145
+173  3.744    32.80 0.13850 7.776346 0.05265
+174 10.100    41.82 0.05934 0.070421 0.05359
+175  8.352    38.33 0.12159 0.066087 0.04874
 ```
 
 
@@ -380,7 +381,7 @@ paste(sprintf(
   r0 <- exp(logr0)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- y[t] * exp(r0 * (1 - y[t]/K) )
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -488,7 +489,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm4.staticflickr.com/3671/8965083482_406b588be8_o.png) 
+![plot of chunk ricker-traces](http://farm4.staticflickr.com/3794/8980387706_6747cf59d5_o.png) 
 
 
 
@@ -504,7 +505,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm4.staticflickr.com/3680/8965083760_b5dd7e0f33_o.png) 
+![plot of chunk ricker-posteriors](http://farm3.staticflickr.com/2875/8979194039_857ac19403_o.png) 
 
 
 
@@ -532,13 +533,13 @@ head(ricker_pardist)
 ```
 
 ```
-          K deviance       r0   stdQ
-170 0.02421    120.4 0.004294 0.1399
-171 0.02727    120.6 0.004833 0.1335
-172 0.06849    121.0 0.012155 0.1577
-173 0.09379    121.9 0.016516 0.1544
-174 0.11463    121.7 0.020494 0.1557
-175 0.14163    121.9 0.025379 0.1536
+         K deviance       r0    stdQ
+170  9.314    40.94 0.037042 0.05319
+171 22.661    42.57 0.011806 0.05243
+172 11.366    43.80 0.063853 0.05085
+173 17.873    44.43 0.035388 0.05420
+174 32.354    42.87 0.005756 0.05521
+175 16.642    45.01 0.020490 0.06445
 ```
 
 ```r
@@ -546,7 +547,7 @@ ricker_bayes_pars
 ```
 
 ```
-[1] 0.007931 0.044916
+[1] 0.00836 8.28684
 ```
 
 
@@ -579,7 +580,7 @@ paste(sprintf(
 
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- r0 * pow(abs(y[t]), theta) / (1 + pow(abs(y[t]), theta) / K)
+    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -615,19 +616,51 @@ myers_jags <- do.call(jags.parallel,
                       list(data=jags.data, inits=jags.inits, jags.params, 
                            n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
                            n.burnin=n.burnin, model.file="myers_process.bugs"))
-```
-
-```
-Error: one node produced an error: Error in node y[23] Failure to
-calculate log density
-```
-
-```r
 recompile(myers_jags)
 ```
 
 ```
-Error: object 'myers_jags' not found
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 370
+
+Initializing model
 ```
 
 ```r
@@ -636,23 +669,12 @@ myers_jags <- do.call(autojags,
                            n.thin = n.thin, progress.bar="none"))
 ```
 
-```
-Error: object 'myers_jags' not found
-```
-
 
 Convergence diagnostics for parametric bayes
 
 
 ```r
 tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes the hard way...
-```
-
-```
-Error: object 'myers_jags' not found
-```
-
-```r
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
 
@@ -660,7 +682,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm6.staticflickr.com/5447/8963890007_5c7ea29ca7_o.png) 
+![plot of chunk myers-traces](http://farm6.staticflickr.com/5466/8980388296_0c4bc86990_o.png) 
 
 
 
@@ -678,7 +700,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8537/8963890267_64db9e8214_o.png) 
+![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7368/8980388596_92e9431c35_o.png) 
 
 
 
@@ -689,22 +711,8 @@ A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by r
 myers_pardist <- acast(A, index ~ variable)
 ### myers_pardist <- acast(myers_posteriors[2:3], 1:table(myers_posteriors$variable) ~ variable) 
 myers_pardist[,"logK"] = exp(myers_pardist[,"logK"]) # transform model parameters back first
-```
-
-```
-Error: subscript out of bounds
-```
-
-```r
 myers_pardist[,"logr0"] = exp(myers_pardist[,"logr0"]) # transform model parameters back first
 myers_pardist[,"logtheta"] = exp(myers_pardist[,"logtheta"]) # transform model parameters back first
-```
-
-```
-Error: subscript out of bounds
-```
-
-```r
 colnames(myers_pardist)[colnames(myers_pardist)=="logK"] = "K"
 colnames(myers_pardist)[colnames(myers_pardist)=="logr0"] = "r0"
 colnames(myers_pardist)[colnames(myers_pardist)=="logtheta"] = "theta"
@@ -718,13 +726,13 @@ head(myers_pardist)
 ```
 
 ```
-          K deviance       r0   stdQ
-170 0.02421    120.4 0.004294 0.1399
-171 0.02727    120.6 0.004833 0.1335
-172 0.06849    121.0 0.012155 0.1577
-173 0.09379    121.9 0.016516 0.1544
-174 0.11463    121.7 0.020494 0.1557
-175 0.14163    121.9 0.025379 0.1536
+    deviance        K    r0   theta    stdQ
+170    44.97   0.8325 7.981 0.11231 0.04493
+171    39.41   3.2984 4.337 0.11580 0.05258
+172    40.55   7.4651 3.711 0.11318 0.04928
+173    48.74 332.0344 2.826 0.12810 0.06829
+174    39.99 202.2245 3.276 0.11083 0.04632
+175    47.68  55.1607 3.829 0.09356 0.04547
 ```
 
 ```r
@@ -732,7 +740,7 @@ myers_bayes_pars
 ```
 
 ```
-[1] 1.215e+02 7.931e-03 4.492e-02
+[1]  0.4414  3.4996 41.2481
 ```
 
 
@@ -772,7 +780,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7355/8965084460_1cc6b06480_o.png) 
+![plot of chunk Figure1](http://farm4.staticflickr.com/3714/8980388856_800771282f_o.png) 
 
 
 
@@ -811,7 +819,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm6.staticflickr.com/5324/8963890701_a58e5a55be_o.png) 
+![plot of chunk Figureb](http://farm6.staticflickr.com/5345/8980389116_f84da2c41b_o.png) 
 
 
 
@@ -872,18 +880,7 @@ Bayesian Myers model
 
 ```r
 matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
-```
-
-```
-Error: missing value where TRUE/FALSE needed
-```
-
-```r
 myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-```
-Error: object 'matrices_myers' not found
 ```
 
 
@@ -893,19 +890,8 @@ Assemble the data
 
 ```r
 OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_ricker$D, Allen = opt_allen$D, Myers = myers_alt$D)
-```
-
-```
-Error: object 'myers_alt' not found
-```
-
-```r
 colorkey=cbPalette
 names(colorkey) = names(OPT) 
-```
-
-```
-Error: object 'OPT' not found
 ```
 
 
@@ -916,30 +902,14 @@ Error: object 'OPT' not found
 
 ```r
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 names(policies) <- c("stock", "method", "value")
-```
-
-```
-Error: object 'policies' not found
-```
-
-```r
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 ```
 
-```
-Error: object 'policies' not found
-```
+![plot of chunk Figure2](http://farm3.staticflickr.com/2867/8980389346_39ac5232c4_o.png) 
 
 
 
@@ -955,44 +925,12 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-```
-
-```
-Error: object 'OPT' not found
-```
-
-```r
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-```
-
-```
-Error: object 'sims' not found
-```
-
-```r
 dt <- data.table(dat)
-```
-
-```
-Error: object 'dat' not found
-```
-
-```r
 setnames(dt, c("L1", "L2"), c("method", "reps")) 
-```
-
-```
-Error: x is not a data.table or data.frame
-```
-
-```r
 # Legend in original ordering please, not alphabetical: 
 dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
-```
-
-```
-Error: object of type 'closure' is not subsettable
 ```
 
 
@@ -1003,27 +941,24 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-```
-Error: ggplot2 doesn't know how to deal with data of class function
-```
+![plot of chunk Figure3](http://farm4.staticflickr.com/3747/8980389788_3f5c38ac50_o.png) 
 
 
 
 
 ```r
 Profit <- dt[, sum(profit), by=c("reps", "method")]
-```
-
-```
-Error: invalid 'type' (closure) of argument
-```
-
-```r
 Profit[, mean(V1), by="method"]
 ```
 
 ```
-Error: object 'Profit' not found
+   method     V1
+1:     GP 24.908
+2:   True 26.532
+3:    MLE  4.420
+4: Ricker 12.223
+5:  Allen  6.429
+6:  Myers  9.483
 ```
 
 
@@ -1033,9 +968,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-```
-Error: object 'Profit' not found
-```
+![plot of chunk totalprofits](http://farm6.staticflickr.com/5344/8979196259_4205b30818_o.png) 
 
 
 
@@ -1052,6 +985,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
- 211.13  121.52  121.52  -61.08 -287.60 
+  34.55   43.35   41.25  -61.08 -287.60 
 ```
 
