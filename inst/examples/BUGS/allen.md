@@ -74,7 +74,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm9.staticflickr.com/8560/8905216188_ff60178606_o.png) 
+![plot of chunk obs](http://farm6.staticflickr.com/5337/8981389019_5bd9222870_o.png) 
 
 
 
@@ -140,7 +140,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7397/8905216540_6185478f94_o.png) 
+![plot of chunk gp_traces_densities](figure/allen-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3737/8982582924_18fc905634_o.png) 
 
 
 
@@ -299,7 +299,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm4.staticflickr.com/3801/8904600123_75b2850e26_o.png) 
+![plot of chunk allen-traces](http://farm8.staticflickr.com/7315/8981389467_9eb9aa31eb_o.png) 
 
 
 
@@ -316,7 +316,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm6.staticflickr.com/5465/8904600515_b6a45f6f86_o.png) 
+![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3808/8981389687_2e190aec75_o.png) 
 
 
 
@@ -427,9 +427,9 @@ to maintain strictly positive values of parameters where appropriate.
 # Uniform priors on standard deviation terms
 jags.params=c("K","logr0", "stdQ", "stdR")
 jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0,.5),
-       "logr0" = log( rlnorm(1,0,.5) ),
-       "stdQ"= 0.2 * rlnorm(1,0,.2),
+  list("K"= 10 * rlnorm(1,0,.2),
+       "logr0" = log( rlnorm(1,0,.2) ),
+       "stdQ"= 0.01 * rlnorm(1,0,.1),
        "stdR"= 1e-5 * rlnorm(1,0,.1),
        "x"=y,
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -455,7 +455,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm3.staticflickr.com/2811/8905217662_d72e2e7e56_o.png) 
+![plot of chunk ricker-traces](http://farm8.staticflickr.com/7342/8981389927_a8df78989b_o.png) 
 
 
 
@@ -471,7 +471,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm4.staticflickr.com/3754/8904601253_ce141bef5d_o.png) 
+![plot of chunk ricker-posteriors](http://farm8.staticflickr.com/7358/8982583742_f52ea39762_o.png) 
 
 
 
@@ -500,12 +500,12 @@ head(ricker_pardist)
 
 ```
        K deviance       r0   stdQ     stdR
-1 28.383   -99.91 0.003204 0.3579 0.006239
-2  9.530  -101.94 0.026995 0.3959 0.006214
-3 37.978   -95.73 0.004318 0.3877 0.004812
-4 27.641   -74.03 0.006154 0.3482 0.006517
-5  7.686   -80.60 0.160985 0.4217 0.005948
-6  7.936   -55.76 0.054900 0.3383 0.005162
+1 20.292   -372.1 0.003364 0.4094 0.018516
+2 30.509   -304.1 0.016731 0.4070 0.022351
+3  4.871   -242.4 0.011294 0.4026 0.014878
+4 31.223   -226.7 0.015202 0.5535 0.018608
+5 16.822   -254.9 0.019983 0.3954 0.012786
+6  5.478   -127.6 0.016240 0.4456 0.002724
 ```
 
 ```r
@@ -513,7 +513,7 @@ ricker_bayes_pars
 ```
 
 ```
-[1] 0.006865 8.053982
+[1] 0.006901 8.104403
 ```
 
 
@@ -607,7 +607,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm3.staticflickr.com/2856/8905218352_11a1a84668_o.png) 
+![plot of chunk myers-traces](http://farm3.staticflickr.com/2811/8981390289_49600cd306_o.png) 
 
 
 
@@ -625,7 +625,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm6.staticflickr.com/5343/8905218726_af176f01e3_o.png) 
+![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3831/8981390481_94cbc31bac_o.png) 
 
 
 
@@ -705,7 +705,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm4.staticflickr.com/3736/8904602383_9b92b66672_o.png) 
+![plot of chunk Figure1](http://farm3.staticflickr.com/2893/8981390673_311bc04a85_o.png) 
 
 
 ## Step-ahead predictors
@@ -749,7 +749,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm4.staticflickr.com/3831/8905219454_754e7a58b5_o.png) 
+![plot of chunk Figureb](http://farm6.staticflickr.com/5331/8982584564_52a999de98_o.png) 
 
 
 
@@ -839,7 +839,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm8.staticflickr.com/7372/8904603091_94ae7a5f02_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7370/8981391097_7326ee8b2f_o.png) 
 
 
 
@@ -871,7 +871,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm3.staticflickr.com/2867/8905220172_df831dea3f_o.png) 
+![plot of chunk Figure3](http://farm4.staticflickr.com/3690/8981391319_531b9963be_o.png) 
 
 
 
@@ -886,7 +886,7 @@ Profit[, mean(V1), by="method"]
 1:     GP 24.908
 2:   True 26.532
 3:    MLE  4.420
-4: Ricker 22.809
+4: Ricker 10.714
 5:  Allen  7.347
 6:  Myers  6.735
 ```
@@ -898,7 +898,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm6.staticflickr.com/5338/8905220542_be776792d0_o.png) 
+![plot of chunk totalprofits](http://farm6.staticflickr.com/5350/8982585236_184d1b99b7_o.png) 
 
 
 
@@ -917,6 +917,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
- -92.59 -124.89 -118.55  -61.08 -287.60 
+ -92.59  -80.01 -118.55  -61.08 -287.60 
 ```
 
