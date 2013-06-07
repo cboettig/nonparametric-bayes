@@ -81,15 +81,7 @@ We initialize the usual MCMC parameters; see `?jags` for details.
 All parametric Bayesian estimates use the following basic parameters for the JAGS MCMC:
 
 
-```{r jags-setup-local}
-y <- x 
-N <- length(x);
-jags.data <- list("N","y")
-n.chains <- 6
-n.iter <- 1e6
-n.burnin <- floor(10000)
-n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
-n.update <- 10
+```{r jags-setup}
 ```
 
 
@@ -111,43 +103,12 @@ that is automatically translated into BUGS code by *R2WinBUGS*.  The file
 defines the priors and the model. We write the file from R as follows: 
 
 
-```{r allen-model-local}
-K_prior_p <- c(0.01, 20.0)
-r0_prior_p <- c(0.01, 6.0)
-theta_prior_p <- c(0.01, 20.0)
-
-bugs.model <- 
-paste(sprintf(
-"model{
-  K     ~ dunif(%s, %s)
-  r0    ~ dunif(%s, %s)
-  theta ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  K_prior_p[1], K_prior_p[2],
-  r0_prior_p[1], r0_prior_p[2],
-  theta_prior_p[1], theta_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-
-  "
-  iQ <- 1 / (stdQ * stdQ);
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "allen_process.bugs")
+```{r allen-model}
 ```
 
 Write the priors into a list for later reference
 
-```{r allen-priors-local, dependson="common-priors"}
-K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
-theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
-par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
-                    logr0 = logr0_prior, logtheta = logtheta_prior,
-                    stdQ = stdQ_prior)
+```{r allen-priors, dependson="common-priors"}
 ```
 
 We define which parameters to keep track of, and set the initial values of
@@ -155,28 +116,7 @@ parameters in the transformed space used by the MCMC.  We use logarithms
 to maintain strictly positive values of parameters where appropriate.
 
 
-```{r allen-mcmc-local, dependson=c("allen-model-local", "allen-pars", "jags-setup"), results="hide"}
-jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
-jags.inits <- function(){
-  list("K"= 8 * rlnorm(1,0, 0.1),
-       "r0"=log(2 * rlnorm(1,0, 0.1) ),
-       "theta"=log(  5 * rlnorm(1,0, 0.1) ), 
-       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-
-set.seed(1234)
-# parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
-                                      jags.params, n.chains=n.chains, 
-                                      n.iter=n.iter, n.thin=n.thin, 
-                                      n.burnin=n.burnin, 
-                                      model.file="allen_process.bugs"))
-
-# Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
-recompile(allen_jags) # required for parallel
-allen_jags <- do.call(autojags, list(object=allen_jags, n.update=n.update, 
-                                     n.iter=n.iter, n.thin = n.thin))
+```{r allen-mcmc, dependson=c("allen-model", "allen-pars", "jags-setup"), results="hide"}
 ```
 
 
@@ -184,26 +124,17 @@ allen_jags <- do.call(autojags, list(object=allen_jags, n.update=n.update,
 
 R notes: this strips classes from the `mcmc.list` object (so that we have list of matrices; objects that `reshape2::melt` can handle intelligently), and then combines chains into one array. In this array each parameter is given its value at each sample from the posterior (index) for each chain.  
 
-```{r allen-traces, dependson="allen-mcmc-local"}
+```{r allen-traces, dependson="allen-mcmc"}
 ```
 
 
-```{r allen-posteriors, dependson=c("allen-traces", "allen-priors-local")}
+```{r allen-posteriors, dependson=c("allen-traces", "allen-priors")}
 ```
 
 
 Reshape the posterior parameter distribution data, transform back into original space, and calculate the mean parameters and mean function
 
-```{r allen-output-local, dependson=c("posterior-mode", "allen-traces")}
-A <- allen_posteriors
-A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-pardist <- acast(A, index ~ variable)
-bayes_coef <- apply(pardist,2, posterior.mode) 
-bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
-allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
-allen_means <- sapply(x_grid, f, 0, bayes_pars)
-bayes_pars
-head(pardist)
+```{r allen-output, dependson=c("posterior-mode", "allen-traces")}
 ```
 
 
@@ -215,75 +146,29 @@ head(pardist)
 
 
 
-```{r ricker-model-local}
-K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-
-bugs.model <- 
-paste(sprintf(
-"model{
-  K    ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-
-  "
-  iQ <- 1 / (stdQ * stdQ);
-  r0 <- exp(logr0)
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "ricker_process.bugs")
+```{r ricker-model}
 ```
 
 
 Compute prior curves
 
-```{r ricker-priors-local, dependson="common-priors"}
-K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
-                   logr0 = logr0_prior, stdQ = stdQ_prior)
+```{r ricker-priors, dependson="common-priors"}
 ```
 
 We define which parameters to keep track of, and set the initial values of
-parameters in the transformed space used by the MCMC.  We use logarithms
-to maintain strictly positive values of parameters where appropriate.
+parameters in the transformed space used by the MCMC.  
 
 
-```{r ricker-mcmc-local, dependson="ricker-model-local"}
-# Uniform priors on standard deviation terms
-jags.params=c("K","logr0", "stdQ")
-jags.inits <- function(){
-  list("K"=10 * rlnorm(1,0,.5),
-       "logr0"=log(1) * rlnorm(1,0,.5),
-       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-set.seed(12345) 
-ricker_jags <- do.call(jags.parallel, 
-                       list(data=jags.data, inits=jags.inits, 
-                            jags.params, n.chains=n.chains, 
-                            n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
-                            model.file="ricker_process.bugs"))
-recompile(ricker_jags)
-ricker_jags <- do.call(autojags, 
-                       list(object=ricker_jags, n.update=n.update, n.iter=n.iter, 
-                            n.thin = n.thin, progress.bar="none"))
+```{r ricker-mcmc, dependson="ricker-model"}
 ```
 
 
 #### Convergence diagnostics for parametric bayes Ricker model
 
-```{r ricker-traces, dependson="ricker-mcmc-local"}
+```{r ricker-traces, dependson="ricker-mcmc"}
 ```
 
-```{r ricker-posteriors, dependson=c("ricker-traces", "ricker-priors-local")}
+```{r ricker-posteriors, dependson=c("ricker-traces", "ricker-priors")}
 ```
 
 
@@ -295,73 +180,20 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 
 ## Myers Parametric Bayes
 
-```{r myers-model-local}
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
-logK_prior_p <- c(-6.0, 6.0)
-
-bugs.model <- 
-paste(sprintf(
-"model{
-  logr0    ~ dunif(%s, %s)
-  logtheta    ~ dunif(%s, %s)
-  logK    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  logK_prior_p[1], logK_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-
-  "
-  iQ <- 1 / (stdQ * stdQ);
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  K <- exp(logK)
-
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "myers_process.bugs")
+```{r myers-model}
 ```
 
 
-```{r myers-priors-local}
-logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
-logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
-par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
-                    logr0 = logr_prior, logtheta = logtheta_prior, 
-                    stdQ = stdQ_prior)
-
+```{r myers-priors}
 ```
 
 
-```{r myers-mcmc-local, dependson="myers-model-local"}
-jags.params=c("logr0", "logtheta", "logK", "stdQ")
-jags.inits <- function(){
-  list("logr0"=log(rlnorm(1,0,.1)), 
-       "logK"=log(10 * rlnorm(1,0,.1)),
-       "logtheta" = log(2 * rlnorm(1,0,.1)),  
-       "stdQ"=sqrt(0.5) * rlnorm(1,0,.1),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-set.seed(12345)
-myers_jags <- do.call(jags.parallel, 
-                      list(data=jags.data, inits=jags.inits, jags.params, 
-                           n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
-                           n.burnin=n.burnin, model.file="myers_process.bugs"))
-recompile(myers_jags)
-myers_jags <- do.call(autojags, 
-                      list(myers_jags, n.update=n.update, n.iter=n.iter, 
-                           n.thin = n.thin, progress.bar="none"))
+```{r myers-mcmc, dependson="myers-model"}
 ```
 
 Convergence diagnostics for parametric bayes
 
-```{r myers-traces, dependson="myers-mcmc-local"}
+```{r myers-traces, dependson="myers-mcmc"}
 ```
 
 
@@ -377,7 +209,7 @@ Convergence diagnostics for parametric bayes
 
 ### Phase-space diagram of the expected dynamics
 
-```{r assemble-models, dependson=c("myers-output", "ricker-output", "allen-output-local", "gp-output", "mle-output")}
+```{r assemble-models, dependson=c("myers-output", "ricker-output", "allen-output", "gp-output", "mle-output")}
 ```
 
 
@@ -410,7 +242,7 @@ Determine the optimal policy based on the allen and MLE models
 
 Determine the optimal policy based on Bayesian Allen model
 
-```{r allen-opt, dependson="allen-output-local"}
+```{r allen-opt, dependson="allen-output"}
 ```
 
 Bayesian Ricker
@@ -456,5 +288,5 @@ Assemble the data
 ```
 
 
-```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output-local", "gp-output", "mle-output") }
+```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output") }
 ```

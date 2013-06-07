@@ -102,11 +102,11 @@ tgp_dat <-
 
 
 ## @knitr jags-setup
-y <- obs$x[-1] 
-N <- length(y);
+y <- x 
+N <- length(x);
 jags.data <- list("N","y")
-n.chains <- 2
-n.iter <- 40000
+n.chains <- 6
+n.iter <- 1e6
 n.burnin <- floor(10000)
 n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 n.update <- 10
@@ -120,71 +120,66 @@ stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
 
 
 ## @knitr allen-model
-K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
+K_prior_p <- c(0.01, 20.0)
+r0_prior_p <- c(0.01, 6.0)
+theta_prior_p <- c(0.01, 20.0)
 
 bugs.model <- 
 paste(sprintf(
 "model{
   K     ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  logtheta ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
+  r0    ~ dunif(%s, %s)
+  theta ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
   iQ <- 1 / (stdQ * stdQ);
-  iR <- 1 / (stdR * stdR);
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  x[1] ~ dunif(0, 10)
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- x[t] * exp(r0 * (1 - x[t]/K)* (x[t] - theta) / K )
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "allen.bugs")
+writeLines(bugs.model, "allen_process.bugs")
 
 
 ## @knitr allen-priors
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
 par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
-                    logr0 = logr0_prior, logtheta = logtheta_prior,
-                    stdQ = stdQ_prior, stdR = stdR_prior)
-
+                    r0 = r0_prior, theta = theta_prior,
+                    stdQ = stdQ_prior)
 
 ## @knitr allen-mcmc
-jags.params=c("K","logr0","logtheta","stdQ", "stdR") # be sensible about the order here
-
-# Can give a list of starting values or a function that can create random values 
-
+jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
-  list("K"= 8 * rlnorm(1,0,.1),
-       "logr0"=log(2 * rlnorm(1,0,.1) ),
-       "logtheta"=log(5 * rlnorm(1,0,.1)), 
-       "stdQ"= 0.05 * rlnorm(1,0,.1),
-       "stdR"= 1e-5 * rlnorm(1,0,.1),
-       "x"=y,        
+  list("K"= 8 * rlnorm(1,0, 0.1),
+       "r0"= 2 * rlnorm(1,0, 0.1) ,
+       "theta"=   5 * rlnorm(1,0, 0.1) , 
+       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 
 set.seed(1234)
 # parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
 allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
-                                          jags.params, n.chains=n.chains, 
-                                          n.iter=n.iter, n.thin=n.thin, 
-                                          n.burnin=n.burnin, model.file="allen.bugs"))
+                                      jags.params, n.chains=n.chains, 
+                                      n.iter=n.iter, n.thin=n.thin, 
+                                      n.burnin=n.burnin, 
+                                      model.file="allen_process.bugs"))
+
+# Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
+recompile(allen_jags) # required for parallel
+allen_jags <- do.call(autojags, 
+											list(object=allen_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin))
+
+
 
 
 
@@ -212,12 +207,6 @@ ggplot(allen_posteriors, aes(value)) +
 A <- allen_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 pardist <- acast(A, index ~ variable)
-# pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable)[1] ~ variable) # NOT SURE WHY THIS FAILS 
-# transform model parameters back first
-pardist[,"logr0"] = exp(pardist[,"logr0"]) 
-pardist[,"logtheta"] = exp(pardist[,"logtheta"])
-colnames(pardist)[colnames(pardist)=="logtheta"] = "theta"
-colnames(pardist)[colnames(pardist)=="logr0"] = "r0"
 bayes_coef <- apply(pardist,2, posterior.mode) 
 bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
 allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
@@ -227,54 +216,44 @@ head(pardist)
 
 
 
+
 ## @knitr ricker-model
 K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(0.01, 20.0)
 bugs.model <- 
 paste(sprintf(
 "model{
   K    ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
+  r0    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
-
+  r0_prior_p[1], r0_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
   "
   iQ <- 1 / (stdQ * stdQ);
-  iR <- 1 / (stdR * stdR);
-  r0 <- exp(logr0)
-  x[1] ~ dunif(0, 10)
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- x[t] * exp(r0 * (1 - x[t]/K) )
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "ricker.bugs")
+writeLines(bugs.model, "ricker_process.bugs")
+
 
 
 ## @knitr ricker-priors
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
 par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
-                   logr0 = logr0_prior, stdQ = stdQ_prior, stdR = stdR_prior)
+                   r0 = r0_prior, stdQ = stdQ_prior)
 
 
 ## @knitr ricker-mcmc
-# Uniform priors on standard deviation terms
-jags.params=c("K","logr0", "stdQ", "stdR")
+jags.params=c("K","r0", "stdQ")
 jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0,.2),
-       "logr0" = log( rlnorm(1,0,.2) ),
-       "stdQ"= 0.01 * rlnorm(1,0,.1),
-       "stdR"= 1e-5 * rlnorm(1,0,.1),
-       "x"=y,
+  list("K"=10 * rlnorm(1,0,.5),
+       "r0"= rlnorm(1,0,.5),
+       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345) 
@@ -282,7 +261,12 @@ ricker_jags <- do.call(jags.parallel,
                        list(data=jags.data, inits=jags.inits, 
                             jags.params, n.chains=n.chains, 
                             n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
-                            model.file="ricker.bugs"))
+                            model.file="ricker_process.bugs"))
+recompile(ricker_jags)
+ricker_jags <- do.call(autojags, 
+                       list(object=ricker_jags, n.update=n.update, 
+														n.iter=n.iter, n.thin = n.thin, 
+														progress.bar="none"))
 
 
 ## @knitr ricker-traces
@@ -310,11 +294,8 @@ ggplot(ricker_posteriors, aes(value)) +
 A <- ricker_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 ricker_pardist <- acast(A, index ~ variable)
-ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
-colnames(ricker_pardist)[colnames(ricker_pardist)=="logr0"] = "r0"
-bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
+bayes_coef <- apply(ricker_pardist,2, posterior.mode) 
 ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
-
 ricker_f <- function(x,h,p){
   sapply(x, function(x){ 
     x <- pmax(0, x-h) 
@@ -322,84 +303,81 @@ ricker_f <- function(x,h,p){
   })
 }
 ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
-
 head(ricker_pardist)
 ricker_bayes_pars
 
 
 ## @knitr myers-model
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
-logK_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(.0001, 10.0)
+theta_prior_p <- c(.0001, 10.0)
+K_prior_p <- c(.0001, 40.0)
 bugs.model <- 
 paste(sprintf(
 "model{
-  logr0    ~ dunif(%s, %s)
-  logtheta    ~ dunif(%s, %s)
-  logK    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  logK_prior_p[1], logK_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
+  r0    ~ dunif(%s, %s)
+  theta    ~ dunif(%s, %s)
+  K    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  K_prior_p[1], K_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
-  iQ <- 1 / (stdQ * stdQ)
-  iR <- 1 / (stdR * stdR)
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  K <- exp(logK)
+  iQ <- 1 / (stdQ * stdQ);
 
-  x[1] ~ dunif(0, 10)
-
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- r0 * pow(abs(x[t]), theta) / (1 + pow(abs(x[t]), theta) / K)
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "myers.bugs")
+writeLines(bugs.model, "myers_process.bugs")
+
+
 
 
 ## @knitr myers-priors
-logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
-logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
-par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
-                    logr0 = logr_prior, logtheta = logtheta_prior, 
-                    stdQ = stdQ_prior, stdR = stdR_prior)
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r_prior     <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
+par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
+                    r0 = r_prior, theta = theta_prior, 
+                    stdQ = stdQ_prior)
+
 
 
 
 ## @knitr myers-mcmc
-jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
+jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("logr0" 		= log(rlnorm(1, 0, .5)), 
-       "logK" 		= log(10 * rlnorm(1, 1, .2)),
-       "logtheta" = log(2 * rnorm(1, 1, .2)),  
-       "stdQ"			= 0.2  * rlnorm(1, 0, .1),
-       "stdR"			= 1e-5 * rlnorm(1, 0, .1),
-       "x" 				= y,
+  list("r0"= rlnorm(1,0,.1), 
+       "K"=    10 * rlnorm(1,0,.1),
+       "theta" = 2 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.5) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
 myers_jags <- do.call(jags.parallel, 
-                      list(data=jags.data, inits=jags.inits, jags.params, 
-                           n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
-                           n.burnin=n.burnin, model.file="myers.bugs"))
+                      list(data=jags.data, inits=jags.inits, 
+													 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
+recompile(myers_jags)
+myers_jags <- do.call(autojags, 
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
+
+
+
 
 
 ## @knitr myers-traces
-tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes the hard way...
+tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-
 ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 
@@ -421,15 +399,6 @@ ggplot(myers_posteriors, aes(value)) +
 A <- myers_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 myers_pardist <- acast(A, index ~ variable)
-### myers_pardist <- acast(myers_posteriors[2:3], 1:table(myers_posteriors$variable) ~ variable) 
-myers_pardist[,"logK"] = exp(myers_pardist[,"logK"]) # transform model parameters back first
-myers_pardist[,"logr0"] = exp(myers_pardist[,"logr0"]) # transform model parameters back first
-myers_pardist[,"logtheta"] = exp(myers_pardist[,"logtheta"]) # transform model parameters back first
-colnames(myers_pardist)[colnames(myers_pardist)=="logK"] = "K"
-colnames(myers_pardist)[colnames(myers_pardist)=="logr0"] = "r0"
-colnames(myers_pardist)[colnames(myers_pardist)=="logtheta"] = "theta"
-
-
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
