@@ -6,4 +6,5 @@ figure/
 */*.bugs
 */cache/
 */figure/
-
+*.sh
+*/.sh
