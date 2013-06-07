@@ -1,0 +1,9 @@
+cache/
+figure/
+*.pdf
+*.bib
+*.html
+*/*.bugs
+*/cache/
+*/figure/
+
