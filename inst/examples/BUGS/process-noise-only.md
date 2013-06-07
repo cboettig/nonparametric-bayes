@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm8.staticflickr.com/7407/8979192379_8862e88fe1_o.png) 
+![plot of chunk obs](http://farm9.staticflickr.com/8275/8980953490_eb30e9ef6b_o.png) 
 
 
 
@@ -137,8 +137,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](http://farm6.staticflickr.com/5452/8979192641_6cec3355b6_o.png)
-![plot of chunk gp_traces_densities](http://farm8.staticflickr.com/7459/8980386876_605218075e_o.png) 
+![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm3.staticflickr.com/2831/8979760101_a6048a7b28_o.png) 
 
 
 
@@ -204,26 +203,24 @@ defines the priors and the model. We write the file from R as follows:
 
 
 ```r
-K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-3.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
+K_prior_p <- c(0.01, 20.0)
+r0_prior_p <- c(0.01, 6.0)
+theta_prior_p <- c(0.01, 20.0)
 
 bugs.model <- 
 paste(sprintf(
 "model{
   K     ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  logtheta ~ dunif(%s, %s)
+  r0    ~ dunif(%s, %s)
+  theta ~ dunif(%s, %s)
   stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
   stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
   iQ <- 1 / (stdQ * stdQ);
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
     mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
@@ -239,11 +236,15 @@ Write the priors into a list for later reference
 
 ```r
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
 par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
                     logr0 = logr0_prior, logtheta = logtheta_prior,
                     stdQ = stdQ_prior)
+```
+
+```
+Error: object 'logr0_prior' not found
 ```
 
 
@@ -254,11 +255,11 @@ to maintain strictly positive values of parameters where appropriate.
 
 
 ```r
-jags.params=c("K","logr0","logtheta","stdQ") # be sensible about the order here
+jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
   list("K"= 8 * rlnorm(1,0, 0.1),
-       "logr0"=log(2 * rlnorm(1,0, 0.1) ),
-       "logtheta"=log(  5 * rlnorm(1,0, 0.1) ), 
+       "r0"=log(2 * rlnorm(1,0, 0.1) ),
+       "theta"=log(  5 * rlnorm(1,0, 0.1) ), 
        "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
@@ -292,7 +293,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm6.staticflickr.com/5321/8979193249_a88f2311ea_o.png) 
+![plot of chunk allen-traces](http://farm8.staticflickr.com/7354/8979760329_6c5b840463_o.png) 
 
 
 
@@ -302,6 +303,13 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
+```
+
+```
+Error: object 'par_priors' not found
+```
+
+```r
 
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -309,7 +317,9 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm9.staticflickr.com/8553/8979193499_c42e5dc822_o.png) 
+```
+Error: object 'allen_priors' not found
+```
 
 
 
@@ -320,12 +330,6 @@ Reshape the posterior parameter distribution data, transform back into original 
 A <- allen_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 pardist <- acast(A, index ~ variable)
-# pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable)[1] ~ variable) # NOT SURE WHY THIS FAILS 
-# transform model parameters back first
-pardist[,"logr0"] = exp(pardist[,"logr0"]) 
-pardist[,"logtheta"] = exp(pardist[,"logtheta"])
-colnames(pardist)[colnames(pardist)=="logtheta"] = "theta"
-colnames(pardist)[colnames(pardist)=="logr0"] = "r0"
 bayes_coef <- apply(pardist,2, posterior.mode) 
 bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
 allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
@@ -334,7 +338,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.13533 7.68891 0.05298
+[1] 0.5111 7.7293 4.6204
 ```
 
 ```r
@@ -342,13 +346,13 @@ head(pardist)
 ```
 
 ```
-         K deviance      r0    theta    stdQ
-170  7.458    33.73 0.29784 1.375401 0.05024
-171  7.260    40.88 0.10384 0.005763 0.06147
-172  8.062    35.60 0.33299 0.945562 0.05145
-173  3.744    32.80 0.13850 7.776346 0.05265
-174 10.100    41.82 0.05934 0.070421 0.05359
-175  8.352    38.33 0.12159 0.066087 0.04874
+        K deviance     r0    stdQ  theta
+170 5.192    31.59 0.5481 0.04914 7.6671
+171 7.842    34.69 0.4890 0.04097 3.6555
+172 7.741    33.30 0.7514 0.04429 4.9000
+173 8.576    38.88 0.1402 0.05054 0.3652
+174 7.568    31.80 0.9675 0.04668 3.8394
+175 4.697    30.23 0.4209 0.04923 7.7364
 ```
 
 
@@ -489,7 +493,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm4.staticflickr.com/3794/8980387706_6747cf59d5_o.png) 
+![plot of chunk ricker-traces](http://farm8.staticflickr.com/7371/8979760563_58a1dbb822_o.png) 
 
 
 
@@ -505,7 +509,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm3.staticflickr.com/2875/8979194039_857ac19403_o.png) 
+![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5458/8979760861_6db0112842_o.png) 
 
 
 
@@ -682,7 +686,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm6.staticflickr.com/5466/8980388296_0c4bc86990_o.png) 
+![plot of chunk myers-traces](http://farm4.staticflickr.com/3821/8979761101_5e74199b24_o.png) 
 
 
 
@@ -700,7 +704,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7368/8980388596_92e9431c35_o.png) 
+![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7372/8980955294_5460566ebf_o.png) 
 
 
 
@@ -780,7 +784,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm4.staticflickr.com/3714/8980388856_800771282f_o.png) 
+![plot of chunk Figure1](http://farm9.staticflickr.com/8122/8979761779_dd91ea91ec_o.png) 
 
 
 
@@ -819,7 +823,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm6.staticflickr.com/5345/8980389116_f84da2c41b_o.png) 
+![plot of chunk Figureb](http://farm6.staticflickr.com/5343/8980955852_e651131131_o.png) 
 
 
 
@@ -909,7 +913,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm3.staticflickr.com/2867/8980389346_39ac5232c4_o.png) 
+![plot of chunk Figure2](http://farm3.staticflickr.com/2842/8980956100_b10a8d56c3_o.png) 
 
 
 
@@ -941,7 +945,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm4.staticflickr.com/3747/8980389788_3f5c38ac50_o.png) 
+![plot of chunk Figure3](http://farm8.staticflickr.com/7355/8979762731_017a74eb64_o.png) 
 
 
 
@@ -957,7 +961,7 @@ Profit[, mean(V1), by="method"]
 2:   True 26.532
 3:    MLE  4.420
 4: Ricker 12.223
-5:  Allen  6.429
+5:  Allen 26.443
 6:  Myers  9.483
 ```
 
@@ -968,7 +972,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm6.staticflickr.com/5344/8979196259_4205b30818_o.png) 
+![plot of chunk totalprofits](http://farm8.staticflickr.com/7374/8979763001_24ab65d006_o.png) 
 
 
 
@@ -985,6 +989,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  34.55   43.35   41.25  -61.08 -287.60 
+  32.64   43.35   41.25  -61.08 -287.60 
 ```
 
