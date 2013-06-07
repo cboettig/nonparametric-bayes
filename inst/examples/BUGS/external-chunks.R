@@ -353,8 +353,8 @@ jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
   list("r0"= rlnorm(1,0,.1), 
        "K"=    10 * rlnorm(1,0,.1),
-       "theta" = 2 * rlnorm(1,0,.1),  
-       "stdQ"= sqrt(0.5) * rlnorm(1,0,.1),
+       "theta" = 1 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
