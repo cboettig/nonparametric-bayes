@@ -20,15 +20,17 @@ read_chunk("external-chunks.R")
 
 ### Model and parameters
 
-Uses the model derived in ` citet("10.1080/10236190412331335373")`, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
 
-
-```{r stateeq}
+```{r stateeq-local}
+f <- Myers
+p <- c(1, 2, 6)
+K <- 5  # approx, a li'l' less
+allee <- 1.2 # approx, a li'l' less
 ```
 
 Various parameters defining noise dynamics, grid, and policy costs.  
 
-```{r sdp-pars, dependson="stateeq"}
+```{r sdp-pars, dependson="stateeq-local"}
 ```
 
 ### Sample Data
