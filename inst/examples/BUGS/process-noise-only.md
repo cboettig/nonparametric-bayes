@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm9.staticflickr.com/8275/8980953490_eb30e9ef6b_o.png) 
+![plot of chunk obs](http://farm6.staticflickr.com/5329/8981954054_ee1e1c2599_o.png) 
 
 
 
@@ -137,7 +137,9 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm3.staticflickr.com/2831/8979760101_a6048a7b28_o.png) 
+![plot of chunk gp_traces_densities](http://farm3.staticflickr.com/2870/8981954336_ec1fbbebef_o.png) 
+
+![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8278/8981954638_e0086dd685_o.png) 
 
 
 
@@ -239,12 +241,8 @@ K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
 r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
 theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
 par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
-                    logr0 = logr0_prior, logtheta = logtheta_prior,
+                    r0 = r0_prior, theta = theta_prior,
                     stdQ = stdQ_prior)
-```
-
-```
-Error: object 'logr0_prior' not found
 ```
 
 
@@ -258,8 +256,8 @@ to maintain strictly positive values of parameters where appropriate.
 jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
   list("K"= 8 * rlnorm(1,0, 0.1),
-       "r0"=log(2 * rlnorm(1,0, 0.1) ),
-       "theta"=log(  5 * rlnorm(1,0, 0.1) ), 
+       "r0"= 2 * rlnorm(1,0, 0.1) ,
+       "theta"=   5 * rlnorm(1,0, 0.1) , 
        "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
@@ -274,8 +272,9 @@ allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits,
 
 # Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
 recompile(allen_jags) # required for parallel
-allen_jags <- do.call(autojags, list(object=allen_jags, n.update=n.update, 
-                                     n.iter=n.iter, n.thin = n.thin))
+allen_jags <- do.call(autojags, 
+											list(object=allen_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin))
 ```
 
 
@@ -293,7 +292,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm8.staticflickr.com/7354/8979760329_6c5b840463_o.png) 
+![plot of chunk allen-traces](http://farm4.staticflickr.com/3789/8980764645_ddc52e83a3_o.png) 
 
 
 
@@ -303,13 +302,6 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-```
-
-```
-Error: object 'par_priors' not found
-```
-
-```r
 
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
@@ -317,9 +309,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-```
-Error: object 'allen_priors' not found
-```
+![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3832/8981955230_3a2b3b870d_o.png) 
 
 
 
@@ -338,7 +328,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.5111 7.7293 4.6204
+[1] 0.5575 7.7179 4.5429
 ```
 
 ```r
@@ -346,13 +336,13 @@ head(pardist)
 ```
 
 ```
-        K deviance     r0    stdQ  theta
-170 5.192    31.59 0.5481 0.04914 7.6671
-171 7.842    34.69 0.4890 0.04097 3.6555
-172 7.741    33.30 0.7514 0.04429 4.9000
-173 8.576    38.88 0.1402 0.05054 0.3652
-174 7.568    31.80 0.9675 0.04668 3.8394
-175 4.697    30.23 0.4209 0.04923 7.7364
+        K deviance     r0    stdQ theta
+170 7.751    32.88 0.6191 0.04284 2.354
+171 7.825    31.54 0.9437 0.04101 4.411
+172 7.816    35.86 2.3905 0.04475 5.719
+173 7.429    36.42 0.5230 0.05075 1.229
+174 7.637    30.59 1.0120 0.04205 4.505
+175 7.827    32.62 0.4872 0.05021 2.315
 ```
 
 
@@ -368,21 +358,18 @@ head(pardist)
 
 ```r
 K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(0.01, 20.0)
 bugs.model <- 
 paste(sprintf(
 "model{
   K    ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
+  r0    ~ dunif(%s, %s)
   stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
+  r0_prior_p[1], r0_prior_p[2],
   stdQ_prior_p[1], stdQ_prior_p[2]),
-
   "
   iQ <- 1 / (stdQ * stdQ);
-  r0 <- exp(logr0)
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
     mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
@@ -399,24 +386,22 @@ Compute prior curves
 
 ```r
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
 par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
-                   logr0 = logr0_prior, stdQ = stdQ_prior)
+                   r0 = r0_prior, stdQ = stdQ_prior)
 ```
 
 
 We define which parameters to keep track of, and set the initial values of
-parameters in the transformed space used by the MCMC.  We use logarithms
-to maintain strictly positive values of parameters where appropriate.
+parameters in the transformed space used by the MCMC.  
 
 
 
 ```r
-# Uniform priors on standard deviation terms
-jags.params=c("K","logr0", "stdQ")
+jags.params=c("K","r0", "stdQ")
 jags.inits <- function(){
   list("K"=10 * rlnorm(1,0,.5),
-       "logr0"=log(1) * rlnorm(1,0,.5),
+       "r0"= rlnorm(1,0,.5),
        "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
@@ -433,50 +418,51 @@ recompile(ricker_jags)
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 251
+   Graph Size: 249
 
 Initializing model
 ```
 
 ```r
 ricker_jags <- do.call(autojags, 
-                       list(object=ricker_jags, n.update=n.update, n.iter=n.iter, 
-                            n.thin = n.thin, progress.bar="none"))
+                       list(object=ricker_jags, n.update=n.update, 
+														n.iter=n.iter, n.thin = n.thin, 
+														progress.bar="none"))
 ```
 
 
@@ -493,7 +479,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm8.staticflickr.com/7371/8979760563_58a1dbb822_o.png) 
+![plot of chunk ricker-traces](http://farm4.staticflickr.com/3797/8980765177_73dfc4bdd3_o.png) 
 
 
 
@@ -509,7 +495,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm6.staticflickr.com/5458/8979760861_6db0112842_o.png) 
+![plot of chunk ricker-posteriors](http://farm9.staticflickr.com/8559/8980765463_c89070ff5c_o.png) 
 
 
 
@@ -520,11 +506,8 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 A <- ricker_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 ricker_pardist <- acast(A, index ~ variable)
-ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
-colnames(ricker_pardist)[colnames(ricker_pardist)=="logr0"] = "r0"
-bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
+bayes_coef <- apply(ricker_pardist,2, posterior.mode) 
 ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
-
 ricker_f <- function(x,h,p){
   sapply(x, function(x){ 
     x <- pmax(0, x-h) 
@@ -532,18 +515,17 @@ ricker_f <- function(x,h,p){
   })
 }
 ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
-
 head(ricker_pardist)
 ```
 
 ```
-         K deviance       r0    stdQ
-170  9.314    40.94 0.037042 0.05319
-171 22.661    42.57 0.011806 0.05243
-172 11.366    43.80 0.063853 0.05085
-173 17.873    44.43 0.035388 0.05420
-174 32.354    42.87 0.005756 0.05521
-175 16.642    45.01 0.020490 0.06445
+         K deviance      r0    stdQ
+170  7.727    35.73 0.29440 0.05197
+171  7.949    37.93 0.18845 0.05872
+172 32.183    44.54 0.02474 0.05688
+173  8.149    37.59 0.12204 0.05407
+174  7.460    39.01 0.38643 0.05495
+175  7.361    35.54 0.23805 0.05150
 ```
 
 ```r
@@ -551,7 +533,7 @@ ricker_bayes_pars
 ```
 
 ```
-[1] 0.00836 8.28684
+[1] 0.1997 7.5976
 ```
 
 
@@ -560,27 +542,23 @@ ricker_bayes_pars
 
 
 ```r
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
-logK_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(.0001, 10.0)
+theta_prior_p <- c(.0001, 10.0)
+K_prior_p <- c(.0001, 40.0)
 bugs.model <- 
 paste(sprintf(
 "model{
-  logr0    ~ dunif(%s, %s)
-  logtheta    ~ dunif(%s, %s)
-  logK    ~ dunif(%s, %s)
+  r0    ~ dunif(%s, %s)
+  theta    ~ dunif(%s, %s)
+  K    ~ dunif(%s, %s)
   stdQ ~ dunif(%s, %s)", 
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  logK_prior_p[1], logK_prior_p[2],
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  K_prior_p[1], K_prior_p[2],
   stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
   iQ <- 1 / (stdQ * stdQ);
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  K <- exp(logK)
 
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
@@ -595,11 +573,11 @@ writeLines(bugs.model, "myers_process.bugs")
 
 
 ```r
-logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
-logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
-par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
-                    logr0 = logr_prior, logtheta = logtheta_prior, 
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r_prior     <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
+par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
+                    r0 = r_prior, theta = theta_prior, 
                     stdQ = stdQ_prior)
 ```
 
@@ -607,19 +585,21 @@ par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
 
 
 ```r
-jags.params=c("logr0", "logtheta", "logK", "stdQ")
+jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("logr0"=log(rlnorm(1,0,.1)), 
-       "logK"=log(10 * rlnorm(1,0,.1)),
-       "logtheta" = log(2 * rlnorm(1,0,.1)),  
-       "stdQ"=sqrt(0.5) * rlnorm(1,0,.1),
+  list("r0"= rlnorm(1,0,.1), 
+       "K"=    10 * rlnorm(1,0,.1),
+       "theta" = 2 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.5) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
 myers_jags <- do.call(jags.parallel, 
-                      list(data=jags.data, inits=jags.inits, jags.params, 
-                           n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
-                           n.burnin=n.burnin, model.file="myers_process.bugs"))
+                      list(data=jags.data, inits=jags.inits, 
+													 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
 recompile(myers_jags)
 ```
 
@@ -627,50 +607,51 @@ recompile(myers_jags)
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 370
+   Graph Size: 367
 
 Initializing model
 ```
 
 ```r
 myers_jags <- do.call(autojags, 
-                      list(myers_jags, n.update=n.update, n.iter=n.iter, 
-                           n.thin = n.thin, progress.bar="none"))
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
 ```
 
 
@@ -678,15 +659,14 @@ Convergence diagnostics for parametric bayes
 
 
 ```r
-tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes the hard way...
+tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-
 ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm4.staticflickr.com/3821/8979761101_5e74199b24_o.png) 
+![plot of chunk myers-traces](http://farm4.staticflickr.com/3821/8980765719_e60a8eee71_o.png) 
 
 
 
@@ -704,7 +684,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7372/8980955294_5460566ebf_o.png) 
+![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7343/8981956282_7c347c9277_o.png) 
 
 
 
@@ -713,15 +693,6 @@ ggplot(myers_posteriors, aes(value)) +
 A <- myers_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 myers_pardist <- acast(A, index ~ variable)
-### myers_pardist <- acast(myers_posteriors[2:3], 1:table(myers_posteriors$variable) ~ variable) 
-myers_pardist[,"logK"] = exp(myers_pardist[,"logK"]) # transform model parameters back first
-myers_pardist[,"logr0"] = exp(myers_pardist[,"logr0"]) # transform model parameters back first
-myers_pardist[,"logtheta"] = exp(myers_pardist[,"logtheta"]) # transform model parameters back first
-colnames(myers_pardist)[colnames(myers_pardist)=="logK"] = "K"
-colnames(myers_pardist)[colnames(myers_pardist)=="logr0"] = "r0"
-colnames(myers_pardist)[colnames(myers_pardist)=="logtheta"] = "theta"
-
-
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
@@ -730,13 +701,13 @@ head(myers_pardist)
 ```
 
 ```
-    deviance        K    r0   theta    stdQ
-170    44.97   0.8325 7.981 0.11231 0.04493
-171    39.41   3.2984 4.337 0.11580 0.05258
-172    40.55   7.4651 3.711 0.11318 0.04928
-173    48.74 332.0344 2.826 0.12810 0.06829
-174    39.99 202.2245 3.276 0.11083 0.04632
-175    47.68  55.1607 3.829 0.09356 0.04547
+         K deviance    r0    stdQ  theta
+170  2.236    41.08 4.770 0.05376 0.1219
+171 31.031    44.23 3.276 0.04293 0.1141
+172 15.612    40.89 3.304 0.04785 0.1184
+173 19.126    39.64 3.425 0.04994 0.1135
+174 21.700    43.50 3.159 0.05992 0.1248
+175 10.400    40.53 3.764 0.04741 0.1070
 ```
 
 ```r
@@ -744,7 +715,7 @@ myers_bayes_pars
 ```
 
 ```
-[1]  0.4414  3.4996 41.2481
+[1] 40.640  3.392 19.887
 ```
 
 
@@ -784,7 +755,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm9.staticflickr.com/8122/8979761779_dd91ea91ec_o.png) 
+![plot of chunk Figure1](http://farm9.staticflickr.com/8269/8981956534_c1cfc8067d_o.png) 
 
 
 
@@ -823,7 +794,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm6.staticflickr.com/5343/8980955852_e651131131_o.png) 
+![plot of chunk Figureb](http://farm4.staticflickr.com/3673/8980766507_9d158356f2_o.png) 
 
 
 
@@ -913,7 +884,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm3.staticflickr.com/2842/8980956100_b10a8d56c3_o.png) 
+![plot of chunk Figure2](http://farm6.staticflickr.com/5462/8981957076_9f38a6b683_o.png) 
 
 
 
@@ -945,7 +916,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm8.staticflickr.com/7355/8979762731_017a74eb64_o.png) 
+![plot of chunk Figure3](http://farm9.staticflickr.com/8544/8981957412_40dc27724f_o.png) 
 
 
 
@@ -960,9 +931,9 @@ Profit[, mean(V1), by="method"]
 1:     GP 24.908
 2:   True 26.532
 3:    MLE  4.420
-4: Ricker 12.223
-5:  Allen 26.443
-6:  Myers  9.483
+4: Ricker  5.893
+5:  Allen 26.428
+6:  Myers  9.472
 ```
 
 
@@ -972,7 +943,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7374/8979763001_24ab65d006_o.png) 
+![plot of chunk totalprofits](http://farm4.staticflickr.com/3823/8980767325_b83b5eafc7_o.png) 
 
 
 
@@ -989,6 +960,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  32.64   43.35   41.25  -61.08 -287.60 
+  32.28   35.92   40.64  -61.08 -287.60 
 ```
 
