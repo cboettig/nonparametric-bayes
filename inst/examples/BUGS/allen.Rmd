@@ -28,7 +28,7 @@ Uses the model derived in `citet("10.1080/10236190412331335373")`, of a Ricker-l
 
 ```{r stateeq}
 f <- RickerAllee
-p <- c(1, 10, 5)
+p <- c(2, 8, 5)
 K <- 10  # approx, a li'l' less
 allee <- 5 # approx, a li'l' less
 ```
@@ -81,10 +81,10 @@ estf <- function(p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
 }
-par <- c(p[1]+abs(rnorm(1,0,1)), 
-         p[2]+rnorm(1,0,.1), 
-         p[3]+rnorm(1,0, .1), 
-         sigma_g + abs(rnorm(1,0,.1)))
+par <- c(p[1]*rlnorm(1,0,.4), 
+         p[2]*rlnorm(1,0,.3), 
+         p[3]*rlnorm(1,0, .3), 
+         sigma_g * rlnorm(1,0,.3))
 o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -123,7 +123,7 @@ gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
 Show traces and posteriors against priors
 
 ```{r gp_traces_densities, dependson="gp"}
-plots <- summary_gp_mcmc(gp)
+plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
 
@@ -147,12 +147,12 @@ We initialize the usual MCMC parameters; see `?jags` for details.
 All parametric Bayesian estimates use the following basic parameters for the JAGS MCMC:
 
 
-```{r jags-setup}
+```{r jags-setup, dependson="obs"}
 y <- obs$x[-1] 
 N <- length(y);
 jags.data <- list("N","y")
 n.chains <- 2
-n.iter <- 1e5
+n.iter <- 40000
 n.burnin <- floor(10000)
 n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
 n.update <- 10
@@ -162,8 +162,8 @@ n.update <- 10
 We will use the same priors for process and observation noise in each model, 
 
 ```{r common-priors}
-stdQ_prior_p <- c(0.0001, 100)
-stdR_prior_p <- c(1e-4, .1)
+stdQ_prior_p <- c(1e-6, 100)
+stdR_prior_p <- c(1e-6, .1)
 stdQ_prior  <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
 stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
 ```
@@ -239,10 +239,10 @@ jags.params=c("K","logr0","logtheta","stdQ", "stdR") # be sensible about the ord
 # Can give a list of starting values or a function that can create random values 
 
 jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0,.1),
-       "logr0"=log(rlnorm(1,0,.5) ),
-       "logtheta"=log(2 * rlnorm(1,0,.1)), 
-       "stdQ"= 0.2 * rlnorm(1,0,.1),
+  list("K"= 8 * rlnorm(1,0,.1),
+       "logr0"=log(2 * rlnorm(1,0,.1) ),
+       "logtheta"=log(5 * rlnorm(1,0,.1)), 
+       "stdQ"= 0.05 * rlnorm(1,0,.1),
        "stdR"= 1e-5 * rlnorm(1,0,.1),
        "x"=y,        
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -368,9 +368,9 @@ to maintain strictly positive values of parameters where appropriate.
 # Uniform priors on standard deviation terms
 jags.params=c("K","logr0", "stdQ", "stdR")
 jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0,.5),
-       "logr0" = log( rlnorm(1,0,.5) ),
-       "stdQ"= 0.2 * rlnorm(1,0,.2),
+  list("K"= 10 * rlnorm(1,0,.2),
+       "logr0" = log( rlnorm(1,0,.2) ),
+       "stdQ"= 0.01 * rlnorm(1,0,.1),
        "stdR"= 1e-5 * rlnorm(1,0,.1),
        "x"=y,
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -531,13 +531,18 @@ ggplot(myers_posteriors, aes(value)) +
 
 
 ```{r myers-output, dependson="myers-traces"}
-myers_pardist <- acast(myers_posteriors[2:3], 
-                        1:table(myers_posteriors$variable) ~ variable, 
-                        subset=.(variable!="deviance")) 
-myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
-myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
-myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
-colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
+A <- myers_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+myers_pardist <- acast(A, index ~ variable)
+### myers_pardist <- acast(myers_posteriors[2:3], 1:table(myers_posteriors$variable) ~ variable) 
+myers_pardist[,"logK"] = exp(myers_pardist[,"logK"]) # transform model parameters back first
+myers_pardist[,"logr0"] = exp(myers_pardist[,"logr0"]) # transform model parameters back first
+myers_pardist[,"logtheta"] = exp(myers_pardist[,"logtheta"]) # transform model parameters back first
+colnames(myers_pardist)[colnames(myers_pardist)=="logK"] = "K"
+colnames(myers_pardist)[colnames(myers_pardist)=="logr0"] = "r0"
+colnames(myers_pardist)[colnames(myers_pardist)=="logtheta"] = "theta"
+
+
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
@@ -736,12 +741,11 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
 
 
 ```{r deviances, dependson=c("myers-output", "ricker-output", "allen-output", "gp-output", "mle-output")}
-allen_deviance <- pardist[,'deviance']
-ricker_deviance <- ricker_pardist[,'deviance']
-myers_deviance <- myers_pardist[,'deviance']
+allen_deviance <- posterior.mode(pardist[,'deviance'])
+ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
 
 c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
 
