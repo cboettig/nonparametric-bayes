@@ -8,9 +8,9 @@ Plotting and knitr options, (can generally be ignored)
 
 
 ```r
+require(modeest)
 posterior.mode <- function(x) {
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
+  mlv(x, method="shorth")$M
 }
 ```
 
@@ -20,20 +20,15 @@ posterior.mode <- function(x) {
 
 ### Model and parameters
 
-Uses the model derived in <a href="http://dx.doi.org/10.1080/10236190412331335373">Allen _et. al._ (2005)</a>, of a Ricker-like growth curve with an allee effect, defined in the pdgControl package,
-
 
 
 ```r
 f <- Myers
-p <- c(1, 2, 6)
+p <- c(1.5, 2.5, 8)
 K <- 5  # approx, a li'l' less
 allee <- 1.2 # approx, a li'l' less
 ```
 
-
-
-Various parameters defining noise dynamics, grid, and policy costs.  
 
 Various parameters defining noise dynamics, grid, and policy costs.  
 
@@ -50,8 +45,8 @@ delta <- 0.01
 OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-Xo <- K # observations start from
-x0 <- Xo # simulation under policy starts from
+Xo <-  allee+.5# observations start from
+x0 <- K # simulation under policy starts from
 Tobs <- 40
 ```
 
@@ -63,7 +58,7 @@ Tobs <- 40
   set.seed(1234)
   #harvest <- sort(rep(seq(0, .5, length=7), 5))
   x <- numeric(Tobs)
-  x[1] <- 2
+  x[1] <- Xo
   nz <- 1
   for(t in 1:(Tobs-1))
     x[t+1] = z_g() * f(x[t], h=0, p=p)
@@ -75,7 +70,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm9.staticflickr.com/8261/8981085989_fb94f4c966_o.png) 
+![plot of chunk obs](http://farm9.staticflickr.com/8395/9009752055_efb34908d3_o.png) 
 
 
 
@@ -88,10 +83,10 @@ estf <- function(p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
 }
-par <- c(p[1]+abs(rnorm(1,0,1)), 
-         p[2]+rnorm(1,0,.1), 
-         p[3]+rnorm(1,0, .1), 
-         sigma_g + abs(rnorm(1,0,.1)))
+par <- c(p[1]*rlnorm(1,0,.4), 
+         p[2]*rlnorm(1,0,.3), 
+         p[3]*rlnorm(1,0, .3), 
+         sigma_g * rlnorm(1,0,.3))
 o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -109,7 +104,6 @@ Mean predictions
 true_means <- sapply(x_grid, f, 0, p)
 est_means <- sapply(x_grid, est$f, 0, est$p)
 ```
-
 
 
 ## Non-parametric Bayes
@@ -138,10 +132,10 @@ Show traces and posteriors against priors
 
 
 ```r
-plots <- summary_gp_mcmc(gp)
+plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8133/8982289288_be44190e3e_o.png) ![plot of chunk gp_traces_densities](http://farm4.staticflickr.com/3716/8982289528_a458e6cf6b_o.png) 
+![plot of chunk gp_traces_densities](figure/myers-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8550/9010937162_4dffe6a438_o.png) 
 
 
 
@@ -169,13 +163,14 @@ All parametric Bayesian estimates use the following basic parameters for the JAG
 
 
 ```r
-y <- obs$x[-1] 
-N <- length(y);
+y <- x 
+N <- length(x);
 jags.data <- list("N","y")
-n.chains <- 3
-n.iter <- 1e5
+n.chains <- 6
+n.iter <- 1e6
 n.burnin <- floor(10000)
 n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
+n.update <- 10
 ```
 
 
@@ -184,8 +179,8 @@ We will use the same priors for process and observation noise in each model,
 
 
 ```r
-stdQ_prior_p <- c(0.0001, 100)
-stdR_prior_p <- c(0.0001, 100)
+stdQ_prior_p <- c(1e-6, 100)
+stdR_prior_p <- c(1e-6, .1)
 stdQ_prior  <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
 stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
 ```
@@ -199,12 +194,6 @@ gives the parametric Bayesian approach the best chance at succeeding.
 `y` is the timeseries (recall `obs` has the $x_t$, $x_{t+1}$ pairs)
 
 
-```r
-init_p = c(2, K, 0.01)
-names(init_p) = c("r0", "K", "theta")
-```
-
-
 The actual model is defined in a `model.file` that contains an R function
 that is automatically translated into BUGS code by *R2WinBUGS*.  The file
 defines the priors and the model. We write the file from R as follows: 
@@ -212,39 +201,31 @@ defines the priors and the model. We write the file from R as follows:
 
 
 ```r
-K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
+K_prior_p <- c(0.01, 20.0)
+r0_prior_p <- c(0.01, 6.0)
+theta_prior_p <- c(0.01, 20.0)
 
 bugs.model <- 
 paste(sprintf(
 "model{
   K     ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  logtheta ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
+  r0    ~ dunif(%s, %s)
+  theta ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
   iQ <- 1 / (stdQ * stdQ);
-  iR <- 1 / (stdR * stdR);
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  x[1] ~ dunif(0, 10)
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- x[t] * exp(r0 * (1 - x[t]/K)* (x[t] - theta) / K )
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "allen.bugs")
+writeLines(bugs.model, "allen_process.bugs")
 ```
 
 
@@ -253,11 +234,11 @@ Write the priors into a list for later reference
 
 ```r
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, -6, 6)
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
 par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
-                    logr0 = logr0_prior, logtheta = logtheta_prior,
-                    stdQ = stdQ_prior, stdR = stdR_prior)
+                    r0 = r0_prior, theta = theta_prior,
+                    stdQ = stdQ_prior)
 ```
 
 
@@ -268,45 +249,33 @@ to maintain strictly positive values of parameters where appropriate.
 
 
 ```r
-jags.params=c("K","logr0","logtheta","stdQ", "stdR") # be sensible about the order here
-
-# Can give a list of starting values or a function that can create random values 
+jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
-  list("K"=init_p["K"] * rlnorm(1,0,.5),
-       "logr0"=log(init_p["r0"]) * rlnorm(1,0,.5),
-       "logtheta"=log(init_p["theta"]) * rlnorm(1,0,.5), 
-       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
-       "stdR"=sqrt(0.1) * rlnorm(1,0,.5),
-       "x"=y,
+  list("K"= 8 * rlnorm(1,0, 0.1),
+       "r0"= 2 * rlnorm(1,0, 0.1) ,
+       "theta"=   5 * rlnorm(1,0, 0.1) , 
+       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 
-set.seed(12345)
+set.seed(1234)
 # parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
-                n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin, 
-                model.file="allen.bugs", progress="none")
-```
+allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
+                                      jags.params, n.chains=n.chains, 
+                                      n.iter=n.iter, n.thin=n.thin, 
+                                      n.burnin=n.burnin, 
+                                      model.file="allen_process.bugs"))
 
-```
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 365
-
-Initializing model
-```
-
-```r
-
-#Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
-allen_jags <- autojags(allen_jags, n.update=10, n.iter=n.iter, 
-                       n.thin = n.thin, progress="none") 
+# Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
+recompile(allen_jags) # required for parallel
+allen_jags <- do.call(autojags, 
+											list(object=allen_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin))
 ```
 
 
 
-#### Convergence diagnostics for parametric bayes
+#### Convergence diagnostics for Allen model
 
 R notes: this strips classes from the `mcmc.list` object (so that we have list of matrices; objects that `reshape2::melt` can handle intelligently), and then combines chains into one array. In this array each parameter is given its value at each sample from the posterior (index) for each chain.  
 
@@ -319,7 +288,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm8.staticflickr.com/7435/8982385266_aea0000c79_o.png) 
+![plot of chunk allen-traces](http://farm6.staticflickr.com/5452/9010937486_a5f4478fbe_o.png) 
 
 
 
@@ -336,7 +305,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3689/8982385646_7f9d6570eb_o.png) 
+![plot of chunk allen-posteriors](http://farm8.staticflickr.com/7291/9009753025_1eb334a97d_o.png) 
 
 
 
@@ -344,15 +313,32 @@ Reshape the posterior parameter distribution data, transform back into original 
 
 
 ```r
-# A <- allen_posteriors
-# A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-# pardist <- acast(A[-4], index ~ variable, subset=.(variable != "deviance") )
-pardist <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable, subset=.(variable!="deviance")) 
-pardist[,2] = exp(pardist[,2]) # transform model parameters back first
-pardist[,3] = exp(pardist[,3])
+A <- allen_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+pardist <- acast(A, index ~ variable)
 bayes_coef <- apply(pardist,2, posterior.mode) 
-bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1], bayes_coef[3])) # parameters formatted for f
+bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
+allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
 allen_means <- sapply(x_grid, f, 0, bayes_pars)
+bayes_pars
+```
+
+```
+[1]  2.42246 11.60913  0.06165
+```
+
+```r
+head(pardist)
+```
+
+```
+        K deviance    r0   stdQ   theta
+170 11.43    148.1 1.931 0.1367 0.01769
+171 11.61    144.7 2.517 0.1422 0.03092
+172 11.45    154.9 2.159 0.1280 0.54960
+173 11.66    149.5 2.410 0.1389 0.41212
+174 11.62    148.2 2.989 0.1535 0.04193
+175 11.66    146.4 2.240 0.1295 0.14510
 ```
 
 
@@ -368,34 +354,25 @@ allen_means <- sapply(x_grid, f, 0, bayes_pars)
 
 ```r
 K_prior_p <- c(0.01, 40.0)
-logr0_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(0.01, 20.0)
 bugs.model <- 
 paste(sprintf(
 "model{
   K    ~ dunif(%s, %s)
-  logr0    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
+  r0    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
   K_prior_p[1], K_prior_p[2],
-  logr0_prior_p[1], logr0_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
-
+  r0_prior_p[1], r0_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
   "
   iQ <- 1 / (stdQ * stdQ);
-  iR <- 1 / (stdR * stdR);
-  r0 <- exp(logr0)
-  x[1] ~ dunif(0, 10)
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- x[t] * exp(r0 * (1 - x[t]/K) )
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "ricker.bugs")
+writeLines(bugs.model, "ricker_process.bugs")
 ```
 
 
@@ -405,47 +382,83 @@ Compute prior curves
 
 ```r
 K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-logr0_prior <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
 par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
-                   logr0 = logr0_prior, stdQ = stdQ_prior, stdR = stdR_prior)
+                   r0 = r0_prior, stdQ = stdQ_prior)
 ```
 
 
 We define which parameters to keep track of, and set the initial values of
-parameters in the transformed space used by the MCMC.  We use logarithms
-to maintain strictly positive values of parameters where appropriate.
+parameters in the transformed space used by the MCMC.  
 
 
 
 ```r
-# Uniform priors on standard deviation terms
-jags.params=c("K","logr0", "stdQ", "stdR")
+jags.params=c("K","r0", "stdQ")
 jags.inits <- function(){
-  list("K"=init_p["K"] * rlnorm(1,0,.5),
-       "logr0"=log(init_p["r0"]) * rlnorm(1,0,.5),
+  list("K"=10 * rlnorm(1,0,.5),
+       "r0"= rlnorm(1,0,.5),
        "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
-       "stdR"=sqrt(0.1) * rlnorm(1,0,.5),
-       "x"=y,
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345) 
-ricker_jags <- jags(data=jags.data, inits=jags.inits, jags.params, n.chains=n.chains, 
-                  n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
-                  model.file="ricker.bugs", progress.bar="none")
+ricker_jags <- do.call(jags.parallel, 
+                       list(data=jags.data, inits=jags.inits, 
+                            jags.params, n.chains=n.chains, 
+                            n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
+                            model.file="ricker_process.bugs"))
+recompile(ricker_jags)
 ```
 
 ```
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 287
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
 
 Initializing model
 ```
 
 ```r
-ricker_jags <- autojags(ricker_jags, n.update=10, n.iter=n.iter, 
-                        n.thin = n.thin, progress.bar="none")
+ricker_jags <- do.call(autojags, 
+                       list(object=ricker_jags, n.update=n.update, 
+														n.iter=n.iter, n.thin = n.thin, 
+														progress.bar="none"))
 ```
 
 
@@ -462,7 +475,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker_traces](http://farm4.staticflickr.com/3750/8982408446_13a975644b_o.png) 
+![plot of chunk ricker-traces](http://farm3.staticflickr.com/2806/9010938094_ed5a1a7b06_o.png) 
 
 
 
@@ -478,7 +491,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker_posteriors](http://farm8.staticflickr.com/7309/8981217149_6bf85a2575_o.png) 
+![plot of chunk ricker-posteriors](http://farm3.staticflickr.com/2888/9010938408_ee9a7c0713_o.png) 
 
 
 
@@ -486,13 +499,37 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 
 
 ```r
-ricker_pardist <- acast(ricker_posteriors[2:3], 
-                        1:table(ricker_posteriors$variable) ~ variable, 
-                        subset=.(variable!="deviance")) 
-ricker_pardist[,"logr0"] = exp(ricker_pardist[,"logr0"]) # transform model parameters back first
-bayes_coef <- apply(ricker_pardist,2, posterior.mode) # much better estimates from mode then mean
-ricker_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[1]))
+A <- ricker_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+ricker_pardist <- acast(A, index ~ variable)
+bayes_coef <- apply(ricker_pardist,2, posterior.mode) 
+ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p["r0"] * (1 - x / p["K"] )) )
+  })
+}
 ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
+head(ricker_pardist)
+```
+
+```
+        K deviance     r0    stdQ
+170 11.54    86.97 1.0125 0.06802
+171 11.54    85.99 1.0253 0.06487
+172 11.62    85.41 1.0518 0.06501
+173 11.47    86.21 1.0554 0.05758
+174 11.39    91.49 0.9702 0.06051
+175 11.78    88.61 1.0196 0.06339
+```
+
+```r
+ricker_bayes_pars
+```
+
+```
+[1]  1.073 11.571
 ```
 
 
@@ -501,92 +538,116 @@ ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
 
 
 ```r
-logr0_prior_p <- c(-6.0, 6.0)
-logtheta_prior_p <- c(-6.0, 6.0)
-logK_prior_p <- c(-6.0, 6.0)
-
+r0_prior_p <- c(.0001, 10.0)
+theta_prior_p <- c(.0001, 10.0)
+K_prior_p <- c(.0001, 40.0)
 bugs.model <- 
 paste(sprintf(
 "model{
-  logr0    ~ dunif(%s, %s)
-  logtheta    ~ dunif(%s, %s)
-  logK    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)
-  stdR ~ dunif(%s, %s)", 
-  logr0_prior_p[1], logr0_prior_p[2],
-  logtheta_prior_p[1], logtheta_prior_p[2],
-  logK_prior_p[1], logK_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2],
-  stdR_prior_p[1], stdR_prior_p[2]),
+  r0    ~ dunif(%s, %s)
+  theta    ~ dunif(%s, %s)
+  K    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  K_prior_p[1], K_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
 
   "
   iQ <- 1 / (stdQ * stdQ);
-  iR <- 1 / (stdR * stdR);
 
-  r0 <- exp(logr0)
-  theta <- exp(logtheta)
-  K <- exp(logK)
-
-  x[1] ~ dunif(0, 10)
-
+  y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- r0 * pow(abs(x[t]), theta) / (1 + pow(abs(x[t]), theta) / K)
-    x[t+1] ~ dnorm(mu[t], iQ) 
-  }
-
-  for(t in 1:(N)){
-    y[t] ~ dnorm(x[t], iR)
+    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
+    y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
-writeLines(bugs.model, "myers.bugs")
+writeLines(bugs.model, "myers_process.bugs")
 ```
 
 
 
 
 ```r
-logK_prior     <- function(x) dunif(x, logK_prior_p[1], logK_prior_p[2])
-logr_prior     <- function(x) dunif(x, logr0_prior_p[1], logr0_prior_p[2])
-logtheta_prior <- function(x) dunif(x, logtheta_prior_p[1], logtheta_prior_p[2])
-par_priors <- list( deviance = function(x) 0 * x, logK = logK_prior,
-                    logr0 = logr_prior, logtheta = logtheta_prior, 
-                    stdQ = stdQ_prior, stdR = stdR_prior)
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r_prior     <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
+par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
+                    r0 = r_prior, theta = theta_prior, 
+                    stdQ = stdQ_prior)
 ```
 
 
 
 
 ```r
-init_p = c(p[1], p[3], p[2])
-names(init_p) = c("r0", "theta", "K")
-jags.params=c("logr0", "logtheta", "logK", "stdQ", "stdR")
+jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("logr0"=log(init_p["r0"]) * rlnorm(1,0,.5), 
-       "logK"=log(init_p["K"]),
-       "logtheta" = log(init_p["theta"]) * rlnorm(1,0,.5),  
-       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
-       "stdR"=sqrt(0.1) * rlnorm(1,0,.5),
-       "x"=y,
+  list("r0"= rlnorm(1,0,.1), 
+       "K"=    10 * rlnorm(1,0,.1),
+       "theta" = 1 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
-myers_jags <- jags(data=jags.data, inits=jags.inits, jags.params, 
-                  n.chains=n.chains, n.iter=n.iter, n.thin=n.thin,
-                  n.burnin=n.burnin, model.file="myers.bugs", progress.bar="none")
+myers_jags <- do.call(jags.parallel, 
+                      list(data=jags.data, inits=jags.inits, 
+													 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
+recompile(myers_jags)
 ```
 
 ```
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 326
+   Graph Size: 367
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 367
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 367
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 367
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 367
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 367
 
 Initializing model
 ```
 
 ```r
-myers_jags <- autojags(myers_jags, n.update=10, n.iter=n.iter, 
-                    n.thin = n.thin, progress.bar="none")
+myers_jags <- do.call(autojags, 
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
 ```
 
 
@@ -594,15 +655,14 @@ Convergence diagnostics for parametric bayes
 
 
 ```r
-tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes the hard way...
+tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-
 ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm6.staticflickr.com/5444/8981243147_294af44065_o.png) 
+![plot of chunk myers-traces](http://farm4.staticflickr.com/3812/9010938974_989980fd44_o.png) 
 
 
 
@@ -620,22 +680,38 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8534/8981243505_7614d21509_o.png) 
+![plot of chunk myers-posteriors](http://farm4.staticflickr.com/3741/9010939276_17df131724_o.png) 
 
 
 
 
 ```r
-myers_pardist <- acast(myers_posteriors[2:3], 
-                        1:table(myers_posteriors$variable) ~ variable, 
-                        subset=.(variable!="deviance")) 
-myers_pardist[,1] = exp(myers_pardist[,1]) # transform model parameters back first
-myers_pardist[,2] = exp(myers_pardist[,2]) # transform model parameters back first
-myers_pardist[,3] = exp(myers_pardist[,3]) # transform model parameters back first
-colnames(myers_pardist) = c("K", "r0", "theta", "stdQ", "stdR")
+A <- myers_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+myers_pardist <- acast(A, index ~ variable)
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
 myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
+myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
+head(myers_pardist)
+```
+
+```
+         K deviance    r0   stdQ   theta
+170 14.837    136.0 4.618 0.1148 0.08815
+171 16.733    134.6 5.013 0.1238 0.07739
+172  9.513    135.1 5.652 0.1271 0.07112
+173 24.875    133.8 5.227 0.1150 0.07204
+174 31.668    139.0 4.504 0.1412 0.08756
+175 30.850    141.2 5.651 0.1190 0.06955
+```
+
+```r
+myers_bayes_pars
+```
+
+```
+[1] 135.289   5.111  23.759
 ```
 
 
@@ -645,14 +721,19 @@ myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
 
 
 ```r
-models <- data.frame(x=x_grid, GP=tgp_dat$y, True=true_means, 
-                     MLE=est_means, Ricker=ricker_means, 
+models <- data.frame(x=x_grid, 
+										 GP=tgp_dat$y, 
+										 True=true_means, 
+                     MLE=est_means, 
+										 Ricker=ricker_means, 
                      Allen = allen_means,
                      Myers = myers_means)
-
 models <- melt(models, id="x")
+
+# some labels
 names(models) <- c("x", "method", "value")
 
+# labels for the colorkey too
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
@@ -670,30 +751,13 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm8.staticflickr.com/7392/8981243795_7485a8ec3a_o.png) 
+![plot of chunk Figure1](http://farm8.staticflickr.com/7414/9009754873_7ffb9e388d_o.png) 
 
 
-## Step-ahead predictors
 
-
-## Posterior predictive curves
+## Goodness of fit 
 
 This shows only the mean predictions.  For the Bayesian cases, we can instead loop over the posteriors of the parameters (or samples from the GP posterior) to get the distribution of such curves in each case.  
-
-We will need a vector version (`pmin` in place of `min`) of the parametric growth functions that can operate on the posteriors, (with appropriate ordering of parameters as they are in the posterior):
-
-
-```r
-ricker_f <- function(x,h,p){
-  sapply(x, function(x){ 
-    x <- pmax(0, x-h) 
-    pmax(0, x * exp(p[2] * (1 - x / p[1] )) )
-  })
-}
-allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
-myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
-```
-
 
 
 ```r
@@ -726,7 +790,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm9.staticflickr.com/8265/8981244827_ed9103d647_o.png) 
+![plot of chunk Figureb](http://farm9.staticflickr.com/8420/9010940056_590995a642_o.png) 
 
 
 
@@ -767,7 +831,6 @@ Determine the optimal policy based on Bayesian Allen model
 
 
 ```r
-allen_f <- function(x,h,p) unname(f(x,h,p[c(2, 1, 3)]))
 matrices_allen <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
 opt_allen <- value_iteration(matrices_allen, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -777,7 +840,6 @@ Bayesian Ricker
 
 
 ```r
-ricker_f <- function(x, h, p) Ricker(x, h, unname(p[c(2, 1)])) # defined by pdgControl 
 matrices_ricker <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
 opt_ricker <- value_iteration(matrices_ricker, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -788,7 +850,6 @@ Bayesian Myers model
 
 
 ```r
-myers_f <- function(x,h,p) Myer_harvest(x, h, p[c(2, 3, 1)])
 matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
 myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -819,7 +880,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm4.staticflickr.com/3817/8982464428_81d5d0f31f_o.png) 
+![plot of chunk Figure2](http://farm8.staticflickr.com/7317/9010940374_9dc09e0bb8_o.png) 
 
 
 
@@ -851,7 +912,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm4.staticflickr.com/3757/8982466072_303e90f61e_o.png) 
+![plot of chunk Figure3](http://farm6.staticflickr.com/5458/9010940670_9ec49210c5_o.png) 
 
 
 
@@ -862,13 +923,13 @@ Profit[, mean(V1), by="method"]
 ```
 
 ```
-   method    V1
-1:     GP 31.06
-2:   True 31.14
-3:    MLE 28.55
-4: Ricker 27.13
-5:  Allen  5.00
-6:  Myers 15.92
+   method      V1
+1:     GP 155.051
+2:   True 228.713
+3:    MLE 196.358
+4: Ricker  43.922
+5:  Allen 169.898
+6:  Myers   4.886
 ```
 
 
@@ -878,36 +939,23 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm8.staticflickr.com/7407/8982466490_f621fa68c1_o.png) 
-
-
+![plot of chunk totalprofits](http://farm3.staticflickr.com/2881/9010940940_8a2ca4ca0f_o.png) 
 
 
 
 
 ```r
-df <- acast(allen_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable) 
-modes <- apply(df, 2, posterior.mode)
-allen_deviance <- modes[['deviance']]
-
-df <- acast(ricker_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-modes <- apply(df, 2, posterior.mode)
-ricker_deviance <- modes[['deviance']]
-
-df <- acast(myers_posteriors[2:3], 1:table(allen_posteriors$variable) ~ variable)
-modes <- apply(df, 2, posterior.mode)
-myers_deviance <- modes[['deviance']]
-
+allen_deviance <- posterior.mode(pardist[,'deviance'])
+ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
-
 
 c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
 ```
 
 ```
- allen ricker  myers   true    mle 
-   0.0  -87.3    0.0 -102.7 -820.6 
+  allen  ricker   myers    true     mle 
+ 147.34   86.45  135.29  -41.62 -180.48 
 ```
 
