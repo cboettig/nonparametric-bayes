@@ -41,13 +41,28 @@ Various parameters defining noise dynamics, grid, and policy costs.
 
 ## Maximum Likelihood
 
-```{r mle, dependson="obs"}
+```{r mle-local, dependson="obs"}
+set.seed(12345)
+estf <- function(p){ 
+    mu <- f(obs$x,0,p)
+    -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
+}
+par <- c(p[1]*rlnorm(1,0,.2), 
+         p[2]*rlnorm(1,0,.1), 
+         p[3]*rlnorm(1,0, .1), 
+         sigma_g * rlnorm(1,0,.3))
+o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
+f_alt <- f
+p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
+sigma_g_alt <- as.numeric(o$par[4])
+
+est <- list(f = f_alt, p = p_alt, sigma_g = sigma_g_alt, mloglik=o$value)
 ```
 
 
 Mean predictions
 
-```{r mle-output, dependson="mle"}
+```{r mle-output, dependson="mle-local"}
 ```
 
 ## Non-parametric Bayes
@@ -190,12 +205,32 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 ```
 
 
-```{r myers-mcmc, dependson="myers-model"}
+```{r myers-mcmc-local, dependson="myers-model"}
+jags.params=c("r0", "theta", "K", "stdQ")
+jags.inits <- function(){
+  list("r0"= rlnorm(1,0,.1), 
+       "K"=    6 * rlnorm(1,0,.1),
+       "theta" = 2 * rlnorm(1,0,.1),  
+       "stdQ"= 0.1 * rlnorm(1,0,.1),
+       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+set.seed(12345)
+myers_jags <- do.call(jags.parallel, 
+                      list(data=jags.data, inits=jags.inits, 
+													 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
+recompile(myers_jags)
+myers_jags <- do.call(autojags, 
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
 ```
 
 Convergence diagnostics for parametric bayes
 
-```{r myers-traces, dependson="myers-mcmc"}
+```{r myers-traces, dependson="myers-mcmc-local"}
 ```
 
 
