@@ -72,7 +72,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm6.staticflickr.com/5329/8981954054_ee1e1c2599_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7319/9021273250_f4ba2d9636_o.png) 
 
 
 
@@ -85,10 +85,10 @@ estf <- function(p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
 }
-par <- c(p[1]*rlnorm(1,0,.4), 
-         p[2]*rlnorm(1,0,.3), 
-         p[3]*rlnorm(1,0, .3), 
-         sigma_g * rlnorm(1,0,.3))
+par <- c(p[1]*rlnorm(1,0,.1), 
+         p[2]*rlnorm(1,0,.1), 
+         p[3]*rlnorm(1,0, .1), 
+         sigma_g * rlnorm(1,0,.1))
 o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -137,9 +137,7 @@ Show traces and posteriors against priors
 plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
 
-![plot of chunk gp_traces_densities](http://farm3.staticflickr.com/2870/8981954336_ec1fbbebef_o.png) 
-
-![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8278/8981954638_e0086dd685_o.png) 
+![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8131/9021273454_b4afb83b91_o.png) 
 
 
 
@@ -292,7 +290,7 @@ ggplot(allen_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk allen-traces](http://farm4.staticflickr.com/3789/8980764645_ddc52e83a3_o.png) 
+![plot of chunk allen-traces](http://farm9.staticflickr.com/8560/9019046755_0af0303af9_o.png) 
 
 
 
@@ -309,7 +307,7 @@ ggplot(allen_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk allen-posteriors](http://farm4.staticflickr.com/3832/8981955230_3a2b3b870d_o.png) 
+![plot of chunk allen-posteriors](http://farm6.staticflickr.com/5465/9019046967_ea3cc59c2c_o.png) 
 
 
 
@@ -479,7 +477,7 @@ ggplot(ricker_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk ricker-traces](http://farm4.staticflickr.com/3797/8980765177_73dfc4bdd3_o.png) 
+![plot of chunk ricker-traces](http://farm8.staticflickr.com/7357/9021274072_7b8d3b852c_o.png) 
 
 
 
@@ -495,7 +493,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-![plot of chunk ricker-posteriors](http://farm9.staticflickr.com/8559/8980765463_c89070ff5c_o.png) 
+![plot of chunk ricker-posteriors](http://farm8.staticflickr.com/7408/9021274256_b418c7b46a_o.png) 
 
 
 
@@ -562,7 +560,7 @@ paste(sprintf(
 
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
+    mu[t] <- log(r0)  + theta * log(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
@@ -589,8 +587,8 @@ jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
   list("r0"= rlnorm(1,0,.1), 
        "K"=    10 * rlnorm(1,0,.1),
-       "theta" = 2 * rlnorm(1,0,.1),  
-       "stdQ"= sqrt(0.5) * rlnorm(1,0,.1),
+       "theta" = 1 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
@@ -607,42 +605,42 @@ recompile(myers_jags)
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 
 Compiling model graph
    Resolving undeclared variables
    Allocating nodes
-   Graph Size: 367
+   Graph Size: 406
 
 Initializing model
 ```
@@ -666,7 +664,7 @@ ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
 
-![plot of chunk myers-traces](http://farm4.staticflickr.com/3821/8980765719_e60a8eee71_o.png) 
+![plot of chunk myers-traces](http://farm8.staticflickr.com/7292/9021274464_3b9dd892e4_o.png) 
 
 
 
@@ -684,7 +682,7 @@ ggplot(myers_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
-![plot of chunk myers-posteriors](http://farm8.staticflickr.com/7343/8981956282_7c347c9277_o.png) 
+![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8401/9021274660_af786048fb_o.png) 
 
 
 
@@ -701,13 +699,13 @@ head(myers_pardist)
 ```
 
 ```
-         K deviance    r0    stdQ  theta
-170  2.236    41.08 4.770 0.05376 0.1219
-171 31.031    44.23 3.276 0.04293 0.1141
-172 15.612    40.89 3.304 0.04785 0.1184
-173 19.126    39.64 3.425 0.04994 0.1135
-174 21.700    43.50 3.159 0.05992 0.1248
-175 10.400    40.53 3.764 0.04741 0.1070
+        K deviance     r0    stdQ  theta
+170 20.51    37.16 1.3995 0.04136 0.9864
+171 17.10    41.09 0.6076 0.05170 1.8684
+172 24.40    36.33 1.1692 0.04307 1.0715
+173 27.56    37.46 0.9533 0.05550 1.2000
+174 22.21    34.94 0.5140 0.04203 1.8694
+175 36.05    33.49 0.3089 0.03977 2.1519
 ```
 
 ```r
@@ -715,7 +713,7 @@ myers_bayes_pars
 ```
 
 ```
-[1] 40.640  3.392 19.887
+[1] 35.4576  0.5129 23.9914
 ```
 
 
@@ -755,7 +753,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm9.staticflickr.com/8269/8981956534_c1cfc8067d_o.png) 
+![plot of chunk Figure1](http://farm4.staticflickr.com/3706/9019048025_7005bdb3f5_o.png) 
 
 
 
@@ -794,7 +792,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm4.staticflickr.com/3673/8980766507_9d158356f2_o.png) 
+![plot of chunk Figureb](http://farm8.staticflickr.com/7286/9021275080_ff367f8542_o.png) 
 
 
 
@@ -884,7 +882,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm6.staticflickr.com/5462/8981957076_9f38a6b683_o.png) 
+![plot of chunk Figure2](http://farm6.staticflickr.com/5465/9019048423_8a0208814f_o.png) 
 
 
 
@@ -916,7 +914,7 @@ ggplot(dt) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm9.staticflickr.com/8544/8981957412_40dc27724f_o.png) 
+![plot of chunk Figure3](http://farm6.staticflickr.com/5448/9021275460_cbc5de534d_o.png) 
 
 
 
@@ -930,10 +928,10 @@ Profit[, mean(V1), by="method"]
    method     V1
 1:     GP 24.908
 2:   True 26.532
-3:    MLE  4.420
+3:    MLE 24.771
 4: Ricker  5.893
 5:  Allen 26.428
-6:  Myers  9.472
+6:  Myers  5.865
 ```
 
 
@@ -943,7 +941,7 @@ ggplot(Profit, aes(V1)) + geom_histogram() +
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 ```
 
-![plot of chunk totalprofits](http://farm4.staticflickr.com/3823/8980767325_b83b5eafc7_o.png) 
+![plot of chunk totalprofits](http://farm6.staticflickr.com/5334/9019048845_1e55f47129_o.png) 
 
 
 
@@ -960,6 +958,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  32.28   35.92   40.64  -61.08 -287.60 
+  32.28   35.92   35.46  -61.08 -889.99 
 ```
 
