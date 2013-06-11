@@ -60,10 +60,10 @@ estf <- function(p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
 }
-par <- c(p[1]*rlnorm(1,0,.4), 
-         p[2]*rlnorm(1,0,.3), 
-         p[3]*rlnorm(1,0, .3), 
-         sigma_g * rlnorm(1,0,.3))
+par <- c(p[1]*rlnorm(1,0,.1), 
+         p[2]*rlnorm(1,0,.1), 
+         p[3]*rlnorm(1,0, .1), 
+         sigma_g * rlnorm(1,0,.1))
 o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -328,7 +328,7 @@ paste(sprintf(
 
   y[1] ~ dunif(0, 10)
   for(t in 1:(N-1)){
-    mu[t] <- log(r0)  + theta * abs(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
+    mu[t] <- log(r0)  + theta * log(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
     y[t+1] ~ dlnorm(mu[t], iQ) 
   }
 }")
