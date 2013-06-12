@@ -1,5 +1,4 @@
 
-
 # edit this file for a demo
 
 
@@ -8,7 +7,7 @@
 #' API not yet stable! Arguments to this function will probably be updated to be much more generic
 #' @param obs a data frame of observations with columns obs$x and obs$y
 #' @param X the desired points over which to predict
-#' @param pars a named numeric specifying "sigma_n" for the (additive) and "l" for the covariance length scale
+#' @param pars a named numeric specifying "sigma_n" for the (additive) noise and "l" for the covariance length scale
 #' @param method select the method to use
 #' @param out_var optionally force kernlab method to generate Cf using a different variance than sigma_n^2 assumed in the fit
 #' @return a list with items "mu", the expected Y values at X (mean of the posterior Gaussian process), 
