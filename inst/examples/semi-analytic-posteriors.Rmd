@@ -67,7 +67,9 @@ beta_grid[which.min(P_B.X)]
 
 ```
 
-Estimating the Allen model:
+
+
+# Estimating the Allen model:
 
 $$X_{t+1} = X_t \exp\left(r \left(1 - \frac{X_t}{K} \right\left(\frac{X - C}{K}\right)\right) $$
 
@@ -140,7 +142,7 @@ qplot(b_grid, -log(tmpB))
 
 
 
-Estimating the Myers model on this data:
+# Estimating the Myers model on this data:
 
 $$X_{t+1} = Z_t \frac{r X_t^{\theta}}{1 + X_t^{\theta} / K}$$
 
