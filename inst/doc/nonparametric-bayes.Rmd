@@ -1,5 +1,120 @@
 % Avoiding tipping points in the management of ecological systems: a non-parametric Bayesian approach
 
+<!-- Run R code for analysis, to be called by figures -->
+```{r generics-and-libraries, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+source("~/.knitr_defaults.R")
+library(knitcitations)
+library(nonparametricbayes) 
+opts_chunk$set(external=TRUE)
+read_chunk("../examples/BUGS/external-chunks.R")
+```
+
+```{r plotting-options, echo=FALSE, cache=FALSE, include=FALSE}
+options(xtable.print.comment=FALSE)
+options(xtable.type = 'latex', table.placement="H")
+opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
+               tidy=FALSE, echo=FALSE)
+opts_knit$set(progress = TRUE, verbose = TRUE)
+opts_chunk$set(dev = 'Cairo_pdf', fig.width=5.5, fig.height=4,
+ cache.path = 'cache-pdf/', cache=TRUE, external=TRUE)
+```
+
+
+```{r posterior-mode}
+```
+```{r stateeq}
+```
+```{r sdp-pars, dependson="stateeq"}
+```
+```{r obs, dependson="sdp-pars"}
+```
+
+
+```{r mle, dependson="obs"}
+```
+```{r mle-output, dependson="mle"}
+```
+
+
+```{r gp-priors}
+```
+```{r gp, dependson=c("gp-priors", "obs")}
+```
+```{r gp_traces_densities, dependson="gp"}
+```
+```{r gp-output, dependson="gp"}
+```
+
+
+```{r jags-setup}
+```
+```{r common-priors}
+```
+```{r allen-model}
+```
+```{r allen-priors, dependson="common-priors"}
+```
+```{r allen-mcmc, dependson=c("allen-model", "allen-pars", "jags-setup"), results="hide"}
+```
+```{r allen-traces, dependson="allen-mcmc"}
+```
+```{r allen-posteriors, dependson=c("allen-traces", "allen-priors")}
+```
+```{r allen-output, dependson=c("posterior-mode", "allen-traces")}
+```
+
+
+```{r ricker-model}
+```
+```{r ricker-priors, dependson="common-priors"}
+```
+```{r ricker-mcmc, dependson="ricker-model"}
+```
+```{r ricker-traces, dependson="ricker-mcmc"}
+```
+```{r ricker-posteriors, dependson=c("ricker-traces", "ricker-priors")}
+```
+```{r ricker-output, dependson=c("posterior-mode", "ricker-traces")}
+```
+
+
+```{r myers-model}
+```
+```{r myers-priors}
+```
+```{r myers-mcmc, dependson="myers-model"}
+```
+```{r myers-traces, dependson="myers-mcmc"}
+```
+```{r myers-posteriors, dependson="myers-traces"}
+```
+```{r myers-output, dependson=c("posterior-mode", "myers-traces")}
+```
+
+
+```{r assemble-models, dependson=c("myers-output", "ricker-output", "allen-output", "gp-output", "mle-output")}
+```
+```{r gp-opt, dependson="gp-output"}
+```
+```{r mle-opt, dependson="mle-output"}
+```
+```{r allen-opt, dependson="allen-output"}
+```
+```{r ricker-opt, dependson="ricker-output"}
+```
+```{r myers-opt, dependson="myers-output"}
+```
+```{r assemble-opt, dependson=c("gp-opt", "mle-opt", "allen-opt", "ricker-opt", "myers-opt")}
+```
+```{r sims, dependson="assemble-opt"}
+```
+
+
+```{r profits, dependson="sims", results="hide"}
+```
+```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output"), results="hide"}
+```
+
 
 
 
@@ -412,7 +527,11 @@ Results
 ====================================================
 
 
-![ Mean dynamics predicted by each model.](Figure1.pdf)
+```{r Figure1, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
+```
+```{r Figureb, dependson=c("assemble-models", "par-fns")}
+```
+
 
 
 Figure 1 shows the mean inferred state space dynamics of each model
@@ -435,7 +554,8 @@ from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum or near the tipping point.
 
-![ Steady-state optimal policies by each model.](Figure2.pdf)
+```{r Figure2, dependson="assemble-opt", fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```
 
 The resulting optimal management strategy based on each of the inferred
 models is shown in Figure 2, against the optimal strategy given the
@@ -447,8 +567,8 @@ strategy aims to return the population to $S$, resulting in the hockey-stick
 shaped policies shown.  
 
 
-![ Managing the simulated system over 100 replicate instances under each policy](Figure3.pdf)
-
+```{r Figure3, dependson=c("sim", "plotting-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
+```
 
 The consequences of managing 100 replicate realizations of the 
 simulated fishery under each of the policies estimated is shown in Figure 3.  As expected
@@ -467,7 +587,9 @@ as shown in Figure 4.  The Gaussian Process most consistently realizes a value
 close to the optimal solution, and importantly avoids ever driving the system across
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/figure4.png)
+
+```{r Figure4, dependson="profits", fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement."}
+```
 
 Discussion 
 ==================================================================
