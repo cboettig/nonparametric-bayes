@@ -36,6 +36,7 @@ xT <- 0
 Xo <-  allee+.5# observations start from
 x0 <- K # simulation under policy starts from
 Tobs <- 40
+MaxT = 1000 # timeout for value iteration convergence
 
 
 ## @knitr obs
@@ -467,21 +468,15 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
 
 
 ## @knitr gp-opt
-MaxT = 1000
 # uses expected values from GP, instead of integrating over posterior
 #matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
-
-# Integrate over posteriors 
 matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
-
-# Solve the SDP using the GP-derived transition matrix
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 
 
 ## @knitr mle-opt
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
 opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
 matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
 opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 
@@ -526,24 +521,24 @@ sims <- lapply(OPT, function(D){
 })
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-dt <- data.table(dat)
-setnames(dt, c("L1", "L2"), c("method", "reps")) 
+sims_data <- data.table(dat)
+setnames(sims_data, c("L1", "L2"), c("method", "reps")) 
 # Legend in original ordering please, not alphabetical: 
-dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
+sims_data$method = factor(sims_data$method, ordered=TRUE, levels=names(OPT))
 
 
 ## @knitr Figure3
-ggplot(dt) + 
+ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 
 
 ## @knitr profits
-Profit <- dt[, sum(profit), by=c("reps", "method")]
+Profit <- sims_data[, sum(profit), by=c("reps", "method")]
 Profit[, mean(V1), by="method"]
 
 
-## @knitr totalprofits
+## @knitr Figure4 
 ggplot(Profit, aes(V1)) + geom_histogram() + 
   facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 
