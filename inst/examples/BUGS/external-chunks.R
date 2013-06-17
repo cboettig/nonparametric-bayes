@@ -30,7 +30,7 @@ x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime <- 50  # stationarity with unstable models is tricky thing
+OptTime <- 100  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
 Xo <-  allee+.5# observations start from
@@ -352,10 +352,10 @@ par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
 ## @knitr myers-mcmc
 jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("r0"= rlnorm(1,0,.1), 
-       "K"=    10 * rlnorm(1,0,.1),
+  list("r0"= 2 * rlnorm(1,0,.1), 
+       "K"=    8 * rlnorm(1,0,.1),
        "theta" = 1 * rlnorm(1,0,.1),  
-       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
+       "stdQ"= 0.1 * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
@@ -535,22 +535,18 @@ ggplot(sims_data) +
 
 ## @knitr profits
 Profit <- sims_data[, sum(profit), by=c("reps", "method")]
-Profit[, mean(V1), by="method"]
+tmp <- dcast(Profit, reps ~ method)
+tmp <- tmp / tmp[,"True"]
+tmp <- melt(tmp[2:dim(tmp)[2]])
+actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-ggplot(Profit, aes(V1)) + geom_histogram() + 
-  facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
-
-
-## @knitr deviances
-allen_deviance <- posterior.mode(pardist[,'deviance'])
-ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
-true_deviance <- 2*estf(c(p, sigma_g))
-mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
-c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
-
-
+#ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
+#  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
+# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
+  stat_density(position="stack", adjust=10, alpha=.8) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 

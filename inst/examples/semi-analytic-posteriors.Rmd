@@ -80,8 +80,7 @@ $$X_{t+1} = X_t \exp(c + b X_t + a X_t^2) $$
 Where $c = \tfrac{-rC}{K}$, $b = \tfrac{r}{K}\left(\tfrac{C}{K} + 1\right)$, and $a = \tfrac{r}{K^2}$.  Then after integrating out $c$ and $\sigma$ we have
 
 ```{r}
-Mt <- function(t, a, b)  log(x[t+1]) - log(x[t]) - b * x[t] + a * x[t] ^ 2
-```
+Mt <- function(t, a, b)  log(x[t+1]) - log(x[t]) - b * x[t] + a * x[t] ^ 2```
 
 Choosing a sensible grid is a bit more tricky following the transformation, particularly $b$ can be negative or positive, and much larger in magnitude than any of the original parameters.  $a$ on the other hand, can be reasonably restricted:
 
