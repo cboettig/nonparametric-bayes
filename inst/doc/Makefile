@@ -1,5 +1,4 @@
 SOURCEFILE = nonparametric-bayes
-SOURCEFILE_B = beyond-mechanistic-models
 
 
 
@@ -44,12 +43,6 @@ bib:
 	echo "}" >> refs.aux	
 	bibtool -s -d --preserve.key.case=on -x refs.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
 
-fileb:
-	./knitb fileb
-	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE_B}.md --template=elsarticle.latex -o ${SOURCEFILE_B}.tex
-	pdflatex ${SOURCEFILE_B}.tex
-	pdflatex ${SOURCEFILE_B}.tex
-	pdflatex ${SOURCEFILE_B}.tex
 
 clean:
 	rm -rf *.log *.bbl *.blg *.out *.spl
