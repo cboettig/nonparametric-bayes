@@ -550,3 +550,12 @@ ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) +
   stat_density(position="stack", adjust=10, alpha=.8) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 
+
+## @knitr deviances
+allen_deviance <- posterior.mode(pardist[,'deviance'])
+ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
+true_deviance <- 2*estf(c(p, sigma_g))
+mle_deviance <- 2*estf(c(est$p, est$sigma_g))
+
+c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
