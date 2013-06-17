@@ -16,7 +16,7 @@ posterior.mode <- function(x) {
 
 ## @knitr stateeq
 f <- RickerAllee
-p <- c(2, 8, 5)
+p <- c(1, 10, 5)
 K <- 10  # approx, a li'l' less
 allee <- 5 # approx, a li'l' less
 
@@ -159,8 +159,8 @@ par_priors  <- list(K = K_prior, deviance = function(x) 0 * x,
 ## @knitr allen-mcmc
 jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
-  list("K"= 8 * rlnorm(1,0, 0.1),
-       "r0"= 2 * rlnorm(1,0, 0.1) ,
+  list("K"= 10 * rlnorm(1,0, 0.1),
+       "r0"= 1 * rlnorm(1,0, 0.1) ,
        "theta"=   5 * rlnorm(1,0, 0.1) , 
        "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -252,7 +252,7 @@ par_priors <- list(K = K_prior, deviance = function(x) 0 * x,
 ## @knitr ricker-mcmc
 jags.params=c("K","r0", "stdQ")
 jags.inits <- function(){
-  list("K"=10 * rlnorm(1,0,.5),
+  list("K"= 10 * rlnorm(1,0,.5),
        "r0"= rlnorm(1,0,.5),
        "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -352,8 +352,8 @@ par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
 ## @knitr myers-mcmc
 jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("r0"= 2 * rlnorm(1,0,.1), 
-       "K"=    8 * rlnorm(1,0,.1),
+  list("r0"= 1 * rlnorm(1,0,.1), 
+       "K"=    10 * rlnorm(1,0,.1),
        "theta" = 1 * rlnorm(1,0,.1),  
        "stdQ"= 0.1 * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
