@@ -22,7 +22,7 @@ allee <- 5 # approx, a li'l' less
 
 
 ## @knitr sdp-pars
-sigma_g <- 0.05
+sigma_g <- 0.15
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
