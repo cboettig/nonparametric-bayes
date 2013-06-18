@@ -8,6 +8,8 @@ read_chunk("../examples/BUGS/external-chunks.R")
 ```
 
 ```{r pdf-options, echo=FALSE, cache=FALSE, include=FALSE}
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 library(ggplot2)
 options(xtable.print.comment=FALSE)
 options(xtable.type = 'latex', table.placement="H")
