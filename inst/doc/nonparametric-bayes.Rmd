@@ -3,19 +3,19 @@
 <!-- Run R code for analysis, to be called by figures -->
 ```{r generics-and-libraries, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(nonparametricbayes) 
+library(ggplot2)
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 opts_chunk$set(external=TRUE)
 read_chunk("../examples/BUGS/external-chunks.R")
 ```
 
-```{r pdf-options, echo=FALSE, cache=FALSE, include=FALSE}
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
-               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-library(ggplot2)
+```{r plot-options, echo=FALSE, cache=FALSE, include=FALSE}
 options(xtable.print.comment=FALSE)
 options(xtable.type = 'latex', table.placement="H")
 opts_knit$set(progress = TRUE, verbose = TRUE)
 opts_chunk$set(dev = 'Cairo_pdf', fig.width=5.5, fig.height=4,
- cache.path = 'cache-pdf/', cache=TRUE, external=TRUE)
+ cache.path = 'cache/nonparametric-bayes/', cache=TRUE, external=TRUE)
 opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
                tidy=FALSE, echo=FALSE)
 ```
@@ -69,7 +69,7 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r ricker-priors, dependson="common-priors"}
 ```
-```{r ricker-mcmc, dependson="ricker-model"}
+```{r ricker-mcmc, dependson="ricker-model", results="hide"}
 ```
 ```{r ricker-traces, dependson="ricker-mcmc"}
 ```
@@ -83,7 +83,7 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r myers-priors}
 ```
-```{r myers-mcmc, dependson="myers-model"}
+```{r myers-mcmc, dependson="myers-model", results="hide"}
 ```
 ```{r myers-traces, dependson="myers-mcmc"}
 ```
@@ -528,9 +528,9 @@ Results
 ====================================================
 
 
-```{r Figure1, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
+```{r Figure1, dependson=c("assemble-models", "plot-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). "}
 ```
-```{r Figureb, dependson=c("assemble-models", "par-fns")}
+```{r Figure1b, dependson=c("assemble-models", "par-fns", "plot-options")}
 ```
 
 
@@ -555,7 +555,7 @@ from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum or near the tipping point.
 
-```{r Figure2, dependson="assemble-opt", fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```{r Figure2, dependson = c("assemble-opt", "plot-options"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
 ```
 
 The resulting optimal management strategy based on each of the inferred
@@ -568,7 +568,7 @@ strategy aims to return the population to $S$, resulting in the hockey-stick
 shaped policies shown.  
 
 
-```{r Figure3, dependson=c("sim", "pdf-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
+```{r Figure3, dependson=c("sim", "plot-options"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
 ```
 
 The consequences of managing 100 replicate realizations of the 
@@ -589,7 +589,7 @@ close to the optimal solution, and importantly avoids ever driving the system ac
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
 
-```{r Figure4, dependson=c("profits", "pdf-options"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement."}
+```{r Figure4, dependson=c("profits", "plot-options"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement."}
 ```
 
 Discussion 
@@ -698,23 +698,8 @@ The appendices have not yet been assembled.  Meanwhile, code to repeat the analy
 
 ## Markov Chain Monte Carlo Analysis
 
-![Traces of the GP hyper-parameters (after transforming back from log space)](gp_traces_densities1.pdf)
-
-
-![Posterior densities of the GP hyper-parameters (after transforming back from log space). Prior distribution over the interval sampled shown as red curves.](gp_traces_densities2.pdf)
-
-
-![Traces of the Ricker parameters](ricker_traces.pdf)
-
-
-![Posterior densities of the Ricker parameter estimates. Prior distributions over the interval sampled shown as red curves. Note the bimodal estimate of $\log(r)$ which leads to the poor fit in Figure 1](ricker_posteriors.pdf)
-
-
-![Traces of the structurally accurate Allen model parameters](parametric_bayes_traces.pdf)
-
-
-![Posterior densities for the parameters of the Allen model. Prior distributions over the interval sampled shown as red curves.](parametric_bayes_posteriors.pdf)
-
+```{r appendixplots, dependson="assemble-models"}
+```
 
 
 References
