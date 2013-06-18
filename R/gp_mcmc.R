@@ -130,8 +130,8 @@ summary_gp_mcmc <- function(gp, burnin=0, thin=1){
     geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
     facet_wrap(~ variable, scale="free", ncol=2)
   
-  print(traces_plot)
-  print(posteriors_plot)
+ # print(traces_plot)
+#  print(posteriors_plot)
   
   out <- list(traces_plot = traces_plot, posteriors_plot = posteriors_plot)
   invisible(out)

@@ -16,21 +16,21 @@ posterior.mode <- function(x) {
 
 ## @knitr stateeq
 f <- RickerAllee
-p <- c(1, 10, 5)
+p <- c(2, 8, 5)
 K <- 10  # approx, a li'l' less
 allee <- 5 # approx, a li'l' less
 
 
 ## @knitr sdp-pars
-sigma_g <- 0.15
+sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
+z_m <- function() 1
 x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
-OptTime <- 100  # stationarity with unstable models is tricky thing
+OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
 Xo <-  allee+.5# observations start from
@@ -90,7 +90,7 @@ gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
 
 
 ## @knitr gp_traces_densities
-plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
+gp_assessment_plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 
 
 ## @knitr gp-output
@@ -188,7 +188,7 @@ allen_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(allen_jags), as.matrix) # strip classes the hard way...
 allen_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(allen_posteriors) = c("index", "variable", "value", "chain")
-ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
+plot_allen_traces <- ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 
 
@@ -197,8 +197,7 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
-ggplot(allen_posteriors, aes(value)) + 
+plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=3)
@@ -274,8 +273,7 @@ ricker_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(ricker_jags), as.matrix) # strip classes the hard way...
 ricker_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(ricker_posteriors) = c("index", "variable", "value", "chain")
-
-ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
+plot_ricker_traces <- ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 
 
@@ -285,7 +283,7 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
 # plot posterior distributions
-ggplot(ricker_posteriors, aes(value)) + 
+plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -355,7 +353,7 @@ jags.inits <- function(){
   list("r0"= 1 * rlnorm(1,0,.1), 
        "K"=    10 * rlnorm(1,0,.1),
        "theta" = 1 * rlnorm(1,0,.1),  
-       "stdQ"= 0.1 * rlnorm(1,0,.1),
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
@@ -379,7 +377,7 @@ myers_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-ggplot(myers_posteriors) + geom_line(aes(index, value)) +
+plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 
 
@@ -389,8 +387,7 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
-ggplot(myers_posteriors, aes(value)) + 
+plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=3)
@@ -542,8 +539,8 @@ actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-#ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
-#  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
+ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
+  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
 # ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
 #  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
 ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
@@ -559,3 +556,14 @@ true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
 
 c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
+
+
+## @knitr appendixplots
+gp_assessment_plots[[1]]
+gp_assessment_plots[[2]]
+plot_allen_traces
+plot_allen_posteriors
+plot_ricker_traces
+plot_ricker_posteriors
+plot_myers_traces
+plot_myers_posteriors
