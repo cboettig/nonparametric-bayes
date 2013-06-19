@@ -9,223 +9,729 @@
 
 
 
+```r
+require(modeest)
+posterior.mode <- function(x) {
+  mlv(x, method="shorth")$M
+}
+```
 
 
+```r
+f <- RickerAllee
+p <- c(2, 8, 5)
+K <- 10  # approx, a li'l' less
+allee <- 5 # approx, a li'l' less
+```
 
 
+```r
+sigma_g <- 0.05
+sigma_m <- 0.0
+z_g <- function() rlnorm(1, 0, sigma_g)
+z_m <- function() 1
+x_grid <- seq(0, 1.5 * K, length=50)
+h_grid <- x_grid
+profit <- function(x,h) pmin(x, h)
+delta <- 0.01
+OptTime <- 50  # stationarity with unstable models is tricky thing
+reward <- 0
+xT <- 0
+Xo <-  allee+.5# observations start from
+x0 <- K # simulation under policy starts from
+Tobs <- 40
+MaxT = 1000 # timeout for value iteration convergence
+```
+
+
+```r
+  set.seed(1234)
+  #harvest <- sort(rep(seq(0, .5, length=7), 5))
+  x <- numeric(Tobs)
+  x[1] <- Xo
+  nz <- 1
+  for(t in 1:(Tobs-1))
+    x[t+1] = z_g() * f(x[t], h=0, p=p)
+  obs <- data.frame(x = c(rep(0,nz), 
+                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
+                    y = c(rep(0,nz), 
+                          x[2:Tobs]))
+raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
+raw_plot
+```
 
 ![plot of chunk obs](figure/obs.pdf) 
 
 
 
 
+```r
+set.seed(12345)
+estf <- function(p){ 
+    mu <- f(obs$x,0,p)
+    -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
+}
+par <- c(p[1]*rlnorm(1,0,.1), 
+         p[2]*rlnorm(1,0,.1), 
+         p[3]*rlnorm(1,0, .1), 
+         sigma_g * rlnorm(1,0,.1))
+o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
+f_alt <- f
+p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
+sigma_g_alt <- as.numeric(o$par[4])
+
+est <- list(f = f_alt, p = p_alt, sigma_g = sigma_g_alt, mloglik=o$value)
+```
+
+
+```r
+true_means <- sapply(x_grid, f, 0, p)
+est_means <- sapply(x_grid, est$f, 0, est$p)
+```
 
 
 
 
+```r
+#inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
+s2.p <- c(5,5)  
+d.p = c(10, 1/0.1)
+```
+
+
+```r
+gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
+gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
+```
+
+
+```r
+gp_assessment_plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
+```
+
+
+```r
+# Summarize the GP model
+tgp_dat <- 
+    data.frame(  x = x_grid, 
+                 y = gp_dat$E_Ef, 
+                 ymin = gp_dat$E_Ef - 2 * sqrt(gp_dat$E_Vf), 
+                 ymax = gp_dat$E_Ef + 2 * sqrt(gp_dat$E_Vf) )
+```
 
 
 
 
-
-![plot of chunk gp_traces_densities](figure/gp_traces_densities1.pdf) ![plot of chunk gp_traces_densities](figure/gp_traces_densities2.pdf) 
-
-
-
-
-
-
-
-
-
-
+```r
+y <- x 
+N <- length(x);
+jags.data <- list("N","y")
+n.chains <- 6
+n.iter <- 1e6
+n.burnin <- floor(10000)
+n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
+n.update <- 10
+```
 
 
+```r
+stdQ_prior_p <- c(1e-6, 100)
+stdR_prior_p <- c(1e-6, .1)
+stdQ_prior  <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
+stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
+```
 
 
+```r
+K_prior_p <- c(0.01, 20.0)
+r0_prior_p <- c(0.01, 6.0)
+theta_prior_p <- c(0.01, 20.0)
 
-![plot of chunk allen-traces](figure/allen-traces.pdf) 
+bugs.model <- 
+paste(sprintf(
+"model{
+  K     ~ dunif(%s, %s)
+  r0    ~ dunif(%s, %s)
+  theta ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
+  K_prior_p[1], K_prior_p[2],
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
 
-![plot of chunk allen-posteriors](figure/allen-posteriors.pdf) 
+  "
+  iQ <- 1 / (stdQ * stdQ);
+  y[1] ~ dunif(0, 10)
+  for(t in 1:(N-1)){
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
+  }
+}")
+writeLines(bugs.model, "allen_process.bugs")
+```
 
+
+```r
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
+par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
+                    r0 = r0_prior, theta = theta_prior,
+                    stdQ = stdQ_prior)
+```
+
+
+```r
+jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
+jags.inits <- function(){
+  list("K"= 10 * rlnorm(1,0, 0.1),
+       "r0"= 1 * rlnorm(1,0, 0.1) ,
+       "theta"=   5 * rlnorm(1,0, 0.1) , 
+       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
+       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+
+set.seed(1234)
+# parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
+allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
+                                      jags.params, n.chains=n.chains, 
+                                      n.iter=n.iter, n.thin=n.thin, 
+                                      n.burnin=n.burnin, 
+                                      model.file="allen_process.bugs"))
+
+# Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
+recompile(allen_jags) # required for parallel
+```
 
 ```
-[1] 0.1302 9.4965 4.9427
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```r
+allen_jags <- do.call(autojags, 
+											list(object=allen_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin))
+```
+
+
+```r
+tmp <- lapply(as.mcmc(allen_jags), as.matrix) # strip classes the hard way...
+allen_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
+names(allen_posteriors) = c("index", "variable", "value", "chain")
+plot_allen_traces <- ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
+  facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+
+```r
+allen_priors <- ddply(allen_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=3)
+```
+
+
+```r
+A <- allen_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+pardist <- acast(A, index ~ variable)
+bayes_coef <- apply(pardist,2, posterior.mode) 
+bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
+allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
+allen_means <- sapply(x_grid, f, 0, bayes_pars)
+bayes_pars
+```
+
+```
+[1] 0.5003 7.7115 4.6039
+```
+
+```r
+head(pardist)
+```
+
+```
+        K deviance     r0    stdQ theta
+170 7.898    34.41 0.6668 0.05566 3.956
+171 7.745    32.76 0.7554 0.05137 4.668
+172 7.577    31.66 1.0705 0.04562 4.073
+173 7.859    31.26 1.5647 0.04238 5.087
+174 7.821    30.67 1.7348 0.04662 5.230
+175 8.003    34.90 1.4495 0.05005 5.444
+```
+
+
+
+
+```r
+K_prior_p <- c(0.01, 40.0)
+r0_prior_p <- c(0.01, 20.0)
+bugs.model <- 
+paste(sprintf(
+"model{
+  K    ~ dunif(%s, %s)
+  r0    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
+  K_prior_p[1], K_prior_p[2],
+  r0_prior_p[1], r0_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
+  "
+  iQ <- 1 / (stdQ * stdQ);
+  y[1] ~ dunif(0, 10)
+  for(t in 1:(N-1)){
+    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
+    y[t+1] ~ dlnorm(mu[t], iQ) 
+  }
+}")
+writeLines(bugs.model, "ricker_process.bugs")
+```
+
+
+```r
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
+                   r0 = r0_prior, stdQ = stdQ_prior)
+```
+
+
+```r
+jags.params=c("K","r0", "stdQ")
+jags.inits <- function(){
+  list("K"= 10 * rlnorm(1,0,.5),
+       "r0"= rlnorm(1,0,.5),
+       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
+       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+set.seed(12345) 
+ricker_jags <- do.call(jags.parallel, 
+                       list(data=jags.data, inits=jags.inits, 
+                            jags.params, n.chains=n.chains, 
+                            n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
+                            model.file="ricker_process.bugs"))
+recompile(ricker_jags)
+```
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 249
+
+Initializing model
+```
+
+```r
+ricker_jags <- do.call(autojags, 
+                       list(object=ricker_jags, n.update=n.update, 
+														n.iter=n.iter, n.thin = n.thin, 
+														progress.bar="none"))
+```
+
+
+```r
+tmp <- lapply(as.mcmc(ricker_jags), as.matrix) # strip classes the hard way...
+ricker_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
+names(ricker_posteriors) = c("index", "variable", "value", "chain")
+plot_ricker_traces <- ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
+  facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+
+```r
+ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+# plot posterior distributions
+plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```r
+A <- ricker_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+ricker_pardist <- acast(A, index ~ variable)
+bayes_coef <- apply(ricker_pardist,2, posterior.mode) 
+ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
+ricker_f <- function(x,h,p){
+  sapply(x, function(x){ 
+    x <- pmax(0, x-h) 
+    pmax(0, x * exp(p["r0"] * (1 - x / p["K"] )) )
+  })
+}
+ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
+head(ricker_pardist)
+```
+
+```
+         K deviance      r0    stdQ
+170  7.727    35.73 0.29440 0.05197
+171  7.949    37.93 0.18845 0.05872
+172 32.183    44.54 0.02474 0.05688
+173  8.149    37.59 0.12204 0.05407
+174  7.460    39.01 0.38643 0.05495
+175  7.361    35.54 0.23805 0.05150
+```
+
+```r
+ricker_bayes_pars
+```
+
+```
+[1] 0.1997 7.5976
+```
+
+
+
+
+```r
+r0_prior_p <- c(.0001, 10.0)
+theta_prior_p <- c(.0001, 10.0)
+K_prior_p <- c(.0001, 40.0)
+bugs.model <- 
+paste(sprintf(
+"model{
+  r0    ~ dunif(%s, %s)
+  theta    ~ dunif(%s, %s)
+  K    ~ dunif(%s, %s)
+  stdQ ~ dunif(%s, %s)", 
+  r0_prior_p[1], r0_prior_p[2],
+  theta_prior_p[1], theta_prior_p[2],
+  K_prior_p[1], K_prior_p[2],
+  stdQ_prior_p[1], stdQ_prior_p[2]),
+
+  "
+  iQ <- 1 / (stdQ * stdQ);
+
+  y[1] ~ dunif(0, 10)
+  for(t in 1:(N-1)){
+    mu[t] <- log(r0)  + theta * log(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
+    y[t+1] ~ dlnorm(mu[t], iQ) 
+  }
+}")
+writeLines(bugs.model, "myers_process.bugs")
+```
+
+
+```r
+K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
+r_prior     <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
+theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
+par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
+                    r0 = r_prior, theta = theta_prior, 
+                    stdQ = stdQ_prior)
+```
+
+
+```r
+jags.params=c("r0", "theta", "K", "stdQ")
+jags.inits <- function(){
+  list("r0"= 1 * rlnorm(1,0,.1), 
+       "K"=    10 * rlnorm(1,0,.1),
+       "theta" = 1 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
+       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+set.seed(12345)
+myers_jags <- do.call(jags.parallel, 
+                      list(data=jags.data, inits=jags.inits, 
+													 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
+recompile(myers_jags)
+```
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 406
+
+Initializing model
+```
+
+```r
+myers_jags <- do.call(autojags, 
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
+```
+
+
+```r
+tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
+myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
+names(myers_posteriors) = c("index", "variable", "value", "chain")
+plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
+  facet_wrap(~ variable, scale="free", ncol=1)
+```
+
+
+```r
+par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
+    grid <- seq(min(dd$value), max(dd$value), length = 100) 
+    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
+})
+plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+  facet_wrap(~ variable, scale="free", ncol=3)
+```
+
+
+```r
+A <- myers_posteriors
+A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
+myers_pardist <- acast(A, index ~ variable)
+bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
+myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
+myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
+myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
+head(myers_pardist)
 ```
 
 ```
         K deviance     r0    stdQ  theta
-170 9.691    36.01 1.0908 0.04743 5.5090
-171 9.426    39.79 0.1982 0.05290 0.5207
-172 9.190    40.96 0.9020 0.05093 6.0823
-173 9.061    37.26 0.4344 0.04418 3.9614
-174 4.797    38.75 0.1223 0.05401 8.8746
-175 9.188    40.27 0.3136 0.03792 3.6590
+170 20.51    37.16 1.3995 0.04136 0.9864
+171 17.10    41.09 0.6076 0.05170 1.8684
+172 24.40    36.33 1.1692 0.04307 1.0715
+173 27.56    37.46 0.9533 0.05550 1.2000
+174 22.21    34.94 0.5140 0.04203 1.8694
+175 36.05    33.49 0.3089 0.03977 2.1519
+```
+
+```r
+myers_bayes_pars
+```
+
+```
+[1] 35.4576  0.5129 23.9914
 ```
 
 
 
 
+```r
+models <- data.frame(x=x_grid, 
+										 GP=tgp_dat$y, 
+										 True=true_means, 
+                     MLE=est_means, 
+										 Ricker=ricker_means, 
+                     Allen = allen_means,
+                     Myers = myers_means)
+models <- melt(models, id="x")
 
+# some labels
+names(models) <- c("x", "method", "value")
 
-
-
-```
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 249
-
-Initializing model
-```
-
-![plot of chunk ricker-traces](figure/ricker-traces.pdf) 
-
-![plot of chunk ricker-posteriors](figure/ricker-posteriors.pdf) 
-
-
-```
-        K deviance      r0    stdQ
-170 26.83    41.59 0.02336 0.04892
-171 26.96    42.39 0.02878 0.04863
-172  7.32    44.90 0.04816 0.06031
-173 12.34    41.19 0.05936 0.04743
-174 28.37    41.88 0.02243 0.05319
-175 18.45    46.00 0.05361 0.04969
-```
-
-```
-[1] 0.0233 9.9247
+# labels for the colorkey too
+model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
+colorkey=cbPalette
+names(colorkey) = model_names 
 ```
 
 
-
-
-
-
-
-
-```
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
-
-Compiling model graph
-   Resolving undeclared variables
-   Allocating nodes
-   Graph Size: 406
-
-Initializing model
+```r
+# uses expected values from GP, instead of integrating over posterior
+#matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
+matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
+opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 ```
 
-![plot of chunk myers-traces](figure/myers-traces.pdf) 
 
-![plot of chunk myers-posteriors](figure/myers-posteriors.pdf) 
-
-
-```
-        K deviance     r0    stdQ theta
-170 33.85    37.03 0.6426 0.04332 1.447
-171 33.56    37.45 0.5682 0.04384 1.547
-172 39.88    37.94 0.6824 0.04937 1.364
-173 39.36    41.94 0.8287 0.06043 1.232
-174 33.29    41.97 0.9684 0.05516 1.160
-175 36.68    42.08 1.0371 0.04674 1.103
+```r
+matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
+opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
+opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
 
+
+```r
+matrices_allen <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
+opt_allen <- value_iteration(matrices_allen, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
-[1] 38.0061  0.5525 37.9481
+
+
+```r
+matrices_ricker <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
+opt_ricker <- value_iteration(matrices_ricker, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
+
+
+```r
+matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
+myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
+```
+
+
+```r
+OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_ricker$D, Allen = opt_allen$D, Myers = myers_alt$D)
+colorkey=cbPalette
+names(colorkey) = names(OPT) 
+```
+
+
+```r
+sims <- lapply(OPT, function(D){
+  set.seed(1)
+  lapply(1:100, function(i) 
+    ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
+  )
+})
+
+dat <- melt(sims, id=names(sims[[1]][[1]]))
+sims_data <- data.table(dat)
+setnames(sims_data, c("L1", "L2"), c("method", "reps")) 
+# Legend in original ordering please, not alphabetical: 
+sims_data$method = factor(sims_data$method, ordered=TRUE, levels=names(OPT))
 ```
 
 
 
 
+```r
+Profit <- sims_data[, sum(profit), by=c("reps", "method")]
+tmp <- dcast(Profit, reps ~ method)
+tmp <- tmp / tmp[,"True"]
+tmp <- melt(tmp[2:dim(tmp)[2]])
+actual_over_optimal <-subset(tmp, variable != "True")
+```
 
 
+```r
+allen_deviance <- posterior.mode(pardist[,'deviance'])
+ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
+true_deviance <- 2*estf(c(p, sigma_g))
+mle_deviance <- 2*estf(c(est$p, est$sigma_g))
 
+c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
+  allen  ricker   myers    true     mle 
+  32.93   35.92   35.46  -61.08 -889.99 
+```
 
 
 
@@ -640,16 +1146,19 @@ Results
 ====================================================
 
 
+
+```r
+plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
+    geom_line(data=models, aes(x, value, col=method), lwd=1, alpha=0.8) + 
+    geom_point(data=obs, aes(x,y), alpha=0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values=cbPalette) 
+print(plot_gp)
+```
+
 ![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](figure/Figure1.pdf) 
 
 
-```
-Error: 'Sigma' is not positive definite
-```
-
-```
-Error: object 'df_post' not found
-```
 
 
 
@@ -674,6 +1183,16 @@ from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum or near the tipping point.
 
+
+```r
+policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
+names(policies) <- c("stock", "method", "value")
+
+ggplot(policies, aes(stock, stock - value, color=method)) +
+  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
+  scale_colour_manual(values=colorkey)
+```
+
 ![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/Figure2.pdf) 
 
 
@@ -686,6 +1205,13 @@ below a certain size $S$ are unharvested, while above that size the harvest
 strategy aims to return the population to $S$, resulting in the hockey-stick
 shaped policies shown.  
 
+
+
+```r
+ggplot(sims_data) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
+```
 
 ![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/Figure3.pdf) 
 
@@ -708,7 +1234,23 @@ close to the optimal solution, and importantly avoids ever driving the system ac
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
 
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure4.pdf) 
+
+```r
+ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
+  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
+```
+
+![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure41.pdf) 
+
+```r
+# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
+  stat_density(position="stack", adjust=10, alpha=.8) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+```
+
+![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure42.pdf) 
 
 
 Discussion 
@@ -817,22 +1359,54 @@ The appendices have not yet been assembled.  Meanwhile, code to repeat the analy
 
 ## Markov Chain Monte Carlo Analysis
 
-![Traces of the GP hyper-parameters (after transforming back from log space)](gp_traces_densities1.pdf)
 
+```r
+gp_assessment_plots[[1]]
+```
 
-![Posterior densities of the GP hyper-parameters (after transforming back from log space). Prior distribution over the interval sampled shown as red curves.](gp_traces_densities2.pdf)
+![plot of chunk appendixplots](figure/appendixplots1.pdf) 
 
+```r
+gp_assessment_plots[[2]]
+```
 
-![Traces of the Ricker parameters](ricker_traces.pdf)
+![plot of chunk appendixplots](figure/appendixplots2.pdf) 
 
+```r
+plot_allen_traces
+```
 
-![Posterior densities of the Ricker parameter estimates. Prior distributions over the interval sampled shown as red curves. Note the bimodal estimate of $\log(r)$ which leads to the poor fit in Figure 1](ricker_posteriors.pdf)
+![plot of chunk appendixplots](figure/appendixplots3.pdf) 
 
+```r
+plot_allen_posteriors
+```
 
-![Traces of the structurally accurate Allen model parameters](parametric_bayes_traces.pdf)
+![plot of chunk appendixplots](figure/appendixplots4.pdf) 
 
+```r
+plot_ricker_traces
+```
 
-![Posterior densities for the parameters of the Allen model. Prior distributions over the interval sampled shown as red curves.](parametric_bayes_posteriors.pdf)
+![plot of chunk appendixplots](figure/appendixplots5.pdf) 
+
+```r
+plot_ricker_posteriors
+```
+
+![plot of chunk appendixplots](figure/appendixplots6.pdf) 
+
+```r
+plot_myers_traces
+```
+
+![plot of chunk appendixplots](figure/appendixplots7.pdf) 
+
+```r
+plot_myers_posteriors
+```
+
+![plot of chunk appendixplots](figure/appendixplots8.pdf) 
 
 
 

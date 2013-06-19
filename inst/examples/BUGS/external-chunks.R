@@ -52,7 +52,7 @@ MaxT = 1000 # timeout for value iteration convergence
                     y = c(rep(0,nz), 
                           x[2:Tobs]))
 raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
-
+raw_plot
 
 
 ## @knitr mle
@@ -533,19 +533,26 @@ ggplot(sims_data) +
 ## @knitr profits
 Profit <- sims_data[, sum(profit), by=c("reps", "method")]
 tmp <- dcast(Profit, reps ~ method)
+#tmp$Allen <- tmp[,"Allen"] + rnorm(dim(tmp)[1], 0, 1) # jitter for plotting
 tmp <- tmp / tmp[,"True"]
 tmp <- melt(tmp[2:dim(tmp)[2]])
 actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
-  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
-# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+  facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
+  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
+
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+
 ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
-  stat_density(position="stack", adjust=10, alpha=.8) + 
+  stat_density(aes(y=..density..), position="stack", adjust=2, alpha=.9) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+
+
+
 
 
 ## @knitr deviances
@@ -559,7 +566,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 
 ## @knitr appendixplots
-raw_plot
 gp_assessment_plots[[1]]
 gp_assessment_plots[[2]]
 plot_allen_traces

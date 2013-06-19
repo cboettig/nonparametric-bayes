@@ -17,7 +17,8 @@ opts_knit$set(progress = TRUE, verbose = TRUE)
 opts_chunk$set(dev = c('pdf', 'png'), fig.width=5.5, fig.height=4,
  cache.path = 'cache/nonparametric-bayes/', cache=TRUE, external=TRUE)
 opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
-               tidy=FALSE, echo=FALSE)
+               tidy=FALSE)
+toggle = "markup" # "hide" 
 ```
 
 
@@ -33,7 +34,7 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 
 ```{r mle, dependson="obs"}
 ```
-```{r mle-output, dependson="mle"}
+```{r mle-output, dependson="mle", results=toggle}
 ```
 
 
@@ -43,7 +44,7 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r gp_traces_densities, dependson="gp"}
 ```
-```{r gp-output, dependson="gp"}
+```{r gp-output, dependson="gp", results=toggle}
 ```
 
 
@@ -55,13 +56,13 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r allen-priors, dependson="common-priors"}
 ```
-```{r allen-mcmc, dependson=c("allen-model", "allen-pars", "jags-setup"), results="hide"}
+```{r allen-mcmc, dependson=c("allen-model", "allen-pars", "jags-setup"), results=toggle}
 ```
 ```{r allen-traces, dependson="allen-mcmc"}
 ```
 ```{r allen-posteriors, dependson=c("allen-traces", "allen-priors")}
 ```
-```{r allen-output, dependson=c("posterior-mode", "allen-traces")}
+```{r allen-output, dependson=c("posterior-mode", "allen-traces"), results=toggle}
 ```
 
 
@@ -69,13 +70,13 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r ricker-priors, dependson="common-priors"}
 ```
-```{r ricker-mcmc, dependson="ricker-model", results="hide"}
+```{r ricker-mcmc, dependson="ricker-model", results=toggle}
 ```
 ```{r ricker-traces, dependson="ricker-mcmc"}
 ```
 ```{r ricker-posteriors, dependson=c("ricker-traces", "ricker-priors")}
 ```
-```{r ricker-output, dependson=c("posterior-mode", "ricker-traces")}
+```{r ricker-output, dependson=c("posterior-mode", "ricker-traces"), results=toggle}
 ```
 
 
@@ -83,13 +84,13 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 ```{r myers-priors}
 ```
-```{r myers-mcmc, dependson="myers-model", results="hide"}
+```{r myers-mcmc, dependson="myers-model", results=toggle}
 ```
 ```{r myers-traces, dependson="myers-mcmc"}
 ```
 ```{r myers-posteriors, dependson="myers-traces"}
 ```
-```{r myers-output, dependson=c("posterior-mode", "myers-traces")}
+```{r myers-output, dependson=c("posterior-mode", "myers-traces"), results=toggle}
 ```
 
 
@@ -111,9 +112,9 @@ opts_chunk$set(warning=FALSE, message=FALSE, comment=NA,
 ```
 
 
-```{r profits, dependson="sims", results="hide"}
+```{r profits, dependson="sims", results=toggle}
 ```
-```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output"), results="hide"}
+```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output"), results=toggle}
 ```
 
 

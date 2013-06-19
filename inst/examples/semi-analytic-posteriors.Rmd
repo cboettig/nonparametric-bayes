@@ -195,3 +195,23 @@ qplot(K_grid, -log(tmpK))
 ```
 
 
+## Reconstructing the joint probability distribution
+
+$$P(r, \beta, \sigma | X) = \frac{P(X | r, \beta, \sigma) P(r) P(\beta) P(\sigma) }{\int_r \int_{\beta} \int_{\sigma P(X | r, \beta, \sigma) P(r) P(\beta) P(\sigma)}  $$
+
+Having done the first two integrals analytically and then evaluating the remaining expression over the grid, we simply sum over the grids to complete our calculation of the normalization term from the denominator,
+
+```{r}
+N_ricker <- sum(P_B.X) * (beta_grid[2]-beta_grid[1])
+```
+
+We then have an analytic function for the numerator,
+
+$$ P(X | r, \beta, \sigma) P(r) P(\beta) P(\sigma) =  \frac{1}{\sqrt{2 \pi \sigma^2}^{T-1}} \exp\left(\frac{\sum_t^{T-1} \left(\log X_{t+1} - \log X_t - \log r + \beta X_t\right)^2 }{2 \sigma^2}\right) \frac{1}{\sigma^2}$$
+
+## Transforming back
+
+
+
+
+
