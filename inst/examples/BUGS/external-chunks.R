@@ -558,7 +558,6 @@ mle_deviance <- 2*estf(c(est$p, est$sigma_g))
 c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
 
 
-
 ## @knitr appendixplots
 raw_plot
 gp_assessment_plots[[1]]

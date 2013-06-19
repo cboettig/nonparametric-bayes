@@ -39,7 +39,7 @@ Various parameters defining noise dynamics, grid, and policy costs.
 sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1+(2*runif(1, 0,  1)-1) * sigma_m
+z_m <- function() 1
 x_grid <- seq(0, 1.5 * K, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
@@ -50,6 +50,7 @@ xT <- 0
 Xo <-  allee+.5# observations start from
 x0 <- K # simulation under policy starts from
 Tobs <- 40
+MaxT = 1000 # timeout for value iteration convergence
 ```
 
 
@@ -72,7 +73,7 @@ raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
 raw_plot
 ```
 
-![plot of chunk obs](http://farm8.staticflickr.com/7319/9021273250_f4ba2d9636_o.png) 
+![plot of chunk obs](http://farm8.staticflickr.com/7414/9081264482_4dd5037f52_o.png) 
 
 
 
@@ -134,10 +135,8 @@ Show traces and posteriors against priors
 
 
 ```r
-plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
+gp_assessment_plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
 ```
-
-![plot of chunk gp_traces_densities](figure/process-noise-only-gp_traces_densities1.png) ![plot of chunk gp_traces_densities](http://farm9.staticflickr.com/8131/9021273454_b4afb83b91_o.png) 
 
 
 
@@ -253,8 +252,8 @@ to maintain strictly positive values of parameters where appropriate.
 ```r
 jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
 jags.inits <- function(){
-  list("K"= 8 * rlnorm(1,0, 0.1),
-       "r0"= 2 * rlnorm(1,0, 0.1) ,
+  list("K"= 10 * rlnorm(1,0, 0.1),
+       "r0"= 1 * rlnorm(1,0, 0.1) ,
        "theta"=   5 * rlnorm(1,0, 0.1) , 
        "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -286,11 +285,9 @@ R notes: this strips classes from the `mcmc.list` object (so that we have list o
 tmp <- lapply(as.mcmc(allen_jags), as.matrix) # strip classes the hard way...
 allen_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(allen_posteriors) = c("index", "variable", "value", "chain")
-ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
+plot_allen_traces <- ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
-
-![plot of chunk allen-traces](http://farm9.staticflickr.com/8560/9019046755_0af0303af9_o.png) 
 
 
 
@@ -300,14 +297,11 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
-ggplot(allen_posteriors, aes(value)) + 
+plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
-
-![plot of chunk allen-posteriors](http://farm6.staticflickr.com/5465/9019046967_ea3cc59c2c_o.png) 
 
 
 
@@ -326,7 +320,7 @@ bayes_pars
 ```
 
 ```
-[1] 0.5575 7.7179 4.5429
+[1] 0.5003 7.7115 4.6039
 ```
 
 ```r
@@ -335,12 +329,12 @@ head(pardist)
 
 ```
         K deviance     r0    stdQ theta
-170 7.751    32.88 0.6191 0.04284 2.354
-171 7.825    31.54 0.9437 0.04101 4.411
-172 7.816    35.86 2.3905 0.04475 5.719
-173 7.429    36.42 0.5230 0.05075 1.229
-174 7.637    30.59 1.0120 0.04205 4.505
-175 7.827    32.62 0.4872 0.05021 2.315
+170 7.898    34.41 0.6668 0.05566 3.956
+171 7.745    32.76 0.7554 0.05137 4.668
+172 7.577    31.66 1.0705 0.04562 4.073
+173 7.859    31.26 1.5647 0.04238 5.087
+174 7.821    30.67 1.7348 0.04662 5.230
+175 8.003    34.90 1.4495 0.05005 5.444
 ```
 
 
@@ -398,7 +392,7 @@ parameters in the transformed space used by the MCMC.
 ```r
 jags.params=c("K","r0", "stdQ")
 jags.inits <- function(){
-  list("K"=10 * rlnorm(1,0,.5),
+  list("K"= 10 * rlnorm(1,0,.5),
        "r0"= rlnorm(1,0,.5),
        "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
@@ -472,12 +466,9 @@ ricker_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(ricker_jags), as.matrix) # strip classes the hard way...
 ricker_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(ricker_posteriors) = c("index", "variable", "value", "chain")
-
-ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
+plot_ricker_traces <- ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
-
-![plot of chunk ricker-traces](http://farm8.staticflickr.com/7357/9021274072_7b8d3b852c_o.png) 
 
 
 
@@ -487,13 +478,11 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
 # plot posterior distributions
-ggplot(ricker_posteriors, aes(value)) + 
+plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
-
-![plot of chunk ricker-posteriors](http://farm8.staticflickr.com/7408/9021274256_b418c7b46a_o.png) 
 
 
 
@@ -585,7 +574,7 @@ par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
 ```r
 jags.params=c("r0", "theta", "K", "stdQ")
 jags.inits <- function(){
-  list("r0"= rlnorm(1,0,.1), 
+  list("r0"= 1 * rlnorm(1,0,.1), 
        "K"=    10 * rlnorm(1,0,.1),
        "theta" = 1 * rlnorm(1,0,.1),  
        "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
@@ -660,11 +649,9 @@ Convergence diagnostics for parametric bayes
 tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-ggplot(myers_posteriors) + geom_line(aes(index, value)) +
+plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
   facet_wrap(~ variable, scale="free", ncol=1)
 ```
-
-![plot of chunk myers-traces](http://farm8.staticflickr.com/7292/9021274464_3b9dd892e4_o.png) 
 
 
 
@@ -675,14 +662,11 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
     grid <- seq(min(dd$value), max(dd$value), length = 100) 
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
-
-ggplot(myers_posteriors, aes(value)) + 
+plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
   facet_wrap(~ variable, scale="free", ncol=3)
 ```
-
-![plot of chunk myers-posteriors](http://farm9.staticflickr.com/8401/9021274660_af786048fb_o.png) 
 
 
 
@@ -753,7 +737,7 @@ plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gra
 print(plot_gp)
 ```
 
-![plot of chunk Figure1](http://farm4.staticflickr.com/3706/9019048025_7005bdb3f5_o.png) 
+![plot of chunk Figure1](http://farm6.staticflickr.com/5532/9081264678_356726fef5_o.png) 
 
 
 
@@ -792,7 +776,7 @@ ggplot(df_post) + geom_point(aes(time, stock)) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![plot of chunk Figureb](http://farm8.staticflickr.com/7286/9021275080_ff367f8542_o.png) 
+![plot of chunk Figureb](http://farm8.staticflickr.com/7338/9081264964_f591a2b96a_o.png) 
 
 
 
@@ -804,14 +788,9 @@ Compute the optimal policy under each model using stochastic dynamic programming
 
 
 ```r
-MaxT = 1000
 # uses expected values from GP, instead of integrating over posterior
 #matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
-
-# Integrate over posteriors 
 matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
-
-# Solve the SDP using the GP-derived transition matrix
 opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
 ```
 
@@ -823,7 +802,6 @@ Determine the optimal policy based on the allen and MLE models
 ```r
 matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
 opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-
 matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
 opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
 ```
@@ -882,7 +860,7 @@ ggplot(policies, aes(stock, stock - value, color=method)) +
   scale_colour_manual(values=colorkey)
 ```
 
-![plot of chunk Figure2](http://farm6.staticflickr.com/5465/9019048423_8a0208814f_o.png) 
+![plot of chunk Figure2](http://farm6.staticflickr.com/5486/9081265122_75cb505f84_o.png) 
 
 
 
@@ -900,48 +878,35 @@ sims <- lapply(OPT, function(D){
 })
 
 dat <- melt(sims, id=names(sims[[1]][[1]]))
-dt <- data.table(dat)
-setnames(dt, c("L1", "L2"), c("method", "reps")) 
+sims_data <- data.table(dat)
+setnames(sims_data, c("L1", "L2"), c("method", "reps")) 
 # Legend in original ordering please, not alphabetical: 
-dt$method = factor(dt$method, ordered=TRUE, levels=names(OPT))
+sims_data$method = factor(sims_data$method, ordered=TRUE, levels=names(OPT))
 ```
 
 
 
 ```r
-ggplot(dt) + 
+ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
 ```
 
-![plot of chunk Figure3](http://farm6.staticflickr.com/5448/9021275460_cbc5de534d_o.png) 
+![plot of chunk Figure3](http://farm6.staticflickr.com/5338/9081265332_2b6d056375_o.png) 
 
 
 
 
 ```r
-Profit <- dt[, sum(profit), by=c("reps", "method")]
-Profit[, mean(V1), by="method"]
-```
-
-```
-   method     V1
-1:     GP 24.908
-2:   True 26.532
-3:    MLE 24.771
-4: Ricker  5.893
-5:  Allen 26.428
-6:  Myers  5.865
+Profit <- sims_data[, sum(profit), by=c("reps", "method")]
+tmp <- dcast(Profit, reps ~ method)
+tmp <- tmp / tmp[,"True"]
+tmp <- melt(tmp[2:dim(tmp)[2]])
+actual_over_optimal <-subset(tmp, variable != "True")
 ```
 
 
 
-```r
-ggplot(Profit, aes(V1)) + geom_histogram() + 
-  facet_wrap(~method, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
-```
-
-![plot of chunk totalprofits](http://farm6.staticflickr.com/5334/9019048845_1e55f47129_o.png) 
 
 
 
@@ -958,6 +923,6 @@ c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=tru
 
 ```
   allen  ricker   myers    true     mle 
-  32.28   35.92   35.46  -61.08 -889.99 
+  32.93   35.92   35.46  -61.08 -889.99 
 ```
 
