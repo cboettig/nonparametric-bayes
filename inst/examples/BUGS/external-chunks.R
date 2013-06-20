@@ -533,29 +533,34 @@ ggplot(sims_data) +
 ## @knitr profits
 Profit <- sims_data[, sum(profit), by=c("reps", "method")]
 tmp <- dcast(Profit, reps ~ method)
+#tmp$Allen <- tmp[,"Allen"] + rnorm(dim(tmp)[1], 0, 1) # jitter for plotting
 tmp <- tmp / tmp[,"True"]
 tmp <- melt(tmp[2:dim(tmp)[2]])
 actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
-  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
-# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+  facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
+  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
+
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+
 ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
-  stat_density(position="stack", adjust=10, alpha=.8) + 
+  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 
 
+
+
 ## @knitr deviances
-allen_deviance <- posterior.mode(pardist[,'deviance'])
-ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
+allen_deviance <- -2*posterior.mode(pardist[,'deviance'])
+ricker_deviance <- -2*posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- -2*posterior.mode(myers_pardist[,'deviance'])
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
-c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
+xtable::xtable(as.table(c(Allen = allen_deviance, Ricker=ricker_deviance, Myers=myers_deviance, True=true_deviance, MLE=mle_deviance)))
 
 
 ## @knitr appendixplots
