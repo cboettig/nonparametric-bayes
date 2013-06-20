@@ -398,7 +398,7 @@ A <- myers_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 myers_pardist <- acast(A, index ~ variable)
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
-myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
+myers_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["theta"], bayes_coef["K"]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
 myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
 head(myers_pardist)

@@ -190,12 +190,32 @@ Reshape posteriors data, transform back, calculate mode and corresponding functi
 ```
 
 
-```{r myers-mcmc, dependson="myers-model"}
+```{r myers-mcmc-local, dependson="myers-model"}
+jags.params=c("r0", "theta", "K", "stdQ")
+jags.inits <- function(){
+  list("r0"= 1.5 * rlnorm(1,0,.2), 
+       "K"=    8 * rlnorm(1,0,.1),
+       "theta" = 2.5 * rlnorm(1,0,.1),  
+       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
+       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
+}
+set.seed(12345)
+myers_jags <- do.call(jags.parallel, 
+                      list(data=jags.data, inits=jags.inits, 
+    											 jags.params, n.chains=n.chains, 
+													 n.iter=n.iter, n.thin=n.thin,
+                           n.burnin=n.burnin, 
+                           model.file="myers_process.bugs"))
+recompile(myers_jags)
+myers_jags <- do.call(autojags, 
+                      list(myers_jags, n.update=n.update, 
+                           n.iter=n.iter, n.thin = n.thin, 
+                           progress.bar="none"))
 ```
 
 Convergence diagnostics for parametric bayes
 
-```{r myers-traces, dependson="myers-mcmc"}
+```{r myers-traces, dependson="myers-mcmc-local"}
 ```
 
 
