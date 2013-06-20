@@ -554,15 +554,13 @@ ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) +
 
 
 
-
 ## @knitr deviances
-allen_deviance <- posterior.mode(pardist[,'deviance'])
-ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
+allen_deviance <- -2*posterior.mode(pardist[,'deviance'])
+ricker_deviance <- -2*posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- -2*posterior.mode(myers_pardist[,'deviance'])
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
-c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
+xtable::xtable(as.table(c(Allen = allen_deviance, Ricker=ricker_deviance, Myers=myers_deviance, True=true_deviance, MLE=mle_deviance)))
 
 
 ## @knitr appendixplots
