@@ -117,6 +117,19 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{xtable.print.comment =} \OtherTok{FALSE}\NormalTok{)}
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{xtable.type =} \StringTok{"latex"}\NormalTok{, }\DataTypeTok{table.placement =} \StringTok{"H"}\NormalTok{)}
+\NormalTok{opts_knit$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{progress =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{verbose =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{opts_chunk$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{dev =} \KeywordTok{c}\NormalTok{(}\StringTok{"pdf"}\NormalTok{, }\StringTok{"png"}\NormalTok{), }\DataTypeTok{fig.width =} \FloatTok{5.5}\NormalTok{, }\DataTypeTok{fig.height =} \DecValTok{4}\NormalTok{, }\DataTypeTok{cache.path =} \StringTok{"cache/nonparametric-bayes/"}\NormalTok{, }
+    \DataTypeTok{cache =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{external =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{opts_chunk$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{warning =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{message =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{comment =} \OtherTok{NA}\NormalTok{, }\DataTypeTok{tidy =} \OtherTok{FALSE}\NormalTok{)}
+\NormalTok{toggle = }\StringTok{"markup"}
+\KeywordTok{theme_set}\NormalTok{(}\KeywordTok{theme_bw}\NormalTok{(}\DataTypeTok{base_size =} \DecValTok{12}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \KeywordTok{require}\NormalTok{(modeest)}
 \NormalTok{posterior.mode <- function(x) \{}
   \KeywordTok{mlv}\NormalTok{(x, }\DataTypeTok{method=}\StringTok{"shorth"}\NormalTok{)$M}
@@ -859,6 +872,7 @@ Initializing model
 \begin{Highlighting}[]
 \NormalTok{Profit <- sims_data[, }\KeywordTok{sum}\NormalTok{(profit), by=}\KeywordTok{c}\NormalTok{(}\StringTok{"reps"}\NormalTok{, }\StringTok{"method"}\NormalTok{)]}
 \NormalTok{tmp <- }\KeywordTok{dcast}\NormalTok{(Profit, reps ~ method)}
+\CommentTok{#tmp$Allen <- tmp[,"Allen"] + rnorm(dim(tmp)[1], 0, 1) # jitter for plotting}
 \NormalTok{tmp <- tmp / tmp[,}\StringTok{"True"}\NormalTok{]}
 \NormalTok{tmp <- }\KeywordTok{melt}\NormalTok{(tmp[}\DecValTok{2}\NormalTok{:}\KeywordTok{dim}\NormalTok{(tmp)[}\DecValTok{2}\NormalTok{]])}
 \NormalTok{actual_over_optimal <-}\KeywordTok{subset}\NormalTok{(tmp, variable != }\StringTok{"True"}\NormalTok{)}
@@ -1279,25 +1293,40 @@ Munch et al. (2005) first discusses their application in this context.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{plot_gp <- }\KeywordTok{ggplot}\NormalTok{(tgp_dat) + }\KeywordTok{geom_ribbon}\NormalTok{(}\KeywordTok{aes}\NormalTok{(x,y,}\DataTypeTok{ymin=}\NormalTok{ymin,}\DataTypeTok{ymax=}\NormalTok{ymax), }\DataTypeTok{fill=}\StringTok{"gray80"}\NormalTok{) +}
-    \KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{data=}\NormalTok{models, }\KeywordTok{aes}\NormalTok{(x, value, }\DataTypeTok{col=}\NormalTok{method), }\DataTypeTok{lwd=}\DecValTok{1}\NormalTok{, }\DataTypeTok{alpha=}\FloatTok{0.8}\NormalTok{) + }
-    \KeywordTok{geom_point}\NormalTok{(}\DataTypeTok{data=}\NormalTok{obs, }\KeywordTok{aes}\NormalTok{(x,y), }\DataTypeTok{alpha=}\FloatTok{0.8}\NormalTok{) + }
-    \KeywordTok{xlab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(X[t])) + }\KeywordTok{ylab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(X[t}\DecValTok{+1}\NormalTok{])) +}
-    \KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{cbPalette) }
-\KeywordTok{print}\NormalTok{(plot_gp)}
+\KeywordTok{require}\NormalTok{(MASS)}
+\NormalTok{step_ahead <- function(x, f, p)\{}
+  \NormalTok{h = }\DecValTok{0}
+  \NormalTok{x_predict <- }\KeywordTok{sapply}\NormalTok{(x, f, h, p)}
+  \NormalTok{n <- }\KeywordTok{length}\NormalTok{(x_predict) - }\DecValTok{1}
+  \NormalTok{y <- }\KeywordTok{c}\NormalTok{(x[}\DecValTok{1}\NormalTok{], x_predict[}\DecValTok{1}\NormalTok{:n])}
+  \NormalTok{y}
+\NormalTok{\}}
+\NormalTok{step_ahead_posteriors <- function(x)\{}
+\NormalTok{gp_f_at_obs <- }\KeywordTok{gp_predict}\NormalTok{(gp, x, }\DataTypeTok{burnin=}\FloatTok{1e4}\NormalTok{, }\DataTypeTok{thin=}\DecValTok{300}\NormalTok{)}
+\NormalTok{df_post <- }\KeywordTok{melt}\NormalTok{(}\KeywordTok{lapply}\NormalTok{(}\KeywordTok{sample}\NormalTok{(}\DecValTok{100}\NormalTok{), }
+  \NormalTok{function(i)\{}
+    \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{time =} \DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(x), }\DataTypeTok{stock =} \NormalTok{x, }
+                \DataTypeTok{GP =} \KeywordTok{mvrnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),}
+                \DataTypeTok{True =} \KeywordTok{step_ahead}\NormalTok{(x,f,p),  }
+                \DataTypeTok{MLE =} \KeywordTok{step_ahead}\NormalTok{(x,f,est$p), }
+                \DataTypeTok{Allen =} \KeywordTok{step_ahead}\NormalTok{(x, allen_f, pardist[i,]), }
+                \DataTypeTok{Ricker =} \KeywordTok{step_ahead}\NormalTok{(x, ricker_f, ricker_pardist[i,]), }
+                \DataTypeTok{Myers =} \KeywordTok{step_ahead}\NormalTok{(x, myers_f, myers_pardist[i,]))}
+  \NormalTok{\}), }\DataTypeTok{id=}\KeywordTok{c}\NormalTok{(}\StringTok{"time"}\NormalTok{, }\StringTok{"stock"}\NormalTok{))}
+\NormalTok{\}}
+
+\NormalTok{df_post <- }\KeywordTok{step_ahead_posteriors}\NormalTok{(x)}
+
+\KeywordTok{ggplot}\NormalTok{(df_post) + }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, stock)) + }
+  \KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, value, }\DataTypeTok{col=}\NormalTok{variable, }\DataTypeTok{group=}\KeywordTok{interaction}\NormalTok{(L1,variable)), }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{1}\NormalTok{) + }
+  \KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey, }\DataTypeTok{guide =} \KeywordTok{guide_legend}\NormalTok{(}\DataTypeTok{override.aes =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alpha =} \DecValTok{1}\NormalTok{))) }
 \end{Highlighting}
 \end{Shaded}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/Figure1.pdf}
-\caption{Graph of the inferred Gaussian process compared to the true
-process and maximum-likelihood estimated process. Graph shows the
-expected value for the function $f$ under each model. Two standard
-deviations from the estimated Gaussian process covariance with (light
-grey) and without (darker grey) measurement error are also shown. The
-training data is also shown as black points. (The GP is conditioned on
-0,0, shown as a pseudo-data point).}
+\includegraphics{figure/Figureb.pdf}
+\caption{plot of chunk Figureb}
 \end{figure}
 
 Figure 1 shows the mean inferred state space dynamics of each model
@@ -1386,8 +1415,9 @@ parametric models.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) + }\KeywordTok{geom_histogram}\NormalTok{() + }
-  \KeywordTok{facet_wrap}\NormalTok{(~variable, }\DataTypeTok{scales =} \StringTok{"free_y"}\NormalTok{) + }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{) + }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)}
+\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) + }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable)) + }
+  \KeywordTok{facet_wrap}\NormalTok{(~variable, }\DataTypeTok{scales =} \StringTok{"free_y"}\NormalTok{)  + }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{) +}
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{) + }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1403,17 +1433,34 @@ simulations. Details and code provided in the supplement.}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + }
-\CommentTok{#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)}
-\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value, }\DataTypeTok{fill=}\NormalTok{variable, }\DataTypeTok{color=}\NormalTok{variable)) + }
-  \KeywordTok{stat_density}\NormalTok{(}\DataTypeTok{position=}\StringTok{"stack"}\NormalTok{, }\DataTypeTok{adjust=}\DecValTok{10}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{8}\NormalTok{) + }
-  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)+ }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
+
+\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) + }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable), }\DataTypeTok{binwidth=}\FloatTok{0.1}\NormalTok{) + }
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics{figure/Figure42.pdf}
+\caption{Histograms of the realized net present value of the fishery
+over a range of simulated data and resulting parameter estimates. For
+each data set, the three models are estimated as described above. Values
+plotted are the averages of a given policy over 100 replicate
+simulations. Details and code provided in the supplement.}
+\end{figure}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value, }\DataTypeTok{fill=}\NormalTok{variable, }\DataTypeTok{color=}\NormalTok{variable)) + }
+  \KeywordTok{stat_density}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{..density..), }\DataTypeTok{position=}\StringTok{"stack"}\NormalTok{, }\DataTypeTok{adjust=}\DecValTok{3}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{9}\NormalTok{) + }
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)+ }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/Figure43.pdf}
 \caption{Histograms of the realized net present value of the fishery
 over a range of simulated data and resulting parameter estimates. For
 each data set, the three models are estimated as described above. Values

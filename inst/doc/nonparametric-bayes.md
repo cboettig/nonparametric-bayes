@@ -5,7 +5,16 @@
 
 
 
-
+```r
+options(xtable.print.comment = FALSE)
+options(xtable.type = "latex", table.placement = "H")
+opts_knit$set(progress = TRUE, verbose = TRUE)
+opts_chunk$set(dev = c("pdf", "png"), fig.width = 5.5, fig.height = 4, cache.path = "cache/nonparametric-bayes/", 
+    cache = TRUE, external = TRUE)
+opts_chunk$set(warning = FALSE, message = FALSE, comment = NA, tidy = FALSE)
+toggle = "markup"
+theme_set(theme_bw(base_size = 12))
+```
 
 
 
@@ -712,6 +721,7 @@ sims_data$method = factor(sims_data$method, ordered=TRUE, levels=names(OPT))
 ```r
 Profit <- sims_data[, sum(profit), by=c("reps", "method")]
 tmp <- dcast(Profit, reps ~ method)
+#tmp$Allen <- tmp[,"Allen"] + rnorm(dim(tmp)[1], 0, 1) # jitter for plotting
 tmp <- tmp / tmp[,"True"]
 tmp <- melt(tmp[2:dim(tmp)[2]])
 actual_over_optimal <-subset(tmp, variable != "True")
@@ -1147,18 +1157,39 @@ Results
 
 
 
+
+
 ```r
-plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-    geom_line(data=models, aes(x, value, col=method), lwd=1, alpha=0.8) + 
-    geom_point(data=obs, aes(x,y), alpha=0.8) + 
-    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
-    scale_colour_manual(values=cbPalette) 
-print(plot_gp)
+require(MASS)
+step_ahead <- function(x, f, p){
+  h = 0
+  x_predict <- sapply(x, f, h, p)
+  n <- length(x_predict) - 1
+  y <- c(x[1], x_predict[1:n])
+  y
+}
+step_ahead_posteriors <- function(x){
+gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+df_post <- melt(lapply(sample(100), 
+  function(i){
+    data.frame(time = 1:length(x), stock = x, 
+                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Allen = step_ahead(x, allen_f, pardist[i,]), 
+                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
+                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
+  }), id=c("time", "stock"))
+}
+
+df_post <- step_ahead_posteriors(x)
+
+ggplot(df_post) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
 ```
 
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ](figure/Figure1.pdf) 
-
-
+![plot of chunk Figureb](figure/Figureb.pdf) 
 
 
 
@@ -1236,21 +1267,29 @@ the tipping point, which results in the near-zero value cases in the parametric 
 
 
 ```r
-ggplot(actual_over_optimal, aes(value)) + geom_histogram() + 
-  facet_wrap(~variable, scales = "free_y") + guides(legend.position = "none") + xlab("Total profit by replicate")
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+  facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
+  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
 ```
 
 ![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure41.pdf) 
 
 ```r
-# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
-ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
-  stat_density(position="stack", adjust=10, alpha=.8) + 
-  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
 ```
 
 ![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure42.pdf) 
+
+```r
+
+ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
+  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
+  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+```
+
+![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/Figure43.pdf) 
 
 
 Discussion 

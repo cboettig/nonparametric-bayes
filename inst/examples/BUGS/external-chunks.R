@@ -548,7 +548,7 @@ ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), bin
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
 
 ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
-  stat_density(aes(y=..density..), position="stack", adjust=2, alpha=.9) + 
+  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 
 
