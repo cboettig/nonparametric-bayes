@@ -612,7 +612,7 @@ A <- myers_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 myers_pardist <- acast(A, index ~ variable)
 bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
-myers_bayes_pars <- unname(c(bayes_coef[2], bayes_coef[3], bayes_coef[1]))
+myers_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["theta"], bayes_coef["K"]))
 myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
 myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
 head(myers_pardist)
@@ -633,7 +633,7 @@ myers_bayes_pars
 ```
 
 ```
-[1] 35.4576  0.5129 23.9914
+[1]  0.5129  1.0894 23.9914
 ```
 
 
@@ -729,18 +729,31 @@ actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ```r
-allen_deviance <- posterior.mode(pardist[,'deviance'])
-ricker_deviance <- posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- posterior.mode(myers_pardist[,'deviance'])
+allen_deviance <- -2*posterior.mode(pardist[,'deviance'])
+ricker_deviance <- -2*posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance <- -2*posterior.mode(myers_pardist[,'deviance'])
 true_deviance <- 2*estf(c(p, sigma_g))
 mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-
-c(allen = allen_deviance, ricker=ricker_deviance, myers=myers_deviance, true=true_deviance, mle=mle_deviance)
+xtable::xtable(as.table(c(Allen = allen_deviance, Ricker=ricker_deviance, Myers=myers_deviance, True=true_deviance, MLE=mle_deviance)))
 ```
 
 ```
-  allen  ricker   myers    true     mle 
-  32.93   35.92   35.46  -61.08 -889.99 
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Thu Jun 20 16:29:00 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rr}
+  \hline
+ & x \\ 
+  \hline
+Allen & -65.85 \\ 
+  Ricker & -71.85 \\ 
+  Myers & -70.92 \\ 
+  True & -61.08 \\ 
+  MLE & -889.99 \\ 
+   \hline
+\end{tabular}
+\end{table}
 ```
 
 
@@ -753,7 +766,20 @@ Abstract
 Decision-theoretic methods often rely on simple parametric models of
 ecological dynamics to compare the value of a potential sequence of
 actions. Unfortunately, such simple models rarely capture the complexity
-or uncertainty found in most real ecosystems. Non-parametric Bayesian
+or uncertainty found in most real ecosystems. 
+
+We demonstrate how nonparametric Bayesian models can provide robust,
+nearly-optimal solutions to decision making under uncertainty when
+_we don't know the correct model_ to use. 
+
+
+While methods that account
+for _parametric_ uncertainty can be very successful with the right model,
+structural uncertainty of not knowing what model best approximates the 
+dynamics poses considerably greater difficulty.  
+
+
+Non-parametric Bayesian
 methods offer a promising statistical approach for predictive modeling
 of ecological dynamics in regions of state space where the data is
 adequate, while at the same time offering more flexible patterns with
@@ -768,20 +794,71 @@ Bayesian approach.
 Introduction
 =======================================================================
 
+Decision making under uncertainty is a ubiquitous challenge of natural 
+resource management and conservation.  
 
-Most management recommendations from the ecological literature are based
-on (or at least motivated by) parametric models. Though in principle
-these models reflect mechanistic underpinnings of biological interactions
-involved, in practice real mechanisms are often unknown and the true
-dynamics too complex to be captured by simple models. While
+<!-- Models for decision-making -->
+Decision-theoretic tools require a model that can assign probabilites of
+future states (e.g. stock size of a fishery) given the current state and a
+proposed action (e.g. fishing harvest or effort).  The decision maker then
+seeks to determing the course of actions (also refered to as the policy)
+that maximizes the expected value of some objective function (such as
+net present value derived from the resource over time.  (The approach
+can be adapted to permit alternatives to maximizing expectation, such
+as minimizing the maximum cost or damage that might be incurred. See
+@Polasky2011).
+Management frequently faces a sequential decision-making problem -- after 
+selecting an action, the decision-maker may recieve new information about 
+the current state and must again choose an appropriate action -- i.e. setting
+the harvest limits each year based on stock assessments the year prior.  
+
+<!-- Parametric models -->
+
+
+<!-- Parametric uncertainty -->
+
+
+<!-- Comparing models -->
+The nature of decision-making problems provides a convenient way to compare 
+models.  Rather than compare models in terms of best fit to data or fret over
+the appropriate penalty for model complexity, model performance is defined 
+in the concrete terms of the decision-maker's objective function, which we
+will take as given. (Much argument can be made over the 'correct' objective
+function, e.g. how to account for the social value of fish left in the sea
+vs. the commercial value of fish harvested; see @Halpern2013 for further 
+discussion of this issue.  Alternatively, we can always compare model performance
+across multiple potential objective functions.)  The decision-maker
+does not necessarily need a model that provides the best mechanistic understanding
+or the best long-term outcome, but rather the one that best estimates the 
+probabilites of being in different states as a result of the possible actions. 
+
+
+<!-- Structural Uncertainty --> 
+
+
+
+
+
+
+
+ While
 simple mechanistic models can nevertheless provide important insights
-into possible dynamics -- for instance, demonstrating that a vaccine
-does not have to be 100% effective to eliminate the transmission of a
-virus  -- such approaches are not well-suited for use in
+into long-term outcomes, such approaches are not well-suited for use in
 forecasting outcomes of potential management options.  Non-parametric 
 approaches offer a more flexible alternative that can both more accurately
 reflect the data available while also representing greater uncertainty
-in areas (of state-space) where data is lacking.  Ecological research
+in areas (of state-space) where data is lacking.  
+
+We demonstrate how
+a Gaussian Process model of stock recruitment can lead to nearly optimal
+management through stochastic dynamic programming, comperable to knowing
+the correct structural equation for the underlying simulation.  Meanwhile,
+parametric models that do not match the underlying dynamics can perform 
+very poorly, even though they fit the data as well as the true model.  
+
+
+
+Ecological research
 and management strategy should pay closer attention to the opportunities 
 and challenges nonparametric modeling can offer.  
 
@@ -878,18 +955,7 @@ context of sequential decision making, in which forecasts must be obtained
 over a range of possible actions and updated regularly as new information
 arrives makes such an approach less feasible still.
 
-<!-- cut?? --> 
 
-An active literature and growing computational power over the past several
-decades have only marginally improved this situation.  Parametric or
-structural uncertainty can be introduced only by increasing the state
-space to reflect a distribution of possible parameters or
-the degree of belief in each of a set of possible models Frequently,
-the space of possible actions must then be reduced or the algorithms
-adjusted by approximations to keep computations feasible.
-
-
-<!-- cut?? --> 
 
 Traditional approaches to optimal control (Pontryagin's principle, stochastic
 dynamic programming) rely on knowledge of the state equation, usually described
