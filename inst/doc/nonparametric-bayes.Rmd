@@ -157,26 +157,53 @@ Introduction
 Decision making under uncertainty is a ubiquitous challenge of natural 
 resource management and conservation.  
 
+Here we illustrate how a stochastic dynamic programming algorithm can 
+be driven by the predictions from a Gaussian process model, sidestepping
+the need for an accurate model-based description of the sustem dynamics.  
+
 <!-- Models for decision-making -->
-Decision-theoretic tools require a model that can assign probabilites of
+Decision-theoretic (or optimal control) tools require a model that can assign probabilities of
 future states (e.g. stock size of a fishery) given the current state and a
 proposed action (e.g. fishing harvest or effort).  The decision maker then
-seeks to determing the course of actions (also refered to as the policy)
+seeks to determining the course of actions (also referred to as the policy)
 that maximizes the expected value of some objective function (such as
 net present value derived from the resource over time.  (The approach
 can be adapted to permit alternatives to maximizing expectation, such
 as minimizing the maximum cost or damage that might be incurred. See
 @Polasky2011).
 Management frequently faces a sequential decision-making problem -- after 
-selecting an action, the decision-maker may recieve new information about 
+selecting an action, the decision-maker may receive new information about 
 the current state and must again choose an appropriate action -- i.e. setting
 the harvest limits each year based on stock assessments the year prior.  
 
 <!-- Parametric models -->
 
+Traditional approaches to optimal control (Pontryagin's principle, stochastic
+dynamic programming) rely on knowledge of the state equation.  Such simple 
+parametric models, frequently justified by mechanistic underpinnings are used
+to provide probabilities of future states.  Fisheries literature, which enjoys
+some of the longest history in the use of the optimal control framework, provides
+a clear example. Models such as the Ricker or Beverton Holt curves are ubiquitous [too strong? references?]
+Parametric models can reflect variability introduced by a stochastic environment
+or demographic process my incorporating random shocks from a given distribution. 
+
 
 <!-- Parametric uncertainty -->
+As the parameter values for these models must be estimated from limited data,  
+there will always be some uncertainty associated with these values.  This uncertainty
+further compounds the intrinsic variability introduced by demographic or environmental 
+noise.  The degree of uncertainty in the parameter values can be inferred from the data
+and reflected in the estimates of the transition probabilities.  
 
+<!-- Structural Uncertainty --> 
+Unfortunately, estimates of parameter uncertainty are only as good as the parametric 
+models themselves.  Too often, we do not understand the system dynamics well enough
+to know if a model provides a good approximation over the relevant range of states
+and timescales (criteria that we loosely refer to as defining the "right" or "true" model.)
+So called structural or model uncertainty is a more difficult problem than parametric 
+uncertainty.  Typical solutions involve either model choice, or model averaging. Either
+approach remains limited by the degree to which any of the proposed models are sufficiently
+close to the right model.  
 
 <!-- Comparing models -->
 The nature of decision-making problems provides a convenient way to compare 
@@ -190,23 +217,19 @@ discussion of this issue.  Alternatively, we can always compare model performanc
 across multiple potential objective functions.)  The decision-maker
 does not necessarily need a model that provides the best mechanistic understanding
 or the best long-term outcome, but rather the one that best estimates the 
-probabilites of being in different states as a result of the possible actions. 
-
-
-<!-- Structural Uncertainty --> 
+probabilities of being in different states as a result of the possible actions. 
 
 
 
+<!-- The weakness of parametric models -->
 
 
-
- While
-simple mechanistic models can nevertheless provide important insights
+While simple mechanistic models can nevertheless provide important insights
 into long-term outcomes, such approaches are not well-suited for use in
-forecasting outcomes of potential management options.  Non-parametric 
+forecasting outcomes of potential management options.  Non-parametric
 approaches offer a more flexible alternative that can both more accurately
 reflect the data available while also representing greater uncertainty
-in areas (of state-space) where data is lacking.  
+in areas (of state-space) where data is lacking.
 
 We demonstrate how
 a Gaussian Process model of stock recruitment can lead to nearly optimal
@@ -215,13 +238,12 @@ the correct structural equation for the underlying simulation.  Meanwhile,
 parametric models that do not match the underlying dynamics can perform 
 very poorly, even though they fit the data as well as the true model.  
 
+Ecological research and management strategy should pay closer attention
+to the opportunities and challenges nonparametric modeling can offer.
 
 
-Ecological research
-and management strategy should pay closer attention to the opportunities 
-and challenges nonparametric modeling can offer.  
 
-
+<!--
 ### Quantitative vs Qualitative Decisions
 
 In this paper, we consider those ecological management problems in which
@@ -262,7 +284,9 @@ state-space.  Necessary assumptions about model structure in any parametric
 approach can lead such models to perform very poorly, even when accounting
 for parameter uncertainty. 
 
-Non-parametric models can more realistically represent uncertainties outside 
+-->
+
+Non-parametric models can better represent uncertainties outside 
 of observed data while also better capturing the dynamics in the region
 observed.  Advances in the theory and computational implementations of 
 nonparametric methods make them ripe for such applications.  We use the classic
@@ -287,41 +311,6 @@ use is that of (b), in contrast to the classical approaches that do.  The
 difference is clearest by way of example. 
 
 
-### Uncertainties: the classical approach
-
-The ecological dynamics of most systems of management interest are
-typically both complex and unknown.  Despite this, quantitative
-policy optimization in these systems has almost exclusively been based
-on simple, mechanistically motivated parametric models.  There are
-several reasons for this.  First, limited available data almost always
-precludes any accurate estimate of more complicated models.  Second, the
-computational demands of determining an optimal strategy in a sequential
-decision-theory problem suffer from the "curse of dimensionality"
-that makes it difficult to consider more complicated models, states,
-or actions.  Unfortunately, these challenges also make it particularly
-difficult to reflect the true uncertainty either in the parameters of
-the given models (parametric uncertainty) or in the structure of the
-models themselves (structural uncertainty).  Further unknowns such as
-measurement uncertainty, parameter uncertainty, unobserved states,
-knowledge of boundary conditions, etc. further compound the issue.
-Though a hierarchical Bayesian approach provides a natural way to
-address these from a statistical standpoint, formulating reasonable
-parametric  descriptions of each form of uncertainty is a challenging
-task in itself, let alone the computational difficulties of solving such
-a system. @Cressie2009 provides a good account of the successes and
-challenges of the approach.  Applying these approaches in the management
-context of sequential decision making, in which forecasts must be obtained
-over a range of possible actions and updated regularly as new information
-arrives makes such an approach less feasible still.
-
-
-
-Traditional approaches to optimal control (Pontryagin's principle, stochastic
-dynamic programming) rely on knowledge of the state equation, usually described
-by a simple parametric model. Here we illustrate how a stochastic dynamic
-programming algorithm can alternatively be driven by the predictions from
-a Gaussian process.  
-
 
 
 Approach and Methods
@@ -343,8 +332,6 @@ we focus on example of a system containing such a tipping point whose dynamics
 can still be described by a simple, one-dimensional parametric model.  
 We will focus on a simple parametric model for a single species [derived
 from fist principles by @Allen2005a] as our underlying "reality".
-
-\begin{align}
 X_{t+1} &= Z_t f(S_t) \\
 S_t &= X_t - h_t \\
 f(S_t) &= S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
@@ -388,7 +375,7 @@ alone, and why that isn't impossible).
 In our example, we focus on the problem in which a manager must set 
 the harvest level for a marine fishery each year to maximize the net
 present value of the resource, given an estimated stock size from the year
-before. Rich data and global concerns have made marine fisheries the crucible for much
+before. The economic value and ecological concern have made marine fisheries the crucible for much
 of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
 in managing ecosystems under uncertainty.  Global trends [@Worm2006]
 and controversy [@Hilborn2007; @Worm2009] have made understanding these
@@ -420,23 +407,68 @@ be estimated and integrated over to determine the optimal policy under
 under uncertainty [@Mangel1985; @Schapaugh2013]. Uncertainty in the model
 structure itself can only be addressed in this approach by hypothesizing 
 alternative model structures, and then performing some model choice or
-model averaging  [@Williams2001; @Athanassoglou2012]. For simplicity 
-of the comparison we consider only the case of a structurally correct
-and structurally incorrect model, and estimate Bayesian posterior distributions
-of the parameters.  We will also compare to a simpler maximum likelihood
-estimate of the parameters that ignores the issue of parameter uncertainty. 
+model averaging  [@Williams2001; @Athanassoglou2012]. 
 
 
-We compare these parametric approaches to our alternative that uses a Gaussian Process (GP)
-in place of a given stock recruitment curve.  We briefly revisit
-a description of the Gaussian Process approach that has appeared in 
-recent literature before describing how we take the important step of 
-adapting the GP to the decision theory problem that can still be solved
-using SDP. 
+### Parametric Models
+
+We consider three candidate parametric models for the stock-recruitment function, 
+which we refer to by the first authors of the publications in which they were
+first proposed.  
+
+We generate the data with a four-parameter model that contains
+a tipping point (an Allee effect, see [@Allen, @Courchamp]) below which the stock
+decreases to zero, 
+
+$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K}\right)\left(\frac{S_t- \theta}{K}\right)} \label{Allen} $$
+
+$$ S_t = X_t - h_t $$
+
+The parameter $C$ reflects the location of the tipping point, $K$ the carrying capacity of
+the stock, and $r$ the base recruitment rate.  $S_t$ represents the stock size after
+a harvest $h_t$ has been implemented.  $Z_t$ represents a log-normal random variable of
+log-mean zero and log-standard deviation parameter $\sigma$.  
+
+
+We consider two alternative candidate models: the Ricker [@Ricker] stock-recruitment curve,
+
+$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{Ricker} $$
+
+and an alternative four-parameter model adapted from @Myers, 
+
+$$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} \label{Myers} $$
+
+which contains a tipping point for $\theta > 2$ and becomes a Beverton-Holt model 
+at $\theta = 1$.  
+
+<!-- Note that while similarly-named parameters contain similar connotations, the 
+estimate and precise intepretation will be different in each model. -->
+
+
+### Bayesian Inference of Parametric models 
+
+Given the sample data, we infer posterior distributions for each of the three
+models listed above using a Markov Chain Monte Carlo Gibbs Sampler (jags, see 
+appendix for implementation details and code) given uniform priors.  We run six
+chains for $10^6$ steps each and then assess convergence by Gelman-Rubin criterion
+and inspection of the traces, see appendix.  
+
+<!-- By transforming variables we can integrate out the the $\sigma$ parameter
+and the constant term in the log-mean, see appendix.  The resulting one or
+two parameters can then be evaluated over a vector or grid of possible values,
+and the result transformed back to determine the posterior density of the parameters,
+This approach avoids any concerns of convergence in the MCMC analysis and can thus
+be used to verify that the performance of the parametric models can not be explained
+by convergence issues.  However, this approach does not generalize easily to richer models,
+such as the introduction of measurement noise or additional parameters, in which 
+MCMC based approaches are the obvious choice.  -->
+
+
+
 
 ### The Non-parametric Bayesian alternative for stock-recruitment curves
 
-The use of Gaussian process (GP) regression (or "kreging" in the geospatial
+The use of Gaussian process (GP) regression (or "kriging" in the geospatial
 literature) to formulate a predictive model is relatively new in the
 context of modeling dynamical systems [@Kocijan2005] and introduced
 in the ecological modeling and fisheries management by @Munch2005.
