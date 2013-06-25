@@ -1,4 +1,5 @@
 ```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+rm(list=ls())
 source("~/.knitr_defaults.R")
 #opts_knit$set(upload.fun = socialR::flickr.url)
 library(knitcitations)
@@ -34,8 +35,8 @@ Xo <-  allee+.5# observations start from
 x0 <- K # simulation under policy starts from
 Tobs <- 40
 MaxT = 1000 # timeout for value iteration convergence
-seed <- round(runif(32) * 1e6)
-seed[1] <- 1
+seed <- round(runif(1) * 1e6)
+seed[1] <- 1234
 seed
 ```
 
