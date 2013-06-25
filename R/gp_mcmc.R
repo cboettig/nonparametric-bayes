@@ -37,10 +37,13 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
     loglik + lpriors(pars)
   }
   
-  out <- metrop(posterior, log(init_pars), n, x = obs$x, y = obs$y)  
+  out <- metrop(posterior, log(init_pars), n, x = x, y = y)  
+  
+  # assemble output
+  obs = list(x=x,y=y)
   out$d.p <- d.p
   out$s2.p <- s2.p
-  
+  out$obs <- obs
   out
 }
 
@@ -56,8 +59,8 @@ gp_predict <- function(gp, x_predict, burnin=0, thin=1, covs=FALSE){
   s <- seq(burnin+1, gp$nbatch, by=thin)
   postdist <- postdist[s,]
   names(postdist) <- c("index", names(gp$initial))
-  
   indices <- 1:dim(postdist)[1]
+  obs <- gp$obs
   
   out <- lapply(indices, function(i){
     l <- postdist[i, "l"]
