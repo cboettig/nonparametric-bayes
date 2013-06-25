@@ -35,7 +35,7 @@ Xo <-  allee+.5# observations start from
 x0 <- K # simulation under policy starts from
 Tobs <- 40
 MaxT = 1000 # timeout for value iteration convergence
-seed <- round(runif(1) * 1e6)
+seed <- round(runif(32) * 1e6)
 seed[1] <- 1234
 seed
 ```
@@ -52,23 +52,22 @@ sfExportAll()
 ```{r }
 yields <- sfSapply(seed, 
 function(seed_i){
-
+  set.seed(seed_i)
   x <- numeric(Tobs)
   x[1] <- Xo
   nz <- 1
   for(t in 1:(Tobs-1))
     x[t+1] = z_g() * f(x[t], h=0, p=p)
-  obs <- data.frame(x = c(rep(0,nz), 
-                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
-                    y = c(rep(0,nz), 
-                          x[2:Tobs]))
+  
+  X = c(rep(0,nz), pmax(rep(0,Tobs-1), x[1:(Tobs-1)]))
+  Y = c(rep(0,nz), x[2:Tobs]))
 
   ## @knitr gp-priors
   s2.p <- c(5,5)  
   d.p = c(10, 1/0.1)
 
   ## @knitr gp
-  gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
+  gp <- gp_mcmc(X, y=Y, n=1e5, s2.p = s2.p, d.p = d.p)
   gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
   
   matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
