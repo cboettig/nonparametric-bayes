@@ -756,7 +756,7 @@ Initializing model
 \NormalTok{A$index <- A$index + A$chain * }\KeywordTok{max}\NormalTok{(A$index) }\CommentTok{# Combine samples across chains by renumbering index }
 \NormalTok{myers_pardist <- }\KeywordTok{acast}\NormalTok{(A, index ~ variable)}
 \NormalTok{bayes_coef <- }\KeywordTok{apply}\NormalTok{(myers_pardist,}\DecValTok{2}\NormalTok{, posterior.mode) }\CommentTok{# much better estimates}
-\NormalTok{myers_bayes_pars <- }\KeywordTok{unname}\NormalTok{(}\KeywordTok{c}\NormalTok{(bayes_coef[}\DecValTok{2}\NormalTok{], bayes_coef[}\DecValTok{3}\NormalTok{], bayes_coef[}\DecValTok{1}\NormalTok{]))}
+\NormalTok{myers_bayes_pars <- }\KeywordTok{unname}\NormalTok{(}\KeywordTok{c}\NormalTok{(bayes_coef[}\StringTok{"r0"}\NormalTok{], bayes_coef[}\StringTok{"theta"}\NormalTok{], bayes_coef[}\StringTok{"K"}\NormalTok{]))}
 \NormalTok{myers_means <- }\KeywordTok{sapply}\NormalTok{(x_grid, Myer_harvest, }\DecValTok{0}\NormalTok{, myers_bayes_pars)}
 \NormalTok{myers_f <- function(x,h,p) }\KeywordTok{Myer_harvest}\NormalTok{(x, h, p[}\KeywordTok{c}\NormalTok{(}\StringTok{"r0"}\NormalTok{, }\StringTok{"theta"}\NormalTok{, }\StringTok{"K"}\NormalTok{)])}
 \KeywordTok{head}\NormalTok{(myers_pardist)}
@@ -780,7 +780,7 @@ Initializing model
 \end{Shaded}
 
 \begin{verbatim}
-[1] 35.4576  0.5129 23.9914
+[1]  0.5129  1.0894 23.9914
 \end{verbatim}
 
 \begin{Shaded}
@@ -881,19 +881,32 @@ Initializing model
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{allen_deviance <- }\KeywordTok{posterior.mode}\NormalTok{(pardist[,}\StringTok{'deviance'}\NormalTok{])}
-\NormalTok{ricker_deviance <- }\KeywordTok{posterior.mode}\NormalTok{(ricker_pardist[,}\StringTok{'deviance'}\NormalTok{])}
-\NormalTok{myers_deviance <- }\KeywordTok{posterior.mode}\NormalTok{(myers_pardist[,}\StringTok{'deviance'}\NormalTok{])}
+\NormalTok{allen_deviance <- -}\DecValTok{2}\NormalTok{*}\KeywordTok{posterior.mode}\NormalTok{(pardist[,}\StringTok{'deviance'}\NormalTok{])}
+\NormalTok{ricker_deviance <- -}\DecValTok{2}\NormalTok{*}\KeywordTok{posterior.mode}\NormalTok{(ricker_pardist[,}\StringTok{'deviance'}\NormalTok{])}
+\NormalTok{myers_deviance <- -}\DecValTok{2}\NormalTok{*}\KeywordTok{posterior.mode}\NormalTok{(myers_pardist[,}\StringTok{'deviance'}\NormalTok{])}
 \NormalTok{true_deviance <- }\DecValTok{2}\NormalTok{*}\KeywordTok{estf}\NormalTok{(}\KeywordTok{c}\NormalTok{(p, sigma_g))}
 \NormalTok{mle_deviance <- }\DecValTok{2}\NormalTok{*}\KeywordTok{estf}\NormalTok{(}\KeywordTok{c}\NormalTok{(est$p, est$sigma_g))}
-
-\KeywordTok{c}\NormalTok{(}\DataTypeTok{allen =} \NormalTok{allen_deviance, }\DataTypeTok{ricker=}\NormalTok{ricker_deviance, }\DataTypeTok{myers=}\NormalTok{myers_deviance, }\DataTypeTok{true=}\NormalTok{true_deviance, }\DataTypeTok{mle=}\NormalTok{mle_deviance)}
+\NormalTok{xtable::}\KeywordTok{xtable}\NormalTok{(}\KeywordTok{as.table}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DataTypeTok{Allen =} \NormalTok{allen_deviance, }\DataTypeTok{Ricker=}\NormalTok{ricker_deviance, }\DataTypeTok{Myers=}\NormalTok{myers_deviance, }\DataTypeTok{True=}\NormalTok{true_deviance, }\DataTypeTok{MLE=}\NormalTok{mle_deviance)))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-  allen  ricker   myers    true     mle 
-  32.93   35.92   35.46  -61.08 -889.99 
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Thu Jun 20 16:29:00 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rr}
+  \hline
+ & x \\ 
+  \hline
+Allen & -65.85 \\ 
+  Ricker & -71.85 \\ 
+  Myers & -70.92 \\ 
+  True & -61.08 \\ 
+  MLE & -889.99 \\ 
+   \hline
+\end{tabular}
+\end{table}
 \end{verbatim}
 
 \section{Abstract}
@@ -901,92 +914,122 @@ Initializing model
 Decision-theoretic methods often rely on simple parametric models of
 ecological dynamics to compare the value of a potential sequence of
 actions. Unfortunately, such simple models rarely capture the complexity
-or uncertainty found in most real ecosystems. Non-parametric Bayesian
-methods offer a promising statistical approach for predictive modeling
-of ecological dynamics in regions of state space where the data is
-adequate, while at the same time offering more flexible patterns with
-greater uncertainty outside the observed data. This contrasts from
-simple parametric models which provide relatively constant level of
-uncertainty in regions with and without adequate data. The consequence
-of such misplaced confidence outside the data can lead to highly
-undesirable results that may be avoided with the more flexible
+or uncertainty found in most real ecosystems.
+
+We demonstrate how nonparametric Bayesian models can provide robust,
+nearly-optimal solutions to decision making under uncertainty when
+\emph{we don't know the correct model} to use.
+
+While methods that account for \emph{parametric} uncertainty can be very
+successful with the right model, structural uncertainty of not knowing
+what model best approximates the dynamics poses considerably greater
+difficulty.
+
+Non-parametric Bayesian methods offer a promising statistical approach
+for predictive modeling of ecological dynamics in regions of state space
+where the data is adequate, while at the same time offering more
+flexible patterns with greater uncertainty outside the observed data.
+This contrasts from simple parametric models which provide relatively
+constant level of uncertainty in regions with and without adequate data.
+The consequence of such misplaced confidence outside the data can lead
+to highly undesirable results that may be avoided with the more flexible
 non-parametric Bayesian approach.
 
 \section{Introduction}
 
-Most management recommendations from the ecological literature are based
-on (or at least motivated by) parametric models. Though in principle
-these models reflect mechanistic underpinnings of biological
-interactions involved, in practice real mechanisms are often unknown and
-the true dynamics too complex to be captured by simple models. While
-simple mechanistic models can nevertheless provide important insights
-into possible dynamics -- for instance, demonstrating that a vaccine
-does not have to be 100\% effective to eliminate the transmission of a
-virus -- such approaches are not well-suited for use in forecasting
-outcomes of potential management options. Non-parametric approaches
-offer a more flexible alternative that can both more accurately reflect
-the data available while also representing greater uncertainty in areas
-(of state-space) where data is lacking. Ecological research and
-management strategy should pay closer attention to the opportunities and
-challenges nonparametric modeling can offer.
+Decision making under uncertainty is a ubiquitous challenge of natural
+resource management and conservation.
 
-\subsubsection{Quantitative vs Qualitative Decisions}
+Here we illustrate how a stochastic dynamic programming algorithm can be
+driven by the predictions from a Gaussian process model, sidestepping
+the need for an accurate model-based description of the sustem dynamics.
 
-In this paper, we consider those ecological management problems in which
-a mathematical (or computational) model is used to quantitatively inform
-decision-making by allowing a manager to compare to the expected
-consequences of potential management actions (or policies). We
-distinguish this from the solely qualitative use of a model, in which
-models are used to represent and compare hypotheses of different
-mechanisms that would lead to qualitatively different actions.
+Decision-theoretic (or optimal control) tools require a model that can
+assign probabilities of future states (e.g.~stock size of a fishery)
+given the current state and a proposed action (e.g.~fishing harvest or
+effort). The decision maker then seeks to determining the course of
+actions (also referred to as the policy) that maximizes the expected
+value of some objective function (such as net present value derived from
+the resource over time. (The approach can be adapted to permit
+alternatives to maximizing expectation, such as minimizing the maximum
+cost or damage that might be incurred. See @Polasky2011). Management
+frequently faces a sequential decision-making problem -- after selecting
+an action, the decision-maker may receive new information about the
+current state and must again choose an appropriate action --
+i.e.~setting the harvest limits each year based on stock assessments the
+year prior.
 
-Though simple mechanistically motivated models may be best for the
-latter case (@Cuddington2013; Geritz and Kisdi 2012), such models can be
-not only inaccurate but misleading in quantitative decision making. This
-arises for two reasons:
+Traditional approaches to optimal control (Pontryagin's principle,
+stochastic dynamic programming) rely on knowledge of the state equation.
+Such simple parametric models, frequently justified by mechanistic
+underpinnings are used to provide probabilities of future states.
+Fisheries literature, which enjoys some of the longest history in the
+use of the optimal control framework, provides a clear example. Models
+such as the Ricker or Beverton Holt curves are ubiquitous {[}too strong?
+references?{]} Parametric models can reflect variability introduced by a
+stochastic environment or demographic process my incorporating random
+shocks from a given distribution.
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  We do not know what the correct parameter values are for the models.
-\item
-  We do not know what the correct models are for ecological systems.
-\end{enumerate}
+As the parameter values for these models must be estimated from limited
+data,\\there will always be some uncertainty associated with these
+values. This uncertainty further compounds the intrinsic variability
+introduced by demographic or environmental noise. The degree of
+uncertainty in the parameter values can be inferred from the data and
+reflected in the estimates of the transition probabilities.
 
-The complexity of ecological interactions and a lack of data contribute
-greatly to both of the problems. This concern is particularly acute in
-case of ecological tipping points (Barnosky et al. 2012; Scheffer et al.
-2001), which arise from feedbacks common in ecological systems and can
-lead to a sudden catastrophic transition to an undesirable state. In
-general we do not know where such tipping points are unless we have
-already observed the transition, in which case it is frequently too late
-to respond. Though there may exist early warning signals for certain
-kinds of these transitions that are driven by slow changes (Scheffer et
-al. 2009), we do not know when, where, or how to apply them to the
-decision making context more generally (Boettiger and Hastings 2013).
+Unfortunately, estimates of parameter uncertainty are only as good as
+the parametric models themselves. Too often, we do not understand the
+system dynamics well enough to know if a model provides a good
+approximation over the relevant range of states and timescales (criteria
+that we loosely refer to as defining the ``right'' or ``true'' model.)
+So called structural or model uncertainty is a more difficult problem
+than parametric uncertainty. Typical solutions involve either model
+choice, or model averaging. Either approach remains limited by the
+degree to which any of the proposed models are sufficiently close to the
+right model.
 
-In addition to facing the potentially grave consequences of such
-transitions, if they do exist in a system of interest, this generally
-means that we lack data in the region near and beyond a possible tipping
-point. As a consequence, our models are least accurate just where we
-need them to be most accurate.\\Unfortunately, parametric modeling
-approaches are not well-suited to this scenario, in which good data is
-avialble over only part of the relevant state-space. Necessary
-assumptions about model structure in any parametric approach can lead
-such models to perform very poorly, even when accounting for parameter
-uncertainty.
+The nature of decision-making problems provides a convenient way to
+compare models. Rather than compare models in terms of best fit to data
+or fret over the appropriate penalty for model complexity, model
+performance is defined in the concrete terms of the decision-maker's
+objective function, which we will take as given. (Much argument can be
+made over the `correct' objective function, e.g.~how to account for the
+social value of fish left in the sea vs.~the commercial value of fish
+harvested; see @Halpern2013 for further discussion of this issue.
+Alternatively, we can always compare model performance across multiple
+potential objective functions.) The decision-maker does not necessarily
+need a model that provides the best mechanistic understanding or the
+best long-term outcome, but rather the one that best estimates the
+probabilities of being in different states as a result of the possible
+actions.
 
-Non-parametric models can more realistically represent uncertainties
-outside of observed data while also better capturing the dynamics in the
-region observed. Advances in the theory and computational
-implementations of nonparametric methods make them ripe for such
-applications. We use the classic problem of optimal harvest of a marine
-fishery to illustrate how the nonparametric approach of Gaussian
-processes can be applied. We will compare Bayesian implementations of
-both nonparametric and parametric models, which best allow us to capture
-the uncertainty of model estimation in either case and permits a more
-natural comparison between approaches.
+While simple mechanistic models can nevertheless provide important
+insights into long-term outcomes, such approaches are not well-suited
+for use in forecasting outcomes of potential management options.
+Non-parametric approaches offer a more flexible alternative that can
+both more accurately reflect the data available while also representing
+greater uncertainty in areas (of state-space) where data is lacking.
+
+We demonstrate how a Gaussian Process model of stock recruitment can
+lead to nearly optimal management through stochastic dynamic
+programming, comperable to knowing the correct structural equation for
+the underlying simulation. Meanwhile, parametric models that do not
+match the underlying dynamics can perform very poorly, even though they
+fit the data as well as the true model.
+
+Ecological research and management strategy should pay closer attention
+to the opportunities and challenges nonparametric modeling can offer.
+
+Non-parametric models can better represent uncertainties outside of
+observed data while also better capturing the dynamics in the region
+observed. Advances in the theory and computational implementations of
+nonparametric methods make them ripe for such applications. We use the
+classic problem of optimal harvest of a marine fishery to illustrate how
+the nonparametric approach of Gaussian processes can be applied. We will
+compare Bayesian implementations of both nonparametric and parametric
+models, which best allow us to capture the uncertainty of model
+estimation in either case and permits a more natural comparison between
+approaches.
 
 \subsubsection{Terminology: ``Non-parametric''}
 
@@ -1001,47 +1044,6 @@ distribution (e.g.~a non-parametric bootstrap) or (b) that the method
 does not assume a fixed structure to the model. Our use is that of (b),
 in contrast to the classical approaches that do. The difference is
 clearest by way of example.
-
-\subsubsection{Uncertainties: the classical approach}
-
-The ecological dynamics of most systems of management interest are
-typically both complex and unknown. Despite this, quantitative policy
-optimization in these systems has almost exclusively been based on
-simple, mechanistically motivated parametric models. There are several
-reasons for this. First, limited available data almost always precludes
-any accurate estimate of more complicated models. Second, the
-computational demands of determining an optimal strategy in a sequential
-decision-theory problem suffer from the ``curse of dimensionality'' that
-makes it difficult to consider more complicated models, states, or
-actions. Unfortunately, these challenges also make it particularly
-difficult to reflect the true uncertainty either in the parameters of
-the given models (parametric uncertainty) or in the structure of the
-models themselves (structural uncertainty). Further unknowns such as
-measurement uncertainty, parameter uncertainty, unobserved states,
-knowledge of boundary conditions, etc. further compound the issue.
-Though a hierarchical Bayesian approach provides a natural way to
-address these from a statistical standpoint, formulating reasonable
-parametric descriptions of each form of uncertainty is a challenging
-task in itself, let alone the computational difficulties of solving such
-a system. Cressie et al. (2009) provides a good account of the successes
-and challenges of the approach. Applying these approaches in the
-management context of sequential decision making, in which forecasts
-must be obtained over a range of possible actions and updated regularly
-as new information arrives makes such an approach less feasible still.
-
-An active literature and growing computational power over the past
-several decades have only marginally improved this situation. Parametric
-or structural uncertainty can be introduced only by increasing the state
-space to reflect a distribution of possible parameters or the degree of
-belief in each of a set of possible models Frequently, the space of
-possible actions must then be reduced or the algorithms adjusted by
-approximations to keep computations feasible.
-
-Traditional approaches to optimal control (Pontryagin's principle,
-stochastic dynamic programming) rely on knowledge of the state equation,
-usually described by a simple parametric model. Here we illustrate how a
-stochastic dynamic programming algorithm can alternatively be driven by
-the predictions from a Gaussian process.
 
 \section{Approach and Methods}
 
@@ -1064,11 +1066,8 @@ parametric model.\\We will focus on a simple parametric model for a
 single species (derived from fist principles by Allen et al. 2005) as
 our underlying ``reality''.
 
-\begin{align}
-X_{t+1} &= Z_t f(S_t) \\
-S_t &= X_t - h_t \\
-f(S_t) &= S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)}
-\end{align}
+\[X_{t+1} = Z_t f(S_t)  \] \[S_t = X_t - h_t \]
+\[f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} \]
 
 Where $Z_t$ is multiplicative noise function with mean 1, representing
 stochastic growth. We will consider log-normal noise with shape
@@ -1096,12 +1095,12 @@ harvest.
 In our example, we focus on the problem in which a manager must set the
 harvest level for a marine fishery each year to maximize the net present
 value of the resource, given an estimated stock size from the year
-before. Rich data and global concerns have made marine fisheries the
-crucible for much of the founding work (Gordon 1954; Reed 1979; May et
-al. 1979; Ludwig and Walters 1982) in managing ecosystems under
-uncertainty. Global trends (Worm et al. 2006) and controversy (Hilborn
-2007; Worm et al. 2009) have made understanding these challenges all the
-more pressing.
+before. The economic value and ecological concern have made marine
+fisheries the crucible for much of the founding work (Gordon 1954; Reed
+1979; May et al. 1979; Ludwig and Walters 1982) in managing ecosystems
+under uncertainty. Global trends (Worm et al. 2006) and controversy
+(Hilborn 2007; Worm et al. 2009) have made understanding these
+challenges all the more pressing.
 
 To permit comparisons against a theoretical optimum we will consider
 data on the stock dynamics simulated from a simple parametric model in
@@ -1129,23 +1128,53 @@ under uncertainty (Mangel 1985; Schapaugh and Tyre 2013). Uncertainty in
 the model structure itself can only be addressed in this approach by
 hypothesizing alternative model structures, and then performing some
 model choice or model averaging (B. K. Williams 2001; Athanassoglou and
-Xepapadeas 2012). For simplicity of the comparison we consider only the
-case of a structurally correct and structurally incorrect model, and
-estimate Bayesian posterior distributions of the parameters. We will
-also compare to a simpler maximum likelihood estimate of the parameters
-that ignores the issue of parameter uncertainty.
+Xepapadeas 2012).
 
-We compare these parametric approaches to our alternative that uses a
-Gaussian Process (GP) in place of a given stock recruitment curve. We
-briefly revisit a description of the Gaussian Process approach that has
-appeared in recent literature before describing how we take the
-important step of adapting the GP to the decision theory problem that
-can still be solved using SDP.
+\subsubsection{Parametric Models}
+
+We consider three candidate parametric models for the stock-recruitment
+function, which we refer to by the first authors of the publications in
+which they were first proposed.
+
+We generate the data with a four-parameter model that contains a tipping
+point (an Allee effect, see {[}@Allen, @Courchamp{]}) below which the
+stock decreases to zero,
+
+\[ X_{t+1} = Z_t S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(\frac{S_t - \theta}{K}\right)} \]
+
+\[ S_t = X_t - h_t \]
+
+The parameter $C$ reflects the location of the tipping point, $K$ the
+carrying capacity of the stock, and $r$ the base recruitment rate. $S_t$
+represents the stock size after a harvest $h_t$ has been implemented.
+$Z_t$ represents a log-normal random variable of log-mean zero and
+log-standard deviation parameter $\sigma$.
+
+We consider two alternative candidate models: the Ricker {[}@Ricker{]}
+stock-recruitment curve,
+
+\[X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \]
+
+and an alternative four-parameter model adapted from @Myers,
+
+\[ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} \]
+
+which contains a tipping point for $\theta > 2$ and becomes a
+Beverton-Holt model at $\theta = 1$.
+
+\subsubsection{Bayesian Inference of Parametric models}
+
+Given the sample data, we infer posterior distributions for each of the
+three models listed above using a Markov Chain Monte Carlo Gibbs Sampler
+(jags, see appendix for implementation details and code) given uniform
+priors. We run six chains for $10^6$ steps each and then assess
+convergence by Gelman-Rubin criterion and inspection of the traces, see
+appendix.
 
 \subsubsection{The Non-parametric Bayesian alternative for
 stock-recruitment curves}
 
-The use of Gaussian process (GP) regression (or ``kreging'' in the
+The use of Gaussian process (GP) regression (or ``kriging'' in the
 geospatial literature) to formulate a predictive model is relatively new
 in the context of modeling dynamical systems (Kocijan et al. 2005) and
 introduced in the ecological modeling and fisheries management by Munch
@@ -1677,22 +1706,11 @@ precautious.'' \emph{Journal of Environmental Economics and Management}
 63 (3) (may): 304--320. doi:10.1016/j.jeem.2011.11.001.
 \url{http://linkinghub.elsevier.com/retrieve/pii/S0095069611001409}.
 
-Barnosky, Anthony D., Elizabeth a Hadly, Jordi Bascompte, Eric L.
-Berlow, James H. Brown, Mikael Fortelius, Wayne M. Getz, et al. 2012.
-``Approaching a state shift in Earth's biosphere.'' \emph{Nature} 486
-(7401) (jun): 52--58. doi:10.1038/nature11018.
-\url{http://www.nature.com/doifinder/10.1038/nature11018}.
-
 Bestelmeyer, Brandon T., Michael C. Duniway, Darren K. James, Laura M.
 Burkett, and Kris M. Havstad. 2012. ``A test of critical thresholds and
 their indicators in a desertification-prone ecosystem: more resilience
 than we thought.'' Ed. Katharine Suding. \emph{Ecology Letters} (dec).
 doi:10.1111/ele.12045. \url{http://doi.wiley.com/10.1111/ele.12045}.
-
-Boettiger, Carl, and Alan Hastings. 2013. ``Tipping points: From
-patterns to predictions.'' \emph{Nature} 493 (7431) (jan): 157--158.
-doi:10.1038/493157a.
-\url{http://www.nature.com/doifinder/10.1038/493157a}.
 
 Brozović, Nicholas, and Wolfram Schlenker. 2011. ``Optimal management of
 an ecosystem with an unknown threshold.'' \emph{Ecological Economics}
@@ -1703,21 +1721,10 @@ Courchamp, Franck, Ludek Berec, and Joanna Gascoigne. 2008. \emph{Allee
 Effects in Ecology and Conservation}. Oxford University Press, USA.
 \url{http://www.amazon.com/Effects-Ecology-Conservation-Franck-Courchamp/dp/0198570309}.
 
-Cressie, Noel, Catherine a Calder, James S. Clark, Jay M. Ver Hoef, and
-Christopher K. Wikle. 2009. ``Accounting for uncertainty in ecological
-analysis: the strengths and limitations of hierarchical statistical
-modeling.'' \emph{Ecological Applications} 19 (3) (apr): 553--70.
-\url{http://www.ncbi.nlm.nih.gov/pubmed/19425416}.
-
 Deisenroth, Marc Peter, Carl Edward Rasmussen, and Jan Peters. 2009.
 ``Gaussian process dynamic programming.'' \emph{Neurocomputing} 72 (7-9)
 (mar): 1508--1524. doi:10.1016/j.neucom.2008.12.019.
 \url{http://linkinghub.elsevier.com/retrieve/pii/S0925231209000162}.
-
-Geritz, Stefan A. H., and Eva Kisdi. 2012. ``Mathematical ecology: why
-mechanistic models?.'' \emph{Journal of mathematical biology} 65 (6-7)
-(dec): 1411--5. doi:10.1007/s00285-011-0496-3.
-\url{http://www.ncbi.nlm.nih.gov/pubmed/22159789}.
 
 Gordon, H. S. 1954. ``The economic theory of a common-property resource:
 the fishery.'' \emph{The Journal of Political Economy} 62 (2): 124--142.
@@ -1781,12 +1788,6 @@ Schapaugh, Adam W., and Andrew J. Tyre. 2013. ``Accounting for
 parametric uncertainty in Markov decision processes.'' \emph{Ecological
 Modelling} 254 (apr): 15--21. doi:10.1016/j.ecolmodel.2013.01.003.
 \url{http://linkinghub.elsevier.com/retrieve/pii/S0304380013000306}.
-
-Scheffer, Marten, Jordi Bascompte, William A. Brock, Victor Brovkin,
-Stephen R. Carpenter, Vasilis Dakos, Hermann Held, Egbert H. van Nes,
-Max Rietkerk, and George Sugihara. 2009. ``Early-warning signals for
-critical transitions.'' \emph{Nature} 461 (7260): 53--9.
-\url{http://www.ncbi.nlm.nih.gov/pubmed/19727193}.
 
 Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
 Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413
