@@ -42,7 +42,7 @@ seed
 ```{r parallel}
 require(snowfall)
 sfInit(parallel=TRUE, cpu=8)
-sfLibrary("nonparametric-bayes")
+sfLibrary(nonparametricbayes)
 sfExportAll()
 ```
 
@@ -106,9 +106,9 @@ function(seed_i){
 ```
 
 ```{r}
-yields <- melt(yields, id=c("method", "V1", "sd"))
-ggplot(yields) + geom_histogram(aes(V1)) + facet_wrap(~method, scale='free')
 yields
+#yields <- melt(yields, id=c("method", "V1", "sd"))
+#ggplot(yields) + geom_histogram(aes(V1)) + facet_wrap(~method, scale='free')
 ````
 
 
