@@ -209,6 +209,11 @@ We then have an analytic function for the numerator,
 
 $$ P(X | r, \beta, \sigma) P(r) P(\beta) P(\sigma) =  \frac{1}{\sqrt{2 \pi \sigma^2}^{T-1}} \exp\left(\frac{\sum_t^{T-1} \left(\log X_{t+1} - \log X_t - \log r + \beta X_t\right)^2 }{2 \sigma^2}\right) \frac{1}{\sigma^2}$$
 
+
+```{r}
+ricker_posterior <- function(r, beta, sigma){}
+```
+
 ## Transforming back
 
 
