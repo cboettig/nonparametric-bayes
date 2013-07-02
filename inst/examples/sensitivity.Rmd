@@ -60,7 +60,7 @@ function(seed_i){
     x[t+1] = z_g() * f(x[t], h=0, p=p)
   
   X = c(rep(0,nz), pmax(rep(0,Tobs-1), x[1:(Tobs-1)]))
-  Y = c(rep(0,nz), x[2:Tobs]))
+  Y = c(rep(0,nz), x[2:Tobs])
 
   ## @knitr gp-priors
   s2.p <- c(5,5)  
@@ -100,15 +100,34 @@ function(seed_i){
   tmp <- dcast(Profit, reps ~ method)
   tmp <- tmp / tmp[,"True"]
   tmp <- melt(tmp[2:dim(tmp)[2]])
-  actual_over_optimal$GP
+  tmp$value[tmp$variable == "GP"]
   
 })
 ```
 
 ```{r}
-yields
-#yields <- melt(yields, id=c("method", "V1", "sd"))
-#ggplot(yields) + geom_histogram(aes(V1)) + facet_wrap(~method, scale='free')
+yields_dat <- melt(yields)
+names(yields_dat) <- c("replicate", "simulation", "value")
+#class(yields_dat$simulation) = "factor"
+
+col_metadata <- c(replicate = "id of individual replicates using identical settings, relative to the theoretical optimum",
+  simulation = "id number for the simulation, which varies the simulated data used",
+  value = "total profit achieved by specified run")
+unit_metadata <- list(replicate = list(1:dim(yields)[1]), simulation = list(1:dim(yields)[2]), value = "currency (arbitrary)")
+```
+
+```{r}
+ggplot(yields_dat) + geom_density(aes(value)) 
+````
+
+
+```{r}
+ggplot(yields_dat) + geom_density(aes(value, group=simulation)) 
+````
+
+
+```{r}
+ggplot(yields_dat) + geom_density(aes(value, group=replicate)) 
 ````
 
 
