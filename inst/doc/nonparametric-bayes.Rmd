@@ -156,13 +156,14 @@ Introduction
 
 #### Opening 
 
-[@Fischer2009, @Polasky2011]
 
 Decision making under uncertainty is a ubiquitous challenge of natural 
 resource management and conservation.  
 Here we illustrate how a stochastic dynamic programming algorithm can 
 be driven by the predictions from a Gaussian process model, sidestepping
-the need for an accurate model-based description of the sustem dynamics.  
+the need for an accurate model-based description of the system dynamics.  
+
+add references to [@Fischer2009, @Polasky2011] as persective on combining complex / critical dynamics + control theory
 
 #### Models for decision-making under uncertainty 
 
@@ -180,7 +181,7 @@ selecting an action, the decision-maker may receive new information about
 the current state and must again choose an appropriate action -- i.e. setting
 the harvest limits each year based on stock assessments the year prior.  
 
-[@Reed1979, @Mangel1985]
+More historical context, e.g. [@Reed1979, @Mangel1985]
 
 #### Parametric models 
 
