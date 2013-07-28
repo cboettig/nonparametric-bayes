@@ -144,10 +144,26 @@ unit_metadata <- list(replicate = list(1:dim(yields)[1]), simulation = list(1:di
 
 
 ```r
+head(yields_dat)
+```
+
+```
+  replicate simulation  value
+1         1          1 0.6771
+2         2          1 0.6771
+3         3          1 0.6812
+4         4          1 0.6849
+5         5          1 0.6744
+6         6          1 0.6808
+```
+
+
+
+```r
 ggplot(yields_dat) + geom_density(aes(value)) 
 ```
 
-![plot of chunk unnamed-chunk-3](http://farm8.staticflickr.com/7383/9195828652_56dde1eb38_o.png) 
+![plot of chunk unnamed-chunk-4](http://farm4.staticflickr.com/3794/9386775474_81f8595d98_o.png) 
 
 
 
@@ -156,7 +172,7 @@ ggplot(yields_dat) + geom_density(aes(value))
 ggplot(yields_dat) + geom_density(aes(value, group=simulation)) 
 ```
 
-![plot of chunk unnamed-chunk-4](http://farm4.staticflickr.com/3818/9195829158_491157e7ae_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm4.staticflickr.com/3799/9383998907_66689379d4_o.png) 
 
 
 
@@ -165,7 +181,7 @@ ggplot(yields_dat) + geom_density(aes(value, group=simulation))
 ggplot(yields_dat) + geom_density(aes(value, group=replicate)) 
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm3.staticflickr.com/2830/9193037621_80a9787ff2_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm8.staticflickr.com/7439/9386776874_55975d260b_o.png) 
 
 
 
