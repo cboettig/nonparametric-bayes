@@ -8,9 +8,6 @@
 
 ```r
 f <- Myers
-p <- c(1.5, 2.5, 8)
-K <- 5  # approx, a li'l' less
-allee <- 1.2 # approx, a li'l' less
 ```
 
 
@@ -22,15 +19,15 @@ sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1
-x_grid <- seq(0, 1.5 * K, length=50)
+x_grid <- seq(0, 1.5 * 6, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-Xo <-  allee+.5# observations start from
-x0 <- K # simulation under policy starts from
+Xo <-  1.7 # observations start from
+x0 <- 5 # simulation under policy starts from
 Tobs <- 40
 MaxT = 1000 # timeout for value iteration convergence
 seed <- round(runif(32) * 1e6)
@@ -39,10 +36,10 @@ seed
 ```
 
 ```
- [1]   1234  23371 412809 305386 854646 931551 861764 178908 516206 561778
-[11] 155153 405437 880984  55967 941078  86930 924308 894088 714429  47036
-[21]  54580 551407 434381 258604 860996 500678 219932 297179 721978 647770
-[31] 908770 130321
+ [1]   1234 851299 390712 501216 166959 996616 207237 289664 592596 568287
+[11] 303253 316262 505333 167932 693608 783072 267990 662678 237173 667104
+[21] 759644 935756 977003 355798 291797 267941 751525 147821 168100 985364
+[31] 669119 749403
 ```
 
 
@@ -76,6 +73,9 @@ sfExportAll()
 yields <- sfSapply(seed, 
 function(seed_i){
   set.seed(seed_i)
+  
+  p <- c(1.5 + rnorm(1, 0, .1), 2.5 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .2)) 
+  
   x <- numeric(Tobs)
   x[1] <- Xo
   nz <- 1
@@ -168,20 +168,8 @@ ggplot(yields_dat) + geom_density(aes(value))
 
 
 
-```r
-ggplot(yields_dat) + geom_density(aes(value, group=simulation)) 
-```
-
-![plot of chunk unnamed-chunk-5](http://farm4.staticflickr.com/3799/9383998907_66689379d4_o.png) 
 
 
-
-
-```r
-ggplot(yields_dat) + geom_density(aes(value, group=replicate)) 
-```
-
-![plot of chunk unnamed-chunk-6](http://farm8.staticflickr.com/7439/9386776874_55975d260b_o.png) 
 
 
 
