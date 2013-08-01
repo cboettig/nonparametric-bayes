@@ -1,5 +1,6 @@
 
 ## @knitr plotting-options
+library(knitr)
 source("~/.knitr_defaults.R")
 #opts_knit$set(upload.fun = socialR::flickr.url)
 library(knitcitations)
@@ -168,7 +169,7 @@ jags.inits <- function(){
 
 set.seed(1234)
 # parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- do.call(jags.parallel, list(data=jags.data, inits=jags.inits, 
+allen_jags <- do.call(jags, list(data=jags.data, inits=jags.inits, 
                                       jags.params, n.chains=n.chains, 
                                       n.iter=n.iter, n.thin=n.thin, 
                                       n.burnin=n.burnin, 
@@ -257,7 +258,7 @@ jags.inits <- function(){
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345) 
-ricker_jags <- do.call(jags.parallel, 
+ricker_jags <- do.call(jags, 
                        list(data=jags.data, inits=jags.inits, 
                             jags.params, n.chains=n.chains, 
                             n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
@@ -357,7 +358,7 @@ jags.inits <- function(){
        .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
 }
 set.seed(12345)
-myers_jags <- do.call(jags.parallel, 
+myers_jags <- do.call(jags, 
                       list(data=jags.data, inits=jags.inits, 
 													 jags.params, n.chains=n.chains, 
 													 n.iter=n.iter, n.thin=n.thin,
