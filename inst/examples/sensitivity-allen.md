@@ -39,14 +39,14 @@ f <- RickerAllee
 
 
 ```r
-set.seed(1234)
+set.seed(12345)
 seed <- round(runif(12) * 1e6)
 seed
 ```
 
 ```
- [1] 113703 622299 609275 623379 860915 640311   9496 232551 666084 514251
-[11] 693591 544975
+ [1] 720904 875773 760982 886125 456481 166372 325095 509224 727705 989737
+[11]  34535 152373
 ```
 
 
@@ -73,7 +73,7 @@ sfExportAll()
 ```
 
 
-32 data-sets from the same model
+Replicate data-sets from the same model
 
 
 ```r
@@ -101,7 +101,8 @@ function(seed_i){
     out
   }
   
-  attach(initial_data())
+  o <- initial_data()
+  X <- o$X; Y <- o$Y
   ## @knitr gp-priors
   s2.p <- c(5,5)  
   d.p = c(10, 1/0.1)
@@ -146,234 +147,8 @@ function(seed_i){
 ```
 
 ```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-The following object is masked from initial_data() (position 9):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-The following object is masked from initial_data() (position 9):
-
-    X, Y
-The following object is masked from initial_data() (position 10):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-The following object is masked from initial_data() (position 9):
-
-    X, Y
-The following object is masked from initial_data() (position 10):
-
-    X, Y
-The following object is masked from initial_data() (position 11):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-The following object is masked from initial_data() (position 9):
-
-    X, Y
-The following object is masked from initial_data() (position 10):
-
-    X, Y
-The following object is masked from initial_data() (position 11):
-
-    X, Y
-The following object is masked from initial_data() (position 12):
-
-    X, Y
-```
-
-```
-The following object is masked from initial_data() (position 3):
-
-    X, Y
-The following object is masked from initial_data() (position 4):
-
-    X, Y
-The following object is masked from initial_data() (position 5):
-
-    X, Y
-The following object is masked from initial_data() (position 6):
-
-    X, Y
-The following object is masked from initial_data() (position 7):
-
-    X, Y
-The following object is masked from initial_data() (position 8):
-
-    X, Y
-The following object is masked from initial_data() (position 9):
-
-    X, Y
-The following object is masked from initial_data() (position 10):
-
-    X, Y
-The following object is masked from initial_data() (position 11):
-
-    X, Y
-The following object is masked from initial_data() (position 12):
-
-    X, Y
-The following object is masked from initial_data() (position 13):
-
-    X, Y
+Warning: Unknown option on commandline:
+require(knitr);~+~knit('sensitivity-allen.Rmd',~+~encoding
 ```
 
 
