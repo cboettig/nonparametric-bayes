@@ -22,20 +22,26 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
     )
     log(prior)
   }
+  
   posterior <- function(pars, x, y){ 
-    l <- exp(pars[1])
-    sigma.n <- exp(pars[2])
+    
+    l <- exp(pars[1]) 
+    sigma.n <- exp(pars[2]) + exp(-10)
     
     cov <- function(X, Y) outer(X, Y, SE, l)
     I <- diag(1, length(x))
     K <- cov(x, x) 
     
-    loglik <- - 0.5 * t(y) %*% solve(K + sigma.n^2 * I) %*% y -
-      log(det(K + sigma.n^2*I)) -
-      length(y) * log(2 * pi) / 2
+  #  if(identical(log(det(K + sigma.n^2*I)), -Inf))
+  #    loglik <- -1e30
+  #  else 
+      loglik <- - 0.5 * t(y) %*% solve(K + sigma.n^2 * I) %*% y -
+        log(det(K + sigma.n^2*I)) -
+        length(y) * log(2 * pi) / 2
     
     loglik + lpriors(pars)
   }
+  
   
   out <- metrop(posterior, log(init_pars), n, x = x, y = y)  
   
@@ -85,10 +91,13 @@ gp_predict <- function(gp, x_predict, burnin=0, thin=1, covs=FALSE){
   # list format better for return
   Cf_posterior <- lapply(out, `[[`, "Cf")
   
-  list(Ef_posterior = Ef_posterior, 
-       Vf_posterior = Vf_posterior,
-       Cf_posterior = Cf_posterior,
-       E_Ef = E_Ef, E_Cf = E_Cf, E_Vf = E_Vf)
+  list(Ef_posterior = Ef_posterior,  # a dim(X) by (n_draws) matrix giving the E(X) for each of the draws
+       Vf_posterior = Vf_posterior,  # a dim(X) by (n_draws) matrix giving the V(X) for each of the draws
+       Cf_posterior = Cf_posterior,  # a list of length (n_draws), each with a dim(X)^2 covar matrix C(X)
+       E_Ef = E_Ef, # dim(X) vector, mean across draws of Ef_posterior
+       E_Cf = E_Cf, # dim(X)^2 covariance matrix, mean covar across samples
+       E_Vf = E_Vf # diag(E_Cf), same as rowMeans(Vf_posterior)
+       )
   
 }  
   
