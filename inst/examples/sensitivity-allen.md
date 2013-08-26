@@ -1,68 +1,108 @@
-```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-rm(list=ls())
-source("~/.knitr_defaults.R")
-opts_knit$set(upload.fun = socialR::flickr.url)
-library(knitcitations)
-library(nonparametricbayes) 
-```
+
+
 
 
 ### Model and parameters
 
 
-```{r stateeq-local}
-f <- Myers
-
-```
 
 Various parameters defining noise dynamics, grid, and policy costs.  
 
-```{r sdp-pars, dependson="stateeq-local"}
+
+```r
 sigma_g <- 0.05
 sigma_m <- 0.0
 z_g <- function() rlnorm(1, 0, sigma_g)
 z_m <- function() 1
-x_grid <- seq(0, 1.5 * 6, length=50)
+x_grid <- seq(0, 1.5 * 8, length=50)
 h_grid <- x_grid
 profit <- function(x,h) pmin(x, h)
 delta <- 0.01
 OptTime <- 50  # stationarity with unstable models is tricky thing
 reward <- 0
 xT <- 0
-Xo <-  1.7 # observations start from
-x0 <- 5 # simulation under policy starts from
+Xo <-  5.7 # observations start from
+x0 <- 8 # simulation under policy starts from
 Tobs <- 40
 MaxT = 1000 # timeout for value iteration convergence
-seed <- round(runif(32) * 1e6)
-seed[1] <- 1234
+```
+
+
+
+
+
+```r
+f <- RickerAllee
+```
+
+
+
+
+```r
+set.seed(12345)
+seed <- round(runif(12) * 1e6)
 seed
 ```
 
-```{r parallel}
+```
+ [1] 720904 875773 760982 886125 456481 166372 325095 509224 727705 989737
+[11]  34535 152373
+```
+
+
+
+```r
 require(snowfall)
 sfInit(parallel=TRUE, cpu=8)
+```
+
+```
+R Version:  R version 3.0.1 (2013-05-16) 
+```
+
+```r
 sfLibrary(nonparametricbayes)
+```
+
+```
+Library nonparametricbayes loaded.
+```
+
+```r
 sfExportAll()
 ```
 
-32 data-sets from the same model
 
-```{r }
+Replicate data-sets from the same model
+
+
+```r
 yields <- sfSapply(seed, 
 function(seed_i){
   set.seed(seed_i)
   
-  p <- c(1.5 + rnorm(1, 0, .1), 2.5 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .2)) 
+  p <- c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1), 5 + rnorm(1, 0, .2)) 
   
-  x <- numeric(Tobs)
-  x[1] <- Xo
-  nz <- 1
-  for(t in 1:(Tobs-1))
-    x[t+1] = z_g() * f(x[t], h=0, p=p)
+  initial_data <- function(){
+    x <- numeric(Tobs)
+    x[1] <- Xo
+    nz <- 1
+    for(t in 1:(Tobs-1))
+      x[t+1] = z_g() * f(x[t], h=0, p=p)
   
-  X = c(rep(0,nz), pmax(rep(0,Tobs-1), x[1:(Tobs-1)]))
-  Y = c(rep(0,nz), x[2:Tobs])
-
+    X = c(rep(0,nz), pmax(rep(0,Tobs-1), x[1:(Tobs-1)]))
+    Y = c(rep(0,nz), x[2:Tobs])
+  
+    out = list(X=X,Y=Y)
+    if(x[Tobs-1] < x[1]){
+      warning("Training population crashed, trying again")
+      out <- initial_data()
+    } 
+    out
+  }
+  
+  o <- initial_data()
+  X <- o$X; Y <- o$Y
   ## @knitr gp-priors
   s2.p <- c(5,5)  
   d.p = c(10, 1/0.1)
@@ -106,7 +146,14 @@ function(seed_i){
 })
 ```
 
-```{r}
+```
+Warning: Unknown option on commandline:
+require(knitr);~+~knit('sensitivity-allen.Rmd',~+~encoding
+```
+
+
+
+```r
 yields_dat <- melt(yields)
 names(yields_dat) <- c("replicate", "simulation", "value")
 #class(yields_dat$simulation) = "factor"
@@ -117,24 +164,56 @@ col_metadata <- c(replicate = "id of individual replicates using identical setti
 unit_metadata <- list(replicate = list(1:dim(yields)[1]), simulation = list(1:dim(yields)[2]), value = "currency (arbitrary)")
 ```
 
-```{r}
+
+
+```r
 head(yields_dat)
 ```
 
-```{r}
+```
+  replicate simulation  value
+1         1          1 0.3670
+2         2          1 0.3368
+3         3          1 0.4667
+4         4          1 0.3798
+5         5          1 0.3936
+6         6          1 0.3889
+```
+
+
+
+```r
 ggplot(yields_dat) + geom_density(aes(value)) 
-````
+```
+
+![plot of chunk unnamed-chunk-5](http://farm6.staticflickr.com/5455/9387766618_9772fca7e1_o.png) 
 
 
-```{r}
-ggplot(yields_dat) + geom_density(aes(value, col=simulation)) 
-````
+
+Compare over 12 simulation configurations with different parameters and different training data, the GP does consistently well.  Only one case has relatively poor outcomes.  
 
 
-```{r}
-ggplot(yields_dat) + geom_density(aes(value, col=replicate)) 
-````
 
-```{r}
+```r
+ggplot(yields_dat) + geom_density(aes(value, color=as.factor(simulation), fill=as.factor(simulation)), alpha=.5)
+```
+
+![plot of chunk unnamed-chunk-6](http://farm4.staticflickr.com/3834/9385132341_ea3cffbb8d_o.png) 
+
+
+
+Within a replicate number, outcomes not that varied over parameters.  
+
+
+```r
+ggplot(yields_dat) + geom_density(aes(value, group=as.factor(replicate)), alpha=.7)
+```
+
+![plot of chunk unnamed-chunk-7](http://farm4.staticflickr.com/3733/9385133429_af9ff61c2a_o.png) 
+
+
+
+```r
 save(list=ls(), file="sensitivity.rda")
 ```
+
