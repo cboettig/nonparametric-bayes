@@ -44,7 +44,7 @@ local({
     options(xtable.type = 'latex', table.placement="H")
     opts_chunk$set(cache.path = 'cache-pdf/', cache=TRUE)
     # use pdf graphics for PDF output
-    opts_chunk$set(dev = 'Cairo_pdf', fig.width=6, fig.height=4)
+    opts_chunk$set(dev = 'Cairo_pdf', fig.width=6, fig.height=4, fig.path="figure/")
     print(paste("Compiling using", opts_chunk$get("dev"), "images..."))
   }
   
