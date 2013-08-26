@@ -7,7 +7,7 @@ all:
 	make pdf
 
 
-github:
+github: ${SOURCEFILE}.html
 	./knit github
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}_github.md
 	pandoc -s --template=rstudio-headers.html ${SOURCEFILE}_github.md -o  ${SOURCEFILE}.html
@@ -15,28 +15,28 @@ github:
 md:
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}.md
 
-odt:
+odt: ${SOURCEFILE}.odt
 	./knit docx
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --reference-odt=reference.odt -o ${SOURCEFILE}.odt
 
 
-docx:
+docx:  ${SOURCEFILE}.docx
 	./knit docx
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --reference-docx=reference.docx -o ${SOURCEFILE}.docx
 
 
-pdf:
+pdf: ${SOURCEFILE}.pdf
 	./knit pdf
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --template=elsarticle.latex -o ${SOURCEFILE}.tex
 	pdflatex ${SOURCEFILE}.tex
 	pdflatex ${SOURCEFILE}.tex
 	pdflatex ${SOURCEFILE}.tex
 
-epub:
+epub: ${SOURCEFILE}.epub
 	./knit epub
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}.epub
 
-bib:
+bib: ${SOURCEFILE}.bib
 	grep -o "@\w*" ${SOURCEFILE}.Rmd | tr '\n' ',' | tr -d "@"  > refs.tmp  # Extract cited references
 	cp auxtemplate refs.aux          ## Create the aux file (in 3 steps)
 	cat refs.tmp >> refs.aux
