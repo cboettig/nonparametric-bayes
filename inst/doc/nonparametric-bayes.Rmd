@@ -128,8 +128,8 @@ must operate.  Consequently a model do well in the region of state-space
 in which it was estimated, but give erroneous confidence to predictions
 outside of that region.  
 
-This problem is keenly felt in any system in which a manager may fear
-crossing a threshold, or tipping point. The tipping point, if it exists 
+This problem is keenly felt in any system where a potential threshold
+or tipping point is a concern.  Such a tipping point, if it exists 
 at all, will lay outside the observed range of the observed data. 
 
 
@@ -152,13 +152,38 @@ Introduction
 #### Opening 
 
 
-
-
 Decision making under uncertainty is a ubiquitous challenge of natural 
 resource management and conservation.  
-Here we illustrate how a stochastic dynamic programming algorithm can 
-be driven by the predictions from a Gaussian process model, sidestepping
-the need for an accurate model-based description of the system dynamics.  
+Here we illustrate how a stochastic dynamic programming (SDP) algorithm can 
+be driven by the predictions from a Gaussian Process (GP).
+This provides two distinct advantages compared with contemporary approaches.
+First, using a GP sidesteps the need for an accurate model-based description
+of the system dynamics (or a model choice or model-averaging approach which
+introduces yet more difficulty).  
+Second, unlike parametric model-fitting approaches, which can only reflect 
+uncertainty in the corresponding confidence intervals or  posterior distributions
+of the parameters, the GP approach provides a state-space dependent representation
+of uncertainty.  In other words, a GP estimated from a given data set permits 
+a much greater uncertainty far from the observed data than it does near the observed 
+data.  
+
+
+<!-- Tipping points and the frequency of a lack of data throughout state-space -->
+
+
+
+The idea that any approach can perform well without either having to know the model or
+have particularly good data should immediately draw suspicion.  The reader must bear
+in mind that the strength of our approach comes not from some magic predictive power
+from such limited information, but rather, by providing a more honest expression of 
+uncertainty outside the observed data without sacrificing the predictive capacity 
+near the observed data.  
+
+By coupling this more accurate description of what is known and unknown to the 
+decision-making under uncertainty framework provided by stochastic dynamic programming,
+we are able to obtain more robust management policies than with common parameteric modeling 
+approaches.  
+
 
 add references to [@Fischer2009, @Polasky2011] as persective on combining complex / critical dynamics + control theory
 
