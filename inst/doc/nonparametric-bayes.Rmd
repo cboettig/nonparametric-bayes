@@ -115,38 +115,43 @@ toggle = "hide"
 Abstract
 =======================================================================
 
+We address
+
 Decision-theoretic methods often rely on simple parametric models of
 ecological dynamics to compare the value of a potential sequence of
 actions. Unfortunately, such simple models rarely capture the complexity
 or uncertainty found in most real ecosystems. 
 
+Further, the data on which a model has been parameterized frequently 
+fails to cover the possible state-space over which management decisions 
+must operate.  Consequently a model do well in the region of state-space
+in which it was estimated, but give erroneous confidence to predictions
+outside of that region.  
+
+This problem is keenly felt in any system in which a manager may fear
+crossing a threshold, or tipping point. The tipping point, if it exists 
+at all, will lay outside the observed range of the observed data. 
+
+
 We demonstrate how nonparametric Bayesian models can provide robust,
-nearly-optimal solutions to decision making under uncertainty when
-_we don't know the correct model_ to use. 
+solutions to decision making under uncertainty without knowing the 
+structural form of the true model.  
 
-
-While methods that account
-for _parametric_ uncertainty can be very successful with the right model,
+<!--
+While methods that account for _parametric_ uncertainty can be very 
+successful with the right model,
 structural uncertainty of not knowing what model best approximates the 
 dynamics poses considerably greater difficulty.  
+-->
 
-
-Non-parametric Bayesian
-methods offer a promising statistical approach for predictive modeling
-of ecological dynamics in regions of state space where the data is
-adequate, while at the same time offering more flexible patterns with
-greater uncertainty outside the observed data. This contrasts from simple
-parametric models which provide relatively constant level of uncertainty
-in regions with and without adequate data. The consequence of such
-misplaced confidence outside the data can lead to highly undesirable
-results that may be avoided with the more flexible non-parametric
-Bayesian approach.
 
 
 Introduction
 =======================================================================
 
 #### Opening 
+
+
 
 
 Decision making under uncertainty is a ubiquitous challenge of natural 
