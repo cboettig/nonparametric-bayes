@@ -167,8 +167,21 @@ of uncertainty.  In other words, a GP estimated from a given data set permits
 a much greater uncertainty far from the observed data than it does near the observed 
 data.  
 
+<!-- More on complex dynamics and not having the correct model 
 
-<!-- Tipping points and the frequency of a lack of data throughout state-space -->
+Cite [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
+etc 
+
+also older stuff on model uncertainty
+
+
+-->
+
+<!-- More on the lack of data throughout the relevant state-space
+     and how any concern about potential tipping points indicates 
+     that the data exhibits this bias / problem.  
+     
+     -->
 
 
 
@@ -185,37 +198,36 @@ we are able to obtain more robust management policies than with common parameter
 approaches.  
 
 
-add references to [@Fischer2009, @Polasky2011] as persective on combining complex / critical dynamics + control theory
 
 #### Models for decision-making under uncertainty 
 
-Decision-theoretic (or optimal control) tools require a model that can assign probabilities of
+Decision-theoretic or optimal control tools require a model that can assign probabilities of
 future states (e.g. stock size of a fishery) given the current state and a
-proposed action (e.g. fishing harvest or effort).  The decision maker then
-seeks to determining the course of actions (also referred to as the policy)
-that maximizes the expected value of some objective function (such as
-net present value derived from the resource over time.  (The approach
-can be adapted to permit alternatives to maximizing expectation, such
-as minimizing the maximum cost or damage that might be incurred. See
-@Polasky2011).
+proposed action (e.g. fishing harvest or effort).  
 Management frequently faces a sequential decision-making problem -- after 
 selecting an action, the decision-maker may receive new information about 
-the current state and must again choose an appropriate action -- i.e. setting
+the current state and must again choose an appropriate action -- such as setting
 the harvest limits each year based on stock assessments the year prior.  
 
-More historical context, e.g. [@Reed1979, @Mangel1985]
+The decision maker typically seeks to determining the course of actions (also referred to as the policy)
+that maximizes the expected value of some objective function such as
+net present value derived from the resource over time.  
+Though much can be said on how to choose this value function appropriately 
+(e.g. see [@Halpern2013](http://doi.org/10.1073/pnas.1217689110 
+"Achieving the triple bottom line in the face of inherent trade-offs 
+among social equity, economic return, and conservation.")) we will
+assume this is given.  (Nor is this approach necessarily constrained to 
+maximizing the expectated value of such a function - the decision-theoretic
+framework can be adapted to alternatives such as minimizing the maximum 
+cost or damage that might be incurred; see @Polasky2011).
 
-#### Parametric models 
+In representing future states with probabilities and maximizing expectations,
+this approach provides a natural framework for handling uncertainty. 
 
-Traditional approaches to optimal control (Pontryagin's principle, stochastic
-dynamic programming) rely on knowledge of the state equation.  Such simple 
-parametric models, frequently justified by mechanistic underpinnings are used
-to provide probabilities of future states.  Fisheries literature, which enjoys
-some of the longest history in the use of the optimal control framework, provides
-a clear example [ ] . Models such as the Ricker or Beverton Holt curves are ubiquitous [too strong? references?]
-Parametric models can reflect variability introduced by a stochastic environment
-or demographic process my incorporating random shocks from a given distribution. 
 
+The value function typically depends on the action or policy taken, as well as
+the state of the system, in each interval of time. The state of the system,
+in turn, is usually described by a dynamical model.
 
 
 #### Parametric uncertainty 
@@ -341,6 +353,10 @@ of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
 in managing ecosystems under uncertainty.  Global trends [@Worm2006]
 and controversy [@Hilborn2007; @Worm2009] have made understanding these
 challenges all the more pressing. 
+
+
+
+
 
 To permit comparisons against a theoretical optimum we will consider
 data on the stock dynamics simulated from a simple parametric model
