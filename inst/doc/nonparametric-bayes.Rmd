@@ -356,7 +356,7 @@ challenges all the more pressing.
 
 
 
-
+<!-- ugh, re-word this -->
 
 To permit comparisons against a theoretical optimum we will consider
 data on the stock dynamics simulated from a simple parametric model
