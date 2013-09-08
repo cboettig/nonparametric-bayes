@@ -7,7 +7,7 @@ all:
 	make pdf
 
 
-github: ${SOURCEFILE}.html
+github: 
 	./knit github
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}_github.md
 	pandoc -s --template=rstudio-headers.html ${SOURCEFILE}_github.md -o  ${SOURCEFILE}.html
@@ -25,7 +25,7 @@ docx:  ${SOURCEFILE}.docx
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --reference-docx=reference.docx -o ${SOURCEFILE}.docx
 
 
-pdf: ${SOURCEFILE}.pdf
+pdf: 
 	./knit pdf
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --template=elsarticle.latex -o ${SOURCEFILE}.tex
 	pdflatex ${SOURCEFILE}.tex

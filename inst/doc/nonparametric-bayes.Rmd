@@ -6,13 +6,24 @@ library(nonparametricbayes)
 opts_chunk$set(external=TRUE)
 read_chunk("../examples/BUGS/external-chunks.R")
 
-library(ggplot2)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=1, 
+               comment=NA, verbose=TRUE, fig.width=6, fig.height=4)
+ 
+# Name the cache path and fig.path based on filename...
+opts_chunk$set(fig.path = paste("figure/",
+                                gsub(".Rmd", "", knitr:::knit_concord$get('infile')),
+                                "-", sep=""),
+               cache.path = paste("cache/", 
+                                  gsub(".Rmd", "", knitr:::knit_concord$get('infile') ), 
+                                "/", sep=""))
+
+toggle = "markup" #"hide"  # toggles `results` chunk option 
+
+library(ggplot2) 
+theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-theme_set(theme_bw(base_size=12))
-toggle = "hide" 
 ```
-
 
 ```{r posterior-mode}
 ```
@@ -614,7 +625,7 @@ Results
 
 ```{r Figure1, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ", include=FALSE}
 ```
-```{r Figureb, dependson=c("assemble-models", "par-fns"), toggle = 1}
+```{r Figureb, dependson=c("assemble-models", "par-fns"), include=TRUE}
 ```
 
 
@@ -639,7 +650,7 @@ from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum or near the tipping point.
 
-```{r Figure2, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", toggle = 1}
+```{r Figure2, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", include=TRUE}
 ```
 
 The resulting optimal management strategy based on each of the inferred
@@ -652,7 +663,7 @@ strategy aims to return the population to $S$, resulting in the hockey-stick
 shaped policies shown.  
 
 
-```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", toggle = 1}
+```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.",  include=TRUE}
 ```
 
 The consequences of managing 100 replicate realizations of the 
@@ -673,7 +684,7 @@ close to the optimal solution, and importantly avoids ever driving the system ac
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
 
-```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", toggle = 1}
+```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE}
 ```
 
 Discussion 

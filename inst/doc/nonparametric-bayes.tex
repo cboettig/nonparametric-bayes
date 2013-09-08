@@ -65,6 +65,16 @@
 \newcommand{\RegionMarkerTok}[1]{{#1}}
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
 \newcommand{\NormalTok}[1]{{#1}}
+\usepackage{graphicx}
+% We will generate all images so they have a width \maxwidth. This means
+% that they will get their normal width if they fit onto the page, but
+% are scaled down if they would overflow the margins.
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth
+\else\Gin@nat@width\fi}
+\makeatother
+\let\Oldincludegraphics\includegraphics
+\renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
 \ifxetex
   \usepackage[setpagesize=false, % page size defined by xetex
               unicode=false, % unicode breaks when used with xetex
@@ -141,7 +151,7 @@ stochastic dynamic programming algorithm can be driven by the
 predictions from a Gaussian process model, sidestepping the need for an
 accurate model-based description of the system dynamics.
 
-add references to {[}@Fischer2009, @Polasky2011{]} as persective on
+add references to (@Fischer2009, Polasky et al. 2011) as persective on
 combining complex / critical dynamics + control theory
 
 \paragraph{Models for decision-making under uncertainty}
@@ -154,14 +164,14 @@ actions (also referred to as the policy) that maximizes the expected
 value of some objective function (such as net present value derived from
 the resource over time. (The approach can be adapted to permit
 alternatives to maximizing expectation, such as minimizing the maximum
-cost or damage that might be incurred. See @Polasky2011). Management
-frequently faces a sequential decision-making problem -- after selecting
-an action, the decision-maker may receive new information about the
-current state and must again choose an appropriate action --
-i.e.~setting the harvest limits each year based on stock assessments the
-year prior.
+cost or damage that might be incurred. See Polasky et al. (2011)).
+Management frequently faces a sequential decision-making problem --
+after selecting an action, the decision-maker may receive new
+information about the current state and must again choose an appropriate
+action -- i.e.~setting the harvest limits each year based on stock
+assessments the year prior.
 
-More historical context, e.g. {[}@Reed1979, @Mangel1985{]}
+More historical context, e.g. (Reed 1979, )
 
 \paragraph{Parametric models}
 
@@ -185,7 +195,7 @@ introduced by demographic or environmental noise. The degree of
 uncertainty in the parameter values can be inferred from the data and
 reflected in the estimates of the transition probabilities.
 
-{[}@Mangel1985; @Schapaugh2013{]}
+(Mangel 1985; Schapaugh and Tyre 2013)
 
 \paragraph{Structural Uncertainty}
 
@@ -200,7 +210,7 @@ choice, or model averaging. Either approach remains limited by the
 degree to which any of the proposed models are sufficiently close to the
 right model.
 
-{[}@Williams2001; @Athanassoglou2012{]}.
+(B. K. Williams 2001; Athanassoglou and Xepapadeas 2012).
 
 \paragraph{Comparing models}
 
@@ -211,13 +221,13 @@ performance is defined in the concrete terms of the decision-maker's
 objective function, which we will take as given. (Much argument can be
 made over the `correct' objective function, e.g.~how to account for the
 social value of fish left in the sea vs.~the commercial value of fish
-harvested; see @Halpern2013 for further discussion of this issue.
-Alternatively, we can always compare model performance across multiple
-potential objective functions.) The decision-maker does not necessarily
-need a model that provides the best mechanistic understanding or the
-best long-term outcome, but rather the one that best estimates the
-probabilities of being in different states as a result of the possible
-actions.
+harvested; see Halpern et al. (2013) for further discussion of this
+issue. Alternatively, we can always compare model performance across
+multiple potential objective functions.) The decision-maker does not
+necessarily need a model that provides the best mechanistic
+understanding or the best long-term outcome, but rather the one that
+best estimates the probabilities of being in different states as a
+result of the possible actions.
 
 While simple mechanistic models can nevertheless provide important
 insights into long-term outcomes, such approaches are not well-suited
@@ -258,11 +268,11 @@ In our example, we focus on the problem in which a manager must set the
 harvest level for a marine fishery each year to maximize the net present
 value of the resource, given an estimated stock size from the year
 before. The economic value and ecological concern have made marine
-fisheries the crucible for much of the founding work {[}@Gordon1954;
-@Reed1979; @May1979; @Ludwig1982{]} in managing ecosystems under
-uncertainty. Global trends {[}@Worm2006{]} and controversy
-{[}@Hilborn2007; @Worm2009{]} have made understanding these challenges
-all the more pressing.
+fisheries the crucible for much of the founding work (Gordon 1954; Reed
+1979; May et al. 1979; Ludwig and Walters 1982) in managing ecosystems
+under uncertainty. Global trends (Worm et al. 2006) and controversy
+(Hilborn 2007; Worm et al. 2009) have made understanding these
+challenges all the more pressing.
 
 To permit comparisons against a theoretical optimum we will consider
 data on the stock dynamics simulated from a simple parametric model in
@@ -277,7 +287,7 @@ along with a given economic model determining the price/profit
 $\Pi(X_t, h_t)$ realized in a given year given a choice of harvest $h_t$
 and observed stock $X_t$. This problem can be solved exactly for
 discretized values of stock $X$ and policy $h$ using stochastic dynamic
-programming (SDP) {[}@Mangel1985{]}. Problems of this sort underpin much
+programming (SDP) (Mangel 1985). Problems of this sort underpin much
 marine fisheries management today.
 
 A crux of this approach is correctly specifying the functional form of
@@ -286,29 +296,30 @@ handful of common parametric models representing the stock-recruitment
 relationship, usually after estimating the model parameters from any
 available existing data. Uncertainty in the parameter estimates can be
 estimated and integrated over to determine the optimal policy under
-under uncertainty {[}@Mangel1985; @Schapaugh2013{]}. Uncertainty in the
-model structure itself can only be addressed in this approach by
+under uncertainty (Mangel 1985; Schapaugh and Tyre 2013). Uncertainty in
+the model structure itself can only be addressed in this approach by
 hypothesizing alternative model structures, and then performing some
-model choice or model averaging {[}@Williams2001; @Athanassoglou2012{]}.
+model choice or model averaging (B. K. Williams 2001; Athanassoglou and
+Xepapadeas 2012).
 
 \subsection{Underlying Model}
 
 Concerns over the potential for tipping points in ecological dynamics
-{[}@Scheffer2001{]} highlight the dangers of uncertainty in ecological
-management and pose a substantial challenge to existing
-decision-theoretic approaches {[}@Brozovic2011{]}. Because intervention
-is often too late after a tipping point has been crossed (but see
-@Hughes2013), management is most often concerned with avoiding
-potentially catastrophic tipping points before any data is available at
-or following a transition that would more clearly reveal these regime
-shift dynamics {[}e.g. @Bestelmeyer2012{]}.
+(Scheffer et al. 2001) highlight the dangers of uncertainty in
+ecological management and pose a substantial challenge to existing
+decision-theoretic approaches (Brozović and Schlenker 2011). Because
+intervention is often too late after a tipping point has been crossed
+(but see Hughes et al. (2013)), management is most often concerned with
+avoiding potentially catastrophic tipping points before any data is
+available at or following a transition that would more clearly reveal
+these regime shift dynamics (e.g. Bestelmeyer et al. 2012).
 
 To illustrate the value of the non-parametric Bayesian approach to
 management, we focus on example of a system containing such a tipping
 point whose dynamics can still be described by a simple, one-dimensional
 parametric model.\\We will focus on a simple parametric model for a
-single species {[}derived from fist principles by @Allen2005a{]} as our
-underlying ``reality''.
+single species (derived from fist principles by Allen et al. 2005) as
+our underlying ``reality''.
 
 \[X_{t+1} = Z_t f(S_t)  \] \[S_t = X_t - h_t \]
 \[f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} \]
@@ -322,7 +333,7 @@ As a low-dimensional system completely described by three parameters,
 this scenario should if anything be favorable to a parametric-based
 approach. This model contains an Allee effect, or tipping point, below
 which the population is not self-sustaining and shrinks to zero
-{[}@Courchamp2008{]}.
+(Courchamp, Berec, and Gascoigne 2008).
 
 \paragraph{Simulated training data}
 
@@ -333,8 +344,8 @@ data comes from a limited region of state space (e.g.~near a stable
 equilibrium), leaving us without observations of the population dynamics
 at very low levels which would be useful in discrimating between
 recruitment curves {[}@{]} or demonstrating the existence of a tipping
-point {[}@Scheffer2001{]}.\\Using data simulated from a specified model
-rather than empirical data permits the comparison against the true
+point (Scheffer et al. 2001).\\Using data simulated from a specified
+model rather than empirical data permits the comparison against the true
 underlying dynamics, setting a bar for the optimal performance possible.
 
 \subsubsection{Parametric Models}
@@ -397,10 +408,11 @@ clearest by way of example.
 
 The use of Gaussian process (GP) regression (or ``kriging'' in the
 geospatial literature) to formulate a predictive model is relatively new
-in the context of modeling dynamical systems {[}@Kocijan2005{]} and
-introduced in the ecological modeling and fisheries management by
-@Munch2005. An accessible and thorough introduction to the formulation
-and use of GPs can be found in @Rasmussen2006.
+in the context of modeling dynamical systems (Kocijan et al. 2005) and
+introduced in the ecological modeling and fisheries management by Munch
+et al. (2005). An accessible and thorough introduction to the
+formulation and use of GPs can be found in Rasmussen and Williams
+(2006).
 
 The essence of the GP approach can be captured in the following thought
 experiment: An exhaustive parametric approach to the challenge of
@@ -424,26 +436,28 @@ simultaneously.
 
 The posterior distribution for the hyper-parameters of the Gaussian
 process model are estimated by Metropolis-Hastings algorithm, again with
-details and code provided in the Appendix. @Rasmussen2006 provides an
-excellent general introduction to Gaussian Processes and @Munch2005
-first discusses their application in the context of population dynamics
-models such as fisheries stock-recruitment relationships.
+details and code provided in the Appendix. Rasmussen and Williams (2006)
+provides an excellent general introduction to Gaussian Processes and
+Munch et al. (2005) first discusses their application in the context of
+population dynamics models such as fisheries stock-recruitment
+relationships.
 
 \subsubsection{SDP via GP}
 
-Once the posterior Gaussian process (GP) has been estimated {[}e.g.~see
-@Munch2005{]}, it is necessary to adapt it in place of the parametric
-equation for the stochastic dynamic programming (SDP) solution {[}see
-@Mangel1988 for a detailed description of parametric SDP methods{]} to
-the optimal policy. The essence of the idea is straight forward -- we
-will use the estimated GP in place of the parametric growth function to
-determine the stochastic transition matrix on which the SDP calculations
-are based. The SDP is solved in a discretized state space -- both the
-continuously valued population densities $X$ and harvest quotas $h$ are
-first mapped to a bounded, discrete grid. (For simplicity we will
-consider a uniform grid, though for either parametric or GP-based SDP it
-is often advantageous to use a non-uniform discretization such as a
-basis function representation, e.g.~see {[}@Deisenroth2009{]}).
+Once the posterior Gaussian process (GP) has been estimated (e.g.~see
+Munch et al. 2005), it is necessary to adapt it in place of the
+parametric equation for the stochastic dynamic programming (SDP)
+solution (see Mangel and Clark 1988 for a detailed description of
+parametric SDP methods) to the optimal policy. The essence of the idea
+is straight forward -- we will use the estimated GP in place of the
+parametric growth function to determine the stochastic transition matrix
+on which the SDP calculations are based. The SDP is solved in a
+discretized state space -- both the continuously valued population
+densities $X$ and harvest quotas $h$ are first mapped to a bounded,
+discrete grid. (For simplicity we will consider a uniform grid, though
+for either parametric or GP-based SDP it is often advantageous to use a
+non-uniform discretization such as a basis function representation,
+e.g.~see (Deisenroth, Rasmussen, and Peters 2009)).
 
 The SDP approach then computes a transition matrix, $\mathbf{F}$. We
 demonstrate that calculation is just as straight forward based on the GP
@@ -474,7 +488,7 @@ GP}
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{for(h in h_grid)}
-  \NormalTok{F_h =}\StringTok{ }\NormalTok{for(x_j in grid)}
+  \NormalTok{F_h = for(x_j in grid)}
           \NormalTok{for(i in }\DecValTok{1}\NormalTok{:N) }
             \KeywordTok{dnorm}\NormalTok{(x_j, mu[i]-h, V[i])}
 \end{Highlighting}
@@ -509,18 +523,18 @@ the matrix multiplication $\mathbf{F} V_{t+1}$.
 
 \begin{Shaded}
 \begin{Highlighting}[]
- \NormalTok{V1 <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(h_grid), function(h)\{}
-      \NormalTok{delta *}\StringTok{ }\NormalTok{F[[h]] %*%}\StringTok{ }\NormalTok{V +}\StringTok{  }\KeywordTok{profit}\NormalTok{(x_grid, h_grid[h]) }
+ \NormalTok{V1 <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(h_grid), function(h)\{}
+      \NormalTok{delta * F[[h]] %*% V +  }\KeywordTok{profit}\NormalTok{(x_grid, h_grid[h]) }
     \NormalTok{\})}
     \CommentTok{# find havest, h that gives the maximum value}
-    \NormalTok{out <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:gridsize, function(j)\{}
-      \NormalTok{value <-}\StringTok{ }\KeywordTok{max}\NormalTok{(V1[j,], }\DataTypeTok{na.rm =} \NormalTok{T) }\CommentTok{# each col is a diff h, max over these}
-      \NormalTok{index <-}\StringTok{ }\KeywordTok{which.max}\NormalTok{(V1[j,])  }\CommentTok{# store index so we can recover h's }
+    \NormalTok{out <- }\KeywordTok{sapply}\NormalTok{(}\DecValTok{1}\NormalTok{:gridsize, function(j)\{}
+      \NormalTok{value <- }\KeywordTok{max}\NormalTok{(V1[j,], }\DataTypeTok{na.rm =} \NormalTok{T) }\CommentTok{# each col is a diff h, max over these}
+      \NormalTok{index <- }\KeywordTok{which.max}\NormalTok{(V1[j,])  }\CommentTok{# store index so we can recover h's }
       \KeywordTok{c}\NormalTok{(value, index) }\CommentTok{# returns both profit value & index of optimal h.  }
     \NormalTok{\})}
     \CommentTok{# Sets V[t+1] = max_h V[t] at each possible state value, x}
-    \NormalTok{V <-}\StringTok{ }\NormalTok{out[}\DecValTok{1}\NormalTok{,]                        }\CommentTok{# The new value-to-go}
-    \NormalTok{D[,OptTime-time}\DecValTok{+1}\NormalTok{] <-}\StringTok{ }\NormalTok{out[}\DecValTok{2}\NormalTok{,]       }\CommentTok{# The index positions}
+    \NormalTok{V <- out[}\DecValTok{1}\NormalTok{,]                        }\CommentTok{# The new value-to-go}
+    \NormalTok{D[,OptTime-time}\DecValTok{+1}\NormalTok{] <- out[}\DecValTok{2}\NormalTok{,]       }\CommentTok{# The index positions}
 \end{Highlighting}
 \end{Shaded}
 
@@ -539,6 +553,44 @@ appendix). In addition we estimate the parameters of the structurally
 correct model by maximum likelihood.
 
 \section{Results}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(MASS)}
+\NormalTok{step_ahead <- function(x, f, p)\{}
+  \NormalTok{h = }\DecValTok{0}
+  \NormalTok{x_predict <- }\KeywordTok{sapply}\NormalTok{(x, f, h, p)}
+  \NormalTok{n <- }\KeywordTok{length}\NormalTok{(x_predict) - }\DecValTok{1}
+  \NormalTok{y <- }\KeywordTok{c}\NormalTok{(x[}\DecValTok{1}\NormalTok{], x_predict[}\DecValTok{1}\NormalTok{:n])}
+  \NormalTok{y}
+\NormalTok{\}}
+\NormalTok{step_ahead_posteriors <- function(x)\{}
+\NormalTok{gp_f_at_obs <- }\KeywordTok{gp_predict}\NormalTok{(gp, x, }\DataTypeTok{burnin=}\FloatTok{1e4}\NormalTok{, }\DataTypeTok{thin=}\DecValTok{300}\NormalTok{)}
+\NormalTok{df_post <- }\KeywordTok{melt}\NormalTok{(}\KeywordTok{lapply}\NormalTok{(}\KeywordTok{sample}\NormalTok{(}\DecValTok{100}\NormalTok{), }
+  \NormalTok{function(i)\{}
+    \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{time =} \DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(x), }\DataTypeTok{stock =} \NormalTok{x, }
+                \DataTypeTok{GP =} \KeywordTok{mvrnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),}
+                \DataTypeTok{True =} \KeywordTok{step_ahead}\NormalTok{(x,f,p),  }
+                \DataTypeTok{MLE =} \KeywordTok{step_ahead}\NormalTok{(x,f,est$p), }
+                \DataTypeTok{Allen =} \KeywordTok{step_ahead}\NormalTok{(x, allen_f, pardist[i,]), }
+                \DataTypeTok{Ricker =} \KeywordTok{step_ahead}\NormalTok{(x, ricker_f, ricker_pardist[i,]), }
+                \DataTypeTok{Myers =} \KeywordTok{step_ahead}\NormalTok{(x, myers_f, myers_pardist[i,]))}
+  \NormalTok{\}), }\DataTypeTok{id=}\KeywordTok{c}\NormalTok{(}\StringTok{"time"}\NormalTok{, }\StringTok{"stock"}\NormalTok{))}
+\NormalTok{\}}
+
+\NormalTok{df_post <- }\KeywordTok{step_ahead_posteriors}\NormalTok{(x)}
+
+\KeywordTok{ggplot}\NormalTok{(df_post) + }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, stock)) + }
+  \KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, value, }\DataTypeTok{col=}\NormalTok{variable, }\DataTypeTok{group=}\KeywordTok{interaction}\NormalTok{(L1,variable)), }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{1}\NormalTok{) + }
+  \KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey, }\DataTypeTok{guide =} \KeywordTok{guide_legend}\NormalTok{(}\DataTypeTok{override.aes =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alpha =} \DecValTok{1}\NormalTok{))) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figureb.pdf}
+\caption{plot of chunk Figureb}
+\end{figure}
 
 Figure 1 shows the mean inferred state space dynamics of each model
 relative to the true model used to generate the data, predicting the
@@ -560,14 +612,51 @@ limited region of state space corresponding to unharvested or weakly
 harvested system. No observations occur at the theoretical optimum or
 near the tipping point.
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{policies <- }\KeywordTok{melt}\NormalTok{(}\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{stock=}\NormalTok{x_grid, }\KeywordTok{sapply}\NormalTok{(OPT, function(x) x_grid[x])), }\DataTypeTok{id=}\StringTok{"stock"}\NormalTok{)}
+\KeywordTok{names}\NormalTok{(policies) <- }\KeywordTok{c}\NormalTok{(}\StringTok{"stock"}\NormalTok{, }\StringTok{"method"}\NormalTok{, }\StringTok{"value"}\NormalTok{)}
+
+\KeywordTok{ggplot}\NormalTok{(policies, }\KeywordTok{aes}\NormalTok{(stock, stock - value, }\DataTypeTok{color=}\NormalTok{method)) +}
+  \KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{lwd=}\FloatTok{1.2}\NormalTok{, }\DataTypeTok{alpha=}\FloatTok{0.8}\NormalTok{) + }\KeywordTok{xlab}\NormalTok{(}\StringTok{"stock size"}\NormalTok{) + }\KeywordTok{ylab}\NormalTok{(}\StringTok{"escapement"}\NormalTok{)  +}
+  \KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figure2.pdf}
+\caption{The steady-state optimal policy (infinite boundary) calculated
+under each model. Policies are shown in terms of target escapement,
+$S_t$, as under models such as this a constant escapement policy is
+expected to be optimal (Reed 1979).}
+\end{figure}
+
 The resulting optimal management strategy based on each of the inferred
 models is shown in Figure 2, against the optimal strategy given the true
 underlying dynamics. Policies are shown in terms of target escapement,
 $S_t$. Under models such as this a constant escapement policy is
-expected to be optimal {[}@Reed1979{]}, whereby population levels below
-a certain size $S$ are unharvested, while above that size the harvest
+expected to be optimal (Reed 1979), whereby population levels below a
+certain size $S$ are unharvested, while above that size the harvest
 strategy aims to return the population to $S$, resulting in the
 hockey-stick shaped policies shown.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(sims_data) + }
+  \KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, fishstock, }\DataTypeTok{group=}\KeywordTok{interaction}\NormalTok{(reps,method), }\DataTypeTok{color=}\NormalTok{method), }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{1}\NormalTok{) +}
+  \KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey, }\DataTypeTok{guide =} \KeywordTok{guide_legend}\NormalTok{(}\DataTypeTok{override.aes =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alpha =} \DecValTok{1}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figure3.pdf}
+\caption{Gaussian process inference outperforms parametric estimates.
+Shown are 100 replicate simulations of the stock dynamics (eq 1) under
+the policies derived from each of the estimated models, as well as the
+policy based on the exact underlying model.}
+\end{figure}
 
 The consequences of managing 100 replicate realizations of the simulated
 fishery under each of the policies estimated is shown in Figure 3. As
@@ -587,6 +676,48 @@ optimal solution, and importantly avoids ever driving the system across
 the tipping point, which results in the near-zero value cases in the
 parametric models.
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fig4v1 <- }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) + }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable)) + }
+  \KeywordTok{facet_wrap}\NormalTok{(~variable, }\DataTypeTok{scales =} \StringTok{"free_y"}\NormalTok{)  + }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{) +}
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{) + }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey) }\CommentTok{# density plots fail when delta fn}
+
+\NormalTok{fig4v2 <- }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) + }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable), }\DataTypeTok{binwidth=}\FloatTok{0.1}\NormalTok{) + }
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
+
+\NormalTok{fig4v3 <- }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value, }\DataTypeTok{fill=}\NormalTok{variable, }\DataTypeTok{color=}\NormalTok{variable)) + }\CommentTok{# density plots fail when delta fn}
+  \KeywordTok{stat_density}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{..density..), }\DataTypeTok{position=}\StringTok{"stack"}\NormalTok{, }\DataTypeTok{adjust=}\DecValTok{3}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{9}\NormalTok{) + }
+  \KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)+ }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
+\NormalTok{fig4v2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figure41.pdf}
+\caption{Histograms of the realized net present value of the fishery
+over a range of simulated data and resulting parameter estimates. For
+each data set, the three models are estimated as described above. Values
+plotted are the averages of a given policy over 100 replicate
+simulations. Details and code provided in the supplement.}
+\end{figure}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fig4v3}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figure42.pdf}
+\caption{Histograms of the realized net present value of the fishery
+over a range of simulated data and resulting parameter estimates. For
+each data set, the three models are estimated as described above. Values
+plotted are the averages of a given policy over 100 replicate
+simulations. Details and code provided in the supplement.}
+\end{figure}
+
 \section{Discussion}
 
 \paragraph{Big picture: Linking GP to SDP}
@@ -600,17 +731,17 @@ the uncertainty in dynamics at population levels (states) which have not
 been observed. One reason for the relative absence of nonparametric
 approaches in the natural resource management context may be the lack of
 existing approaches for adapting the non-parametric Bayesian models
-previously proposed {[}@Munch2005{]} to a decision-theoretic framework.
-Adapting a non-parametric approach requires modification of existing
-methods for decision theory. We have illustrated how this might be done
-for a classic stochastic dynamic programming problem, opening the door
-for substantial further research into how these applications might be
-improved.
+previously proposed (Munch et al. 2005) to a decision-theoretic
+framework. Adapting a non-parametric approach requires modification of
+existing methods for decision theory. We have illustrated how this might
+be done for a classic stochastic dynamic programming problem, opening
+the door for substantial further research into how these applications
+might be improved.
 
 Though simple mechanistically motivated models may be best for the
-latter case {[}@Cuddington2013; @Geritz2012{]}, such models can be not
-only inaccurate but misleading in quantitative decision making. This
-arises for two reasons:
+latter case (Cuddington, Fortin, and Gerber 2013; Geritz and Kisdi
+2012), such models can be not only inaccurate but misleading in
+quantitative decision making. This arises for two reasons:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -623,15 +754,15 @@ arises for two reasons:
 
 The complexity of ecological interactions and a lack of data contribute
 greatly to both of the problems. This concern is particularly acute in
-case of ecological tipping points {[}@Barnosky2012; @Scheffer2001{]},
-which arise from feedbacks common in ecological systems and can lead to
-a sudden catastrophic transition to an undesirable state. In general we
-do not know where such tipping points are unless we have already
-observed the transition, in which case it is frequently too late to
-respond. Though there may exist early warning signals for certain kinds
-of these transitions that are driven by slow changes
-{[}@Scheffer2009{]}, we do not know when, where, or how to apply them to
-the decision making context more generally {[}@Boettiger2013{]}.
+case of ecological tipping points (Barnosky et al. 2012; Scheffer et al.
+2001), which arise from feedbacks common in ecological systems and can
+lead to a sudden catastrophic transition to an undesirable state. In
+general we do not know where such tipping points are unless we have
+already observed the transition, in which case it is frequently too late
+to respond. Though there may exist early warning signals for certain
+kinds of these transitions that are driven by slow changes (Scheffer et
+al. 2009), we do not know when, where, or how to apply them to the
+decision making context more generally (Boettiger and Hastings 2013).
 
 While non-parametric Bayesian approaches will not always be preferable
 to simple mechanistic models, we highlight three aspects of the problem
@@ -711,6 +842,165 @@ this project, can be found at:
 \subsection{Markov Chain Monte Carlo Analysis}
 
 \section{References}
+
+Allen, Linda J. S., Jesse F. Fagan, Göran Högnäs, and Henrik Fagerholm.
+2005. ``Population extinction in discrete-time stochastic population
+models with an Allee effect.'' \emph{Journal of Difference Equations and
+Applications} 11 (4-5) (apr): 273--293.
+doi:10.1080/10236190412331335373.
+\url{http://www.tandfonline.com/doi/abs/10.1080/10236190412331335373}.
+
+Athanassoglou, Stergios, and Anastasios Xepapadeas. 2012. ``Pollution
+control with uncertain stock dynamics: When, and how, to be
+precautious.'' \emph{Journal of Environmental Economics and Management}
+63 (3) (may): 304--320. doi:10.1016/j.jeem.2011.11.001.
+\url{http://linkinghub.elsevier.com/retrieve/pii/S0095069611001409}.
+
+Barnosky, Anthony D., Elizabeth a Hadly, Jordi Bascompte, Eric L.
+Berlow, James H. Brown, Mikael Fortelius, Wayne M. Getz, et al. 2012.
+``Approaching a state shift in Earth's biosphere.'' \emph{Nature} 486
+(7401) (jun): 52--58. doi:10.1038/nature11018.
+\url{http://www.nature.com/doifinder/10.1038/nature11018}.
+
+Bestelmeyer, Brandon T., Michael C. Duniway, Darren K. James, Laura M.
+Burkett, and Kris M. Havstad. 2012. ``A test of critical thresholds and
+their indicators in a desertification-prone ecosystem: more resilience
+than we thought.'' Ed. Katharine Suding. \emph{Ecology Letters} (dec).
+doi:10.1111/ele.12045. \url{http://doi.wiley.com/10.1111/ele.12045}.
+
+Boettiger, Carl, and Alan Hastings. 2013. ``Tipping points: From
+patterns to predictions.'' \emph{Nature} 493 (7431) (jan): 157--158.
+doi:10.1038/493157a.
+\url{http://www.nature.com/doifinder/10.1038/493157a}.
+
+Brozović, Nicholas, and Wolfram Schlenker. 2011. ``Optimal management of
+an ecosystem with an unknown threshold.'' \emph{Ecological Economics}
+(jan): 1--14. doi:10.1016/j.ecolecon.2010.10.001.
+\url{http://linkinghub.elsevier.com/retrieve/pii/S0921800910004167}.
+
+Courchamp, Franck, Ludek Berec, and Joanna Gascoigne. 2008. \emph{Allee
+Effects in Ecology and Conservation}. Oxford University Press, USA.
+\url{http://www.amazon.com/Effects-Ecology-Conservation-Franck-Courchamp/dp/0198570309}.
+
+Cuddington, Kim M., M. J. Fortin, and L. R. Gerber. 2013.
+``Process-based models are required to manage ecological systems in a
+changing world.'' \emph{Ecosphere} 4 (February): 1--12.
+doi:10.1890/ES12-00178.1.
+\url{http://www.esajournals.org/doi/abs/10.1890/ES12-00178.1}.
+
+Deisenroth, Marc Peter, Carl Edward Rasmussen, and Jan Peters. 2009.
+``Gaussian process dynamic programming.'' \emph{Neurocomputing} 72 (7-9)
+(mar): 1508--1524. doi:10.1016/j.neucom.2008.12.019.
+\url{http://linkinghub.elsevier.com/retrieve/pii/S0925231209000162}.
+
+Geritz, Stefan A. H., and Eva Kisdi. 2012. ``Mathematical ecology: why
+mechanistic models?.'' \emph{Journal of mathematical biology} 65 (6-7)
+(dec): 1411--5. doi:10.1007/s00285-011-0496-3.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/22159789}.
+
+Gordon, H. S. 1954. ``The economic theory of a common-property resource:
+the fishery.'' \emph{The Journal of Political Economy} 62 (2): 124--142.
+\url{http://www.jstor.org/stable/10.2307/1825571}.
+
+Halpern, Benjamin S., Carissa J. Klein, Christopher J. Brown, Maria
+Beger, Hedley S. Grantham, Sangeeta Mangubhai, Mary Ruckelshaus, et al.
+2013. ``Achieving the triple bottom line in the face of inherent
+trade-offs among social equity, economic return, and conservation.''
+\emph{Proceedings of the National Academy of Sciences of the United
+States of America} (mar). doi:10.1073/pnas.1217689110.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/23530207}.
+
+Hilborn, Ray. 2007. ``Reinterpreting the State of Fisheries and their
+Management.'' \emph{Ecosystems} 10 (8) (oct): 1362--1369.
+doi:10.1007/s10021-007-9100-5.
+\url{http://www.springerlink.com/index/10.1007/s10021-007-9100-5}.
+
+Hughes, Terry P., Cristina Linares, Vasilis Dakos, Ingrid a van de
+Leemput, and Egbert H. van Nes. 2013. ``Living dangerously on borrowed
+time during slow, unrecognized regime shifts.'' \emph{Trends in ecology
+\& evolution} 28 (3) (mar): 149--55. doi:10.1016/j.tree.2012.08.022.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/22995893}.
+
+Kocijan, Juš, Agathe Girard, Bla\textbackslash{}vz Banko, and Roderick
+Murray-Smith. 2005. ``Dynamic systems identification with Gaussian
+processes.'' \emph{Mathematical and Computer Modelling of Dynamical
+Systems} 11 (4) (dec): 411--424. doi:10.1080/13873950500068567.
+\url{http://www.tandfonline.com/doi/abs/10.1080/13873950500068567}.
+
+Ludwig, Donald, and Carl J. Walters. 1982. ``Optimal harvesting with
+imprecise parameter estimates.'' \emph{Ecological Modelling} 14 (3-4)
+(jan): 273--292. doi:10.1016/0304-3800(82)90023-0.
+\url{http://linkinghub.elsevier.com/retrieve/pii/0304380082900230}.
+
+Mangel, Marc. 1985. ``Decision and control in uncertain resource
+systems:'' 255.
+\href{http://www.amazon.com/Decision-uncertain-resource-Mathematics-Engineering/dp/0124687202 http://dl.acm.org/citation.cfm?id=537497}{http://www.amazon.com/Decision-uncertain-resource-Mathematics-Engineering/dp/0124687202
+http://dl.acm.org/citation.cfm?id=537497}.
+
+Mangel, Marc, and Colin W. Clark. 1988. \emph{Dynamic Modeling in
+Behavioral Ecology}. Ed. John Krebs and Tim Clutton-Brock. Princeton:
+Princeton University Press.
+
+May, Robert M., John R. Beddington, Colin W. Clark, Sidney J. Holt, and
+R. M. Laws. 1979. ``Management of multispecies fisheries.''
+\emph{Science (New York, N.Y.)} 205 (4403) (jul): 267--77.
+doi:10.1126/science.205.4403.267.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/17747032}.
+
+Munch, Stephan B., Melissa L. Snover, George M. Watters, and Marc
+Mangel. 2005. ``A unified treatment of top-down and bottom-up control of
+reproduction in populations.'' \emph{Ecology Letters} 8 (7) (may):
+691--695. doi:10.1111/j.1461-0248.2005.00766.x.
+\url{http://doi.wiley.com/10.1111/j.1461-0248.2005.00766.x}.
+
+Polasky, Stephen, Stephen R. Carpenter, Carl Folke, and Bonnie Keeler.
+2011. ``Decision-making under great uncertainty: environmental
+management in an era of global change.'' \emph{Trends in ecology \&
+evolution} (may): 1--7. doi:10.1016/j.tree.2011.04.007.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/21616553}.
+
+Rasmussen, Carl Edward, and C. K. I. Williams. 2006. \emph{Gaussian
+Processes for Machine Learning}. Ed. Thomas Dietterich. Boston: MIT
+Press,. \url{www.GaussianProcess.org/gpml}.
+
+Reed, William J. 1979. ``Optimal escapement levels in stochastic and
+deterministic harvesting models.'' \emph{Journal of Environmental
+Economics and Management} 6 (4) (dec): 350--363.
+doi:10.1016/0095-0696(79)90014-7.
+\href{http://www.sciencedirect.com/science/article/pii/0095069679900147 http://linkinghub.elsevier.com/retrieve/pii/0095069679900147}{http://www.sciencedirect.com/science/article/pii/0095069679900147
+http://linkinghub.elsevier.com/retrieve/pii/0095069679900147}.
+
+Schapaugh, Adam W., and Andrew J. Tyre. 2013. ``Accounting for
+parametric uncertainty in Markov decision processes.'' \emph{Ecological
+Modelling} 254 (apr): 15--21. doi:10.1016/j.ecolmodel.2013.01.003.
+\url{http://linkinghub.elsevier.com/retrieve/pii/S0304380013000306}.
+
+Scheffer, Marten, Jordi Bascompte, William A. Brock, Victor Brovkin,
+Stephen R. Carpenter, Vasilis Dakos, Hermann Held, Egbert H. van Nes,
+Max Rietkerk, and George Sugihara. 2009. ``Early-warning signals for
+critical transitions.'' \emph{Nature} 461 (7260): 53--9.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/19727193}.
+
+Scheffer, Marten, Stephen R. Carpenter, J. A. Foley, C. Folke, and B.
+Walker. 2001. ``Catastrophic shifts in ecosystems.'' \emph{Nature} 413
+(6856) (oct): 591--6. doi:10.1038/35098000.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/11595939}.
+
+Williams, Byron K. 2001. ``Uncertainty , learning , and the optimal
+management of wildlife.'' \emph{Environmental and Ecological Statistics}
+8: 269--288. doi:10.1023/A:1011395725123.
+
+Worm, Boris, Edward B. Barbier, Nicola Beaumont, J. Emmett Duffy, Carl
+Folke, Benjamin S. Halpern, Jeremy B. C. Jackson, et al. 2006. ``Impacts
+of biodiversity loss on ocean ecosystem services.'' \emph{Science (New
+York, N.Y.)} 314 (5800) (nov): 787--90. doi:10.1126/science.1132294.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/17082450}.
+
+Worm, Boris, Ray Hilborn, Julia K. Baum, Trevor A. Branch, Jeremy S.
+Collie, Christopher Costello, Michael J. Fogarty, et al. 2009.
+``Rebuilding global fisheries.'' \emph{Science (New York, N.Y.)} 325
+(5940) (jul): 578--85. doi:10.1126/science.1173146.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/19644114}.
 
 \end{document}
 

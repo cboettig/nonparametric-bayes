@@ -541,17 +541,18 @@ actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+fig4v1 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
-  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
+  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey) # density plots fail when delta fn
 
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+fig4v2 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
 
-ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
+fig4v3 <- ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
   stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
-
+fig4v2
+fig4v3
 
 
 
