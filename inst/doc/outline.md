@@ -211,23 +211,77 @@ Equation S1: Ricker model.
 $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
 
 Figure S1: Ricker model: prior and posterior distributions for parameter estimates.
+
+```{r, echo=FALSE}
+plot_ricker_traces
+```
+
+```{r, echo=FALSE}
+plot_ricker_posteriors
+```
 Table S1: Parameterization of the priors
+
+```{r echo=FALSE, results="asis"}
+xtable::xtable(data.frame(
+  parameter = c("r0", "K", "sigma"),
+  lower_bound = c(r0_prior_p[1], K_prior_p[1], stdQ_prior_p[1]),
+  upper_bound = c(r0_prior_p[2], K_prior_p[2], stdQ_prior_p[2])))
+```
+
 
 $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} $$
 
 Eq S2: Myers model 
-Figure S2: Myers model: prior and posterior distributions for parameter estimates.
+Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
+
+```{r, echo=FALSE}
+plot_myers_traces
+```
+
+```{r, echo=FALSE}
+plot_myers_posteriors
+```
+
 Table S2: Parameterization of the priors
+```{r echo=FALSE, results="asis"}
+xtable::xtable(data.frame(parameter = c("r0", "K", "theta", "sigma"),
+           lower_bound = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
+           upper_bound = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2])))
+```
+
 
 Eq S3: Allen model 
 
 $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
 Figure S3: Allen model: prior and posterior distributions for parameter estimates.
+
+```{r, echo=FALSE}
+plot_allen_traces
+```
+
+```{r, echo=FALSE}
+plot_allen_posteriors
+```
+
 Table S3: Parameterization of the priors
+
+```{r echo=FALSE, results="asis"}
+xtable::xtable(data.frame(parameter = c("r0", "K", "theta", "sigma"),
+           lower_bound = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
+           upper_bound = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2])))
+```
+
+
 
 Eq S4: GP model 
 Figure S4: GP model: prior and posterior distributions for parameter estimates.
+
+```{r echo=FALSE}
+gp_assessment_plots
+```
+
+
 Table S4: Parameterization of the priors
 
 ## Optimal Control Problem
