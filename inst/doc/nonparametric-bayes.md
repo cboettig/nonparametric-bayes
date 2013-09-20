@@ -99,16 +99,62 @@
 
 
 
+
 Abstract
 ========
+
+Model uncertainty and limited data coverage are fundamental challenges to
+robust ecosystem management.  These challenges are acutely highlighted
+by concerns that many ecological systems may contain tipping points.
+Before a collapse, we do not know where the tipping points lie, if the
+exist at all.  Hence, we know neither a complete model of the system
+dynamics nor do we have access to data in some large region of state-space
+where such a tipping point might exist.  These two sources of uncertainty
+frustrate state-of-the-art parametric approaches to decision theory
+and optimal control.  I will illustrate how a non-parametric approach
+using a Gaussian Process prior provides a more flexible representation
+of this inherent uncertainty.  Consequently, we can adapt the Gaussian
+Process prior to a stochastic dynamic programming framework in order to
+make robust management predictions under both model and uncertainty and
+limited data.
+
 
 Introduction
 ============
 
-Briefly set the stage: (see related papers)
-
+<!--
+Very briefly set the stage: (see related papers)
 - Decision-theory / optimal control framework
 - Fisheries context 
+-->
+
+The sudden collapse of fisheries and other ecosystems is an increasingly
+widespread phenomenon and a pressing concern for ecological management
+and conservation.  Ecological dyanaics are frequently complex and difficult to 
+measure, making uncertainty in our understanding a prediction a persistent
+challenge to effective management. 
+
+Decision-theoretic approaches provide a framework to determine the best 
+sequence of actions in face of uncertainty, but only when that uncertainty
+can be meaningfully quantified [@Fischer2009].  
+
+Uncertainty enters at many levels <!-- enters what -->
+management
+
+
+- Why fisheries 
+
+The economic value and ecological concern have made marine
+fisheries the crucible for much of the founding work [@Gordon1954;
+@Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
+uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
+@Worm2009] have made understanding these challenges all the more pressing.
+
+
+
+
+<!-- Other reasons for failure see Sethi-->
+
 
 @Fischer 
 @Sethi2005, @Peretti, @Munch, 
@@ -117,8 +163,51 @@ Briefly set the stage: (see related papers)
 (Classical division)
 
 - Dynamic uncertainty (stochasticity)
-- Parametric uncertainty
-- Structural uncertainty
+
+From [Clark (1976)]() to [Reed (1979)]()
+
+Other sources of uncertainty [Roughgarden & Smith 1996](), [Sethi _et al._ (2005)]()
+
+
+- Parametric uncertainty <!-- ugh, be more consise and less annoying-->
+
+
+As the parameter values for these models must be estimated from limited data,  
+there will always be some uncertainty associated with these values.  This uncertainty
+further compounds the intrinsic variability introduced by demographic or environmental 
+noise.  The degree of uncertainty in the parameter values can be inferred from the data
+and reflected in the estimates of the transition probabilities.  
+
+[@Mangel1985; @Schapaugh2013]
+
+
+[Ludwig & Walters 1982](http://doi.org/10.1016/0304-3800(82)90023-0 "Optimal harvesting with imprecise parameter estimates")
+
+- Structural uncertainty <!-- ugh, be more consise and less annoying-->
+
+Estimates of parameter uncertainty are only as good as the parametric
+models themselves.  Often we do not understand the system dynamics well
+enough to know if a model provides a good approximation over the relevant
+range of states and timescales (criteria that we loosely refer to as
+defining the "right" or "true" model.)  So called structural or model
+uncertainty is a more difficult problem than parametric uncertainty.
+Typical solutions involve either model choice, model averaging, or
+introducing yet greater model complexity of which others may be special
+cases (model averaging being one such way to construct such a model)
+[@Williams2001; @Athanassoglou2012; @Cressie2009].  Even setting aside
+other computational and statistical concerns (e.g. [@Cressie2009]), these
+approaches do not address our second concern - representing uncertainty
+outside the observed data range.
+
+
+
+[@Cressie2009](http://dx.doi.org/10.1890/07-0744.1 "Accounting for uncertainty in ecological analysis: the strengths and limitations of hierarchical statistical modeling."). 
+
+- Limits of state space 
+
+Often the set of feasible states is larger than the range of the observed states.  Though a system can enter a state outside previously observed values due to stochastic effects alone (such as a particularly low or high nutrient year), this concern is most keenly felt in considering the value of actions that have not yet been applied.  
+
+Of all sources of uncertainty, this has potentially recieved the least attention.  It has most often appeared in the concept of active learning or active adaptive managment, (adaptive probing, ) where it may be valauble to intentionally force a system far from the observed values even when the expected value such actions is low, as it provides much faster learning and consequent reduction of model uncertainty that can allow greater value to be derived later on.  @Ludwig1982 show that it may be advantageous to fish an unexploited population very heavily at first to obtain a better estimate of the recruitment rate.  This intuitive strategy when a population is governed by a Ricker or Beverton-Holt-like dynamic would clearly be disasterous if instead the dynamics contained an unforseen tipping point.  The best way to learn where the edge lies may be to walk up to it, but it is also the most dangerous.  
 
 
 
@@ -139,9 +228,66 @@ Briefly set the stage: (see related papers)
 - Danger of learning 
 
 
+- MAP
+
+
+Decision making under uncertainty is a ubiquitous challenge of natural 
+resource management and conservation.  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
+
+
+Here we illustrate how a stochastic dynamic programming (SDP) algorithm can 
+be driven by the predictions from a Gaussian Process (GP).
+This provides two distinct advantages compared with contemporary approaches.
+First, using a GP sidesteps the need for an accurate model-based description
+of the system dynamics (or a model choice or model-averaging approach which
+introduces yet more difficulty).  
+Second, unlike parametric models which can only reflect 
+uncertainty in the corresponding confidence intervals or posterior distributions
+of their parameters, the GP approach provides a state-space dependent representation
+of uncertainty.  This permits a much greater uncertainty far from the observed data than near the observed 
+data.  These features allow the GP-SDP approach to find robust management solutions 
+in face of both limited data and no knolwedge of correct model structure.  
+
+
+
+
 - Note on "not magic": honest uncertainty + SDP
-- Note on comparing models (via value function rather than by "fit")
-- Note on terminology: "Non-parametric" 
+
+The idea that any approach can perform well without either having to
+know the model or have particularly good data should immediately draw
+suspicion.  The reader must bear in mind that the strength of our approach
+comes not from black-box predictive power from such limited information,
+but rather, by providing a more honest expression of uncertainty outside
+the observed data without sacrificing the predictive capacity near the
+observed data. By coupling this more accurate description of what is known
+and unknown to the decision-making under uncertainty framework provided
+by stochastic dynamic programming, we are able to obtain more robust
+management policies than with common parameteric modeling approaches.
+
+
+
+- Note on comparing models (via value function rather than by "fit"). _Do we need this?_
+
+The nature of decision-making problems provides a convenient way to compare 
+models.  Rather than compare models in terms of best fit to data or fret over
+the appropriate penalty for model complexity, model performance is defined 
+in the concrete terms of the decision-maker's objective function, which we
+will take as given. (Much argument can be made over the 'correct' objective
+function, e.g. how to account for the social value of fish left in the sea
+vs. the commercial value of fish harvested; see @Halpern2013 for further 
+discussion of this issue.  Alternatively, we can always compare model performance
+across multiple potential objective functions.)  The decision-maker
+does not necessarily need a model that provides the best mechanistic understanding
+or the best long-term outcome, but rather the one that best estimates the 
+probabilities of being in different states as a result of the possible actions. 
+
+
+
+
+- Note on terminology: "Non-parametric"  _Do we need this?_ 
+
+
+
 
 ## Background on the Gaussian Process
 
@@ -425,7 +571,7 @@ Table S4: Parameterization of the priors
 
 We seek the harvest policy $h(x)$ that maximizes:
 
-$$ \max_{h(t)} \sum_{t \in 0}^{\infty}  \Pi_t(X_t, h) \delta^t  $$
+$$ \max_{h_t} \sum_{t \in 0}^{\infty}  \Pi_t(X_t, h_t) \delta^t  $$
 
 subject to the profit function $\Pi(X_t,h)$, discount rate $\delta$, and the state
 equation
@@ -471,21 +617,19 @@ enforcing the restriction that harvest can not exceed available stock), $\Pi(h,x
 ### Training data
 
 Eacho of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = 2$,
-$K=8$, $C=5$ and $\sigma_g = 0.1$ for $T = 40$ timesteps, starting 
-at initial condition $X_0 = $.
+we simulate from the Allen model with parameters $r = $ ` r p[1]`, 
+$K =$ ` r p[2]`, $C =$ ` r p[3]`, and  $\sigma_g =$ ` r sigma_g` 
+for $T=$ 
 
-<!-- ` r p[1]`, $K =$ ` r p[2]`, $C =$ ` r p[3]`, and  $\sigma_g =$ ` r sigma_g`. -->
+```
 
+Error in base::parse(text = code, srcfile = NULL) : 1:16: unexpected ','
+1: Tobs$ timesteps,
+                  ^
 
+```
 
-
-
-
-
-
-
-
+r Xo`. 
 
 
 
@@ -496,21 +640,6 @@ at initial condition $X_0 = $.
 -----------------------------------
 
 <!-- OLD TEXT -->  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -538,12 +667,10 @@ We demonstrate how nonparametric Bayesian models can provide robust,
 solutions to decision making under uncertainty without knowing the 
 structural form of the true model.  
 
-<!--
 While methods that account for _parametric_ uncertainty can be very 
 successful with the right model,
 structural uncertainty of not knowing what model best approximates the 
 dynamics poses considerably greater difficulty.  
--->
 
 
 
@@ -552,28 +679,7 @@ Introduction
 
 #### Opening 
 
-
-Decision making under uncertainty is a ubiquitous challenge of natural 
-resource management and conservation.  
-Here we illustrate how a stochastic dynamic programming (SDP) algorithm can 
-be driven by the predictions from a Gaussian Process (GP).
-This provides two distinct advantages compared with contemporary approaches.
-First, using a GP sidesteps the need for an accurate model-based description
-of the system dynamics (or a model choice or model-averaging approach which
-introduces yet more difficulty).  
-Second, unlike parametric model-fitting approaches, which can only reflect 
-uncertainty in the corresponding confidence intervals or  posterior distributions
-of the parameters, the GP approach provides a state-space dependent representation
-of uncertainty.  In other words, a GP estimated from a given data set permits 
-a much greater uncertainty far from the observed data than it does near the observed 
-data.  
-
 <!-- More on complex dynamics and not having the correct model 
-
-Cite [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
-etc 
-
-also older stuff on model uncertainty
 
 
 -->
@@ -581,22 +687,8 @@ also older stuff on model uncertainty
 <!-- More on the lack of data throughout the relevant state-space
      and how any concern about potential tipping points indicates 
      that the data exhibits this bias / problem.  
-     
      -->
 
-
-
-The idea that any approach can perform well without either having to know the model or
-have particularly good data should immediately draw suspicion.  The reader must bear
-in mind that the strength of our approach comes not from black-box predictive power
-from such limited information, but rather, by providing a more honest expression of 
-uncertainty outside the observed data without sacrificing the predictive capacity 
-near the observed data.  
-
-By coupling this more accurate description of what is known and unknown to the 
-decision-making under uncertainty framework provided by stochastic dynamic programming,
-we are able to obtain more robust management policies than with common parameteric modeling 
-approaches.  
 
 
 
@@ -633,43 +725,10 @@ in turn, is usually described by a dynamical model.
 
 #### Parametric uncertainty 
 
-As the parameter values for these models must be estimated from limited data,  
-there will always be some uncertainty associated with these values.  This uncertainty
-further compounds the intrinsic variability introduced by demographic or environmental 
-noise.  The degree of uncertainty in the parameter values can be inferred from the data
-and reflected in the estimates of the transition probabilities.  
-
-[@Mangel1985; @Schapaugh2013]
-
 
 #### Structural Uncertainty 
 
-Unfortunately, estimates of parameter uncertainty are only as good as the parametric 
-models themselves.  Too often, we do not understand the system dynamics well enough
-to know if a model provides a good approximation over the relevant range of states
-and timescales (criteria that we loosely refer to as defining the "right" or "true" model.)
-So called structural or model uncertainty is a more difficult problem than parametric 
-uncertainty.  Typical solutions involve either model choice or model averaging. Either
-approach remains limited by the degree to which any of the proposed models are sufficiently
-close to the right model.  
-
 [@Williams2001; @Athanassoglou2012]. 
-
-#### Comparing models 
-
-The nature of decision-making problems provides a convenient way to compare 
-models.  Rather than compare models in terms of best fit to data or fret over
-the appropriate penalty for model complexity, model performance is defined 
-in the concrete terms of the decision-maker's objective function, which we
-will take as given. (Much argument can be made over the 'correct' objective
-function, e.g. how to account for the social value of fish left in the sea
-vs. the commercial value of fish harvested; see @Halpern2013 for further 
-discussion of this issue.  Alternatively, we can always compare model performance
-across multiple potential objective functions.)  The decision-maker
-does not necessarily need a model that provides the best mechanistic understanding
-or the best long-term outcome, but rather the one that best estimates the 
-probabilities of being in different states as a result of the possible actions. 
-
 
 
 <!-- Transition and map: The weakness of parametric models -->
@@ -694,15 +753,7 @@ to the opportunities and challenges nonparametric modeling can offer.
 
 
 
-
-#### Background on Fisheries Context 
-
-#### Background on Tipping points 
-
-
-
-<!-- note: This section largely replaced by above outline
-
+<!-- 
 ### Quantitative vs Qualitative Decisions
 
 In this paper, we consider those ecological management problems in which
@@ -726,21 +777,6 @@ for parameter uncertainty.
 -->
 
 
-
-
-Non-parametric models can better represent uncertainties outside 
-of observed data while also better capturing the dynamics in the region
-observed.  Advances in the theory and computational implementations of 
-nonparametric methods make them ripe for such applications.  We use the classic
-problem of optimal harvest of a marine fishery to illustrate how the 
-nonparametric approach of Gaussian processes can be applied.  We will 
-compare Bayesian implementations of both nonparametric and parametric 
-models, which best allow us to capture the uncertainty of model estimation
-in either case and permits a more natural comparison between approaches.  
-
-
-
-
 Approach and Methods
 ====================
 
@@ -749,12 +785,7 @@ Approach and Methods
 In our example, we focus on the problem in which a manager must set
 the harvest level for a marine fishery each year to maximize the net
 present value of the resource, given an estimated stock size from the
-year before. The economic value and ecological concern have made marine
-fisheries the crucible for much of the founding work [@Gordon1954;
-@Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
-uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
-@Worm2009] have made understanding these challenges all the more pressing.
-
+year before. 
 
 
 <!-- ugh, re-word this -->
