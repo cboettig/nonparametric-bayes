@@ -28,9 +28,9 @@ docx:  ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 pdf: ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 	./knit pdf
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --template=elsarticle.latex -o ${SOURCEFILE}.tex
-	pdflatex ${SOURCEFILE}.tex
-	pdflatex ${SOURCEFILE}.tex
-	pdflatex ${SOURCEFILE}.tex
+	xelatex ${SOURCEFILE}.tex
+	xelatex ${SOURCEFILE}.tex
+	xelatex ${SOURCEFILE}.tex
 
 epub: ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 	./knit epub

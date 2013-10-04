@@ -226,14 +226,7 @@ face of substantial structural uncertainty.
 
 
 
-
-
-
-
-
- 
 <!-- More Consise versions above 
-
 - Parametric uncertainty 
 
 As the parameter values for these models must be estimated from limited data,  
@@ -258,7 +251,6 @@ other computational and statistical concerns (e.g. [@Cressie2009]), these
 approaches do not address our second concern - representing uncertainty
 outside the observed data range.
 
-
 - Limits of state space 
 
 Resource management and conservation planning seek to determine the
@@ -268,9 +260,7 @@ error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
 sources of stochasticity in turn mean that model parameters can only
 be estimated approximately, requiring parametric uncertainty also be
 considered [@Ludwig1982, ].
-
 --> 
-
 
 
 
