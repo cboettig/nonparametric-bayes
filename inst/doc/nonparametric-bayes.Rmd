@@ -156,6 +156,7 @@ sequence of actions in face of uncertainty, but only when that uncertainty
 can be meaningfully quantified [@Fischer2009].  
 
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
+<!-- __We don't have the model__ -->
 
 Uncertainty enters the decision-making process at many levels: intrinsic 
 stochasticity in biological processes, measurements, and implementation of 
@@ -169,6 +170,7 @@ must be identified from among a handful of alternative models.  Here we consider
 that addresses uncertainty at each of these levels without assuming the dynamics follow
 a particular (i.e. parametric) structure. 
 
+<!-- __We don't have the data where we need it__ -->
 <!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
 An additional source of uncertainty that has recieved less attention[^1]
@@ -180,6 +182,22 @@ may move the system outside the range of observed behavior, and (b)
 decision-theoretic alogrithms rely not only on reasonable estimates of
 the expected outcomes, but depend on the weights given to all possible
 outcomes [_e.g._ @Weitzman2013].  
+
+
+<!-- 
+## Why we don't know the model
+- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
+- model choice and model averaging approaches
+-->
+
+<!--
+## Why we don't have data where we need it
+- Concerns of tipping points 
+- Danger of learning 
+-->
+
+
+
 
 
 <!-- Perhaps this is a better-worded version of the above??
@@ -198,7 +216,6 @@ extreme weather events from historical data, which may be more accurately
 predicted in a constant climate than in one being perturbed).
 
 -->
-
 
 <!-- Integrate this into the paragraph, rather than as a footnote?? Make more consise? -->
 
@@ -234,20 +251,20 @@ would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
 
 _Map_
 
-Here we illustrate how a stochastic dynamic programming (SDP) algorithm [@Mangel1988; @Possingham1997, Marescot2013] can 
-be driven by the predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].  
-This provides two distinct advantages compared with contemporary approaches.
-First, using a BNP sidesteps the need for an accurate model-based description
-of the system dynamics.  
-Second, the BNP can better reflect uncertainty that arises when extrapolating a model 
-outside of the data on which it was fit.  
-We illustrate that when the correct model is not known, this latter
-feature is crucial to providing a robust decision-theoretic approach in
-face of substantial structural uncertainty.
+Here we illustrate how a stochastic dynamic programming (SDP) algorithm
+[@Mangel1988; @Possingham1997, Marescot2013] can be driven by the
+predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].
+This provides two distinct advantages compared with contemporary
+approaches.  First, using a BNP sidesteps the need for an accurate
+model-based description of the system dynamics.  Second, the BNP can
+better reflect uncertainty that arises when extrapolating a model outside
+of the data on which it was fit.  We illustrate that when the correct
+model is not known, this latter feature is crucial to providing a robust
+decision-theoretic approach in face of substantial structural uncertainty.
 
 
 
-<!-- More Consise versions above 
+<!-- More Consise versions are now above 
 - Parametric uncertainty 
 
 As the parameter values for these models must be estimated from limited data,  
@@ -285,41 +302,17 @@ considered [@Ludwig1982, ].
 
 
 
-## Two central challenges: 
+<!-- necessary? --> <!-- should reflect the dual problem of extrapolation and model uncertainty better -->
 
-- We don't know the model
-- We don't have data from where we need it most
-
-## Why we don't know the model
-
-- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
-
-- model choice and model averaging approaches
-
-## Why we don't have data where we need it
-
-- Concerns of tipping points 
-- Danger of learning 
-
-
-- _MAP_
-
-
-<!-- necessary? -->
-This paper represents the first time the SDP decision-making framework has been used
-without an a priori model of the underlying dynamics through the use of the BNP approach.
-
-In contrast to parametric models which can only reflect uncertainty 
-in parameter estimates, the BNP approach provides a more state-space dependent representation
-of uncertainty.  
-
-This permits a much greater uncertainty far from the observed data than near the observed 
-data.  These features allow the GP-SDP approach to find robust management solutions 
-in face of limited data and without knowledge of the correct model structure.  
-
-
-
-
+This paper represents the first time the SDP decision-making framework has
+been used without an a priori model of the underlying dynamics through
+the use of the BNP approach.  In contrast to parametric models which
+can only reflect uncertainty in parameter estimates, the BNP approach
+provides a more state-space dependent representation of uncertainty.
+This permits a much greater uncertainty far from the observed data than
+near the observed data.  These features allow the GP-SDP approach to
+find robust management solutions in face of limited data and without
+knowledge of the correct model structure.
 
 
 
@@ -338,12 +331,6 @@ by stochastic dynamic programming, we are able to obtain more robust
 management policies than with common parametric modeling approaches.
 
 
-
-
-
-
-
-
 - Note on: Why fisheries 
 
 The economic value and ecological concern have made marine
@@ -351,7 +338,6 @@ fisheries the crucible for much of the founding work [@Gordon1954;
 @Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
 uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
 @Worm2009] have made understanding these challenges all the more pressing.
-
 
 
 
