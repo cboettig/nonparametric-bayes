@@ -7,7 +7,7 @@ opts_chunk$set(external=TRUE)
 read_chunk("../examples/BUGS/external-chunks.R")
 
 opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=1, 
-               comment=NA, verbose=TRUE, fig.width=6, fig.height=4)
+               comment=NA, verbose=TRUE, fig.width=4, fig.height=3)
  
 # Name the cache path and fig.path based on filename...
 opts_chunk$set(fig.path = paste("figure/",
@@ -117,8 +117,10 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 
 ```{r profits, dependson="sims", results=toggle}
 ```
-```{r deviances, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output"), results=toggle}
+
+```{r dic_calc, dependson=c("posterior-mode", "myers-output", "ricker-output", "allen-output", "gp-output", "mle-output"), include=FALSE, echo=FALSE}
 ```
+
 
 
 Abstract
@@ -553,96 +555,95 @@ Results
 =======
 
 
-```{r Figure1, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  (The GP is conditioned on 0,0, shown as a pseudo-data point). ", include=FALSE}
-```
-```{r Figureb, dependson=c("assemble-models", "par-fns"), include=TRUE}
-```
-
-
-Figure 1 shows the mean inferred state space dynamics of each model
-relative to the true model used to generate the data, predicting the
-relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year.  All models except the MLE model
-estimate a distribution around the means shown here, and all models 
-estimate a level of process noise, which is independent of the state
-value (x).  Note that in contrast to the  other models shown, the mean
-Gaussian process corresponds to a distribution of curves - as indicated
-by the gray band - which itself has a mean shown in black.  Note that 
-this mean GP is thus more certain of the dynamics in the region where
-data is available then where it is not.  
-
-While it would be straight forward to condition the GP on passing through the origin (0,0), the estimate
-shown here is based only on the observed data. The observed data from
-which each model is estimated is also shown.  The observations come
-from only a limited region of state space corresponding to unharvested
-or weakly harvested system.  No observations occur at the theoretical
-optimum harvest rate or near the tipping point.
-
-```{r Figure2, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", include=TRUE}
-```
-
-The resulting optimal management strategy based on each of the inferred
-models is shown in Figure 2, against the optimal strategy given the
-true underlying dynamics.  Policies are shown in terms of target
-escapement, $S_t$.  Under models such as this a constant escapement
-policy is expected to be optimal [@Reed1979], whereby population levels
-below a certain size $S$ are unharvested, while above that size the harvest
-strategy aims to return the population to $S$, resulting in the hockey-stick
-shaped policies shown.  
-
-
-```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.",  include=TRUE}
-```
-
-The consequences of managing 100 replicate realizations of the 
-simulated fishery under each of the policies estimated is shown in Figure 3.  As expected
-from the policy curves, the structurally correct model under-harvests,
-leaving the stock to vary around it's un-fished optimum.  The structurally
-incorrect Ricker model over-harvests the population passed
-the tipping point consistently, resulting in the immediate crash of the stock and 
-thus derives minimal profits.  
-
-
-The results shown in Figures 1-3 are not unique to the simulated data or models chosen
-here, but arises across a range of parameter values and simulations as shown in the 
-supplemental figures.  The results across this range can most easily be compared 
-by the relative differences in net present value realized by each of the approaches,
-as shown in Figure 4.  The Gaussian Process most consistently realizes a value 
-close to the optimal solution, and importantly avoids ever driving the system across
-the tipping point, which results in the near-zero value cases in the parametric models.  
-
-
-```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE}
-```
-
 ### Figure 1: Fitted Models
 
 - All models fit the data quite well
 - Information criteria would pick the simple, incorrect model.
 
 
-### Figure 2: Inferred Policies
+
+```{r Figureb_posteriors, dependson=c("assemble-models", "par-fns"), include=TRUE, echo=FALSE, fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.", fig.width=8, fig.height=6}
+```
+
+
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the expected value of the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity in growth rate.  Model-choice criteria shown in Table 1 penalize more complex models and show a slight preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  
+
+```{r deviances, dependson=c("dic_calc"), include=TRUE, results="asis", echo=FALSE}
+```
+
+
+```{r statespace_plot, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", include=TRUE, echo=FALSE}
+```
+
+
+The mean inferred state space dynamics of each model
+relative to the true model used to generate the data is shown in Figure 2, 
+predicting the relationship between observed stock size (x-axis) to the stock size
+after recruitment the following year.  Note that in contrast to the  other models shown, the expected 
+Gaussian process corresponds to a distribution of curves - as indicated
+by the gray band - which itself has a mean shown in black. Parameter uncertainty
+(not shown) spreads out the estimates further.  
+The observed data from which each model is estimated is also shown.  The observations come
+from only a limited region of state space corresponding to unharvested
+or weakly harvested system.  No observations occur at the theoretical
+optimum harvest rate or near the tipping point.
+
+
+### Figure 3: Inferred Policies
 
 - Inferred policies differ substantially among models
 - The structurally correct model and the GP are close to the true model
 - alternatives are not close
 
-### Figure 3: Simulated results
 
-- 
+```{r Figure2, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", include=TRUE, echo=FALSE}
+```
 
-### Figure 4: Robustness
+Despite the similarities in model fits to the observed data, the policies
+inferred under each model differ widely, as shown in Figure 3.  
+Policies are shown in terms of target
+escapement, $S_t$.  Under models such as this a constant escapement
+policy is expected to be optimal [@Reed1979], whereby population levels
+below a certain size $S$ are unharvested, while above that size the harvest
+strategy aims to return the population to $S$, resulting in the hockey-stick
+shaped policies shown.  Only the structurally correct model (Allen model) and the GP 
+produce policies close to the true optimum policy (where both the underlying 
+model structure and parameter values are known without error).  
 
-- Results hold across range of parameters
 
-(eek, distinguish better between result and discussion?)
+```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.",  include=TRUE, echo=FALSE}
+```
+
+The consequences of managing 100 replicate realizations of the 
+simulated fishery under each of the policies estimated is shown in Figure 4.  As expected
+from the policy curves, the structurally correct model under-harvests,
+leaving the stock to vary around it's un-fished optimum.  The structurally
+incorrect Ricker model over-harvests the population passed
+the tipping point consistently, resulting in the immediate crash of the stock and 
+thus derives minimal profits.  
+
+These results are robust across a range of stochastic realizations, models, and parameter values.  
+The results across this range can most easily be compared 
+by using the relative differences in net present value realized by each of the model,
+as shown in Figure 5.  The BNP-SDP approach most consistently realizes a value 
+close to the optimal solution, and importantly avoids ever driving the system across
+the tipping point, which results in the near-zero value cases in the parametric models.  
+
+
+```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE, echo=FALSE}
+
+```
+
 
 Discussion 
 ==========
 
 - All models are "good fits" to the originally observed data. 
-
 - (Simple model choice immediately leads us astray)
+
+These results illustrate that model-choice approaches would be postively misleading -- supporting simpler models that cannot express tipping point dynamics merely on account of them being similar.  As the data shown comes only from the basin of attraction near the unfished equilibrium, near which all of the models are approximately linear and approximately identical. 
+
+
 
 
 
@@ -735,7 +736,7 @@ $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
 
 Figure S1: Ricker model: prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE}
+```{r, echo=FALSE, include=TRUE, fig.height=6}
 plot_ricker_traces
 ```
 
@@ -744,7 +745,7 @@ plot_ricker_posteriors
 ```
 Table S1: Parameterization of the priors
 
-```{r echo=FALSE, results="asis", include=TRUE}
+```{r echo=FALSE, results = "asis", include = TRUE}
 xtable::xtable(data.frame(
   parameter = c("r0", "K", "sigma"),
   lower_bound = c(r0_prior_p[1], K_prior_p[1], stdQ_prior_p[1]),
@@ -757,7 +758,7 @@ $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} $$
 Eq S2: Myers model 
 Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE}
+```{r, echo=FALSE, include=TRUE, fig.height=6}
 plot_myers_traces
 ```
 
@@ -766,7 +767,7 @@ plot_myers_posteriors
 ```
 
 Table S2: Parameterization of the priors
-```{r echo=FALSE, results="asis", include=TRUE}
+```{r echo=FALSE, results="asis", include = TRUE}
 xtable::xtable(data.frame(parameter = c("r0", "K", "theta", "sigma"),
            lower_bound = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            upper_bound = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2])))
@@ -779,7 +780,7 @@ $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
 Figure S3: Allen model: prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE}
+```{r, echo=FALSE, include=TRUE, fig.height=6}
 plot_allen_traces
 ```
 
@@ -789,7 +790,7 @@ plot_allen_posteriors
 
 Table S3: Parameterization of the priors
 
-```{r echo=FALSE, results="asis", include=TRUE}
+```{r echo=FALSE, results = "asis", include=TRUE}
 xtable::xtable(data.frame(parameter = c("r0", "K", "theta", "sigma"),
            lower_bound = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            upper_bound = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2])))

@@ -98,8 +98,6 @@
 
 
 
-
-
 Abstract
 ========
 
@@ -135,6 +133,7 @@ sequence of actions in face of uncertainty, but only when that uncertainty
 can be meaningfully quantified [@Fischer2009].  
 
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
+<!-- __We don't have the model__ -->
 
 Uncertainty enters the decision-making process at many levels: intrinsic 
 stochasticity in biological processes, measurements, and implementation of 
@@ -148,6 +147,7 @@ must be identified from among a handful of alternative models.  Here we consider
 that addresses uncertainty at each of these levels without assuming the dynamics follow
 a particular (i.e. parametric) structure. 
 
+<!-- __We don't have the data where we need it__ -->
 <!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
 An additional source of uncertainty that has recieved less attention[^1]
@@ -159,6 +159,22 @@ may move the system outside the range of observed behavior, and (b)
 decision-theoretic alogrithms rely not only on reasonable estimates of
 the expected outcomes, but depend on the weights given to all possible
 outcomes [_e.g._ @Weitzman2013].  
+
+
+<!-- 
+## Why we don't know the model
+- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
+- model choice and model averaging approaches
+-->
+
+<!--
+## Why we don't have data where we need it
+- Concerns of tipping points 
+- Danger of learning 
+-->
+
+
+
 
 
 <!-- Perhaps this is a better-worded version of the above??
@@ -177,7 +193,6 @@ extreme weather events from historical data, which may be more accurately
 predicted in a constant climate than in one being perturbed).
 
 -->
-
 
 <!-- Integrate this into the paragraph, rather than as a footnote?? Make more consise? -->
 
@@ -213,20 +228,20 @@ would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
 
 _Map_
 
-Here we illustrate how a stochastic dynamic programming (SDP) algorithm [@Mangel1988; @Possingham1997, Marescot2013] can 
-be driven by the predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].  
-This provides two distinct advantages compared with contemporary approaches.
-First, using a BNP sidesteps the need for an accurate model-based description
-of the system dynamics.  
-Second, the BNP can better reflect uncertainty that arises when extrapolating a model 
-outside of the data on which it was fit.  
-We illustrate that when the correct model is not known, this latter
-feature is crucial to providing a robust decision-theoretic approach in
-face of substantial structural uncertainty.
+Here we illustrate how a stochastic dynamic programming (SDP) algorithm
+[@Mangel1988; @Possingham1997, Marescot2013] can be driven by the
+predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].
+This provides two distinct advantages compared with contemporary
+approaches.  First, using a BNP sidesteps the need for an accurate
+model-based description of the system dynamics.  Second, the BNP can
+better reflect uncertainty that arises when extrapolating a model outside
+of the data on which it was fit.  We illustrate that when the correct
+model is not known, this latter feature is crucial to providing a robust
+decision-theoretic approach in face of substantial structural uncertainty.
 
 
 
-<!-- More Consise versions above 
+<!-- More Consise versions are now above 
 - Parametric uncertainty 
 
 As the parameter values for these models must be estimated from limited data,  
@@ -264,41 +279,17 @@ considered [@Ludwig1982, ].
 
 
 
-## Two central challenges: 
+<!-- necessary? --> <!-- should reflect the dual problem of extrapolation and model uncertainty better -->
 
-- We don't know the model
-- We don't have data from where we need it most
-
-## Why we don't know the model
-
-- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
-
-- model choice and model averaging approaches
-
-## Why we don't have data where we need it
-
-- Concerns of tipping points 
-- Danger of learning 
-
-
-- _MAP_
-
-
-<!-- necessary? -->
-This paper represents the first time the SDP decision-making framework has been used
-without an a priori model of the underlying dynamics through the use of the BNP approach.
-
-In contrast to parametric models which can only reflect uncertainty 
-in parameter estimates, the BNP approach provides a more state-space dependent representation
-of uncertainty.  
-
-This permits a much greater uncertainty far from the observed data than near the observed 
-data.  These features allow the GP-SDP approach to find robust management solutions 
-in face of limited data and without knowledge of the correct model structure.  
-
-
-
-
+This paper represents the first time the SDP decision-making framework has
+been used without an a priori model of the underlying dynamics through
+the use of the BNP approach.  In contrast to parametric models which
+can only reflect uncertainty in parameter estimates, the BNP approach
+provides a more state-space dependent representation of uncertainty.
+This permits a much greater uncertainty far from the observed data than
+near the observed data.  These features allow the GP-SDP approach to
+find robust management solutions in face of limited data and without
+knowledge of the correct model structure.
 
 
 
@@ -317,12 +308,6 @@ by stochastic dynamic programming, we are able to obtain more robust
 management policies than with common parametric modeling approaches.
 
 
-
-
-
-
-
-
 - Note on: Why fisheries 
 
 The economic value and ecological concern have made marine
@@ -330,7 +315,6 @@ fisheries the crucible for much of the founding work [@Gordon1954;
 @Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
 uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
 @Worm2009] have made understanding these challenges all the more pressing.
-
 
 
 
@@ -546,54 +530,38 @@ Results
 =======
 
 
+![Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.](figure/nonparametric-bayes-Figureb_posteriors.pdf) 
+
+
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.](figure/nonparametric-bayes-statespace_plot.pdf) 
 
 
 
-```r
-require(MASS)
-step_ahead <- function(x, f, p){
-  h = 0
-  x_predict <- sapply(x, f, h, p)
-  n <- length(x_predict) - 1
-  y <- c(x[1], x_predict[1:n])
-  y
-}
-step_ahead_posteriors <- function(x){
-gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
-df_post <- melt(lapply(sample(100), 
-  function(i){
-    data.frame(time = 1:length(x), stock = x, 
-                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
-                True = step_ahead(x,f,p),  
-                MLE = step_ahead(x,f,est$p), 
-                Allen = step_ahead(x, allen_f, pardist[i,]), 
-                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
-                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
-  }), id=c("time", "stock"))
-}
-
-df_post <- step_ahead_posteriors(x)
-
-ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
-```
-
-![plot of chunk Figureb](figure/nonparametric-bayes-Figureb.pdf) 
 
 
 
-Figure 1 shows the mean inferred state space dynamics of each model
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rrrr}
+  \hline
+ & Allen & Ricker & Myers \\ 
+  \hline
+DIC & 50.14 & 49.45 & 50.61 \\ 
+  AIC & -26.60 & -32.07 & -29.19 \\ 
+  BIC & -21.54 & -28.69 & -24.12 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+Figure 2 shows the mean inferred state space dynamics of each model
 relative to the true model used to generate the data, predicting the
 relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year.  All models except the MLE model
-estimate a distribution around the means shown here, and all models 
-estimate a level of process noise, which is independent of the state
-value (x).  Note that in contrast to the  other models shown, the mean
+after recruitment the following year.  Note that in contrast to the  other models shown, the expected 
 Gaussian process corresponds to a distribution of curves - as indicated
-by the gray band - which itself has a mean shown in black.  Note that 
-this mean GP is thus more certain of the dynamics in the region where
-data is available then where it is not.  
+by the gray band - which itself has a mean shown in black. Parameter uncertainty
+(not shown) spreads out the estimates further.  
 
 While it would be straight forward to condition the GP on passing through the origin (0,0), the estimate
 shown here is based only on the observed data. The observed data from
@@ -601,16 +569,6 @@ which each model is estimated is also shown.  The observations come
 from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum harvest rate or near the tipping point.
-
-
-```r
-policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-names(policies) <- c("stock", "method", "value")
-
-ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
-  scale_colour_manual(values=colorkey)
-```
 
 ![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/nonparametric-bayes-Figure2.pdf) 
 
@@ -624,13 +582,6 @@ below a certain size $S$ are unharvested, while above that size the harvest
 strategy aims to return the population to $S$, resulting in the hockey-stick
 shaped policies shown.  
 
-
-
-```r
-ggplot(sims_data) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
-```
 
 ![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/nonparametric-bayes-Figure3.pdf) 
 
@@ -653,28 +604,7 @@ close to the optimal solution, and importantly avoids ever driving the system ac
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
 
-
-```r
-fig4v1 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
-  facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
-  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey) # density plots fail when delta fn
-
-fig4v2 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
-
-fig4v3 <- ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
-  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
-  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
-fig4v2
-```
-
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/nonparametric-bayes-Figure41.pdf) 
-
-```r
-fig4v3
-```
-
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/nonparametric-bayes-Figure42.pdf) 
+![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/nonparametric-bayes-Figure4.pdf) 
 
 
 ### Figure 1: Fitted Models

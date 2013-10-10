@@ -205,60 +205,24 @@ these regime shift dynamics (e.g. Bestelmeyer et al. 2012).
 Here we illustrate how a stochastic dynamic programming (SDP) algorithm
 (Mangel and Clark 1988; {\textbf{???}}) can be driven by the predictions
 from a Bayesian non-parametric (BNP) approach (Munch, Kottas, and Mangel
-2005).\\This provides two distinct advantages compared with contemporary
+2005). This provides two distinct advantages compared with contemporary
 approaches. First, using a BNP sidesteps the need for an accurate
-model-based description of the system dynamics.\\Second, the BNP can
+model-based description of the system dynamics. Second, the BNP can
 better reflect uncertainty that arises when extrapolating a model
-outside of the data on which it was fit.\\We illustrate that when the
+outside of the data on which it was fit. We illustrate that when the
 correct model is not known, this latter feature is crucial to providing
 a robust decision-theoretic approach in face of substantial structural
 uncertainty.
 
-\subsection{Two central challenges:}\label{two-central-challenges}
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  We don't know the model
-\item
-  We don't have data from where we need it most
-\end{itemize}
-
-\subsection{Why we don't know the
-model}\label{why-we-dont-know-the-model}
-
-\begin{itemize}
-\item
-  Complex dynamics (Glaser et al. 2013)(http://doi.org/10.1111/faf.12037
-  ``Complex dynamics may limit prediction in marine fisheries'')
-\item
-  model choice and model averaging approaches
-\end{itemize}
-
-\subsection{Why we don't have data where we need
-it}\label{why-we-dont-have-data-where-we-need-it}
-
-\begin{itemize}
-\item
-  Concerns of tipping points
-\item
-  Danger of learning
-\item
-  \emph{MAP}
-\end{itemize}
-
 This paper represents the first time the SDP decision-making framework
 has been used without an a priori model of the underlying dynamics
-through the use of the BNP approach.
-
-In contrast to parametric models which can only reflect uncertainty in
-parameter estimates, the BNP approach provides a more state-space
-dependent representation of uncertainty.
-
-This permits a much greater uncertainty far from the observed data than
-near the observed data. These features allow the GP-SDP approach to find
-robust management solutions in face of limited data and without
-knowledge of the correct model structure.
+through the use of the BNP approach. In contrast to parametric models
+which can only reflect uncertainty in parameter estimates, the BNP
+approach provides a more state-space dependent representation of
+uncertainty. This permits a much greater uncertainty far from the
+observed data than near the observed data. These features allow the
+GP-SDP approach to find robust management solutions in face of limited
+data and without knowledge of the correct model structure.
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -534,55 +498,48 @@ over the posterior of those parameters themselves.
 
 \section{Results}\label{results}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{require}\NormalTok{(MASS)}
-\NormalTok{step_ahead <-}\StringTok{ }\NormalTok{function(x, f, p)\{}
-  \NormalTok{h =}\StringTok{ }\DecValTok{0}
-  \NormalTok{x_predict <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(x, f, h, p)}
-  \NormalTok{n <-}\StringTok{ }\KeywordTok{length}\NormalTok{(x_predict) -}\StringTok{ }\DecValTok{1}
-  \NormalTok{y <-}\StringTok{ }\KeywordTok{c}\NormalTok{(x[}\DecValTok{1}\NormalTok{], x_predict[}\DecValTok{1}\NormalTok{:n])}
-  \NormalTok{y}
-\NormalTok{\}}
-\NormalTok{step_ahead_posteriors <-}\StringTok{ }\NormalTok{function(x)\{}
-\NormalTok{gp_f_at_obs <-}\StringTok{ }\KeywordTok{gp_predict}\NormalTok{(gp, x, }\DataTypeTok{burnin=}\FloatTok{1e4}\NormalTok{, }\DataTypeTok{thin=}\DecValTok{300}\NormalTok{)}
-\NormalTok{df_post <-}\StringTok{ }\KeywordTok{melt}\NormalTok{(}\KeywordTok{lapply}\NormalTok{(}\KeywordTok{sample}\NormalTok{(}\DecValTok{100}\NormalTok{), }
-  \NormalTok{function(i)\{}
-    \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{time =} \DecValTok{1}\NormalTok{:}\KeywordTok{length}\NormalTok{(x), }\DataTypeTok{stock =} \NormalTok{x, }
-                \DataTypeTok{GP =} \KeywordTok{mvrnorm}\NormalTok{(}\DecValTok{1}\NormalTok{, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),}
-                \DataTypeTok{True =} \KeywordTok{step_ahead}\NormalTok{(x,f,p),  }
-                \DataTypeTok{MLE =} \KeywordTok{step_ahead}\NormalTok{(x,f,est$p), }
-                \DataTypeTok{Allen =} \KeywordTok{step_ahead}\NormalTok{(x, allen_f, pardist[i,]), }
-                \DataTypeTok{Ricker =} \KeywordTok{step_ahead}\NormalTok{(x, ricker_f, ricker_pardist[i,]), }
-                \DataTypeTok{Myers =} \KeywordTok{step_ahead}\NormalTok{(x, myers_f, myers_pardist[i,]))}
-  \NormalTok{\}), }\DataTypeTok{id=}\KeywordTok{c}\NormalTok{(}\StringTok{"time"}\NormalTok{, }\StringTok{"stock"}\NormalTok{))}
-\NormalTok{\}}
-
-\NormalTok{df_post <-}\StringTok{ }\KeywordTok{step_ahead_posteriors}\NormalTok{(x)}
-
-\KeywordTok{ggplot}\NormalTok{(df_post) +}\StringTok{ }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, stock)) +}\StringTok{ }
-\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, value, }\DataTypeTok{col=}\NormalTok{variable, }\DataTypeTok{group=}\KeywordTok{interaction}\NormalTok{(L1,variable)), }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{1}\NormalTok{) +}\StringTok{ }
-\StringTok{  }\KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey, }\DataTypeTok{guide =} \KeywordTok{guide_legend}\NormalTok{(}\DataTypeTok{override.aes =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alpha =} \DecValTok{1}\NormalTok{))) }
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[htbp]
+\centering
+\includegraphics{figure/nonparametric-bayes-Figureb_posteriors.pdf}
+\caption{Points show the training data of stock-size over time. Curves
+show the posterior step-ahead predictions based on each of the estimated
+models.}
+\end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-Figureb.pdf}
-\caption{plot of chunk Figureb}
+\includegraphics{figure/nonparametric-bayes-statespace_plot.pdf}
+\caption{Graph of the inferred Gaussian process compared to the true
+process and maximum-likelihood estimated process. Graph shows the
+expected value for the function $f$ under each model. Two standard
+deviations from the estimated Gaussian process covariance with (light
+grey) and without (darker grey) measurement error are also shown. The
+training data is also shown as black points. The GP is conditioned on
+(0,0), shown as a pseudo-data point.}
 \end{figure}
 
-Figure 1 shows the mean inferred state space dynamics of each model
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rrrr}
+  \hline
+ & Allen & Ricker & Myers \\ 
+  \hline
+DIC & 50.14 & 49.45 & 50.61 \\ 
+  AIC & -26.60 & -32.07 & -29.19 \\ 
+  BIC & -21.54 & -28.69 & -24.12 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Figure 2 shows the mean inferred state space dynamics of each model
 relative to the true model used to generate the data, predicting the
 relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year. All models except the MLE model
-estimate a distribution around the means shown here, and all models
-estimate a level of process noise, which is independent of the state
-value (x). Note that in contrast to the other models shown, the mean
-Gaussian process corresponds to a distribution of curves - as indicated
-by the gray band - which itself has a mean shown in black. Note that
-this mean GP is thus more certain of the dynamics in the region where
-data is available then where it is not.
+after recruitment the following year. Note that in contrast to the other
+models shown, the expected Gaussian process corresponds to a
+distribution of curves - as indicated by the gray band - which itself
+has a mean shown in black. Parameter uncertainty (not shown) spreads out
+the estimates further.
 
 While it would be straight forward to condition the GP on passing
 through the origin (0,0), the estimate shown here is based only on the
@@ -591,17 +548,6 @@ also shown. The observations come from only a limited region of state
 space corresponding to unharvested or weakly harvested system. No
 observations occur at the theoretical optimum harvest rate or near the
 tipping point.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{policies <-}\StringTok{ }\KeywordTok{melt}\NormalTok{(}\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{stock=}\NormalTok{x_grid, }\KeywordTok{sapply}\NormalTok{(OPT, function(x) x_grid[x])), }\DataTypeTok{id=}\StringTok{"stock"}\NormalTok{)}
-\KeywordTok{names}\NormalTok{(policies) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"stock"}\NormalTok{, }\StringTok{"method"}\NormalTok{, }\StringTok{"value"}\NormalTok{)}
-
-\KeywordTok{ggplot}\NormalTok{(policies, }\KeywordTok{aes}\NormalTok{(stock, stock -}\StringTok{ }\NormalTok{value, }\DataTypeTok{color=}\NormalTok{method)) +}
-\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\DataTypeTok{lwd=}\FloatTok{1.2}\NormalTok{, }\DataTypeTok{alpha=}\FloatTok{0.8}\NormalTok{) +}\StringTok{ }\KeywordTok{xlab}\NormalTok{(}\StringTok{"stock size"}\NormalTok{) +}\StringTok{ }\KeywordTok{ylab}\NormalTok{(}\StringTok{"escapement"}\NormalTok{)  +}
-\StringTok{  }\KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}[htbp]
 \centering
@@ -620,14 +566,6 @@ expected to be optimal (Reed 1979), whereby population levels below a
 certain size $S$ are unharvested, while above that size the harvest
 strategy aims to return the population to $S$, resulting in the
 hockey-stick shaped policies shown.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{ggplot}\NormalTok{(sims_data) +}\StringTok{ }
-\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(time, fishstock, }\DataTypeTok{group=}\KeywordTok{interaction}\NormalTok{(reps,method), }\DataTypeTok{color=}\NormalTok{method), }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{1}\NormalTok{) +}
-\StringTok{  }\KeywordTok{scale_colour_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey, }\DataTypeTok{guide =} \KeywordTok{guide_legend}\NormalTok{(}\DataTypeTok{override.aes =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alpha =} \DecValTok{1}\NormalTok{)))}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}[htbp]
 \centering
@@ -656,41 +594,9 @@ optimal solution, and importantly avoids ever driving the system across
 the tipping point, which results in the near-zero value cases in the
 parametric models.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{fig4v1 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) +}\StringTok{ }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable)) +}\StringTok{ }
-\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(~variable, }\DataTypeTok{scales =} \StringTok{"free_y"}\NormalTok{)  +}\StringTok{ }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"none"}\NormalTok{) +}
-\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{) +}\StringTok{ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey) }\CommentTok{# density plots fail when delta fn}
-
-\NormalTok{fig4v2 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value)) +}\StringTok{ }\KeywordTok{geom_histogram}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill=}\NormalTok{variable), }\DataTypeTok{binwidth=}\FloatTok{0.1}\NormalTok{) +}\StringTok{ }
-\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+}\StringTok{ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
-
-\NormalTok{fig4v3 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(actual_over_optimal, }\KeywordTok{aes}\NormalTok{(value, }\DataTypeTok{fill=}\NormalTok{variable, }\DataTypeTok{color=}\NormalTok{variable)) +}\StringTok{ }\CommentTok{# density plots fail when delta fn}
-\StringTok{  }\KeywordTok{stat_density}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y=}\NormalTok{..density..), }\DataTypeTok{position=}\StringTok{"stack"}\NormalTok{, }\DataTypeTok{adjust=}\DecValTok{3}\NormalTok{, }\DataTypeTok{alpha=}\NormalTok{.}\DecValTok{9}\NormalTok{) +}\StringTok{ }
-\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\StringTok{"Total profit by replicate"}\NormalTok{)+}\StringTok{ }\KeywordTok{scale_fill_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)+}\StringTok{ }\KeywordTok{scale_color_manual}\NormalTok{(}\DataTypeTok{values=}\NormalTok{colorkey)}
-\NormalTok{fig4v2}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-Figure41.pdf}
-\caption{Histograms of the realized net present value of the fishery
-over a range of simulated data and resulting parameter estimates. For
-each data set, the three models are estimated as described above. Values
-plotted are the averages of a given policy over 100 replicate
-simulations. Details and code provided in the supplement.}
-\end{figure}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{fig4v3}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{figure/nonparametric-bayes-Figure42.pdf}
+\includegraphics{figure/nonparametric-bayes-Figure4.pdf}
 \caption{Histograms of the realized net present value of the fishery
 over a range of simulated data and resulting parameter estimates. For
 each data set, the three models are estimated as described above. Values
@@ -1422,12 +1328,6 @@ Geritz, Stefan A. H., and Eva Kisdi. 2012. ``Mathematical Ecology: Why
 Mechanistic Models?'' \emph{Journal of Mathematical Biology} 65 (6-7)
 (dec): 1411--5. doi:10.1007/s00285-011-0496-3.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/22159789}.
-
-Glaser, Sarah M., Michael J. Fogarty, Hui Liu, Irit Altman, Chih-Hao
-Hsieh, Les Kaufman, Alec D. MacCall, Andrew a Rosenberg, Hao Ye, and
-George Sugihara. 2013. ``Complex Dynamics May Limit Prediction in Marine
-Fisheries.'' \emph{Fish and Fisheries} (apr). doi:10.1111/faf.12037.
-\url{http://doi.wiley.com/10.1111/faf.12037}.
 
 Gordon, H. S. 1954. ``The Economic Theory of a Common-property Resource:
 the Fishery.'' \emph{The Journal of Political Economy} 62 (2): 124--142.
