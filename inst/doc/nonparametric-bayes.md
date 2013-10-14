@@ -98,6 +98,10 @@
 
 
 
+
+
+
+
 Abstract
 ========
 
@@ -529,16 +533,18 @@ integrating over the posterior of those parameters themselves.
 Results
 =======
 
+<!-- 
+### Figure 1: Fitted Models
+
+- All models fit the data quite well
+- Information criteria would pick the simple, incorrect model.
+--> 
+
 
 ![Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.](figure/nonparametric-bayes-Figureb_posteriors.pdf) 
 
 
-![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.](figure/nonparametric-bayes-statespace_plot.pdf) 
-
-
-
-
-
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the expected value of the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity in growth rate.  Model-choice criteria shown in Table 1 penalize more complex models and show a slight preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
 
 \begin{table}[ht]
 \begin{center}
@@ -547,59 +553,82 @@ Results
  & Allen & Ricker & Myers \\ 
   \hline
 DIC & 50.14 & 49.45 & 50.61 \\ 
-  AIC & -26.60 & -32.07 & -29.19 \\ 
-  BIC & -21.54 & -28.69 & -24.12 \\ 
+  AIC & -24.60 & -30.07 & -27.19 \\ 
+  BIC & -17.85 & -25.00 & -20.44 \\ 
    \hline
 \end{tabular}
 \end{center}
 \end{table}
 
 
-Figure 2 shows the mean inferred state space dynamics of each model
-relative to the true model used to generate the data, predicting the
-relationship between observed stock size (x-axis) to the stock size
+<!-- 
+### Figure 2 
+- Data comes from limited region of state-space 
+- (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
+-->
+
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.](figure/nonparametric-bayes-statespace_posteriors.pdf) 
+
+
+The mean inferred state space dynamics of each model
+relative to the true model used to generate the data is shown in Figure 2, 
+predicting the relationship between observed stock size (x-axis) to the stock size
 after recruitment the following year.  Note that in contrast to the  other models shown, the expected 
 Gaussian process corresponds to a distribution of curves - as indicated
 by the gray band - which itself has a mean shown in black. Parameter uncertainty
 (not shown) spreads out the estimates further.  
-
-While it would be straight forward to condition the GP on passing through the origin (0,0), the estimate
-shown here is based only on the observed data. The observed data from
-which each model is estimated is also shown.  The observations come
+The observed data from which each model is estimated is also shown.  The observations come
 from only a limited region of state space corresponding to unharvested
 or weakly harvested system.  No observations occur at the theoretical
 optimum harvest rate or near the tipping point.
 
+
+
+![plot of chunk out_of_sample_predictions](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
+
+
+
+
+
+<!--
+### Figure 3: Inferred Policies
+
+- Inferred policies differ substantially among models
+- The structurally correct model and the GP are close to the true model
+- alternatives are not close
+--> 
+
+
 ![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/nonparametric-bayes-Figure2.pdf) 
 
 
-The resulting optimal management strategy based on each of the inferred
-models is shown in Figure 2, against the optimal strategy given the
-true underlying dynamics.  Policies are shown in terms of target
+Despite the similarities in model fits to the observed data, the policies
+inferred under each model differ widely, as shown in Figure 3.  
+Policies are shown in terms of target
 escapement, $S_t$.  Under models such as this a constant escapement
 policy is expected to be optimal [@Reed1979], whereby population levels
 below a certain size $S$ are unharvested, while above that size the harvest
 strategy aims to return the population to $S$, resulting in the hockey-stick
-shaped policies shown.  
+shaped policies shown.  Only the structurally correct model (Allen model) and the GP 
+produce policies close to the true optimum policy (where both the underlying 
+model structure and parameter values are known without error).  
 
 
 ![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/nonparametric-bayes-Figure3.pdf) 
 
 
 The consequences of managing 100 replicate realizations of the 
-simulated fishery under each of the policies estimated is shown in Figure 3.  As expected
+simulated fishery under each of the policies estimated is shown in Figure 4.  As expected
 from the policy curves, the structurally correct model under-harvests,
 leaving the stock to vary around it's un-fished optimum.  The structurally
 incorrect Ricker model over-harvests the population passed
 the tipping point consistently, resulting in the immediate crash of the stock and 
 thus derives minimal profits.  
 
-
-The results shown in Figures 1-3 are not unique to the simulated data or models chosen
-here, but arises across a range of parameter values and simulations as shown in the 
-supplemental figures.  The results across this range can most easily be compared 
-by the relative differences in net present value realized by each of the approaches,
-as shown in Figure 4.  The Gaussian Process most consistently realizes a value 
+These results are robust across a range of stochastic realizations, models, and parameter values.  
+The results across this range can most easily be compared 
+by using the relative differences in net present value realized by each of the model,
+as shown in Figure 5.  The BNP-SDP approach most consistently realizes a value 
 close to the optimal solution, and importantly avoids ever driving the system across
 the tipping point, which results in the near-zero value cases in the parametric models.  
 
@@ -607,42 +636,25 @@ the tipping point, which results in the near-zero value cases in the parametric 
 ![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/nonparametric-bayes-Figure4.pdf) 
 
 
-### Figure 1: Fitted Models
-
-- All models fit the data quite well
-- Information criteria would pick the simple, incorrect model.
-
-
-### Figure 2: Inferred Policies
-
-- Inferred policies differ substantially among models
-- The structurally correct model and the GP are close to the true model
-- alternatives are not close
-
-### Figure 3: Simulated results
-
-- 
-
-### Figure 4: Robustness
-
-- Results hold across range of parameters
-
-(eek, distinguish better between result and discussion?)
 
 Discussion 
 ==========
 
 - All models are "good fits" to the originally observed data. 
-
 - (Simple model choice immediately leads us astray)
 
 
 
 
+<!--
+
 Though simple mechanistically motivated models offer the greatest potential 
 to increase our basic understanding of ecological processes [@Cuddington2013; @Geritz2012], 
 such models can be not only inaccurate but misleading when relied upon in a
 quantitative decision making framework.  
+--> 
+
+
 
 1. We do not know what the correct models are for ecological systems.
 1. We have limited data from which to estimate the model -- in particular,
@@ -653,7 +665,33 @@ These aspects are common to many conservation decision making problems, which th
 greater use of non-parametric approaches that can best take advantage of them.  
 
 
-### 1. Large uncertainty where the data is poor 
+### Traditional model-choice approaches can be positively misleading.  
+
+These results illustrate that model-choice approaches would be positively
+misleading -- supporting simpler models that cannot express tipping point
+dynamics merely on account of them being similar.  As the data shown
+comes only from the basin of attraction near the unfished equilibrium,
+near which all of the models are approximately linear and approximately
+identical. 
+
+Model choice approaches trade off model complexity and fit to the data. 
+When the data come from a limited region of state-space -- as is necessarily 
+the case whenever there is a potential concern about tipping point dynamics --
+simpler models can fit just as well and will tend to outperform more complex 
+ones.  This approach would be appropriate when the dynamics can be expected 
+to remain in the region of the training data; for instance, if we only 
+considered the forecasting accuracy of the unfished population dynamics under
+each model.  
+
+In contrast, the decision-maker's problem of setting appropriate harvest levels
+cannot exclude regions of state-space outside the observed range when integrating
+over all possible decisions to find the optimal choice.  Such problems are not 
+constrained to fisheries management but ubiquitous across ecological decision-making
+and conservation where the greatest concerns involve entering previously unobserved
+regions of state-space -- whether that is the collapse of a fishery, the spread
+of an invasive, or the loss of habitat.  
+
+### BNP-SDP expresses larger uncertainty in regions where the data are poor 
 
 The parametric models perform worst when they propose a management strategy
 outside the range of the observed data. The non-parametric Bayesian approach, 
@@ -665,7 +703,7 @@ the immediate value of the harvest, and act to stabilize the population
 dynamics in a region of state space in which the predictions can be 
 reliably reflected by the data.  
 
-### 2. Predictive accuracy where data is good
+### BNP-SDP has good predictive accuracy where data are good
 
 While expressing larger uncertainty outside the observed data, the GP
 can also provide a better fit with smaller uncertainty inside the range
@@ -692,7 +730,7 @@ examples characteristic of ecosystem management problems that the machine
 learning approach will prove even more valuable.
 
 
-### Online learning
+### Real-time learning
 
 In our treatment here we have ignored the possibility of learning during the 
 management phase, in which the additional observations of the stock size could
@@ -734,10 +772,8 @@ Figure S1: Ricker model: prior and posterior distributions for parameter estimat
 
 Table S1: Parameterization of the priors
 
-% latex table generated in R 3.0.1 by xtable 1.7-1 package
-% Mon Sep  9 14:43:29 2013
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rlrr}
   \hline
  & parameter & lower\_bound & upper\_bound \\ 
@@ -747,6 +783,7 @@ Table S1: Parameterization of the priors
   3 & sigma & 0.00 & 100.00 \\ 
    \hline
 \end{tabular}
+\end{center}
 \end{table}
 
 
@@ -763,10 +800,8 @@ Figure S2: Myers model: Traces, prior and posterior distributions for parameter 
 
 
 Table S2: Parameterization of the priors
-% latex table generated in R 3.0.1 by xtable 1.7-1 package
-% Mon Sep  9 14:43:37 2013
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rlrr}
   \hline
  & parameter & lower\_bound & upper\_bound \\ 
@@ -777,6 +812,7 @@ Table S2: Parameterization of the priors
   4 & sigma & 0.00 & 100.00 \\ 
    \hline
 \end{tabular}
+\end{center}
 \end{table}
 
 
@@ -795,10 +831,8 @@ Figure S3: Allen model: prior and posterior distributions for parameter estimate
 
 Table S3: Parameterization of the priors
 
-% latex table generated in R 3.0.1 by xtable 1.7-1 package
-% Mon Sep  9 14:43:45 2013
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rlrr}
   \hline
  & parameter & lower\_bound & upper\_bound \\ 
@@ -809,6 +843,7 @@ Table S3: Parameterization of the priors
   4 & sigma & 0.00 & 100.00 \\ 
    \hline
 \end{tabular}
+\end{center}
 \end{table}
 
 

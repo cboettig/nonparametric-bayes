@@ -473,13 +473,67 @@ figure1b_posteriors
 
 
 ## @knitr statespace_plot
-statespace_plot <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin = ymin,ymax = ymax), fill = "gray80") +
-    geom_line(data = models, aes(x, value, col = method), lwd=1, alpha = 0.8) + 
+statespace_plot <- ggplot(tgp_dat) + 
+    geom_ribbon(aes(x,y,ymin = ymin,ymax = ymax), fill = "gray80") +
+    geom_line(data = models, aes(x, value, col = method), lwd=1, alpha = 0.7) + 
     geom_point(data = obs, aes(x,y), alpha = 0.8) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
-    scale_colour_manual(values = cbPalette) 
+    scale_colour_manual(values = colorkey) 
 statespace_plot
 
+
+
+## @knitr statespace_posteriors
+x_grid_short <- x_grid[1:40]
+gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
+models_posteriors <- 
+  melt(lapply(sample(100, 50), 
+              function(i){
+    sample_gp <- mvrnorm(1, 
+                            gp_short$Ef_posterior[,i],         
+                            gp_short$Cf_posterior[[i]])
+    data.frame(stock = x_grid_short, 
+               GP = sample_gp,
+               y = sample_gp,
+               ymin = sample_gp - 2 * sqrt(gp_short$E_Vf), 
+               ymax = sample_gp + 2 * sqrt(gp_short$E_Vf), 
+               True = sapply(x_grid_short,f,0, p),  
+               MLE = sapply(x_grid_short,f,0, est$p), 
+               Allen = sapply(x_grid_short, allen_f, 0, pardist[i,]), 
+               Ricker = sapply(x_grid_short, ricker_f, 0, ricker_pardist[i,]), 
+               Myers = sapply(x_grid_short, myers_f, 0, myers_pardist[i,]))
+             }), 
+       id=c("stock", "y", "ymin", "ymax"))
+ggplot(models_posteriors) + 
+    geom_ribbon(aes(x=stock, y=y, ymin=ymin, ymax=ymax, group=L1), 
+                  fill = "gray80", 
+                  data=subset(models_posteriors, variable == "GP")) + 
+    geom_line(aes(stock, value, col = variable, 
+                  group=interaction(L1,variable)), 
+              alpha=.2) + 
+    geom_point(data = obs, aes(x,y), alpha = 0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    facet_wrap(~variable) + 
+    scale_colour_manual(values=colorkey) +  
+    theme(legend.position="none")
+
+
+## @knitr out_of_sample_predictions
+y <- numeric(8)
+y[1] <- 4.5
+for(t in 1:(length(y)-1))
+      y[t+1] = z_g() * f(y[t], h=0, p=p)
+# predicts means, does not reflect uncertainty estimate!
+crash_data <- step_ahead_posteriors(y)
+crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers"))
+ggplot(crash_data) + 
+  geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col = variable, 
+            group=interaction(L1,variable)), alpha=.1) + 
+  facet_wrap(~variable) + 
+  scale_colour_manual(values=colorkey, 
+                      guide = guide_legend(override.aes = list(alpha = 1))) +  
+  theme(legend.position="none")
 
 
 ## @knitr gp-opt
