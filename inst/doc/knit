@@ -15,7 +15,7 @@ local({
   if (length(fmt) == 0L) fmt = 'github'
   if (fmt %in% c('github', 'html')) {
     # upload to flickr when output is for github or html
-    opts_chunk$set(cache=TRUE, fig.path='figure/', dev='Cairo_png',
+    opts_chunk$set(cache=1, fig.path='figure/', dev='Cairo_png',
     fig.width=6, fig.height=4, cache.path = 'cache-local/', par=TRUE)
     opts_knit$set(upload.fun = socialR::flickr.url)
     opts_chunk$set(cache.path = 'cache-upload/')
@@ -28,7 +28,7 @@ local({
     options(xtable.print.comment=FALSE)
     # Journal probably wants eps formatted graphics.  
     opts_chunk$set(dev = 'postscript', fig.width=5, fig.height=5, 
-                   cache.path = 'cache-doc/', cache=TRUE)
+                   cache.path = 'cache-doc/', cache=1)
     # try splitting the tables out with special options?
     options(knitr.include=TRUE)
     options(knitr.split=TRUE)
@@ -42,7 +42,7 @@ local({
 
     options(xtable.print.comment=FALSE)
     options(xtable.type = 'latex', table.placement="H")
-    opts_chunk$set(cache.path = 'cache-pdf/', cache=TRUE)
+    opts_chunk$set(cache.path = 'cache-pdf/', cache=1)
     # use pdf graphics for PDF output
     opts_chunk$set(dev = 'Cairo_pdf', fig.width=6, fig.height=4, fig.path="figure/")
     print(paste("Compiling using", opts_chunk$get("dev"), "images..."))

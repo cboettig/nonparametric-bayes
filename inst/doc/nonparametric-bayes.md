@@ -6,638 +6,327 @@
 
 
 
-```r
-require(modeest)
-posterior.mode <- function(x) {
-  mlv(x, method="shorth")$M
-}
-```
-
-
-```r
-f <- RickerAllee
-p <- c(2, 8, 5)
-K <- 10  # approx, a li'l' less
-allee <- 5 # approx, a li'l' less
-```
-
-
-```r
-sigma_g <- 0.05
-sigma_m <- 0.0
-z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1
-x_grid <- seq(0, 1.5 * K, length=50)
-h_grid <- x_grid
-profit <- function(x,h) pmin(x, h)
-delta <- 0.01
-OptTime <- 50  # stationarity with unstable models is tricky thing
-reward <- 0
-xT <- 0
-Xo <-  allee+.5# observations start from
-x0 <- K # simulation under policy starts from
-Tobs <- 40
-MaxT = 1000 # timeout for value iteration convergence
-```
-
-
-```r
-  set.seed(1234)
-  #harvest <- sort(rep(seq(0, .5, length=7), 5))
-  x <- numeric(Tobs)
-  x[1] <- Xo
-  nz <- 1
-  for(t in 1:(Tobs-1))
-    x[t+1] = z_g() * f(x[t], h=0, p=p)
-  obs <- data.frame(x = c(rep(0,nz), 
-                          pmax(rep(0,Tobs-1), x[1:(Tobs-1)])), 
-                    y = c(rep(0,nz), 
-                          x[2:Tobs]))
-raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
-raw_plot
-```
-
-![plot of chunk obs](http://farm8.staticflickr.com/7308/9416079967_44a4c07ce9_o.png) 
-
-
-
-
-```r
-set.seed(12345)
-estf <- function(p){ 
-    mu <- f(obs$x,0,p)
-    -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
-}
-par <- c(p[1]*rlnorm(1,0,.1), 
-         p[2]*rlnorm(1,0,.1), 
-         p[3]*rlnorm(1,0, .1), 
-         sigma_g * rlnorm(1,0,.1))
-o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
-f_alt <- f
-p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
-sigma_g_alt <- as.numeric(o$par[4])
-
-est <- list(f = f_alt, p = p_alt, sigma_g = sigma_g_alt, mloglik=o$value)
-```
-
-
-```r
-true_means <- sapply(x_grid, f, 0, p)
-est_means <- sapply(x_grid, est$f, 0, est$p)
-```
-
-
-
-
-```r
-#inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
-s2.p <- c(5,5)  
-d.p = c(10, 1/0.1)
-```
-
-
-```r
-gp <- gp_mcmc(obs$x, y=obs$y, n=1e5, s2.p = s2.p, d.p = d.p)
-gp_dat <- gp_predict(gp, x_grid, burnin=1e4, thin=300)
-```
-
-
-```r
-gp_assessment_plots <- summary_gp_mcmc(gp, burnin=1e4, thin=300)
-```
-
-
-```r
-# Summarize the GP model
-tgp_dat <- 
-    data.frame(  x = x_grid, 
-                 y = gp_dat$E_Ef, 
-                 ymin = gp_dat$E_Ef - 2 * sqrt(gp_dat$E_Vf), 
-                 ymax = gp_dat$E_Ef + 2 * sqrt(gp_dat$E_Vf) )
-```
-
-
-
-
-```r
-y <- x 
-N <- length(x);
-jags.data <- list("N","y")
-n.chains <- 6
-n.iter <- 1e6
-n.burnin <- floor(10000)
-n.thin <- max(1, floor(n.chains * (n.iter - n.burnin)/1000))
-n.update <- 10
-```
-
-
-```r
-stdQ_prior_p <- c(1e-6, 100)
-stdR_prior_p <- c(1e-6, .1)
-stdQ_prior  <- function(x) dunif(x, stdQ_prior_p[1], stdQ_prior_p[2])
-stdR_prior  <- function(x) dunif(x, stdR_prior_p[1], stdR_prior_p[2])
-```
-
-
-```r
-K_prior_p <- c(0.01, 20.0)
-r0_prior_p <- c(0.01, 6.0)
-theta_prior_p <- c(0.01, 20.0)
-
-bugs.model <- 
-paste(sprintf(
-"model{
-  K     ~ dunif(%s, %s)
-  r0    ~ dunif(%s, %s)
-  theta ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  K_prior_p[1], K_prior_p[2],
-  r0_prior_p[1], r0_prior_p[2],
-  theta_prior_p[1], theta_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-
-  "
-  iQ <- 1 / (stdQ * stdQ);
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K)* (y[t] - theta) / K 
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "allen_process.bugs")
-```
-
-
-```r
-K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
-theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
-par_priors  <- list(K = K_prior, deviance = function(x) 0 * x, 
-                    r0 = r0_prior, theta = theta_prior,
-                    stdQ = stdQ_prior)
-```
-
-
-```r
-jags.params=c("K","r0","theta","stdQ") # be sensible about the order here
-jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0, 0.1),
-       "r0"= 1 * rlnorm(1,0, 0.1) ,
-       "theta"=   5 * rlnorm(1,0, 0.1) , 
-       "stdQ"= abs( 0.1 * rlnorm(1,0, 0.1)),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-
-set.seed(1234)
-# parallel refuses to take variables as arguments (e.g. n.iter = 1e5 works, but n.iter = n doesn't)
-allen_jags <- do.call(jags, list(data=jags.data, inits=jags.inits, 
-                                      jags.params, n.chains=n.chains, 
-                                      n.iter=n.iter, n.thin=n.thin, 
-                                      n.burnin=n.burnin, 
-                                      model.file="allen_process.bugs"))
-
-# Run again iteratively if we haven't met the Gelman-Rubin convergence criterion
-recompile(allen_jags) # required for parallel
-allen_jags <- do.call(autojags, 
-											list(object=allen_jags, n.update=n.update, 
-                           n.iter=n.iter, n.thin = n.thin))
-```
-
-
-```r
-tmp <- lapply(as.mcmc(allen_jags), as.matrix) # strip classes the hard way...
-allen_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-names(allen_posteriors) = c("index", "variable", "value", "chain")
-plot_allen_traces <- ggplot(allen_posteriors) + geom_line(aes(index, value)) + 
-  facet_wrap(~ variable, scale="free", ncol=1)
-```
-
-
-```r
-allen_priors <- ddply(allen_posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100) 
-    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
-})
-plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=3)
-```
-
-
-```r
-A <- allen_posteriors
-A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-pardist <- acast(A, index ~ variable)
-bayes_coef <- apply(pardist,2, posterior.mode) 
-bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"], bayes_coef["theta"])) # parameters formatted for f
-allen_f <- function(x,h,p) unname(RickerAllee(x,h, unname(p[c("r0", "K", "theta")])))
-allen_means <- sapply(x_grid, f, 0, bayes_pars)
-bayes_pars
-head(pardist)
-```
-
-
-
-
-```r
-K_prior_p <- c(0.01, 40.0)
-r0_prior_p <- c(0.01, 20.0)
-bugs.model <- 
-paste(sprintf(
-"model{
-  K    ~ dunif(%s, %s)
-  r0    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  K_prior_p[1], K_prior_p[2],
-  r0_prior_p[1], r0_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-  "
-  iQ <- 1 / (stdQ * stdQ);
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(y[t]) + r0 * (1 - y[t]/K) 
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "ricker_process.bugs")
-```
-
-
-```r
-K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-r0_prior <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
-par_priors <- list(K = K_prior, deviance = function(x) 0 * x, 
-                   r0 = r0_prior, stdQ = stdQ_prior)
-```
-
-
-```r
-jags.params=c("K","r0", "stdQ")
-jags.inits <- function(){
-  list("K"= 10 * rlnorm(1,0,.5),
-       "r0"= rlnorm(1,0,.5),
-       "stdQ"=sqrt(0.05) * rlnorm(1,0,.5),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-set.seed(12345) 
-ricker_jags <- do.call(jags, 
-                       list(data=jags.data, inits=jags.inits, 
-                            jags.params, n.chains=n.chains, 
-                            n.iter=n.iter, n.thin=n.thin, n.burnin=n.burnin,
-                            model.file="ricker_process.bugs"))
-recompile(ricker_jags)
-ricker_jags <- do.call(autojags, 
-                       list(object=ricker_jags, n.update=n.update, 
-														n.iter=n.iter, n.thin = n.thin, 
-														progress.bar="none"))
-```
-
-
-```r
-tmp <- lapply(as.mcmc(ricker_jags), as.matrix) # strip classes the hard way...
-ricker_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-names(ricker_posteriors) = c("index", "variable", "value", "chain")
-plot_ricker_traces <- ggplot(ricker_posteriors) + geom_line(aes(index, value)) + 
-  facet_wrap(~ variable, scale="free", ncol=1)
-```
-
-
-```r
-ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100) 
-    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
-})
-# plot posterior distributions
-plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-
-```r
-A <- ricker_posteriors
-A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-ricker_pardist <- acast(A, index ~ variable)
-bayes_coef <- apply(ricker_pardist,2, posterior.mode) 
-ricker_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["K"]))
-ricker_f <- function(x,h,p){
-  sapply(x, function(x){ 
-    x <- pmax(0, x-h) 
-    pmax(0, x * exp(p["r0"] * (1 - x / p["K"] )) )
-  })
-}
-ricker_means <- sapply(x_grid, Ricker, 0, ricker_bayes_pars[c(1,2)])
-head(ricker_pardist)
-ricker_bayes_pars
-```
-
-
-
-
-```r
-r0_prior_p <- c(.0001, 10.0)
-theta_prior_p <- c(.0001, 10.0)
-K_prior_p <- c(.0001, 40.0)
-bugs.model <- 
-paste(sprintf(
-"model{
-  r0    ~ dunif(%s, %s)
-  theta    ~ dunif(%s, %s)
-  K    ~ dunif(%s, %s)
-  stdQ ~ dunif(%s, %s)", 
-  r0_prior_p[1], r0_prior_p[2],
-  theta_prior_p[1], theta_prior_p[2],
-  K_prior_p[1], K_prior_p[2],
-  stdQ_prior_p[1], stdQ_prior_p[2]),
-
-  "
-  iQ <- 1 / (stdQ * stdQ);
-
-  y[1] ~ dunif(0, 10)
-  for(t in 1:(N-1)){
-    mu[t] <- log(r0)  + theta * log(y[t]) - log(1 + pow(abs(y[t]), theta) / K)
-    y[t+1] ~ dlnorm(mu[t], iQ) 
-  }
-}")
-writeLines(bugs.model, "myers_process.bugs")
-```
-
-
-```r
-K_prior     <- function(x) dunif(x, K_prior_p[1], K_prior_p[2])
-r_prior     <- function(x) dunif(x, r0_prior_p[1], r0_prior_p[2])
-theta_prior <- function(x) dunif(x, theta_prior_p[1], theta_prior_p[2])
-par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
-                    r0 = r_prior, theta = theta_prior, 
-                    stdQ = stdQ_prior)
-```
-
-
-```r
-jags.params=c("r0", "theta", "K", "stdQ")
-jags.inits <- function(){
-  list("r0"= 1 * rlnorm(1,0,.1), 
-       "K"=    10 * rlnorm(1,0,.1),
-       "theta" = 1 * rlnorm(1,0,.1),  
-       "stdQ"= sqrt(0.2) * rlnorm(1,0,.1),
-       .RNG.name="base::Wichmann-Hill", .RNG.seed=123)
-}
-set.seed(12345)
-myers_jags <- do.call(jags, 
-                      list(data=jags.data, inits=jags.inits, 
-													 jags.params, n.chains=n.chains, 
-													 n.iter=n.iter, n.thin=n.thin,
-                           n.burnin=n.burnin, 
-                           model.file="myers_process.bugs"))
-recompile(myers_jags)
-myers_jags <- do.call(autojags, 
-                      list(myers_jags, n.update=n.update, 
-                           n.iter=n.iter, n.thin = n.thin, 
-                           progress.bar="none"))
-```
-
-
-```r
-tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
-myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
-names(myers_posteriors) = c("index", "variable", "value", "chain")
-plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
-  facet_wrap(~ variable, scale="free", ncol=1)
-```
-
-
-```r
-par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
-    grid <- seq(min(dd$value), max(dd$value), length = 100) 
-    data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
-})
-plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
-  facet_wrap(~ variable, scale="free", ncol=3)
-```
-
-
-```r
-A <- myers_posteriors
-A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
-myers_pardist <- acast(A, index ~ variable)
-bayes_coef <- apply(myers_pardist,2, posterior.mode) # much better estimates
-myers_bayes_pars <- unname(c(bayes_coef["r0"], bayes_coef["theta"], bayes_coef["K"]))
-myers_means <- sapply(x_grid, Myer_harvest, 0, myers_bayes_pars)
-myers_f <- function(x,h,p) Myer_harvest(x, h, p[c("r0", "theta", "K")])
-head(myers_pardist)
-myers_bayes_pars
-```
-
-
-
-
-```r
-models <- data.frame(x=x_grid, 
-										 GP=tgp_dat$y, 
-										 True=true_means, 
-                     MLE=est_means, 
-										 Ricker=ricker_means, 
-                     Allen = allen_means,
-                     Myers = myers_means)
-models <- melt(models, id="x")
-
-# some labels
-names(models) <- c("x", "method", "value")
-
-# labels for the colorkey too
-model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
-colorkey=cbPalette
-names(colorkey) = model_names 
-```
-
-
-```r
-# uses expected values from GP, instead of integrating over posterior
-#matrices_gp <- gp_transition_matrix(gp_dat$E_Ef, gp_dat$E_Vf, x_grid, h_grid)
-matrices_gp <- gp_transition_matrix(gp_dat$Ef_posterior, gp_dat$Vf_posterior, x_grid, h_grid) 
-opt_gp <- value_iteration(matrices_gp, x_grid, h_grid, MaxT, xT, profit, delta, reward)
-```
-
-
-```r
-matrices_true <- f_transition_matrix(f, p, x_grid, h_grid, sigma_g)
-opt_true <- value_iteration(matrices_true, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-matrices_estimated <- f_transition_matrix(est$f, est$p, x_grid, h_grid, est$sigma_g)
-opt_estimated <- value_iteration(matrices_estimated, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-
-```r
-matrices_allen <- parameter_uncertainty_SDP(allen_f, x_grid, h_grid, pardist, 4)
-opt_allen <- value_iteration(matrices_allen, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-
-```r
-matrices_ricker <- parameter_uncertainty_SDP(ricker_f, x_grid, h_grid, as.matrix(ricker_pardist), 3)
-opt_ricker <- value_iteration(matrices_ricker, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-
-```r
-matrices_myers <- parameter_uncertainty_SDP(myers_f, x_grid, h_grid, as.matrix(myers_pardist), 4)
-myers_alt <- value_iteration(matrices_myers, x_grid, h_grid, OptTime=MaxT, xT, profit, delta=delta)
-```
-
-
-```r
-OPT = data.frame(GP = opt_gp$D, True = opt_true$D, MLE = opt_estimated$D, Ricker = opt_ricker$D, Allen = opt_allen$D, Myers = myers_alt$D)
-colorkey=cbPalette
-names(colorkey) = names(OPT) 
-```
-
-
-```r
-sims <- lapply(OPT, function(D){
-  set.seed(1)
-  lapply(1:100, function(i) 
-    ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
-  )
-})
-
-dat <- melt(sims, id=names(sims[[1]][[1]]))
-sims_data <- data.table(dat)
-setnames(sims_data, c("L1", "L2"), c("method", "reps")) 
-# Legend in original ordering please, not alphabetical: 
-sims_data$method = factor(sims_data$method, ordered=TRUE, levels=names(OPT))
-```
-
-
-
-
-```r
-Profit <- sims_data[, sum(profit), by=c("reps", "method")]
-tmp <- dcast(Profit, reps ~ method)
-#tmp$Allen <- tmp[,"Allen"] + rnorm(dim(tmp)[1], 0, 1) # jitter for plotting
-tmp <- tmp / tmp[,"True"]
-tmp <- melt(tmp[2:dim(tmp)[2]])
-actual_over_optimal <-subset(tmp, variable != "True")
-```
-
-
-```r
-allen_deviance <- -2*posterior.mode(pardist[,'deviance'])
-ricker_deviance <- -2*posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- -2*posterior.mode(myers_pardist[,'deviance'])
-true_deviance <- 2*estf(c(p, sigma_g))
-mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-xtable::xtable(as.table(c(Allen = allen_deviance, Ricker=ricker_deviance, Myers=myers_deviance, True=true_deviance, MLE=mle_deviance)))
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
 Abstract
-=======================================================================
+========
 
-Decision-theoretic methods often rely on simple parametric models of
-ecological dynamics to compare the value of a potential sequence of
-actions. Unfortunately, such simple models rarely capture the complexity
-or uncertainty found in most real ecosystems. 
-
-We demonstrate how nonparametric Bayesian models can provide robust,
-nearly-optimal solutions to decision making under uncertainty when
-_we don't know the correct model_ to use. 
-
-
-While methods that account
-for _parametric_ uncertainty can be very successful with the right model,
-structural uncertainty of not knowing what model best approximates the 
-dynamics poses considerably greater difficulty.  
-
-
-Non-parametric Bayesian
-methods offer a promising statistical approach for predictive modeling
-of ecological dynamics in regions of state space where the data is
-adequate, while at the same time offering more flexible patterns with
-greater uncertainty outside the observed data. This contrasts from simple
-parametric models which provide relatively constant level of uncertainty
-in regions with and without adequate data. The consequence of such
-misplaced confidence outside the data can lead to highly undesirable
-results that may be avoided with the more flexible non-parametric
-Bayesian approach.
+Model uncertainty and limited data coverage are fundamental challenges to
+robust ecosystem management.  These challenges are acutely highlighted
+by concerns that many ecological systems may contain tipping points.
+Before a collapse, we do not know where the tipping points lie, if the
+exist at all.  Hence, we know neither a complete model of the system
+dynamics nor do we have access to data in some large region of state-space
+where such a tipping point might exist.  These two sources of uncertainty
+frustrate state-of-the-art parametric approaches to decision theory
+and optimal control.  I will illustrate how a non-parametric approach
+using a Gaussian Process prior provides a more flexible representation
+of this inherent uncertainty.  Consequently, we can adapt the Gaussian
+Process prior to a stochastic dynamic programming framework in order to
+make robust management predictions under both model and uncertainty and
+limited data.
 
 
 Introduction
-=======================================================================
-
-#### Opening 
-
+============
 
 Decision making under uncertainty is a ubiquitous challenge of natural 
-resource management and conservation.  
-Here we illustrate how a stochastic dynamic programming algorithm can 
-be driven by the predictions from a Gaussian process model, sidestepping
-the need for an accurate model-based description of the system dynamics.  
+resource management and conservation. 
 
-add references to [@Fischer2009, @Polasky2011] as persective on combining complex / critical dynamics + control theory
+The sudden collapse of fisheries and other ecosystems is an increasingly
+widespread phenomenon and a pressing concern for ecological management
+and conservation.  Ecological dynamics are frequently complex and difficult to 
+measure, making uncertainty in our understanding a prediction a persistent
+challenge to effective management. 
+Decision-theoretic approaches provide a framework to determine the best 
+sequence of actions in face of uncertainty, but only when that uncertainty
+can be meaningfully quantified [@Fischer2009].  
 
-#### Models for decision-making under uncertainty 
+<!-- Uncertainty outside the data without the correct model has not been handled. -->
+<!-- __We don't have the model__ -->
 
-Decision-theoretic (or optimal control) tools require a model that can assign probabilities of
-future states (e.g. stock size of a fishery) given the current state and a
-proposed action (e.g. fishing harvest or effort).  The decision maker then
-seeks to determining the course of actions (also referred to as the policy)
-that maximizes the expected value of some objective function (such as
-net present value derived from the resource over time.  (The approach
-can be adapted to permit alternatives to maximizing expectation, such
-as minimizing the maximum cost or damage that might be incurred. See
-@Polasky2011).
-Management frequently faces a sequential decision-making problem -- after 
-selecting an action, the decision-maker may receive new information about 
-the current state and must again choose an appropriate action -- i.e. setting
-the harvest limits each year based on stock assessments the year prior.  
+Uncertainty enters the decision-making process at many levels: intrinsic 
+stochasticity in biological processes, measurements, and implementation of 
+policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1997; @Sethi2005], parameteric 
+uncertainty [_e.g._ @Ludwig1982; @Hilborn1997; @McAllister1998; @Schapaugh2013],
+and model or structural uncertainty [_e.g._ @Williams2001; @Cressie2009;  @Athanassoglou2012].
+Of these, structural uncertainty incorporates the least a priori knowledge or 
+assumptions and is generally the hardest to quantify. Typical approaches assume 
+a weak notion of uncertainty where a correct or reasonable approximation of the dynamics
+must be identified from among a handful of alternative models.  Here we consider an approach
+that addresses uncertainty at each of these levels without assuming the dynamics follow
+a particular (i.e. parametric) structure. 
 
-More historical context, e.g. [@Reed1979, @Mangel1985]
+<!-- __We don't have the data where we need it__ -->
+<!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
-#### Parametric models 
-
-Traditional approaches to optimal control (Pontryagin's principle, stochastic
-dynamic programming) rely on knowledge of the state equation.  Such simple 
-parametric models, frequently justified by mechanistic underpinnings are used
-to provide probabilities of future states.  Fisheries literature, which enjoys
-some of the longest history in the use of the optimal control framework, provides
-a clear example [ ] . Models such as the Ricker or Beverton Holt curves are ubiquitous [too strong? references?]
-Parametric models can reflect variability introduced by a stochastic environment
-or demographic process my incorporating random shocks from a given distribution. 
-
+An additional source of uncertainty that has recieved less attention[^1]
+arises when applying a dynamical model outside the range of data on
+which it has been estimated.  This extrapolation uncertainty is felt
+most keenly in decision-theoretic applications, as (a) exploring the
+potential action space typically involves considering actions that
+may move the system outside the range of observed behavior, and (b)
+decision-theoretic alogrithms rely not only on reasonable estimates of
+the expected outcomes, but depend on the weights given to all possible
+outcomes [_e.g._ @Weitzman2013].  
 
 
-#### Parametric uncertainty 
+<!-- 
+## Why we don't know the model
+- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
+- model choice and model averaging approaches
+-->
+
+<!--
+## Why we don't have data where we need it
+- Concerns of tipping points 
+- Danger of learning 
+-->
+
+
+
+
+
+<!-- Perhaps this is a better-worded version of the above??
+
+Often the set of feasible states is larger than the range of the observed
+states.  Though most systems subject to some degree of stochasticity
+can enter a state outside previously observed values by chance alone
+(such as a particularly low or high nutrient year), this concern is
+most keenly felt in the decision-theoretic context. If we are observing
+the fluctuations of a given fish stock over many years under a fixed
+harvesting pressure, we might develop and test a model that could
+reasonably predict the frequency of a deviation of a given size, even
+when such a deviation has not been previously observed.
+(The same analogy might be made to predicting hurricanes or other
+extreme weather events from historical data, which may be more accurately
+predicted in a constant climate than in one being perturbed).
+
+-->
+
+<!-- Integrate this into the paragraph, rather than as a footnote?? Make more consise? -->
+
+[^1]: The concept of adaptive probing is one area that has explicitly
+addressed this kind of uncertainty, reaching rather opposite conclusions
+than what we observe here. Adaptive probing strategies follow from "Dual
+Control" or "Active Adaptive Management" approaches (e.g. @Ludwig1982)
+that can trade off short term utility by choosing actions that can reduce
+uncertainty.  Adaptive probing strategies arise when it is valuable to
+intentionally force a system far from the observed values even when the
+expected value such actions is low, as it provides much faster learning
+and consequent reduction of model uncertainty that can allow greater value
+to be derived later on.  For instance, @Ludwig1982 show that it may be
+advantageous to fish an unexploited population very heavily at first
+to obtain a better estimate of the recruitment rate.  This intuitive
+strategy when a population is governed by a Ricker or Beverton-Holt-like
+dynamic would clearly be disastrous if instead the dynamics contained
+an unforeseen tipping point.  The best way to learn where the edge lies
+may be to walk up to it, but it is also the most dangerous.
+
+
+
+<!-- Does this belong?  Improve transitions -->
+
+Concerns over the potential for tipping points in ecological dynamics
+[@Scheffer2001] highlight the dangers of uncertainty in ecological
+management and pose a substantial challenge to existing decision-theoretic
+approaches [@Brozovic2011].  Because intervention is often too late 
+after a tipping point has been crossed (but see @Hughes2013), management
+is most often concerned with avoiding potentially catastrophic tipping
+points before any data is available at or following a transition that
+would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
+
+_Map_
+
+Here we illustrate how a stochastic dynamic programming (SDP) algorithm
+[@Mangel1988; @Possingham1997, Marescot2013] can be driven by the
+predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].
+This provides two distinct advantages compared with contemporary
+approaches.  First, using a BNP sidesteps the need for an accurate
+model-based description of the system dynamics.  Second, the BNP can
+better reflect uncertainty that arises when extrapolating a model outside
+of the data on which it was fit.  We illustrate that when the correct
+model is not known, this latter feature is crucial to providing a robust
+decision-theoretic approach in face of substantial structural uncertainty.
+
+
+
+<!-- More Consise versions are now above 
+- Parametric uncertainty 
 
 As the parameter values for these models must be estimated from limited data,  
 there will always be some uncertainty associated with these values.  This uncertainty
 further compounds the intrinsic variability introduced by demographic or environmental 
 noise.  The degree of uncertainty in the parameter values can be inferred from the data
-and reflected in the estimates of the transition probabilities.  
+and reflected in the estimates of the transition probabilities [@Walters1982; @Mangel1988; @Mangel1997; @Schapaugh2013]. 
 
-[@Mangel1985; @Schapaugh2013]
+- Structural uncertainty 
+
+Estimates of parameter uncertainty are only as good as the parametric
+models themselves.  Often we do not understand the system dynamics well
+enough to know if a model provides a good approximation over the relevant
+range of states and timescales (criteria that we loosely refer to as
+defining the "right" or "true" model.)  So called structural or model
+uncertainty is a more difficult problem than parametric uncertainty.
+Typical solutions involve either model choice, model averaging, or
+introducing yet greater model complexity of which others may be special
+cases (model averaging being one such way to construct such a model)
+[@Williams2001; @Athanassoglou2012; @Cressie2009].  Even setting aside
+other computational and statistical concerns (e.g. [@Cressie2009]), these
+approaches do not address our second concern - representing uncertainty
+outside the observed data range.
+
+- Limits of state space 
+
+Resource management and conservation planning seek to determine the
+optimal set of feasible actions to maximize the value of some objectives
+(see [@Halpern2012])  Process error, measurement error, implementation
+error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
+sources of stochasticity in turn mean that model parameters can only
+be estimated approximately, requiring parametric uncertainty also be
+considered [@Ludwig1982, ].
+--> 
 
 
-#### Structural Uncertainty 
 
-Unfortunately, estimates of parameter uncertainty are only as good as the parametric 
-models themselves.  Too often, we do not understand the system dynamics well enough
-to know if a model provides a good approximation over the relevant range of states
-and timescales (criteria that we loosely refer to as defining the "right" or "true" model.)
-So called structural or model uncertainty is a more difficult problem than parametric 
-uncertainty.  Typical solutions involve either model choice, or model averaging. Either
-approach remains limited by the degree to which any of the proposed models are sufficiently
-close to the right model.  
+<!-- necessary? --> <!-- should reflect the dual problem of extrapolation and model uncertainty better -->
 
-[@Williams2001; @Athanassoglou2012]. 
+This paper represents the first time the SDP decision-making framework has
+been used without an a priori model of the underlying dynamics through
+the use of the BNP approach.  In contrast to parametric models which
+can only reflect uncertainty in parameter estimates, the BNP approach
+provides a more state-space dependent representation of uncertainty.
+This permits a much greater uncertainty far from the observed data than
+near the observed data.  These features allow the GP-SDP approach to
+find robust management solutions in face of limited data and without
+knowledge of the correct model structure.
 
-#### Comparing models 
+
+
+
+-  _Note on "not magic"_: honest uncertainty + SDP
+
+The idea that any approach can perform well without either having to
+know the model or have particularly good data should immediately draw
+suspicion.  The reader must bear in mind that the strength of our approach
+comes not from black-box predictive power from such limited information,
+but rather, by providing a more honest expression of uncertainty outside
+the observed data without sacrificing the predictive capacity near the
+observed data. By coupling this more accurate description of what is known
+and unknown to the decision-making under uncertainty framework provided
+by stochastic dynamic programming, we are able to obtain more robust
+management policies than with common parametric modeling approaches.
+
+
+- Note on: Why fisheries 
+
+The economic value and ecological concern have made marine
+fisheries the crucible for much of the founding work [@Gordon1954;
+@Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
+uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
+@Worm2009] have made understanding these challenges all the more pressing.
+
+
+
+<!--move to  much later --> 
+
+- _Note on comparing models_ (via value function rather than by "fit"). 
+
+_Do we need this?_
 
 The nature of decision-making problems provides a convenient way to compare 
 models.  Rather than compare models in terms of best fit to data or fret over
@@ -652,6 +341,679 @@ does not necessarily need a model that provides the best mechanistic understandi
 or the best long-term outcome, but rather the one that best estimates the 
 probabilities of being in different states as a result of the possible actions. 
 
+
+
+## Background on the Gaussian Process
+
+- Background on non-parametric modeling.  
+
+Addressing the difficulty posed by extrapolation without knowing the
+true model requires a nonparametric approach to model fitting: one
+that does not assume a fixed structure but rather depends on the size
+of the data (e.g. non-parametric regression or a Dirichlet process).
+This established terminology is nevertheless unfortunate, as (a)
+this approach still involves the estimation of parameters, and (b),
+Statisticians use non-parametric to mean both this property (structure
+is not fixed by the parameters) and an entirely different (and probably
+more familiar) case in which the model does not assume any distribution
+(e.g. non-parametric bootstrap, order statistics).  Some literature
+thus uses the term semi-parametric, which merely adds ambiguity to
+the confusion.
+
+This non-parametric property -- having a structure explicitly dependent on
+the data -- is precisely the property that makes this approach attractive
+in face of the limited data sampling challenges discussed above.
+Having fit a parametric model to some data, the model is completely
+described by the values (or posterior distributions) of it's parameters.
+The non-parametric model is not captured by its parameter values or
+distributions alone. Either the model scales with the complexity of the data
+on which it is estimated (e.g. nonparametric heirarchical approaches such
+as the Dirchlet process) or the data points become themselves part of the model
+specification, as in the nonparametric regression used here.  we shall see here.  
+
+
+
+- Definition
+
+- Previous application
+
+The use of Gaussian process (GP) regression (or "kriging" in the geospatial
+literature) to formulate a predictive model is relatively new in the
+context of modeling dynamical systems [@Kocijan2005], and was first introduced
+in the context ecological modeling and fisheries management in @Munch2005.
+An accessible and thorough introduction to the formulation and use of
+GPs can be found in @Rasmussen2006.
+
+
+- Why it is particularly suited to these two problems
+- (Why this is a novel application thereof)
+
+
+
+
+
+The essence of the GP approach can be captured in the
+following thought experiment: An exhaustive parametric approach to the
+challenge of structural uncertainty might proceed by writing down all
+possible functional forms for the underlying dynamical system with all
+possible parameter values for each form, and then consider searching
+over this huge space to select the most likely model and parameters;
+or using a Bayesian approach, assign priors to each of these possible
+models and infer the posterior distribution of possible models. The
+GP approach can be thought of as a computationally
+efficient approximation to this approach. GPs represent
+a large class of models that can be though of as capturing or reasonably
+approximating the set of models in this collection.  By modeling at the
+level of the process, rather than the level of parametric equation,
+we can more concisely capture the possible behavior of these curves.
+In place of a parametric model of the dynamical system, the GP 
+approach postulates a prior distribution of (n-dimensional)
+curves that can be though of as approximations to a range of possible
+(parametric) models that might describe the data. The GP allows us
+to consider probabilities on a large set of possible curves simultaneously.  
+
+
+The posterior distribution for the hyper-parameters of the Gaussian 
+process model are estimated by Metropolis-Hastings algorithm, again with
+details and code provided in the Appendix.  @Rasmussen2006 provides
+an excellent general introduction to Gaussian Processes and @Munch2005 
+first discusses their application in the context of population dynamics
+models such as fisheries stock-recruitment relationships.
+
+
+Approach and Methods
+====================
+
+### Summary of approach
+
+### Statement of the optimal control problem
+
+- Underlying model 
+- Available data 
+- Value function
+
+
+
+For simplicity we assume profit is simply linear in the realized harvest (only
+enforcing the restriction that harvest can not exceed available stock)
+
+
+### Parametric models
+
+- Statement of the models
+
+We consider three candidate parametric models of the stock-recruitment
+dynamics: The Ricker model, the Allen model [Allen 2005](), the Myers
+model. The familiar Ricker model involves two parameters, corresponding
+to a growth rate and a carrying capacity, and cannot support alternative
+stable state dynamics (though as growth rate increases it exhibits a
+periodic attractor that proceeds through period-doubling into chaos. We
+will generally focus on dynamics below the chaotic threshold for
+the purposes of this analysis.) The Allen model resembles the Ricker
+dynamics with an added Allee effect parameter [Courchamp](), below
+which the population cannot persist.  The Myers model also has three
+parameters and contains an Allee threshold, but has compensatory rather
+than over-compensatory density dependence (resembling a Beverton-Holt
+curve rather than a Ricker curve at high densities.)
+
+We assume multiplicative log-normal noise perturbs the growth predicted 
+by the each of the deterministic model skeletons described above. This 
+introduces one additional parameter $\sigma$ that must be estimated by each
+model. 
+
+<!-- equations just in appendix? -->
+
+As we simulate training data from the Allen model (ref section), we will
+refer to this as the structurally correct model.  The Ricker model is
+thus a reasonable approximation of these dynamics far from the Allee
+threshold (but lacks threshold dynamics), while the Myers model shares
+the essential feature of a threshold but differs in the structure. Thus
+we have three potential parametric models of the stock dynamics.
+
+- Bayesian inference of parametric models
+
+We infer posterior distributions for the parameters of each model
+in a Bayesian context using Gibbs sampling (implemented in R [@RTeam]
+using jags, [@R2jags]).  We choose uninformative uniform priors for all
+parameters (See Appendix, Figures S1-S3, and Table S1, and the R code
+provided). One-step-ahead predictions of these model fits are shown in
+Figure 1.
+
+- SDP via parametric models
+
+An optimal policy function is then inferred through stochastic dynamic
+programming for each model given the posterior distributions of the
+parameter estimates.  This policy maximizes the expectation of the value
+function integrated over the parameter uncertainty. (code implementing
+this algorithm provided in the Appendix).
+
+
+### The Gaussian Process model
+
+- Statement of model
+
+... more on GP ... [Munch 2005]()
+
+We also estimate a simple Gaussian Process defined by
+a radial basis function kernel of two parameters: $\ell$, which gives
+the characteristic length-scale over which correlation between two 
+points (e.g. any two points $X_t, X_{t+1}$, and $X_{t+\tau}, X_{t+1+\tau}$)
+in state-space decays, and $\sigma$, which gives the scale of the 
+process noise by which observations $Y_{t+1}$ may differ from their
+predicted values $X_{t+1}$ given an observation of the previous state,
+$X_t$. 
+
+- Inference of the model
+
+Also unlike parametric models, this posterior distribution is still
+conditional on the training data. As such, the uncertainty near the
+observed data.
+
+We use a Metropolis-Hastings Markov Chain Monte Carlo to infer posterior
+distributions of the two parameters of the GP (Figure S4, code in
+appendix), under weakly informative Gaussian priors (see parameters in
+table S5). As the posterior distributions differ substantially from the
+priors (Figure S4), we can be assured that most of the information in
+the posterior comes from the data rather than the prior belief.
+
+
+- SDP via the model
+
+Though we are unaware of prior application of this type, it is reasonably
+straight-forward to adapt the Gaussian Process for Stochastic Dynamic
+Programming.  Recall that unlike the parametric models the Gaussian
+process with fixed parameters already predicts a distribution of
+curves rather than a single curve. We must first integrate over 
+this distribution of curves given a sampling of parameter values drawn
+from the posterior distribution of the two GP parameters, before
+integrating over the posterior of those parameters themselves.
+
+
+
+Results
+=======
+
+<!-- 
+### Figure 1: Fitted Models
+
+- All models fit the data quite well
+- Information criteria would pick the simple, incorrect model.
+--> 
+
+
+![Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.](figure/nonparametric-bayes-Figureb_posteriors.pdf) 
+
+
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the expected value of the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity in growth rate.  Model-choice criteria shown in Table 1 penalize more complex models and show a slight preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rrrr}
+  \hline
+ & Allen & Ricker & Myers \\ 
+  \hline
+DIC & 50.14 & 49.45 & 50.61 \\ 
+  AIC & -24.60 & -30.07 & -27.19 \\ 
+  BIC & -17.85 & -25.00 & -20.44 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+<!-- 
+### Figure 2 
+- Data comes from limited region of state-space 
+- (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
+-->
+
+![Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.](figure/nonparametric-bayes-statespace_posteriors.pdf) 
+
+
+The mean inferred state space dynamics of each model
+relative to the true model used to generate the data is shown in Figure 2, 
+predicting the relationship between observed stock size (x-axis) to the stock size
+after recruitment the following year.  Note that in contrast to the  other models shown, the expected 
+Gaussian process corresponds to a distribution of curves - as indicated
+by the gray band - which itself has a mean shown in black. Parameter uncertainty
+(not shown) spreads out the estimates further.  
+The observed data from which each model is estimated is also shown.  The observations come
+from only a limited region of state space corresponding to unharvested
+or weakly harvested system.  No observations occur at the theoretical
+optimum harvest rate or near the tipping point.
+
+
+
+![plot of chunk out_of_sample_predictions](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
+
+
+
+
+
+<!--
+### Figure 3: Inferred Policies
+
+- Inferred policies differ substantially among models
+- The structurally correct model and the GP are close to the true model
+- alternatives are not close
+--> 
+
+
+![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](figure/nonparametric-bayes-Figure2.pdf) 
+
+
+Despite the similarities in model fits to the observed data, the policies
+inferred under each model differ widely, as shown in Figure 3.  
+Policies are shown in terms of target
+escapement, $S_t$.  Under models such as this a constant escapement
+policy is expected to be optimal [@Reed1979], whereby population levels
+below a certain size $S$ are unharvested, while above that size the harvest
+strategy aims to return the population to $S$, resulting in the hockey-stick
+shaped policies shown.  Only the structurally correct model (Allen model) and the GP 
+produce policies close to the true optimum policy (where both the underlying 
+model structure and parameter values are known without error).  
+
+
+![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](figure/nonparametric-bayes-Figure3.pdf) 
+
+
+The consequences of managing 100 replicate realizations of the 
+simulated fishery under each of the policies estimated is shown in Figure 4.  As expected
+from the policy curves, the structurally correct model under-harvests,
+leaving the stock to vary around it's un-fished optimum.  The structurally
+incorrect Ricker model over-harvests the population passed
+the tipping point consistently, resulting in the immediate crash of the stock and 
+thus derives minimal profits.  
+
+These results are robust across a range of stochastic realizations, models, and parameter values.  
+The results across this range can most easily be compared 
+by using the relative differences in net present value realized by each of the model,
+as shown in Figure 5.  The BNP-SDP approach most consistently realizes a value 
+close to the optimal solution, and importantly avoids ever driving the system across
+the tipping point, which results in the near-zero value cases in the parametric models.  
+
+
+![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](figure/nonparametric-bayes-Figure4.pdf) 
+
+
+
+Discussion 
+==========
+
+- All models are "good fits" to the originally observed data. 
+- (Simple model choice immediately leads us astray)
+
+
+
+
+<!--
+
+Though simple mechanistically motivated models offer the greatest potential 
+to increase our basic understanding of ecological processes [@Cuddington2013; @Geritz2012], 
+such models can be not only inaccurate but misleading when relied upon in a
+quantitative decision making framework.  
+--> 
+
+
+
+1. We do not know what the correct models are for ecological systems.
+1. We have limited data from which to estimate the model -- in particular,
+   such models may be misleading in predicting the probability of outcomes
+   outside the training data.  
+
+These aspects are common to many conservation decision making problems, which thus merit
+greater use of non-parametric approaches that can best take advantage of them.  
+
+
+### Traditional model-choice approaches can be positively misleading.  
+
+These results illustrate that model-choice approaches would be positively
+misleading -- supporting simpler models that cannot express tipping point
+dynamics merely on account of them being similar.  As the data shown
+comes only from the basin of attraction near the unfished equilibrium,
+near which all of the models are approximately linear and approximately
+identical. 
+
+Model choice approaches trade off model complexity and fit to the data. 
+When the data come from a limited region of state-space -- as is necessarily 
+the case whenever there is a potential concern about tipping point dynamics --
+simpler models can fit just as well and will tend to outperform more complex 
+ones.  This approach would be appropriate when the dynamics can be expected 
+to remain in the region of the training data; for instance, if we only 
+considered the forecasting accuracy of the unfished population dynamics under
+each model.  
+
+In contrast, the decision-maker's problem of setting appropriate harvest levels
+cannot exclude regions of state-space outside the observed range when integrating
+over all possible decisions to find the optimal choice.  Such problems are not 
+constrained to fisheries management but ubiquitous across ecological decision-making
+and conservation where the greatest concerns involve entering previously unobserved
+regions of state-space -- whether that is the collapse of a fishery, the spread
+of an invasive, or the loss of habitat.  
+
+### BNP-SDP expresses larger uncertainty in regions where the data are poor 
+
+The parametric models perform worst when they propose a management strategy
+outside the range of the observed data. The non-parametric Bayesian approach, 
+in contrast, allows a predictive model that expresses a great deal of uncertainty
+about the probable dynamics outside the observed range, while retaining very
+good predictive accuracy in the range observed.  The management policy 
+dictated by the GP balance this uncertainty against
+the immediate value of the harvest, and act to stabilize the population 
+dynamics in a region of state space in which the predictions can be 
+reliably reflected by the data.  
+
+### BNP-SDP has good predictive accuracy where data are good
+
+While expressing larger uncertainty outside the observed data, the GP
+can also provide a better fit with smaller uncertainty inside the range
+of the observed data. This arises from the greater flexibility of the 
+Gaussian process, which describes a large family of possible curves.
+Despite this flexibility, the GP can be described in relatively few 
+parameters and is thus far less likely to overfit. 
+
+
+
+Future directions
+-----------------
+
+### Higher dimensions 
+
+In this simulated example, the underlying
+dynamics are truly governed by a simple parametric model, allowing
+the parametric approaches to be more accurate.  Similarly, because the
+dynamics are  one-dimensional dynamics and lead to  stable nodes (rather
+than other attractors such as limit-cycles resulting in oscillations),
+the training data provides relatively limited information about the
+dynamics.  For these reasons, we anticipate that in higher-dimensional
+examples characteristic of ecosystem management problems that the machine
+learning approach will prove even more valuable.
+
+
+### Real-time learning
+
+In our treatment here we have ignored the possibility of learning during the 
+management phase, in which the additional observations of the stock size could
+potentially improve parameter estimates.  While we intend to address this 
+possibility in future work in the context of these non-parametric models,
+we have not addressed it here for pedagogical reasons. In the context presented
+here, it is clear that the differences in performance arise from differences
+in the uncertainty inherent in the model formulations, rather than from 
+differing abilities to learn.  Because we consider a threshold system, 
+online learning would not change this generic feature of a lack of data in a
+certain range of the state space which is better captured by the Gaussian process. 
+
+
+Acknowledgments
+===============
+
+This work was partially supported by the Center for Stock Assessment
+Research, a partnership between the University of California Santa Cruz
+and the Fisheries Ecology Division, Southwest Fisheries Science Center,
+Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
+to CB.
+
+
+Appendix
+========
+
+## Model definitions and estimation
+
+Equation S1: Ricker model.
+
+$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
+
+Figure S1: Ricker model: prior and posterior distributions for parameter estimates.
+
+![plot of chunk unnamed-chunk-1](figure/nonparametric-bayes-unnamed-chunk-1.pdf) 
+
+
+![plot of chunk unnamed-chunk-2](figure/nonparametric-bayes-unnamed-chunk-2.pdf) 
+
+Table S1: Parameterization of the priors
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rlrr}
+  \hline
+ & parameter & lower\_bound & upper\_bound \\ 
+  \hline
+1 & r0 & 0.00 & 10.00 \\ 
+  2 & K & 0.00 & 40.00 \\ 
+  3 & sigma & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+$$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} $$
+
+Eq S2: Myers model 
+Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
+
+![plot of chunk unnamed-chunk-4](figure/nonparametric-bayes-unnamed-chunk-4.pdf) 
+
+
+![plot of chunk unnamed-chunk-5](figure/nonparametric-bayes-unnamed-chunk-5.pdf) 
+
+
+Table S2: Parameterization of the priors
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rlrr}
+  \hline
+ & parameter & lower\_bound & upper\_bound \\ 
+  \hline
+1 & r0 & 0.00 & 10.00 \\ 
+  2 & K & 0.00 & 40.00 \\ 
+  3 & theta & 0.00 & 10.00 \\ 
+  4 & sigma & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+Eq S3: Allen model 
+
+$$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
+
+Figure S3: Allen model: prior and posterior distributions for parameter estimates.
+
+![plot of chunk unnamed-chunk-7](figure/nonparametric-bayes-unnamed-chunk-7.pdf) 
+
+
+![plot of chunk unnamed-chunk-8](figure/nonparametric-bayes-unnamed-chunk-8.pdf) 
+
+
+Table S3: Parameterization of the priors
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rlrr}
+  \hline
+ & parameter & lower\_bound & upper\_bound \\ 
+  \hline
+1 & r0 & 0.00 & 10.00 \\ 
+  2 & K & 0.00 & 40.00 \\ 
+  3 & theta & 0.00 & 10.00 \\ 
+  4 & sigma & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+
+Eq S4: GP model 
+Figure S4: GP model: prior and posterior distributions for parameter estimates.
+
+
+```
+$traces_plot
+```
+
+![plot of chunk unnamed-chunk-10](figure/nonparametric-bayes-unnamed-chunk-101.pdf) 
+
+```
+
+$posteriors_plot
+```
+
+![plot of chunk unnamed-chunk-10](figure/nonparametric-bayes-unnamed-chunk-102.pdf) 
+
+
+
+Table S4: Parameterization of the priors
+
+## Optimal Control Problem
+
+We seek the harvest policy $h(x)$ that maximizes:
+
+$$ \max_{h_t} \sum_{t \in 0}^{\infty}  \Pi_t(X_t, h_t) \delta^t  $$
+
+subject to the profit function $\Pi(X_t,h)$, discount rate $\delta$, and the state
+equation
+
+$$X_{t+1} = Z_t f(S_t)  $$
+$$S_t = X_t - h_t $$
+
+
+Where $Z_t$ is multiplicative noise function with mean 1, representing
+stochastic growth. We will consider log-normal noise with shape parameter
+$\sigma_g$. 
+
+
+Form this we can write down the Bellman recursion as: 
+
+$$V_t(x_t) = \max_h \mathbf{E} \left(\Pi(h_t, x_t) + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)$$
+
+For simplicity we assume profit is simply linear in the realized harvest (only
+enforcing the restriction that harvest can not exceed available stock), $\Pi(h,x) = min(h,x)$. 
+
+
+### Pseudocode for the Bellman iteration
+
+```r
+ V1 <- sapply(1:length(h_grid), function(h){
+      delta * F[[h]] %*% V +  profit(x_grid, h_grid[h]) 
+    })
+    # find havest, h that gives the maximum value
+    out <- sapply(1:gridsize, function(j){
+      value <- max(V1[j,], na.rm = T) # each col is a diff h, max over these
+      index <- which.max(V1[j,])  # store index so we can recover h's 
+      c(value, index) # returns both profit value & index of optimal h.  
+    })
+    # Sets V[t+1] = max_h V[t] at each possible state value, x
+    V <- out[1,]                        # The new value-to-go
+    D[,OptTime-time+1] <- out[2,]       # The index positions
+```
+
+
+
+
+
+### Training data
+
+Eacho of our models $f(S_t)$ must be estimated from training data, which
+we simulate from the Allen model with parameters $r = $ ` r p[1]`, 
+$K =$ ` r p[2]`, $C =$ ` r p[3]`, and  $\sigma_g =$ ` r sigma_g` 
+for $T=$ 40 timesteps, starting at initial condition $X_0 = $ 5.5. 
+The training data can be seen in Figure 1.  
+
+
+
+-----------------------------------
+
+<!-- OLD TEXT -->  
+
+
+
+Abstract
+=======================================================================
+
+
+Decision-theoretic methods often rely on simple parametric models of
+ecological dynamics to compare the value of a potential sequence of
+actions. Unfortunately, such simple models rarely capture the complexity
+or uncertainty found in most real ecosystems. 
+
+Further, the data on which a model has been parameterized frequently 
+fails to cover the possible state-space over which management decisions 
+must operate.  Consequently a model do well in the region of state-space
+in which it was estimated, but give erroneous confidence to predictions
+outside of that region.  
+
+This problem is keenly felt in any system where a potential threshold
+or tipping point is a concern.  Such a tipping point, if it exists 
+at all, will lay outside the observed range of the observed data. 
+
+
+We demonstrate how nonparametric Bayesian models can provide robust,
+solutions to decision making under uncertainty without knowing the 
+structural form of the true model.  
+
+While methods that account for _parametric_ uncertainty can be very 
+successful with the right model,
+structural uncertainty of not knowing what model best approximates the 
+dynamics poses considerably greater difficulty.  
+
+
+
+Introduction
+=======================================================================
+
+#### Opening 
+
+<!-- More on complex dynamics and not having the correct model 
+
+
+-->
+
+<!-- More on the lack of data throughout the relevant state-space
+     and how any concern about potential tipping points indicates 
+     that the data exhibits this bias / problem.  
+     -->
+
+
+
+
+#### Models for decision-making under uncertainty 
+
+Decision-theoretic or optimal control tools require a model that can assign probabilities of
+future states (e.g. stock size of a fishery) given the current state and a
+proposed action (e.g. fishing harvest or effort).  
+Management frequently faces a sequential decision-making problem -- after 
+selecting an action, the decision-maker may receive new information about 
+the current state and must again choose an appropriate action -- such as setting
+the harvest limits each year based on stock assessments the year prior.  
+
+The decision maker typically seeks to determining the course of actions (also referred to as the policy)
+that maximizes the expected value of some objective function such as
+net present value derived from the resource over time.  
+Though much can be said on how to choose this value function appropriately 
+(e.g. see [@Halpern2013](http://doi.org/10.1073/pnas.1217689110 
+"Achieving the triple bottom line in the face of inherent trade-offs 
+among social equity, economic return, and conservation.")) we will
+assume this is given.  (Nor is this approach necessarily constrained to 
+maximizing the expectated value of such a function - the decision-theoretic
+framework can be adapted to alternatives such as minimizing the maximum 
+cost or damage that might be incurred; see @Polasky2011).
+
+In representing future states with probabilities and maximizing expectations,
+this approach provides a natural framework for handling uncertainty. 
+
+
+The value function typically depends on the action or policy taken, as well as
+the state of the system, in each interval of time. The state of the system,
+in turn, is usually described by a dynamical model.
+
+
+[@Williams2001; @Athanassoglou2012]. 
 
 
 <!-- Transition and map: The weakness of parametric models -->
@@ -676,15 +1038,7 @@ to the opportunities and challenges nonparametric modeling can offer.
 
 
 
-
-#### Background on Fisheries Context 
-
-#### Background on Tipping points 
-
-
-
-<!-- note: This section largely replaced by above outline
-
+<!-- 
 ### Quantitative vs Qualitative Decisions
 
 In this paper, we consider those ecological management problems in which
@@ -708,34 +1062,18 @@ for parameter uncertainty.
 -->
 
 
-
-
-Non-parametric models can better represent uncertainties outside 
-of observed data while also better capturing the dynamics in the region
-observed.  Advances in the theory and computational implementations of 
-nonparametric methods make them ripe for such applications.  We use the classic
-problem of optimal harvest of a marine fishery to illustrate how the 
-nonparametric approach of Gaussian processes can be applied.  We will 
-compare Bayesian implementations of both nonparametric and parametric 
-models, which best allow us to capture the uncertainty of model estimation
-in either case and permits a more natural comparison between approaches.  
-
-
-
-
 Approach and Methods
 ====================
 
 ## The optimal control problem in fisheries management
 
-In our example, we focus on the problem in which a manager must set 
+We focus on the problem in which a manager must set
 the harvest level for a marine fishery each year to maximize the net
-present value of the resource, given an estimated stock size from the year
-before. The economic value and ecological concern have made marine fisheries the crucible for much
-of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
-in managing ecosystems under uncertainty.  Global trends [@Worm2006]
-and controversy [@Hilborn2007; @Worm2009] have made understanding these
-challenges all the more pressing. 
+present value of the resource, given an estimated stock size from the
+year before. 
+
+
+<!-- ugh, re-word this -->
 
 To permit comparisons against a theoretical optimum we will consider
 data on the stock dynamics simulated from a simple parametric model
@@ -751,7 +1089,7 @@ along with a given economic model determining the  price/profit $\Pi(X_t,
 h_t)$ realized in a given year given a choice of harvest $h_t$ and
 observed stock $X_t$.  This problem can be solved exactly for discretized
 values of stock $X$ and policy $h$ using stochastic dynamic programming
-(SDP) [@Mangel1985]. Problems of this sort underpin much marine fisheries
+(SDP) [@Mangel1988]. Problems of this sort underpin much marine fisheries
 management today.
 
 A crux of this approach is correctly specifying the functional form of $f$,
@@ -760,22 +1098,13 @@ handful of common parametric models representing the stock-recruitment
 relationship, usually after estimating the model parameters from any 
 available existing data. Uncertainty in the parameter estimates can 
 be estimated and integrated over to determine the optimal policy under
-under uncertainty [@Mangel1985; @Schapaugh2013]. Uncertainty in the model
+under uncertainty [@Mangel1988; @Schapaugh2013]. Uncertainty in the model
 structure itself can only be addressed in this approach by hypothesizing 
 alternative model structures, and then performing some model choice or
 model averaging  [@Williams2001; @Athanassoglou2012]. 
 
 
 ## Underlying Model
-
-Concerns over the potential for tipping points in ecological dynamics
-[@Scheffer2001] highlight the dangers of uncertainty in ecological
-management and pose a substantial challenge to existing decision-theoretic
-approaches [@Brozovic2011].  Because intervention is often too late 
-after a tipping point has been crossed (but see @Hughes2013), management
-is most often concerned with avoiding potentially catastrophic tipping
-points before any data is available at or following a transition that
-would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
 
 To illustrate the value of the non-parametric Bayesian approach to management,
 we focus on example of a system containing such a tipping point whose dynamics
@@ -877,54 +1206,7 @@ MCMC based approaches are the obvious choice.  -->
 
 ### The Non-parametric Bayesian alternative for stock-recruitment curves
 
-#### Terminology: "Non-parametric" 
 
-The term non-parametric to describe modeling approaches such as Gaussian
-processes is a common source of confusion, notwithstanding the fact that
-the model is still specified by parameters.  Some literature has introduced
-the term "semi-parametric" in tacit acknowledgment of this, which no doubt
-only contributes to the confusion.  The problem is further exacerbated by
-the several meanings assigned to the term in statistics: (a) that the method 
-does not assume some particular probability distribution (e.g. a non-parametric bootstrap)
-or (b) that the method does not assume a fixed structure to the model.  Our 
-use is that of (b), in contrast to the classical approaches that do.  The 
-difference is clearest by way of example. 
-
-
-The use of Gaussian process (GP) regression (or "kriging" in the geospatial
-literature) to formulate a predictive model is relatively new in the
-context of modeling dynamical systems [@Kocijan2005] and introduced
-in the ecological modeling and fisheries management by @Munch2005.
-An accessible and thorough introduction to the formulation and use of
-GPs can be found in @Rasmussen2006.
-
-The essence of the GP approach can be captured in the
-following thought experiment: An exhaustive parametric approach to the
-challenge of structural uncertainty might proceed by writing down all
-possible functional forms for the underlying dynamical system with all
-possible parameter values for each form, and then consider searching
-over this huge space to select the most likely model and parameters;
-or using a Bayesian approach, assign priors to each of these possible
-models and infer the posterior distribution of possible models. The
-GP approach can be thought of as a computationally
-efficient approximation to this approach. GPs represent
-a large class of models that can be though of as capturing or reasonably
-approximating the set of models in this collection.  By modeling at the
-level of the process, rather than the level of parametric equation,
-we can more concisely capture the possible behavior of these curves.
-In place of a parametric model of the dynamical system, the GP 
-approach postulates a prior distribution of (n-dimensional)
-curves that can be though of as approximations to a range of possible
-(parametric) models that might describe the data. The GP allows us
-to consider probabilities on a large set of possible curves simultaneously.  
-
-
-The posterior distribution for the hyper-parameters of the Gaussian 
-process model are estimated by Metropolis-Hastings algorithm, again with
-details and code provided in the Appendix.  @Rasmussen2006 provides
-an excellent general introduction to Gaussian Processes and @Munch2005 
-first discusses their application in the context of population dynamics
-models such as fisheries stock-recruitment relationships.
 
 
 ### SDP via GP 
@@ -1036,148 +1318,13 @@ likelihood.
 Results
 =======
 
-
-
-
-
-```r
-require(MASS)
-step_ahead <- function(x, f, p){
-  h = 0
-  x_predict <- sapply(x, f, h, p)
-  n <- length(x_predict) - 1
-  y <- c(x[1], x_predict[1:n])
-  y
-}
-step_ahead_posteriors <- function(x){
-gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
-df_post <- melt(lapply(sample(100), 
-  function(i){
-    data.frame(time = 1:length(x), stock = x, 
-                GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
-                True = step_ahead(x,f,p),  
-                MLE = step_ahead(x,f,est$p), 
-                Allen = step_ahead(x, allen_f, pardist[i,]), 
-                Ricker = step_ahead(x, ricker_f, ricker_pardist[i,]), 
-                Myers = step_ahead(x, myers_f, myers_pardist[i,]))
-  }), id=c("time", "stock"))
-}
-
-df_post <- step_ahead_posteriors(x)
-
-ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
-```
-
-![plot of chunk Figureb](http://farm4.staticflickr.com/3811/9417351211_bd2e52a139_o.png) 
-
-
-
-
-Figure 1 shows the mean inferred state space dynamics of each model
-relative to the true model used to generate the data, predicting the
-relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year.  All models except the MLE model
-estimate a distribution around the means shown here, and all models 
-estimate a level of process noise, which is independent of the state
-value (x).  Note that in contrast to the  other models shown, the mean
-Gaussian process corresponds to a distribution of curves - as indicated
-by the gray band - which itself has a mean shown in black.  Note that 
-this mean GP is thus more certain of the dynamics in the region where
-data is available then where it is not.  
-
-While it would be natural (and straight forward) to condition
-the GP on passing through the origin (0,0) (see appendix), the estimate
-shown here is based only on the observed data. The observed data from
-which each model is estimated is also shown.  The observations come
-from only a limited region of state space corresponding to unharvested
-or weakly harvested system.  No observations occur at the theoretical
-optimum or near the tipping point.
-
-
-```r
-policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
-names(policies) <- c("stock", "method", "value")
-
-ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
-  scale_colour_manual(values=colorkey)
-```
-
-![The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].](http://farm6.staticflickr.com/5332/9417352879_7dde2a908f_o.png) 
-
-
-The resulting optimal management strategy based on each of the inferred
-models is shown in Figure 2, against the optimal strategy given the
-true underlying dynamics.  Policies are shown in terms of target
-escapement, $S_t$.  Under models such as this a constant escapement
-policy is expected to be optimal [@Reed1979], whereby population levels
-below a certain size $S$ are unharvested, while above that size the harvest
-strategy aims to return the population to $S$, resulting in the hockey-stick
-shaped policies shown.  
-
-
-
-```r
-ggplot(sims_data) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1)))
-```
-
-![Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.](http://farm3.staticflickr.com/2808/9420094148_0b29dfa2ec_o.png) 
-
-
-The consequences of managing 100 replicate realizations of the 
-simulated fishery under each of the policies estimated is shown in Figure 3.  As expected
-from the policy curves, the structurally correct model under-harvests,
-leaving the stock to vary around it's un-fished optimum.  The structurally
-incorrect Ricker model over-harvests the population passed
-the tipping point consistently, resulting in the immediate crash of the stock and 
-thus derives minimal profits.  
-
-
-The results shown in Figures 1-3 are not unique to the simulated data or models chosen
-here, but arises across a range of parameter values and simulations as shown in the 
-supplemental figures.  The results across this range can most easily be compared 
-by the relative differences in net present value realized by each of the approaches,
-as shown in Figure 4.  The Gaussian Process most consistently realizes a value 
-close to the optimal solution, and importantly avoids ever driving the system across
-the tipping point, which results in the near-zero value cases in the parametric models.  
-
-
-
-```r
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
-  facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
-  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
-```
-
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](http://farm4.staticflickr.com/3801/9417353317_4981b41a94_o.png) 
-
-```r
-
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
-```
-
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](http://farm4.staticflickr.com/3669/9420118750_e5218820e5_o.png) 
-
-```r
-
-ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
-  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
-  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
-```
-
-![Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.](http://farm8.staticflickr.com/7412/9417353565_98ddbfb0b1_o.png) 
-
-
 Discussion 
 ==========
 
 
 #### Big picture: Linking GP to SDP  
+
+_rambling_
 
 Non-parametric Bayesian methods have received far too little attention
 in ecological modeling efforts that are aimed at improved conservation
@@ -1198,14 +1345,7 @@ be improved.
 
 
 <!-- On mechanistic models -->
-
-Though simple mechanistically motivated models
-may be best for the latter case [@Cuddington2013; @Geritz2012], such models 
-can be not only inaccurate but misleading in quantitative decision making. This 
-arises for two reasons:
-
-1. We do not know what the correct parameter values are for the models.
-1. We do not know what the correct models are for ecological systems.
+<!-- { Seems kind of irrelevant }
 
 The complexity of ecological interactions and a lack of data contribute
 greatly to both of the problems. This concern is particularly acute
@@ -1219,142 +1359,21 @@ transitions that are driven by slow changes [@Scheffer2009], we do not
 know when, where, or how to apply them to the decision making context
 more generally [@Boettiger2013]. 
 
-While non-parametric Bayesian approaches will not always be preferable 
-to simple mechanistic models, we highlight three aspects of the problem
-consider here that make these methods particularly valuable.  These aspects
-are common to many conservation decision making problems, which thus merit
-greater use of non-parametric approaches that can best take advantage of them.  
+--> 
 
-
-### 1. Large uncertainty where the data is poor 
-
-The parametric models perform worst when they propose a management strategy
-outside the range of the observed data. The non-parametric Bayesian approach, 
-in contrast, allows a predictive model that expresses a great deal of uncertainty
-about the probable dynamics outside the observed range, while retaining very
-good predictive accuracy in the range observed.  The management policy 
-dictated by the GP balance this uncertainty against
-the immediate value of the harvest, and act to stabilize the population 
-dynamics in a region of state space in which the predictions can be 
-reliably reflected by the data.  
-
-### 2. Predictive accuracy where data is good
-
-While expressing larger uncertainty outside the observed data, the GP
-can also provide a better fit with smaller uncertainty inside the range
-of the observed data. This arises from the greater flexibility of the 
-Gaussian process, which describes a large family of possible curves.  
-While in a parametric context this over-fitting would be more worrisome --
-a high-degree polynomial could fit the data even better -- those 
-concerns are driven by the resulting parametric fit outside the data,
-which may involve wild oscillations unsupported by the data.  As we 
-have seen in #1, the GP is less vulnerable to such unjustified predictions
-outside the data, and is meanwhile free to benefit from the greater 
-fit where the data is available.  
-
-
-Future directions
------------------
-
-### Higher dimensions 
-
-In this simulated example, the underlying
-dynamics are truly governed by a simple parametric model, allowing
-the parametric approaches to be more accurate.  Similarly, because the
-dynamics are  one-dimensional dynamics and lead to  stable nodes (rather
-than other attractors such as limit-cycles resulting in oscillations),
-the training data provides relatively limited information about the
-dynamics.  For these reasons, we anticipate that in higher-dimensional
-examples characteristic of ecosystem management problems that the machine
-learning approach will prove even more valuable.
-
-
-### Online learning
-
-In our treatment here we have ignored the possibility of learning during the 
-management phase, in which the additional observations of the stock size could
-potentially improve parameter estimates.  While we intend to address this 
-possibility in future work in the context of these non-parametric models,
-we have not addressed it here for pedagogical reasons. In the context presented
-here, it is clear that the differences in performance arise from differences
-in the uncertainty inherent in the model formulations, rather than from 
-differing abilities to learn.  Because we consider a threshold system, 
-online learning would not change this generic feature of a lack of data in a
-certain range of the state space which is better captured by the Gaussian process. 
+----------------------------------------
 
 
 
 
-Acknowledgments
-===============
-
-This work was partially supported by the Center for Stock Assessment
-Research, a partnership between the University of California Santa Cruz
-and the Fisheries Ecology Division, Southwest Fisheries Science Center,
-Santa Cruz, CA and by NSF grant EF-0924195 to MM.
 
 
-
-Appendix
-========
-
-The appendices have not yet been assembled.  Meanwhile, code to repeat the analyses, along with a complete log of all research conducted on this project, can be found at: [https://github.com/cboettig/nonparametric-bayes](https://github.com/cboettig/nonparametric-bayes/)
+Code to replicate the analysis, along with complete log of this research can be found at: [https://github.com/cboettig/nonparametric-bayes](https://github.com/cboettig/nonparametric-bayes/)
 
 
 ## Markov Chain Monte Carlo Analysis
 
 
-```r
-gp_assessment_plots[[1]]
-```
 
-![plot of chunk appendixplots](http://farm8.staticflickr.com/7322/9420119510_a77102cecc_o.png) 
-
-```r
-gp_assessment_plots[[2]]
-```
-
-![plot of chunk appendixplots](http://farm8.staticflickr.com/7350/9420119692_22b229498f_o.png) 
-
-```r
-plot_allen_traces
-```
-
-![plot of chunk appendixplots](http://farm4.staticflickr.com/3719/9420120018_bc035fb7b4_o.png) 
-
-```r
-plot_allen_posteriors
-```
-
-![plot of chunk appendixplots](http://farm6.staticflickr.com/5533/9420120170_9f50f34780_o.png) 
-
-```r
-plot_ricker_traces
-```
-
-![plot of chunk appendixplots](http://farm3.staticflickr.com/2860/9420120422_f80134cac2_o.png) 
-
-```r
-plot_ricker_posteriors
-```
-
-![plot of chunk appendixplots](http://farm4.staticflickr.com/3810/9420120690_7c7dfde1ff_o.png) 
-
-```r
-plot_myers_traces
-```
-
-![plot of chunk appendixplots](http://farm3.staticflickr.com/2871/9420120852_ed29d0177b_o.png) 
-
-```r
-plot_myers_posteriors
-```
-
-![plot of chunk appendixplots](http://farm3.staticflickr.com/2864/9420121002_b9644a1453_o.png) 
-
-
-
-References
-==========
 
 

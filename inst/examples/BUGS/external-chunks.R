@@ -416,26 +416,12 @@ models <- data.frame(x=x_grid,
                      Allen = allen_means,
                      Myers = myers_means)
 models <- melt(models, id="x")
-
 # some labels
 names(models) <- c("x", "method", "value")
-
 # labels for the colorkey too
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
-
-
-## @knitr Figure1
-plot_gp <- ggplot(tgp_dat) + geom_ribbon(aes(x,y,ymin=ymin,ymax=ymax), fill="gray80") +
-    geom_line(data=models, aes(x, value, col=method), lwd=1, alpha=0.8) + 
-    geom_point(data=obs, aes(x,y), alpha=0.8) + 
-    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
-    scale_colour_manual(values=cbPalette) 
-print(plot_gp)
-
-
-## @knitr Figureb
 require(MASS)
 step_ahead <- function(x, f, p){
   h = 0
@@ -444,9 +430,29 @@ step_ahead <- function(x, f, p){
   y <- c(x[1], x_predict[1:n])
   y
 }
-step_ahead_posteriors <- function(x){
+
+
+## @knitr Figureb
+names(bayes_pars) <- c("r0", "K", "theta")
+names(myers_bayes_pars) <- c("r0",  "theta", "K")
+names(ricker_bayes_pars) <- c("r0",  "K")
 gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
-df_post <- melt(lapply(sample(100), 
+df <- melt(data.frame(time = 1:length(x), stock = x, 
+                GP = gp_f_at_obs$E_Ef,
+                True = step_ahead(x,f,p),  
+                MLE = step_ahead(x,f,est$p), 
+                Allen = step_ahead(x, allen_f, bayes_pars), 
+                Ricker = step_ahead(x, ricker_f, ricker_bayes_pars), 
+                Myers = step_ahead(x, myers_f, myers_bayes_pars)
+                 ), id=c("time", "stock"))
+Figure1b <- ggplot(df) + geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col=variable)) +
+    scale_colour_manual(values=colorkey) 
+
+## @knitr Figureb_posteriors 
+step_ahead_posteriors <- function(x){
+  gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
+  df_post <- melt(lapply(sample(100, 30),  
   function(i){
     data.frame(time = 1:length(x), stock = x, 
                 GP = mvrnorm(1, gp_f_at_obs$Ef_posterior[,i], gp_f_at_obs$Cf_posterior[[i]]),
@@ -457,12 +463,77 @@ df_post <- melt(lapply(sample(100),
                 Myers = step_ahead(x, myers_f, myers_pardist[i,]))
   }), id=c("time", "stock"))
 }
-
 df_post <- step_ahead_posteriors(x)
-
-ggplot(df_post) + geom_point(aes(time, stock)) + 
+figure1b_posteriors <- ggplot(df_post) + geom_point(aes(time, stock)) + 
   geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) 
+  facet_wrap(~variable) + 
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) +  
+  theme(legend.position="none")
+figure1b_posteriors
+
+
+## @knitr statespace_plot
+statespace_plot <- ggplot(tgp_dat) + 
+    geom_ribbon(aes(x,y,ymin = ymin,ymax = ymax), fill = "gray80") +
+    geom_line(data = models, aes(x, value, col = method), lwd=1, alpha = 0.7) + 
+    geom_point(data = obs, aes(x,y), alpha = 0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    scale_colour_manual(values = colorkey) 
+statespace_plot
+
+
+
+## @knitr statespace_posteriors
+x_grid_short <- x_grid[1:40]
+gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
+models_posteriors <- 
+  melt(lapply(sample(100, 50), 
+              function(i){
+    sample_gp <- mvrnorm(1, 
+                            gp_short$Ef_posterior[,i],         
+                            gp_short$Cf_posterior[[i]])
+    data.frame(stock = x_grid_short, 
+               GP = sample_gp,
+               y = sample_gp,
+               ymin = sample_gp - 2 * sqrt(gp_short$E_Vf), 
+               ymax = sample_gp + 2 * sqrt(gp_short$E_Vf), 
+               True = sapply(x_grid_short,f,0, p),  
+               MLE = sapply(x_grid_short,f,0, est$p), 
+               Allen = sapply(x_grid_short, allen_f, 0, pardist[i,]), 
+               Ricker = sapply(x_grid_short, ricker_f, 0, ricker_pardist[i,]), 
+               Myers = sapply(x_grid_short, myers_f, 0, myers_pardist[i,]))
+             }), 
+       id=c("stock", "y", "ymin", "ymax"))
+ggplot(models_posteriors) + 
+    geom_ribbon(aes(x=stock, y=y, ymin=ymin, ymax=ymax, group=L1), 
+                  fill = "gray80", 
+                  data=subset(models_posteriors, variable == "GP")) + 
+    geom_line(aes(stock, value, col = variable, 
+                  group=interaction(L1,variable)), 
+              alpha=.2) + 
+    geom_point(data = obs, aes(x,y), alpha = 0.8) + 
+    xlab(expression(X[t])) + ylab(expression(X[t+1])) +
+    facet_wrap(~variable) + 
+    scale_colour_manual(values=colorkey) +  
+    theme(legend.position="none")
+
+
+## @knitr out_of_sample_predictions
+y <- numeric(8)
+y[1] <- 4.5
+for(t in 1:(length(y)-1))
+      y[t+1] = z_g() * f(y[t], h=0, p=p)
+# predicts means, does not reflect uncertainty estimate!
+crash_data <- step_ahead_posteriors(y)
+crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers"))
+ggplot(crash_data) + 
+  geom_point(aes(time, stock)) + 
+  geom_line(aes(time, value, col = variable, 
+            group=interaction(L1,variable)), alpha=.1) + 
+  facet_wrap(~variable) + 
+  scale_colour_manual(values=colorkey, 
+                      guide = guide_legend(override.aes = list(alpha = 1))) +  
+  theme(legend.position="none")
 
 
 ## @knitr gp-opt
@@ -541,27 +612,46 @@ actual_over_optimal <-subset(tmp, variable != "True")
 
 
 ## @knitr Figure4 
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+fig4v1 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
-  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey)
-
-ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+  xlab("Total profit by replicate") + scale_fill_manual(values=colorkey) # density plots fail when delta fn
+fig4v2 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
-
-ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + 
+fig4v3 <- ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
   stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
   xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+fig4v3
 
 
 
+## @knitr dic_calc 
+dic.dic <- function (x) sum(x$deviance) +  sum(x[[2]])
+recompile(allen_jags)
+allen_dic <- dic.dic(dic.samples(allen_jags$model, n.iter=1000, type="popt"))
+recompile(ricker_jags)
+ricker_dic <- dic.dic(dic.samples(ricker_jags$model, n.iter=1000, type="popt"))
+recompile(myers_jags)
+myers_dic <- dic.dic(dic.samples(myers_jags$model, n.iter=1000, type="popt"))
+dictable <- data.frame(Allen = allen_dic + 2*length(bayes_pars), 
+                       Ricker = ricker_dic + 2*length(ricker_bayes_pars),
+                       Myers = myers_dic + 2*length(myers_bayes_pars), 
+                       row.names = c("DIC"))
 
-## @knitr deviances
-allen_deviance <- -2*posterior.mode(pardist[,'deviance'])
-ricker_deviance <- -2*posterior.mode(ricker_pardist[,'deviance'])
-myers_deviance <- -2*posterior.mode(myers_pardist[,'deviance'])
-true_deviance <- 2*estf(c(p, sigma_g))
-mle_deviance <- 2*estf(c(est$p, est$sigma_g))
-xtable::xtable(as.table(c(Allen = allen_deviance, Ricker=ricker_deviance, Myers=myers_deviance, True=true_deviance, MLE=mle_deviance)))
+## @knitr deviances 
+allen_deviance  <- - posterior.mode(pardist[,'deviance'])
+ricker_deviance <- - posterior.mode(ricker_pardist[,'deviance'])
+myers_deviance  <- - posterior.mode(myers_pardist[,'deviance'])
+true_deviance   <- 2*estf(c(p, sigma_g))
+mle_deviance    <- 2*estf(c(est$p, est$sigma_g))
+aictable <- data.frame(Allen = allen_deviance + 2*(1+length(bayes_pars)),  # +1 for noise parameter
+                       Ricker = ricker_deviance + 2*(1+length(ricker_bayes_pars)),
+                       Myers = myers_deviance + 2*(1+length(myers_bayes_pars)), 
+                       row.names = c("AIC"))
+bictable <- data.frame(Allen = allen_deviance + log(length(x))*(1+length(bayes_pars)), 
+                       Ricker = ricker_deviance + log(length(x))*(1+length(ricker_bayes_pars)),
+                       Myers = myers_deviance + log(length(x))*(1+length(myers_bayes_pars)), 
+                       row.names = c("BIC"))
+xtable::xtable(rbind(dictable, aictable, bictable))
 
 
 ## @knitr appendixplots
