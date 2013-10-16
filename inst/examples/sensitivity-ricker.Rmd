@@ -11,7 +11,7 @@ library(nonparametricbayes)
 
 
 ```{r stateeq-local}
-f <- RickerAllee
+f <- Ricker
 
 ```
 
@@ -52,7 +52,7 @@ yields <- sfSapply(seed,
 function(seed_i){
   set.seed(seed_i)
   
-  p <- c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1), 5 + rnorm(1, 0, .2)) 
+  p <- c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1)) 
   
   x <- numeric(Tobs)
   x[1] <- Xo

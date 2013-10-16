@@ -1,4 +1,4 @@
-```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE ,include=FALSE}
 rm(list=ls())
 source("~/.knitr_defaults.R")
 opts_knit$set(upload.fun = socialR::flickr.url)
@@ -52,7 +52,7 @@ sfLibrary(nonparametricbayes)
 sfExportAll()
 ```
 
-Replicate data-sets from the same model
+Replicate data-sets from the same model, varying both model parameters and data simulation seed
 
 ```{r warning=TRUE}
 yields <- sfSapply(seed, 
@@ -144,6 +144,13 @@ ggplot(yields_dat) + geom_density(aes(value))
 ````
 
 
+
+
+
+
+
+<!-- 
+
 Compare over `r length(seed)` simulation configurations with different parameters and different training data, the GP does consistently well.  Only one case has relatively poor outcomes.  
 
 
@@ -161,3 +168,6 @@ ggplot(yields_dat) + geom_density(aes(value, group=as.factor(replicate)), alpha=
 ```{r}
 save(list=ls(), file="sensitivity.rda")
 ```
+
+
+-->

@@ -6,8 +6,60 @@ library(knitcitations)
 library(nonparametricbayes) 
 ```
 
+```{r}
+models <- c("Myers","Allen")
 
-### Model and parameters
+parameters <- list(Myers = list(
+  c(1.5 + rnorm(1, 0, .1), 2.5 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .2)),
+  c(1.5 + rnorm(1, 0, .1), 2.5 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .2)),
+  c(1.5 + rnorm(1, 0, .1), 2.5 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .2)))
+                   Allen = list(
+  c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1), 5 + rnorm(1, 0, .2)),
+  c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1), 5 + rnorm(1, 0, .2)),
+  c(2 + rnorm(1, 0, .1), 8 + rnorm(1, 0, .1), 5 + rnorm(1, 0, .2)))
+                   )
+nuisance_pars <- c("sigma_g", )
+nuisance_values <- list(sigma_g = c(0.01, 0.05, 0.1, 0.2))
+replicates <- c(1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888) # seeds
+```
+
+
+Rather than loop over in brute force way:
+
+```{r eval=FALSE}
+
+lapply(models, function(m){
+  if(m == "Myers")
+    f <- Myers
+  else if(m == "Allen")
+    f <- RickerAllee
+  lapply(parameters[[m]], function(p)
+    lapply(nuisance_pars, function(n)
+      lapply(nuisance_values[[n]], function(v)
+        lapply(replicates)
+       
+```
+
+We do better to launch seperate scripts and write to a common data format.  
+
+We define a function that takes as arguments all things we wish to vary in the senstivity analysis, and returns a data.frame with the values of interest
+
+```{r eval=FALSE}
+sensitivity <- function(model, parameters, nuisance, seed){
+
+
+  
+  
+data.frame(model = model, pars = as.list(parameters), x = x)
+}
+```
+
+The data frame isn't a minimal representation: we intentionally replicate
+
+
+
+
+
 
 
 ```{r stateeq-local}
