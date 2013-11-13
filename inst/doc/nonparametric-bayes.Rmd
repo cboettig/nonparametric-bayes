@@ -652,7 +652,7 @@ Discussion
 
 - All models are "good fits" to the originally observed data. 
 - (Simple model choice immediately leads us astray)
-
+- Understanding the role of the prior 
 
 
 
@@ -721,6 +721,43 @@ of the observed data. This arises from the greater flexibility of the
 Gaussian process, which describes a large family of possible curves.
 Despite this flexibility, the GP can be described in relatively few 
 parameters and is thus far less likely to overfit. 
+
+### Risk-prone and Risk-adverse value functions
+
+The degree to which the decision-making part of the algorithm (the SDP)
+chooses to explore or avoid the resulting region of uncertainty can also
+be influenced by the curvature of the value (profit) function $\Pi$. Both to simplify 
+the intution and avoid biasing this result, we have chosen a profits that
+are linear in the catch and thus neither risk-prone nor risk adverse.  Making
+this function concave, representing the typical assumption of diminishing returns,
+would make the SDP more risk-adverse (as larger-than-expected stock sizes offer
+dimished returns relative to the cost of smaller-than-expected stock sizes), and 
+strengthen the result shown here in which the BNP solution tends to avoid the 
+region of uncertainty.  Sufficiently convex or risk-prone functions could lead
+the SDP to attempt higher exploitation rates despite the uncertainty.  
+Understanding the relative roles of such functions would be a promising direction
+for future investigation.  
+
+
+### The role of the prior
+
+Lastly, it should be noted that outside the data, the NBP reverts to the prior, 
+and consequently the choice of the prior can also play a significant role in 
+determining the optimal policy inferred by the SDP.  In the examples shown
+here we have selected a prior that is both relatively uninformative (due to the 
+broad priors placed on its parameters $\ell$ and $\sigma$ and simple (mean zero,
+radial basis function kernel).  In practice, both the choice of mean and the 
+choice of the covariance function may be chosen to confer particular biological
+properties, as well as more biologically informed priors for $\ell$ and $\sigma$.  
+In principle, this may allow a manager to improve the performance of the BNP-SDP
+approach by adding only enough additional detail as is justified.  For instance,
+it would be possible to use a linear or a Ricker-shaped mean in the prior without
+making the much stronger assumption that the Ricker is the structurally correct model. 
+However, this influence raises challenges as well.  For instance, in choosing a 
+trivial mean-zero prior, we bias the dynamics to transitions to 0 in step $X_{t+1}$ 
+from any stock size $X_t$ in the prior year, in the absence of any other data.  
+Future research must make sure that both the prior and the value function are 
+chosen appropriately for the problem at hand.  
 
 
 
@@ -903,5 +940,7 @@ for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`.
 The training data can be seen in Figure 1.  
 
 
-### Sensitivity Analysis 
+### Sensitivity Analysis
+
+
 
