@@ -136,6 +136,15 @@ the difficulties of formulating even qualitatively correct models of
 the underlying processes.
 
 
+We develop these concerns in the context of fisheries, though
+the underlying challenges and methods are germane to many other
+conservation and resource management problems.  The economic value and
+ecological concern have made marine fisheries the crucible for much
+of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
+in managing ecosystems under uncertainty.  Global trends [@Worm2006]
+and controversy [@Hilborn2007; @Worm2009] have made understanding these
+challenges all the more pressing.
+
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
 <!-- __We don't have the model__ -->
 
@@ -153,61 +162,81 @@ among a handful of alternative models.  Here we consider an approach
 that addresses uncertainty at each of these levels without assuming the
 dynamics follow a particular (i.e. parametric) structure.
 
+
+
+_Cut the next three paragraphs, since they are covered more consisely in the above paragraph?_
+
+#### Process, measurement, and implementation error
+
+Resource management and conservation planning seek to determine the
+optimal set of feasible actions to maximize the value of some objectives
+(see [@Halpern2012]).  Process error, measurement error, implementation
+error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
+sources of stochasticity in turn mean that model parameters can only
+be estimated approximately, requiring parametric uncertainty also be
+considered [@Ludwig1982].
+
+#### Parametric uncertainty
+
+As the parameter values for these models must be estimated from limited
+data, there will always be some uncertainty associated with these values.
+This uncertainty further compounds the intrinsic variability introduced
+by demographic or environmental noise.  The degree of uncertainty in
+the parameter values can be inferred from the data and reflected in the
+estimates of the transition probabilities [@Walters1982; @Mangel1988;
+@Mangel1997; @Schapaugh2013].
+
+#### Structural (model) uncertainty
+
+Estimates of parameter uncertainty are only as good as the parametric
+models themselves.  Often we do not understand the system dynamics well
+enough to know if a model provides a good approximation over the relevant
+range of states and timescales (criteria that we loosely refer to as
+defining the "right" or "true" model.)  So called structural or model
+uncertainty is a more difficult problem than parametric uncertainty.
+Typical solutions involve either model choice, model averaging, or
+introducing yet greater model complexity of which others may be special
+cases (model averaging being one such way to construct such a model)
+[@Williams2001; @Athanassoglou2012; @Cressie2009].  Even setting aside
+other computational and statistical concerns (e.g. [@Cressie2009]), these
+approaches do not address our second concern - representing uncertainty
+outside the observed data range.
+
+
 <!-- __We don't have the data where we need it__ -->
 <!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
 
-Model uncertainty is particularly insidious when model predictions
-must be made outside of the range of data on which the model was estimated.  
+Model uncertainty is particularly insidious when model predictions must
+be made outside of the range of data on which the model was estimated.
+This extrapolation uncertainty is felt most keenly in decision-theoretic
+(or optimal control) applications, since (a) exploring the potential
+action space typically involves considering actions that may move the
+system outside the range of observed behavior, and (b) decision-theoretic
+alogrithms rely not only on reasonable estimates of the expected
+outcomes, but depend on the weights given to all possible outcomes
+[_e.g._ @Weitzman2013].  If we are observing the fluctuations of a
+given fish stock over many years under a fixed harvesting pressure,
+we might develop and test a model that could reasonably predict the
+frequency of a deviation of a given size, even when such a deviation has
+not been previously observed. Yet such predictions are far less reliable
+when extrapolated to a harvest pressure that has not yet been observed.
+Thus, model uncertainty can be particularly challenging in the management
+and decision-making context.
 
 
-An additional source of uncertainty that has recieved less attention[^1]
-arises when applying a dynamical model outside the range of data on
-which it has been estimated.  This extrapolation uncertainty is felt
-most keenly in decision-theoretic applications, as (a) exploring the
-potential action space typically involves considering actions that
-may move the system outside the range of observed behavior, and (b)
-decision-theoretic alogrithms rely not only on reasonable estimates of
-the expected outcomes, but depend on the weights given to all possible
-outcomes [_e.g._ @Weitzman2013].  
+This difficult position of having neither the true model nor data that
+covers the full range of possible states is unfortunately the rule more
+than the exception. The potential concern of tipping points in ecological
+dyanmics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
+either knowledge of the true model or more complete sampling of the
+state space would make it easy to identify if a tipping point existed.
+If we do not know but cannot rule out such a possibility, then we
+face decision-making under this dual challege of model uncertainty and
+incomplete data coverage.
 
 
-<!-- 
-## Why we don't know the model
-- Complex dynamics  [@Glaser2013](http://doi.org/10.1111/faf.12037 "Complex dynamics may limit prediction in marine fisheries")
-- model choice and model averaging approaches
--->
-
-<!--
-## Why we don't have data where we need it
-- Concerns of tipping points 
-- Danger of learning 
--->
-
-
-<!-- Perhaps this is a better-worded version of the above??
-
-Often the set of feasible states is larger than the range of the observed
-states.  Though most systems subject to some degree of stochasticity
-can enter a state outside previously observed values by chance alone
-(such as a particularly low or high nutrient year), this concern is
-most keenly felt in the decision-theoretic context. If we are observing
-the fluctuations of a given fish stock over many years under a fixed
-harvesting pressure, we might develop and test a model that could
-reasonably predict the frequency of a deviation of a given size, even
-when such a deviation has not been previously observed.
-(The same analogy might be made to predicting hurricanes or other
-extreme weather events from historical data, which may be more accurately
-predicted in a constant climate than in one being perturbed).
-
--->
-
-
-<!-- Does this belong?  Improve transitions -->
-
-Concerns over the potential for tipping points in ecological dynamics
-[@Scheffer2001] highlight the dangers of uncertainty in ecological
-management and pose a substantial challenge to existing decision-theoretic
+These dual concerns pose a substantial challenge to existing decision-theoretic
 approaches [@Brozovic2011].  Because intervention is often too late 
 after a tipping point has been crossed (but see @Hughes2013), management
 is most often concerned with avoiding potentially catastrophic tipping
@@ -230,42 +259,6 @@ model is not known, this latter feature is crucial to providing a robust
 decision-theoretic approach in face of substantial structural uncertainty.
 
 
-
-<!-- More consise versions are now above 
-#### Parametric uncertainty 
-
-As the parameter values for these models must be estimated from limited data,  
-there will always be some uncertainty associated with these values.  This uncertainty
-further compounds the intrinsic variability introduced by demographic or environmental 
-noise.  The degree of uncertainty in the parameter values can be inferred from the data
-and reflected in the estimates of the transition probabilities [@Walters1982; @Mangel1988; @Mangel1997; @Schapaugh2013]. 
-
-#### Structural uncertainty 
-
-Estimates of parameter uncertainty are only as good as the parametric
-models themselves.  Often we do not understand the system dynamics well
-enough to know if a model provides a good approximation over the relevant
-range of states and timescales (criteria that we loosely refer to as
-defining the "right" or "true" model.)  So called structural or model
-uncertainty is a more difficult problem than parametric uncertainty.
-Typical solutions involve either model choice, model averaging, or
-introducing yet greater model complexity of which others may be special
-cases (model averaging being one such way to construct such a model)
-[@Williams2001; @Athanassoglou2012; @Cressie2009].  Even setting aside
-other computational and statistical concerns (e.g. [@Cressie2009]), these
-approaches do not address our second concern - representing uncertainty
-outside the observed data range.
-
-#### Limits of state space 
-
-Resource management and conservation planning seek to determine the
-optimal set of feasible actions to maximize the value of some objectives
-(see [@Halpern2012])  Process error, measurement error, implementation
-error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
-sources of stochasticity in turn mean that model parameters can only
-be estimated approximately, requiring parametric uncertainty also be
-considered [@Ludwig1982, ].
---> 
 
 
 
@@ -299,19 +292,10 @@ by stochastic dynamic programming, we are able to obtain more robust
 management policies than with common parametric modeling approaches.
 
 
-- Note on: Why fisheries 
 
-The economic value and ecological concern have made marine
-fisheries the crucible for much of the founding work [@Gordon1954;
-@Reed1979; @May1979; @Ludwig1982] in managing ecosystems under
-uncertainty.  Global trends [@Worm2006] and controversy [@Hilborn2007;
-@Worm2009] have made understanding these challenges all the more pressing.
-
-
-
-<!--move to  much later *Or do we need this at all?* --> 
-
+<!--move to  much later *Or do we need this at all?* 
 - _Note on comparing models_ (via value function rather than by "fit"). 
+-->
 
 The nature of decision-making problems provides a convenient way to compare 
 models.  Rather than compare models in terms of best fit to data or fret over
@@ -357,7 +341,7 @@ The non-parametric model is not captured by its parameter values or
 distributions alone. Either the model scales with the complexity of the data
 on which it is estimated (e.g. nonparametric heirarchical approaches such
 as the Dirchlet process) or the data points become themselves part of the model
-specification, as in the nonparametric regression used here.  we shall see here.  
+specification, as in the nonparametric regression used here.
 
 <!--
 - Definition
@@ -376,6 +360,7 @@ GPs can be found in @Rasmussen2006.
 - (Why this is a novel application thereof)
 --> 
 
+<!-- Useless 
 The essence of the GP approach can be captured in the following
 thought experiment: An exhaustive parametric approach to the challenge
 of structural uncertainty might proceed by writing down all possible
@@ -394,7 +379,7 @@ system, the GP approach postulates a prior distribution of (n-dimensional)
 curves that can be though of as approximations to a range of possible
 (parametric) models that might describe the data. The GP allows us to
 consider probabilities on a large set of possible curves simultaneously.
-
+-->
 
 The posterior distribution for the hyper-parameters of the Gaussian 
 process model are estimated by Metropolis-Hastings algorithm, again with
@@ -545,8 +530,11 @@ Results
 
 All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the expected value of the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity in growth rate.  Model-choice criteria shown in Table 1 penalize more complex models and show a slight preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
 
+
+
+
 % latex table generated in R 3.0.2 by xtable 1.7-1 package
-% Thu Nov 14 14:10:28 2013
+% Mon Nov 18 14:39:35 2013
 \begin{table}[ht]
 \centering
 \begin{tabular}{rrrr}
@@ -559,6 +547,7 @@ DIC & 50.14 & 49.45 & 50.61 \\
    \hline
 \end{tabular}
 \end{table}
+
 
 
 <!-- 
@@ -585,7 +574,7 @@ the tipping point.
 
 
 
-![plot of chunk out_of_sample_predictions](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
+![Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parameteric models, while the realized state often falls outside of the expected range forecasted by the structurally incorrect Myers and Ricker models.](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
 
 
 

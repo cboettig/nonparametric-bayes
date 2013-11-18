@@ -38,10 +38,12 @@ epub: ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 bib: 
 	grep -o "@\w*" ${SOURCEFILE}.Rmd | tr '\n' ',' | tr -d "@"  > refs.tmp  # Extract cited references
 	cp auxtemplate refs.aux          ## Create the aux file (in 3 steps)
-	cat refs.tmp >> refs.aux
+	cat refs.tmp >> refs.aux # need to avoid newline
 	echo "}" >> refs.aux	
 	bibtool -s -d --preserve.key.case=on -x refs.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
 
+rebib:
+	bibtool -s -d --preserve.key.case=on -x refs.aux ~/Documents/Mendeley/bib/*.bib > ${SOURCEFILE}.bib
 
 clean:
 	rm -rf *.log *.bbl *.blg *.out *.spl

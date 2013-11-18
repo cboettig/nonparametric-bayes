@@ -528,13 +528,18 @@ for(t in 1:(length(y)-1))
 crash_data <- step_ahead_posteriors(y)
 crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers"))
 ggplot(crash_data) + 
-  geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col = variable, 
-            group=interaction(L1,variable)), alpha=.1) + 
-  facet_wrap(~variable) + 
-  scale_colour_manual(values=colorkey, 
+  geom_boxplot(aes(as.factor(as.integer(time)), value, 
+                   fill = variable, col=variable), 
+               alpha=.7, outlier.size=1, position="identity") + 
+#  geom_line(aes(time, value, col = variable, 
+#            group=interaction(L1,variable)), alpha=.1) + 
+  geom_point(aes(time, stock), size = 3) + 
+  scale_fill_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
                       guide = guide_legend(override.aes = list(alpha = 1))) +  
-  theme(legend.position="none")
+  scale_colour_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
+                      guide = guide_legend(override.aes = list(alpha = 1))) +  
+  facet_wrap(~variable) + 
+  theme(legend.position="none") + xlab("time") + ylab("stock size") 
 
 
 ## @knitr gp-opt

@@ -146,38 +146,101 @@ when that uncertainty can be meaningfully quantified (Fischer et al.
 increasingly emphasized the difficulties of formulating even
 qualitatively correct models of the underlying processes.
 
+We develop these concerns in the context of fisheries, though the
+underlying challenges and methods are germane to many other conservation
+and resource management problems. The economic value and ecological
+concern have made marine fisheries the crucible for much of the founding
+work (H. S. Gordon 1954; Reed 1979; May et al. 1979; Ludwig and Walters
+1982) in managing ecosystems under uncertainty. Global trends (Worm et
+al. 2006) and controversy (Hilborn 2007; Worm et al. 2009) have made
+understanding these challenges all the more pressing.
+
 Uncertainty enters the decision-making process at many levels: intrinsic
 stochasticity in biological processes, measurements, and implementation
-of policy (\emph{e.g.} Reed 1979; C. W. Clark and Kirkwood 1986;
-Roughgarden and Smith 1996; Sethi et al. 2005), parameteric uncertainty
-(\emph{e.g.} Ludwig and Walters 1982; Hilborn and Mangel 1997;
-McAllister 1998; Schapaugh and Tyre 2013), and model or structural
-uncertainty (\emph{e.g.} B. K. Williams 2001; Cressie et al. 2009;
-Athanassoglou and Xepapadeas 2012). Of these, structural uncertainty
-incorporates the least a priori knowledge or assumptions and is
-generally the hardest to quantify. Typical approaches assume a weak
-notion of model uncertainty in which the correct model (or reasonable
-approximation) of the dynamics must be identified from among a handful
-of alternative models. Here we consider an approach that addresses
-uncertainty at each of these levels without assuming the dynamics follow
-a particular (i.e.~parametric) structure.
+of policy (\emph{e.g.} Reed 1979; Clark and Kirkwood 1986; Roughgarden
+and Smith 1996; Sethi et al. 2005), parameteric uncertainty (\emph{e.g.}
+Ludwig and Walters 1982; Hilborn and Mangel 1997; McAllister 1998;
+Schapaugh and Tyre 2013), and model or structural uncertainty
+(\emph{e.g.} B. K. Williams 2001; Cressie et al. 2009; Athanassoglou and
+Xepapadeas 2012). Of these, structural uncertainty incorporates the
+least a priori knowledge or assumptions and is generally the hardest to
+quantify. Typical approaches assume a weak notion of model uncertainty
+in which the correct model (or reasonable approximation) of the dynamics
+must be identified from among a handful of alternative models. Here we
+consider an approach that addresses uncertainty at each of these levels
+without assuming the dynamics follow a particular (i.e.~parametric)
+structure.
+
+\emph{Cut the next three paragraphs, since they are covered more
+consisely in the above paragraph?}
+
+\paragraph{Process, measurement, and implementation
+error}\label{process-measurement-and-implementation-error}
+
+Resource management and conservation planning seek to determine the
+optimal set of feasible actions to maximize the value of some objectives
+(see ({\textbf{???}})). Process error, measurement error, implementation
+error (Reed 1979). These sources of stochasticity in turn mean that
+model parameters can only be estimated approximately, requiring
+parametric uncertainty also be considered (Ludwig and Walters 1982).
+
+\paragraph{Parametric uncertainty}\label{parametric-uncertainty}
+
+As the parameter values for these models must be estimated from limited
+data, there will always be some uncertainty associated with these
+values. This uncertainty further compounds the intrinsic variability
+introduced by demographic or environmental noise. The degree of
+uncertainty in the parameter values can be inferred from the data and
+reflected in the estimates of the transition probabilities
+({\textbf{???}}; Mangel and Clark 1988; {\textbf{???}}; Schapaugh and
+Tyre 2013).
+
+\paragraph{Structural (model)
+uncertainty}\label{structural-model-uncertainty}
+
+Estimates of parameter uncertainty are only as good as the parametric
+models themselves. Often we do not understand the system dynamics well
+enough to know if a model provides a good approximation over the
+relevant range of states and timescales (criteria that we loosely refer
+to as defining the ``right'' or ``true'' model.) So called structural or
+model uncertainty is a more difficult problem than parametric
+uncertainty. Typical solutions involve either model choice, model
+averaging, or introducing yet greater model complexity of which others
+may be special cases (model averaging being one such way to construct
+such a model) (B. K. Williams 2001; Athanassoglou and Xepapadeas 2012;
+Cressie et al. 2009). Even setting aside other computational and
+statistical concerns (e.g. (Cressie et al. 2009)), these approaches do
+not address our second concern - representing uncertainty outside the
+observed data range.
 
 Model uncertainty is particularly insidious when model predictions must
 be made outside of the range of data on which the model was estimated.
+This extrapolation uncertainty is felt most keenly in decision-theoretic
+(or optimal control) applications, since (a) exploring the potential
+action space typically involves considering actions that may move the
+system outside the range of observed behavior, and (b)
+decision-theoretic alogrithms rely not only on reasonable estimates of
+the expected outcomes, but depend on the weights given to all possible
+outcomes (\emph{e.g.} Weitzman 2013). If we are observing the
+fluctuations of a given fish stock over many years under a fixed
+harvesting pressure, we might develop and test a model that could
+reasonably predict the frequency of a deviation of a given size, even
+when such a deviation has not been previously observed. Yet such
+predictions are far less reliable when extrapolated to a harvest
+pressure that has not yet been observed. Thus, model uncertainty can be
+particularly challenging in the management and decision-making context.
 
-An additional source of uncertainty that has recieved less
-attention{[}\^{}1{]} arises when applying a dynamical model outside the
-range of data on which it has been estimated. This extrapolation
-uncertainty is felt most keenly in decision-theoretic applications, as
-(a) exploring the potential action space typically involves considering
-actions that may move the system outside the range of observed behavior,
-and (b) decision-theoretic alogrithms rely not only on reasonable
-estimates of the expected outcomes, but depend on the weights given to
-all possible outcomes (\emph{e.g.} Weitzman 2013).
+This difficult position of having neither the true model nor data that
+covers the full range of possible states is unfortunately the rule more
+than the exception. The potential concern of tipping points in
+ecological dyanmics (Scheffer et al. 2001; Polasky et al. 2011) reflects
+these concerns -- as either knowledge of the true model or more complete
+sampling of the state space would make it easy to identify if a tipping
+point existed. If we do not know but cannot rule out such a possibility,
+then we face decision-making under this dual challege of model
+uncertainty and incomplete data coverage.
 
-Concerns over the potential for tipping points in ecological dynamics
-(Scheffer et al. 2001) highlight the dangers of uncertainty in
-ecological management and pose a substantial challenge to existing
+These dual concerns pose a substantial challenge to existing
 decision-theoretic approaches (Brozović and Schlenker 2011). Because
 intervention is often too late after a tipping point has been crossed
 (but see Hughes et al. (2013)), management is most often concerned with
@@ -218,26 +281,6 @@ description of what is known and unknown to the decision-making under
 uncertainty framework provided by stochastic dynamic programming, we are
 able to obtain more robust management policies than with common
 parametric modeling approaches.
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  Note on: Why fisheries
-\end{itemize}
-
-The economic value and ecological concern have made marine fisheries the
-crucible for much of the founding work (H. S. Gordon 1954; Reed 1979;
-May et al. 1979; Ludwig and Walters 1982) in managing ecosystems under
-uncertainty. Global trends (Worm et al. 2006) and controversy (Hilborn
-2007; Worm et al. 2009) have made understanding these challenges all the
-more pressing.
-
-\begin{itemize}
-\itemsep1pt\parskip0pt\parsep0pt
-\item
-  \emph{Note on comparing models} (via value function rather than by
-  ``fit'').
-\end{itemize}
 
 The nature of decision-making problems provides a convenient way to
 compare models. Rather than compare models in terms of best fit to data
@@ -280,35 +323,15 @@ values or distributions alone. Either the model scales with the
 complexity of the data on which it is estimated (e.g.~nonparametric
 heirarchical approaches such as the Dirchlet process) or the data points
 become themselves part of the model specification, as in the
-nonparametric regression used here. we shall see here.
+nonparametric regression used here.
 
 The use of Gaussian process (GP) regression (or ``kriging'' in the
 geospatial literature) to formulate a predictive model is relatively new
-in the context of modeling dynamical systems (Kocijan et al. 2005), and
-was first introduced in the context ecological modeling and fisheries
+in the context of modeling dynamical systems ({\textbf{???}}), and was
+first introduced in the context ecological modeling and fisheries
 management in Munch et al. (2005). An accessible and thorough
 introduction to the formulation and use of GPs can be found in Rasmussen
 and Williams (2006).
-
-The essence of the GP approach can be captured in the following thought
-experiment: An exhaustive parametric approach to the challenge of
-structural uncertainty might proceed by writing down all possible
-functional forms for the underlying dynamical system with all possible
-parameter values for each form, and then consider searching over this
-huge space to select the most likely model and parameters; or using a
-Bayesian approach, assign priors to each of these possible models and
-infer the posterior distribution of possible models. The GP approach can
-be thought of as a computationally efficient approximation to this
-approach. GPs represent a large class of models that can be though of as
-capturing or reasonably approximating the set of models in this
-collection. By modeling at the level of the process, rather than the
-level of parametric equation, we can more concisely capture the possible
-behavior of these curves. In place of a parametric model of the
-dynamical system, the GP approach postulates a prior distribution of
-(n-dimensional) curves that can be though of as approximations to a
-range of possible (parametric) models that might describe the data. The
-GP allows us to consider probabilities on a large set of possible curves
-simultaneously.
 
 The posterior distribution for the hyper-parameters of the Gaussian
 process model are estimated by Metropolis-Hastings algorithm, again with
@@ -434,8 +457,8 @@ simpler Ricker model over the more complicated alternate stable state
 models (Allen and Myers). Details on MCMC estimates for each model,
 traces, and posterior distributions can be found in the appendix.
 
-\% latex table generated in R 3.0.2 by xtable 1.7-1 package \% Thu Nov
-14 14:10:28 2013
+\% latex table generated in R 3.0.2 by xtable 1.7-1 package \% Mon Nov
+18 14:39:35 2013
 
 \begin{table}[ht]
 \centering
@@ -478,7 +501,16 @@ near the tipping point.
 \begin{figure}[htbp]
 \centering
 \includegraphics{figure/nonparametric-bayes-out_of_sample_predictions.pdf}
-\caption{plot of chunk out\_of\_sample\_predictions}
+\caption{Out of sample predictions of the dynamics under each model.
+Points show the stock size simulated by the true model. Overlay shows
+the range of states predicted by each model, based on the state observed
+in the previous time step. The Ricker model always predicts population
+growth, while the actual population shrinks in each step as the initial
+condition falls below the Allee threshold of the underlying model
+(Allen). Note that the GP is both more pessimistic and more uncertain
+about the future state than the parameteric models, while the realized
+state often falls outside of the expected range forecasted by the
+structurally incorrect Myers and Ricker models.}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -924,8 +956,8 @@ Management} 13 (3) (sep): 235--244. doi:10.1016/0095-0696(86)90024-0.
 Cressie, Noel, Catherine a Calder, James S. Clark, Jay M. Ver Hoef, and
 Christopher K. Wikle. 2009. ``Accounting for Uncertainty in Ecological
 Analysis: the Strengths and Limitations of Hierarchical Statistical
-Modeling.'' \emph{Ecological Applications} 19 (3) (apr): 553--70.
-doi:10.1890/07-0744.1.
+Modeling.'' \emph{Ecological Applications : a Publication of the
+Ecological Society of America} 19 (3) (apr): 553--70.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19425416}.
 
 Cuddington, Kim M., M. J. Fortin, and L. R. Gerber. 2013.
@@ -975,12 +1007,6 @@ Time During Slow, Unrecognized Regime Shifts.'' \emph{Trends in Ecology
 \& Evolution} 28 (3) (mar): 149--55. doi:10.1016/j.tree.2012.08.022.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/22995893}.
 
-Kocijan, Juš, Agathe Girard, Bla\textbackslash{}vz Banko, and Roderick
-Murray-Smith. 2005. ``Dynamic Systems Identification with Gaussian
-Processes.'' \emph{Mathematical and Computer Modelling of Dynamical
-Systems} 11 (4): 411--424. doi:10.1080/13873950500068567.
-\url{http://www.tandfonline.com/doi/abs/10.1080/13873950500068567}.
-
 Ludwig, Donald, and Carl J. Walters. 1982. ``Optimal Harvesting with
 Imprecise Parameter Estimates.'' \emph{Ecological Modelling} 14 (3-4)
 (jan): 273--292. doi:10.1016/0304-3800(82)90023-0.
@@ -1020,6 +1046,12 @@ Mangel. 2005. ``A Unified Treatment of Top-down and Bottom-up Control of
 Reproduction in Populations.'' \emph{Ecology Letters} 8 (7) (may):
 691--695. doi:10.1111/j.1461-0248.2005.00766.x.
 \url{http://doi.wiley.com/10.1111/j.1461-0248.2005.00766.x}.
+
+Polasky, Stephen, Stephen R. Carpenter, Carl Folke, and Bonnie Keeler.
+2011. ``Decision-making Under Great Uncertainty: Environmental
+Management in an Era of Global Change.'' \emph{Trends in Ecology \&
+Evolution} (may): 1--7. doi:10.1016/j.tree.2011.04.007.
+\url{http://www.ncbi.nlm.nih.gov/pubmed/21616553}.
 
 Rasmussen, Carl Edward, and C. K. I. Williams. 2006. \emph{Gaussian
 Processes for Machine Learning}. Edited by Thomas Dietterich. Boston:
