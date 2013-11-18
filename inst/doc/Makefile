@@ -3,7 +3,6 @@ SOURCEFILE = nonparametric-bayes
 
 
 all: 
-	make bib
 	make pdf
 
 
@@ -36,7 +35,7 @@ epub: ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 	./knit epub
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md -o ${SOURCEFILE}.epub
 
-bib: ${SOURCEFILE}.Rmd auxtemplate
+bib: 
 	grep -o "@\w*" ${SOURCEFILE}.Rmd | tr '\n' ',' | tr -d "@"  > refs.tmp  # Extract cited references
 	cp auxtemplate refs.aux          ## Create the aux file (in 3 steps)
 	cat refs.tmp >> refs.aux

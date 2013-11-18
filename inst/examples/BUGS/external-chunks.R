@@ -200,7 +200,7 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
 })
 plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
+#  geom_line(data=allen_priors, aes(x=value, y=density), col="red") +  
   facet_wrap(~ variable, scale="free", ncol=3)
 
 
@@ -286,7 +286,7 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
 # plot posterior distributions
 plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
+#  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") +  # don't plot priors 
   facet_wrap(~ variable, scale="free", ncol=2)
 
 
@@ -378,7 +378,8 @@ myers_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
+plot_myers_traces <- ggplot(myers_posteriors) + 
+  geom_line(aes(index, value)) + # priors, need to fix order though
   facet_wrap(~ variable, scale="free", ncol=1)
 
 
@@ -390,7 +391,7 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
 })
 plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+#  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") +  # Whoops, these are misaligned. see table instead 
   facet_wrap(~ variable, scale="free", ncol=3)
 
 

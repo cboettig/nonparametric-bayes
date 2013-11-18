@@ -145,8 +145,8 @@ limited data.
 Introduction
 ============
 
-Decision making under uncertainty is a ubiquitous challenge of natural 
-resource management and conservation.  Ecological dynamics are
+Decision making under uncertainty is a ubiquitous challenge of
+natural resource management and conservation.  Ecological dynamics are
 frequently complex and difficult to measure, making uncertainty in our
 understanding a prediction a persistent challenge to effective management.
 Decision-theoretic approaches provide a framework to determine the
@@ -162,7 +162,7 @@ the underlying processes.
 
 Uncertainty enters the decision-making process at many levels:
 intrinsic stochasticity in biological processes, measurements, and
-implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1997;
+implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
 @Sethi2005], parameteric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
 @McAllister1998; @Schapaugh2013], and model or structural uncertainty
 [_e.g._ @Williams2001; @Cressie2009;  @Athanassoglou2012].  Of these,
@@ -240,7 +240,7 @@ _Map_
 -->
 
 Here we illustrate how a stochastic dynamic programming (SDP) algorithm
-[@Mangel1988; @Possingham1997, Marescot2013] can be driven by the
+[@Mangel1988; @Marescot2013] can be driven by the
 predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].
 This provides two distinct advantages compared with contemporary
 approaches.  First, using a BNP sidesteps the need for an accurate
@@ -378,7 +378,7 @@ The non-parametric model is not captured by its parameter values or
 distributions alone. Either the model scales with the complexity of the data
 on which it is estimated (e.g. nonparametric heirarchical approaches such
 as the Dirchlet process) or the data points become themselves part of the model
-specification, as in the nonparametric regression used here.  we shall see here.  
+specification, as in the nonparametric regression used here.
 
 <!--
 - Definition
@@ -397,25 +397,24 @@ GPs can be found in @Rasmussen2006.
 - (Why this is a novel application thereof)
 --> 
 
-The essence of the GP approach can be captured in the
-following thought experiment: An exhaustive parametric approach to the
-challenge of structural uncertainty might proceed by writing down all
-possible functional forms for the underlying dynamical system with all
-possible parameter values for each form, and then consider searching
-over this huge space to select the most likely model and parameters;
-or using a Bayesian approach, assign priors to each of these possible
-models and infer the posterior distribution of possible models. The
-GP approach can be thought of as a computationally
-efficient approximation to this approach. GPs represent
-a large class of models that can be though of as capturing or reasonably
-approximating the set of models in this collection.  By modeling at the
-level of the process, rather than the level of parametric equation,
-we can more concisely capture the possible behavior of these curves.
-In place of a parametric model of the dynamical system, the GP 
-approach postulates a prior distribution of (n-dimensional)
+The essence of the GP approach can be captured in the following
+thought experiment: An exhaustive parametric approach to the challenge
+of structural uncertainty might proceed by writing down all possible
+functional forms for the underlying dynamical system with all possible
+parameter values for each form, and then consider searching over this
+huge space to select the most likely model and parameters; or using a
+Bayesian approach, assign priors to each of these possible models and
+infer the posterior distribution of possible models. The GP approach
+can be thought of as a computationally efficient approximation to this
+approach. GPs represent a large class of models that can be though
+of as capturing or reasonably approximating the set of models in this
+collection.  By modeling at the level of the process, rather than the
+level of parametric equation, we can more concisely capture the possible
+behavior of these curves.  In place of a parametric model of the dynamical
+system, the GP approach postulates a prior distribution of (n-dimensional)
 curves that can be though of as approximations to a range of possible
-(parametric) models that might describe the data. The GP allows us
-to consider probabilities on a large set of possible curves simultaneously.  
+(parametric) models that might describe the data. The GP allows us to
+consider probabilities on a large set of possible curves simultaneously.
 
 
 The posterior distribution for the hyper-parameters of the Gaussian 
@@ -579,17 +578,18 @@ All models fit the observed data rather closely and with relatively small uncert
 ```{r statespace_posteriors, dependson=c("assemble-models"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", include=TRUE, echo=FALSE, fig.width=8, fig.height=6}
 ```
 
-The mean inferred state space dynamics of each model
-relative to the true model used to generate the data is shown in Figure 2, 
-predicting the relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year.  Note that in contrast to the  other models shown, the expected 
-Gaussian process corresponds to a distribution of curves - as indicated
-by the gray band - which itself has a mean shown in black. Parameter uncertainty
-(not shown) spreads out the estimates further.  
-The observed data from which each model is estimated is also shown.  The observations come
-from only a limited region of state space corresponding to unharvested
-or weakly harvested system.  No observations occur at the theoretical
-optimum harvest rate or near the tipping point.
+The mean inferred state space dynamics of each model relative to the
+true model used to generate the data is shown in Figure 2, predicting
+the relationship between observed stock size (x-axis) to the stock
+size after recruitment the following year.  Note that in contrast to
+the  other models shown, the expected Gaussian process corresponds to a
+distribution of curves - as indicated by the gray band - which itself
+has a mean shown in black. Parameter uncertainty (not shown) spreads
+out the estimates further.  The observed data from which each model is
+estimated is also shown.  The observations come from only a limited region
+of state space corresponding to unharvested or weakly harvested system.
+No observations occur at the theoretical optimum harvest rate or near
+the tipping point.
 
 
 
@@ -611,35 +611,36 @@ optimum harvest rate or near the tipping point.
 ```{r Figure2, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", include=TRUE, echo=FALSE}
 ```
 
-Despite the similarities in model fits to the observed data, the policies
-inferred under each model differ widely, as shown in Figure 3.  
-Policies are shown in terms of target
-escapement, $S_t$.  Under models such as this a constant escapement
-policy is expected to be optimal [@Reed1979], whereby population levels
-below a certain size $S$ are unharvested, while above that size the harvest
-strategy aims to return the population to $S$, resulting in the hockey-stick
-shaped policies shown.  Only the structurally correct model (Allen model) and the GP 
-produce policies close to the true optimum policy (where both the underlying 
-model structure and parameter values are known without error).  
+Despite the similarities in model fits to the observed data, the
+policies inferred under each model differ widely, as shown in Figure 3.
+Policies are shown in terms of target escapement, $S_t$.  Under models
+such as this a constant escapement policy is expected to be optimal
+[@Reed1979], whereby population levels below a certain size $S$ are
+unharvested, while above that size the harvest strategy aims to return the
+population to $S$, resulting in the hockey-stick shaped policies shown.
+Only the structurally correct model (Allen model) and the GP produce
+policies close to the true optimum policy (where both the underlying
+model structure and parameter values are known without error).
 
 
 ```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.",  include=TRUE, echo=FALSE}
 ```
 
-The consequences of managing 100 replicate realizations of the 
-simulated fishery under each of the policies estimated is shown in Figure 4.  As expected
-from the policy curves, the structurally correct model under-harvests,
-leaving the stock to vary around it's un-fished optimum.  The structurally
-incorrect Ricker model over-harvests the population passed
-the tipping point consistently, resulting in the immediate crash of the stock and 
-thus derives minimal profits.  
+The consequences of managing 100 replicate realizations of the simulated
+fishery under each of the policies estimated is shown in Figure 4.
+As expected from the policy curves, the structurally correct model
+under-harvests, leaving the stock to vary around it's un-fished optimum.
+The structurally incorrect Ricker model over-harvests the population
+passed the tipping point consistently, resulting in the immediate crash
+of the stock and thus derives minimal profits.
 
-These results are robust across a range of stochastic realizations, models, and parameter values.  
-The results across this range can most easily be compared 
-by using the relative differences in net present value realized by each of the model,
-as shown in Figure 5.  The BNP-SDP approach most consistently realizes a value 
-close to the optimal solution, and importantly avoids ever driving the system across
-the tipping point, which results in the near-zero value cases in the parametric models.  
+These results are robust across a range of stochastic realizations,
+models, and parameter values.  The results across this range can most
+easily be compared by using the relative differences in net present
+value realized by each of the model, as shown in Figure 5.  The BNP-SDP
+approach most consistently realizes a value close to the optimal solution,
+and importantly avoids ever driving the system across the tipping point,
+which results in the near-zero value cases in the parametric models.
 
 
 ```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE, echo=FALSE}
@@ -715,42 +716,45 @@ Gaussian process, which describes a large family of possible curves.
 Despite this flexibility, the GP can be described in relatively few 
 parameters and is thus far less likely to overfit. 
 
-### Risk-prone and Risk-adverse value functions
+### Risk-prone and risk-adverse value functions
 
 The degree to which the decision-making part of the algorithm (the SDP)
 chooses to explore or avoid the resulting region of uncertainty can also
-be influenced by the curvature of the value (profit) function $\Pi$. Both to simplify 
-the intution and avoid biasing this result, we have chosen a profits that
-are linear in the catch and thus neither risk-prone nor risk adverse.  Making
-this function concave, representing the typical assumption of diminishing returns,
-would make the SDP more risk-adverse (as larger-than-expected stock sizes offer
-dimished returns relative to the cost of smaller-than-expected stock sizes), and 
-strengthen the result shown here in which the BNP solution tends to avoid the 
-region of uncertainty.  Sufficiently convex or risk-prone functions could lead
-the SDP to attempt higher exploitation rates despite the uncertainty.  
-Understanding the relative roles of such functions would be a promising direction
-for future investigation.  
+be influenced by the curvature of the value (profit) function $\Pi$. Both
+to simplify the intution and avoid biasing this result, we have chosen
+a profits that are linear in the catch and thus neither risk-prone nor
+risk adverse.  Making this function concave, representing the typical
+assumption of diminishing returns, would make the SDP more risk-adverse
+(as larger-than-expected stock sizes offer dimished returns relative
+to the cost of smaller-than-expected stock sizes), and strengthen the
+result shown here in which the BNP solution tends to avoid the region
+of uncertainty.  Sufficiently convex or risk-prone functions could lead
+the SDP to attempt higher exploitation rates despite the uncertainty.
+Understanding the relative roles of such functions would be a promising
+direction for future investigation.
 
 
 ### The role of the prior
 
-Lastly, it should be noted that outside the data, the NBP reverts to the prior, 
-and consequently the choice of the prior can also play a significant role in 
-determining the optimal policy inferred by the SDP.  In the examples shown
-here we have selected a prior that is both relatively uninformative (due to the 
-broad priors placed on its parameters $\ell$ and $\sigma$ and simple (mean zero,
-radial basis function kernel).  In practice, both the choice of mean and the 
-choice of the covariance function may be chosen to confer particular biological
-properties, as well as more biologically informed priors for $\ell$ and $\sigma$.  
-In principle, this may allow a manager to improve the performance of the BNP-SDP
-approach by adding only enough additional detail as is justified.  For instance,
-it would be possible to use a linear or a Ricker-shaped mean in the prior without
-making the much stronger assumption that the Ricker is the structurally correct model. 
-However, this influence raises challenges as well.  For instance, in choosing a 
-trivial mean-zero prior, we bias the dynamics to transitions to 0 in step $X_{t+1}$ 
-from any stock size $X_t$ in the prior year, in the absence of any other data.  
-Future research must make sure that both the prior and the value function are 
-chosen appropriately for the problem at hand.  
+Lastly, it should be noted that outside the data, the NBP reverts to
+the prior, and consequently the choice of the prior can also play a
+significant role in determining the optimal policy inferred by the
+SDP.  In the examples shown here we have selected a prior that is both
+relatively uninformative (due to the broad priors placed on its parameters
+$\ell$ and $\sigma$ and simple (mean zero, radial basis function kernel).
+In practice, both the choice of mean and the choice of the covariance
+function may be chosen to confer particular biological properties,
+as well as more biologically informed priors for $\ell$ and $\sigma$.
+In principle, this may allow a manager to improve the performance of the
+BNP-SDP approach by adding only enough additional detail as is justified.
+For instance, it would be possible to use a linear or a Ricker-shaped
+mean in the prior without making the much stronger assumption that the
+Ricker is the structurally correct model.  However, this influence raises
+challenges as well.  For instance, in choosing a trivial mean-zero prior,
+we bias the dynamics to transitions to 0 in step $X_{t+1}$ from any
+stock size $X_t$ in the prior year, in the absence of any other data.
+Future research must make sure that both the prior and the value function
+are chosen appropriately for the problem at hand.
 
 
 
@@ -759,45 +763,44 @@ Future directions
 
 ### Higher dimensions 
 
-In this simulated example, the underlying
-dynamics are truly governed by a simple parametric model, allowing
-the parametric approaches to be more accurate.  Similarly, because the
-dynamics are  one-dimensional dynamics and lead to  stable nodes (rather
-than other attractors such as limit-cycles resulting in oscillations),
-the training data provides relatively limited information about the
-dynamics.  For these reasons, we anticipate that in higher-dimensional
-examples characteristic of ecosystem management problems that the machine
-learning approach will prove even more valuable.
+In this simulated example, the underlying dynamics are truly governed
+by a simple parametric model, allowing the parametric approaches to be
+more accurate.  Similarly, because the dynamics are  one-dimensional
+dynamics and lead to  stable nodes (rather than other attractors such
+as limit-cycles resulting in oscillations), the training data provides
+relatively limited information about the dynamics.  For these reasons,
+we anticipate that in higher-dimensional examples characteristic of
+ecosystem management problems that the machine learning approach will
+prove even more valuable.
 
 
 ### Real-time learning
 
-In our treatment here we have ignored the possibility of learning during the 
-management phase, in which the additional observations of the stock size could
-potentially improve parameter estimates.  Of particular interest in the 
-context of the extreme uncertainty considered here is the notion of 
-"active adaptive management" or "adaptive probing", which may actively
-seek to reduce uncertainty.  
-The concept of adaptive probing is one area that has explicitly
-addressed the extrapolation uncertainty addressed here, though 
-typically without the additional issue of model uncertainty.  As a 
-result, adaptive probing strategies suggest rather opposite conclusions
-than what we observe here. Such adaptive probing or Dual
-Control (e.g. @Ludwig1982) approaches 
-trade off short term utility by choosing actions that can reduce
-uncertainty.  Adaptive probing strategies arise when it is valuable to
-intentionally force a system far from the observed values even when the
-expected value such actions is low, as it provides much faster learning
-and consequent reduction of model uncertainty that can allow greater value
-to be derived later on.  For instance, @Ludwig1982 show that it may be
-advantageous to fish an unexploited population very heavily at first
-to obtain a better estimate of the recruitment rate.  This intuitive
-strategy when a population is governed by a Ricker or Beverton-Holt-like
-dynamic would clearly be disastrous if instead the dynamics contained
-an unforeseen tipping point.  The best way to learn where the edge lies
-may be to walk up to it, but it is also the most dangerous.  Future work
-should attempt to understand when such active adaptive learning is valuable,
-and when it will increase the risk of an irreversible transition.  
+In our treatment here we have ignored the possibility of learning during
+the management phase, in which the additional observations of the stock
+size could potentially improve parameter estimates.  Of particular
+interest in the context of the extreme uncertainty considered here
+is the notion of "active adaptive management" or "adaptive probing",
+which may actively seek to reduce uncertainty.  The concept of adaptive
+probing is one area that has explicitly addressed the extrapolation
+uncertainty addressed here, though typically without the additional
+issue of model uncertainty.  As a result, adaptive probing strategies
+suggest rather opposite conclusions than what we observe here. Such
+adaptive probing or Dual Control (e.g. @Ludwig1982) approaches trade
+off short term utility by choosing actions that can reduce uncertainty.
+Adaptive probing strategies arise when it is valuable to intentionally
+force a system far from the observed values even when the expected value
+such actions is low, as it provides much faster learning and consequent
+reduction of model uncertainty that can allow greater value to be derived
+later on.  For instance, @Ludwig1982 show that it may be advantageous
+to fish an unexploited population very heavily at first to obtain a
+better estimate of the recruitment rate.  This intuitive strategy when a
+population is governed by a Ricker or Beverton-Holt-like dynamic would
+clearly be disastrous if instead the dynamics contained an unforeseen
+tipping point.  The best way to learn where the edge lies may be to
+walk up to it, but it is also the most dangerous.  Future work should
+attempt to understand when such active adaptive learning is valuable,
+and when it will increase the risk of an irreversible transition.
 
 
 Acknowledgments
@@ -821,12 +824,14 @@ $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
 
 Figure S1: Ricker model: prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE, fig.height=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Ricker model", fig.width=8}
 plot_ricker_traces
 ```
 
-```{r, echo=FALSE, include=TRUE}
-plot_ricker_posteriors
+```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=8}
+ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
 ```
 Table S1: Parameterization of the priors
 
@@ -843,12 +848,14 @@ $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} $$
 Eq S2: Myers model 
 Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE, fig.height=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Myers model", fig.width=8}
 plot_myers_traces
 ```
 
-```{r, echo=FALSE, include=TRUE}
-plot_myers_posteriors
+```{r, echo=FALSE, include=TRUE, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=8}
+ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
 Table S2: Parameterization of the priors
@@ -865,12 +872,14 @@ $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
 Figure S3: Allen model: prior and posterior distributions for parameter estimates.
 
-```{r, echo=FALSE, include=TRUE, fig.height=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Allen model", fig.width=8}
 plot_allen_traces
 ```
 
-```{r, echo=FALSE, include=TRUE}
-plot_allen_posteriors
+```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=8}
+ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=3)
 ```
 
 Table S3: Parameterization of the priors
