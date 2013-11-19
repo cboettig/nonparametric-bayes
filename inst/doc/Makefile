@@ -23,6 +23,8 @@ docx:  ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 	./knit docx
 	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --reference-docx=reference.docx -o ${SOURCEFILE}.docx
 
+tex: 
+	pandoc -s -S --biblio ${SOURCEFILE}.bib ${SOURCEFILE}.md --template=elsarticle.latex -o ${SOURCEFILE}.tex
 
 pdf: ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 	./knit pdf

@@ -1,4 +1,51 @@
-% Avoiding tipping points in the management of ecological systems: a non-parametric Bayesian approach
+---
+title: "Avoiding tipping points in the management of ecological systems: a non-parametric Bayesian approach"
+author: 
+  - name: "Carl Boettiger"
+    affiliation: cstar
+    email: cboettig@gmail.com
+    footnote: Corresponding author
+  - name: Marc Mangel
+    affiliation: cstar
+  - name: Stephan Munch
+    affiliation: noaa
+address: 
+  - code: cstar
+    address: | 
+      Center for Stock Assessment Research, 
+      Department of Applied Math and Statistics, 
+      University of California, Mail Stop SOE-2,
+      Santa Cruz, CA 95064, USA
+  - code: noaa
+    address: | 
+      Southwest Fisheries Science Center, 
+      National Oceanic and Atmospheric Administration, 
+      110 Shaffer Road, Santa Cruz, CA 95060, USA
+
+abstract: |
+          Model uncertainty and limited data coverage are fundamental challenges to
+          robust ecosystem management.  These challenges are acutely highlighted
+          by concerns that many ecological systems may contain tipping points.
+          Before a collapse, we do not know where the tipping points lie, if the
+          exist at all.  Hence, we know neither a complete model of the system
+          dynamics nor do we have access to data in some large region of state-space
+          where such a tipping point might exist.  These two sources of uncertainty
+          frustrate state-of-the-art parametric approaches to decision theory
+          and optimal control.  I will illustrate how a non-parametric approach
+          using a Gaussian Process prior provides a more flexible representation
+          of this inherent uncertainty.  Consequently, we can adapt the Gaussian
+          Process prior to a stochastic dynamic programming framework in order to
+          make robust management predictions under both model and uncertainty and
+          limited data.
+keywords:
+  - Bayesian
+  - Structural Uncertainty
+  - Nonparametric 
+  - Optimal Control
+  - Decision Theory
+  - Gaussian Processes
+  - Fisheries Management
+---
 
 <!-- Run R code for analysis, to be called by figures -->
 
@@ -102,23 +149,19 @@
 
 
 
-Abstract
-========
 
-Model uncertainty and limited data coverage are fundamental challenges to
-robust ecosystem management.  These challenges are acutely highlighted
-by concerns that many ecological systems may contain tipping points.
-Before a collapse, we do not know where the tipping points lie, if the
-exist at all.  Hence, we know neither a complete model of the system
-dynamics nor do we have access to data in some large region of state-space
-where such a tipping point might exist.  These two sources of uncertainty
-frustrate state-of-the-art parametric approaches to decision theory
-and optimal control.  I will illustrate how a non-parametric approach
-using a Gaussian Process prior provides a more flexible representation
-of this inherent uncertainty.  Consequently, we can adapt the Gaussian
-Process prior to a stochastic dynamic programming framework in order to
-make robust management predictions under both model and uncertainty and
-limited data.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Introduction
@@ -166,27 +209,27 @@ dynamics follow a particular (i.e. parametric) structure.
 
 _Cut the next three paragraphs, since they are covered more consisely in the above paragraph?_
 
-#### Process, measurement, and implementation error
+### Process, measurement, and implementation error
 
 Resource management and conservation planning seek to determine the
 optimal set of feasible actions to maximize the value of some objectives
-(see [@Halpern2012]).  Process error, measurement error, implementation
+(e.g @Halpern2013).  Process error, measurement error, implementation
 error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
 sources of stochasticity in turn mean that model parameters can only
 be estimated approximately, requiring parametric uncertainty also be
 considered [@Ludwig1982].
 
-#### Parametric uncertainty
+### Parametric uncertainty
 
 As the parameter values for these models must be estimated from limited
 data, there will always be some uncertainty associated with these values.
 This uncertainty further compounds the intrinsic variability introduced
 by demographic or environmental noise.  The degree of uncertainty in
 the parameter values can be inferred from the data and reflected in the
-estimates of the transition probabilities [@Walters1982; @Mangel1988;
-@Mangel1997; @Schapaugh2013].
+estimates of the transition probabilities [@Ludwig1982; @Mangel1988;
+@Hilborn1997; @Schapaugh2013].
 
-#### Structural (model) uncertainty
+### Structural (model) uncertainty
 
 Estimates of parameter uncertainty are only as good as the parametric
 models themselves.  Often we do not understand the system dynamics well
@@ -400,19 +443,17 @@ Approach and Methods
 
 ### Statement of the optimal control problem
 
-<!-- FIXME -->
-
-- Underlying model 
-- Available data 
-
-
-<!--
-- Value function
---> 
-
-
-For simplicity we assume profit is simply linear in the realized harvest (only
-enforcing the restriction that harvest can not exceed available stock)
+To illustrate the application of the BNP-SDP approach and compare to the
+predictions of the alternative parametric models we focus on the classical
+problem of selecting the appropriate harvest level given an observation
+of the stock size in the previous year  [@Reed1979; @Ludwig1982; @Mangel1988].
+Given this observation and the model (together with the parameter uncertainty) of the stock
+recruitment process, the manager seeks to maximize the value of the 
+fishery over a fixed time interval of 50 years at a discount rate
+of 0.01. The value function (profits) at time $t$ depends on the true stock size
+$x_t$ and the chosen harvest level $h_t$.  For simplicity we assume profit 
+is simply proportional in the realized harvest (only
+enforcing the restriction that harvest can not exceed available stock).  
 
 
 ### Parametric models
@@ -422,19 +463,18 @@ enforcing the restriction that harvest can not exceed available stock)
 --> 
 
 We consider three candidate parametric models of the stock-recruitment
-dynamics: The Ricker model, the Allen model [Allen 2005](), the Myers
-model. The familiar Ricker model involves two parameters, corresponding
+dynamics: The Ricker model, the Allen model [@Allen2005], the Myers
+model [@Myers1995]. The familiar Ricker model involves two parameters, corresponding
 to a growth rate and a carrying capacity, and cannot support alternative
 stable state dynamics (though as growth rate increases it exhibits a
 periodic attractor that proceeds through period-doubling into chaos. We
 will generally focus on dynamics below the chaotic threshold for
 the purposes of this analysis.) The Allen model resembles the Ricker
-dynamics with an added Allee effect parameter [Courchamp](), below
+dynamics with an added Allee effect parameter [@Courchamp2008], below
 which the population cannot persist.  The Myers model also has three
 parameters and contains an Allee threshold, but has compensatory rather
 than over-compensatory density dependence (resembling a Beverton-Holt
-curve rather than a Ricker curve at high densities.)
-
+curve rather than a Ricker curve at high densities.)  
 We assume multiplicative log-normal noise perturbs the growth predicted 
 by the each of the deterministic model skeletons described above. This 
 introduces one additional parameter $\sigma$ that must be estimated by each
@@ -442,12 +482,24 @@ model.
 
 <!-- equations just in appendix? -->
 
-As we simulate training data from the Allen model (ref section), we will
+As we simulate training data from the Allen model, we will
 refer to this as the structurally correct model.  The Ricker model is
 thus a reasonable approximation of these dynamics far from the Allee
 threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure. Thus
 we have three potential parametric models of the stock dynamics.
+
+We introduce parameteric uncertainty by first estimating each of the
+candidate models from data on unexploited stock dynamics following
+some pertubation (non-equilibrium initial condition) over several time
+steps. This training data could be generated in several different ways
+(such as known variable exploitation rates, etc), as long as it reflects
+the dynamics in some limited region of state space without impacting
+the problem.  We consider a period of 40 years of training data: long
+enough that the estimates are not dependent on the particular realization,
+while longer times are not likely to provide substantial improvement
+(i.e. the results are not sensitive to this interval).  Each of the models
+(described below) is fit to the same training data, as shown in Figure 1.
 
 
 <!-- Bayesian inference of parametric models --> 
@@ -476,30 +528,30 @@ this algorithm provided in the Appendix).
 <!-- See much longer discusion above on "Background on GP".  Move some of that to here?  -->
 
 
-We also estimate a simple Gaussian Process defined by
-a radial basis function kernel of two parameters: $\ell$, which gives
-the characteristic length-scale over which correlation between two 
-points 
-in state-space decays, and $\sigma$, which gives the scale of the 
-process noise by which observations $Y_{t+1}$ may differ from their
-predicted values $X_{t+1}$ given an observation of the previous state,
-$X_t$. @Munch2005a gives an accessible introduction to the use of 
-Gaussian Processes in providing a Bayesian nonparametric description
-of the stock-recruitment relationship.  
+We also estimate a simple Gaussian Process defined by a radial basis
+function kernel of two parameters: $\ell$, which gives the characteristic
+length-scale over which correlation between two points in state-space
+decays, and $\sigma$, which gives the scale of the process noise by which
+observations $Y_{t+1}$ may differ from their predicted values $X_{t+1}$
+given an observation of the previous state, $X_t$. @Munch2005a gives an
+accessible introduction to the use of Gaussian Processes in providing a
+Bayesian nonparametric description of the stock-recruitment relationship.
 
 <!-- Inference of the BNP model --> 
 
+
+We use a Metropolis-Hastings Markov Chain Monte Carlo to infer posterior
+distributions of the two parameters of the GP (Figure S13, code in
+appendix), under weakly informative Gaussian priors (see parameters in
+table S5). As the posterior distributions differ substantially from the
+priors (Figure S13), we can be assured that most of the information in
+the posterior comes from the data rather than the prior belief.
+
+<!--
 In contrast to the parametric models, this posterior distribution is still
 conditional on the training data. As such, the uncertainty near the
 observed data.
-
-We use a Metropolis-Hastings Markov Chain Monte Carlo to infer posterior
-distributions of the two parameters of the GP (Figure S4, code in
-appendix), under weakly informative Gaussian priors (see parameters in
-table S5). As the posterior distributions differ substantially from the
-priors (Figure S4), we can be assured that most of the information in
-the posterior comes from the data rather than the prior belief.
-
+-->
 
 <!-- SDP via the model --> 
 
@@ -533,10 +585,8 @@ All models fit the observed data rather closely and with relatively small uncert
 
 
 
-% latex table generated in R 3.0.2 by xtable 1.7-1 package
-% Mon Nov 18 14:39:35 2013
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rrrr}
   \hline
  & Allen & Ricker & Myers \\ 
@@ -546,6 +596,7 @@ DIC & 50.14 & 49.45 & 50.61 \\
   BIC & -17.85 & -25.00 & -20.44 \\ 
    \hline
 \end{tabular}
+\end{center}
 \end{table}
 
 
@@ -632,14 +683,15 @@ Discussion
 ==========
 
 
-In any modeling effort, models must be chosen for the task at hand.  
-Though simple mechanistically motivated models offer the greatest potential 
-to increase our basic understanding of ecological processes [@Cuddington2013; @Geritz2012], 
-such models can be not only inaccurate but misleading when relied upon in a
-quantitative decision making framework.  
-In this paper we have tackled two aspects of uncertainty that are both common
-to many ecological desicion-making problems and fundamentally challenging to
-existing approaches which largely rely on parametric models: 
+In any modeling effort, models must be chosen for the task at hand.
+Though simple mechanistically motivated models offer the greatest
+potential to increase our basic understanding of ecological processes
+[@Cuddington2013; @Geritz2012], such models can be not only inaccurate but
+misleading when relied upon in a quantitative decision making framework.
+In this paper we have tackled two aspects of uncertainty that are both
+common to many ecological desicion-making problems and fundamentally
+challenging to existing approaches which largely rely on parametric
+models:
 
 1. We do not know what the correct models are for ecological systems.
 1. We have limited data from which to estimate the model -- in particular,
@@ -741,7 +793,10 @@ are chosen appropriately for the problem at hand.
 Future directions
 -----------------
 
+<!--
 ### Higher dimensions 
+-->
+
 
 In this simulated example, the underlying dynamics are truly governed
 by a simple parametric model, allowing the parametric approaches to be
@@ -754,7 +809,9 @@ ecosystem management problems that the machine learning approach will
 prove even more valuable.
 
 
+<!--
 ### Real-time learning
+-->
 
 In our treatment here we have ignored the possibility of learning during
 the management phase, in which the additional observations of the stock
@@ -793,60 +850,67 @@ Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
 to CB.
 
 
+\appendix
+
 Appendix
 ========
 
-## Model definitions and estimation
-
-Equation S1: Ricker model.
-
-$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
-
-Figure S1: Ricker model: prior and posterior distributions for parameter estimates.
+Model definitions and estimation
+---------------------------------
 
 
+<!-- Equation S1: Ricker model. --> 
+
+$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{rickereq} $$
+
+<!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
+
+![Traces from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-4.pdf) 
 
 
-![Posteriors from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-2.pdf) 
+![Posteriors from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-5.pdf) 
 
-Table S1: Parameterization of the priors
 
-% latex table generated in R 3.0.2 by xtable 1.7-1 package
-% Thu Nov 14 00:55:33 2013
+
+<!-- Table S1: Parameterization of the priors --> 
+
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rlrr}
   \hline
- & parameter & lower\_bound & upper\_bound \\ 
+ & parameter & lower.bound & upper.bound \\ 
   \hline
-1 & r0 & 0.00 & 10.00 \\ 
-  2 & K & 0.00 & 40.00 \\ 
+1 & r0 & 0.01 & 20.00 \\ 
+  2 & K & 0.01 & 40.00 \\ 
   3 & sigma & 0.00 & 100.00 \\ 
    \hline
 \end{tabular}
+\caption{parameterization range for the uniform priors in the Ricker model}
+\end{center}
 \end{table}
 
 
+<!--Eq S2: Myers model -->
+(@myerseq) $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
 
-$$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}} $$
-
-Eq S2: Myers model 
+<!--
 Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
-
-![Traces from the MCMC estimate of the Myers model](figure/nonparametric-bayes-unnamed-chunk-4.pdf) 
-
-
-![Posterior distributions from the MCMC estimates of the Myers model](figure/nonparametric-bayes-unnamed-chunk-5.pdf) 
+-->
 
 
-Table S2: Parameterization of the priors
-% latex table generated in R 3.0.2 by xtable 1.7-1 package
-% Thu Nov 14 00:55:36 2013
+![Traces from the MCMC estimate of the Myers model](figure/nonparametric-bayes-unnamed-chunk-7.pdf) 
+
+
+![Posterior distributions from the MCMC estimates of the Myers model](figure/nonparametric-bayes-unnamed-chunk-8.pdf) 
+
+
+<!-- Table S2: Parameterization of the priors -->
+
 \begin{table}[ht]
-\centering
+\begin{center}
 \begin{tabular}{rlrr}
   \hline
- & parameter & lower\_bound & upper\_bound \\ 
+ & parameter & lower.bound & upper.bound \\ 
   \hline
 1 & r0 & 0.00 & 10.00 \\ 
   2 & K & 0.00 & 40.00 \\ 
@@ -854,63 +918,73 @@ Table S2: Parameterization of the priors
   4 & sigma & 0.00 & 100.00 \\ 
    \hline
 \end{tabular}
+\caption{parameterization range for the uniform priors in the Myers model}
+\end{center}
 \end{table}
 
 
 
 Eq S3: Allen model 
 
-$$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
+(@alleneq) $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
 Figure S3: Allen model: prior and posterior distributions for parameter estimates.
 
-![Traces from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-7.pdf) 
+![Traces from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-10.pdf) 
 
 
-![Posteriors from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-8.pdf) 
+![Posteriors from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-11.pdf) 
 
 
+
+<!--
 Table S3: Parameterization of the priors
+-->
 
-% latex table generated in R 3.0.2 by xtable 1.7-1 package
-% Thu Nov 14 00:55:40 2013
-\begin{table}[ht]
-\centering
-\begin{tabular}{rlrr}
-  \hline
- & parameter & lower\_bound & upper\_bound \\ 
-  \hline
-1 & r0 & 0.00 & 10.00 \\ 
-  2 & K & 0.00 & 40.00 \\ 
-  3 & theta & 0.00 & 10.00 \\ 
-  4 & sigma & 0.00 & 100.00 \\ 
-   \hline
-\end{tabular}
-\end{table}
-
-
-
-
-Eq S4: GP model 
-Figure S4: GP model: prior and posterior distributions for parameter estimates.
 
 
 ```
-$traces_plot
+Error: object 'allen_priors_xtable' not found
 ```
 
-![plot of chunk unnamed-chunk-10](figure/nonparametric-bayes-unnamed-chunk-101.pdf) 
-
-```
-
-$posteriors_plot
-```
-
-![plot of chunk unnamed-chunk-10](figure/nonparametric-bayes-unnamed-chunk-102.pdf) 
 
 
+<!-- Eq S4: GP model  -->
 
-Table S4: Parameterization of the priors
+Assuming the data are known with some process noise,
+
+$$y = f(x) + \varepsilon$$
+
+$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP,  
+
+$$x|y \sim \mathcal{N}(E,C)$$
+$$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
+$$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
+
+}
+
+The marginal likelihood is then given by: 
+
+$$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y  - \tfrac{1}{2} \log\left| K + \sigma_n^2 \mathbf{I} \right| - \tfrac{n}{2}\log 2 \pi$$
+
+See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
+
+<!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
+
+![Traces from the MCMC estimates of the GP model](figure/nonparametric-bayes-unnamed-chunk-13.pdf) 
+
+
+
+![Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red.](figure/nonparametric-bayes-unnamed-chunk-14.pdf) 
+
+
+The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ are are inverse Gamma distributed,
+
+$$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
+
+For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5.  For $\ell$ prior,  $\alpha = $ 10 and $\beta = $ 10.  
+
+
 
 ## Optimal Control Problem
 
@@ -941,18 +1015,19 @@ enforcing the restriction that harvest can not exceed available stock), $\Pi(h,x
 ### Pseudocode for the Bellman iteration
 
 ```r
- V1 <- sapply(1:length(h_grid), function(h){
-      delta * F[[h]] %*% V +  profit(x_grid, h_grid[h]) 
-    })
-    # find havest, h that gives the maximum value
-    out <- sapply(1:gridsize, function(j){
-      value <- max(V1[j,], na.rm = T) # each col is a diff h, max over these
-      index <- which.max(V1[j,])  # store index so we can recover h's 
-      c(value, index) # returns both profit value & index of optimal h.  
-    })
-    # Sets V[t+1] = max_h V[t] at each possible state value, x
-    V <- out[1,]                        # The new value-to-go
-    D[,OptTime-time+1] <- out[2,]       # The index positions
+# compute the value for each possible harvest
+for(h in 1:length(h_grid)){
+  V1[h] = delta * F[[h]] %*% V +  profit(x_grid, h_grid[h]) 
+}
+# find havest h that gives the maximum value
+for(j in 1:gridsize){
+  value = max(V1[j,], na.rm = T)  # each col is a different h, max over these
+  index = which.max(V1[j,])       # store index so we can recover h's 
+  output[,j] = c(value, index)    # returns both profit value & index of optimal h.  
+}
+# Sets V[t+1] = max_h(V[t]) at each possible state value, x
+V = out[1,]                        # The new value-to-go
+D[,OptTime-time+1] = out[2,]       # The index positions
 ```
 
 

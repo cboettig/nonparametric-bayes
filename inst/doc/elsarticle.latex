@@ -161,14 +161,28 @@ $endfor$
 
 \begin{document}
 \begin{frontmatter}
+
   \title{$title$}
-  \author[cstar]{Carl Boettiger\corref{cor1}}
-  \cortext[cor1]{Corresponding author}
-  \ead{cboettig@ucsc.edu}
-  \author[cstar]{Marc Mangel}
-  \author[noaa]{Stephan B. Munch}
-  \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA 95064, USA}
-  \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}
+  $for(author)$
+  \author[$author.affiliation$]{$author.name$$if(author.footnote)$\corref{c1}$endif$}
+  $if(author.email)$ \ead{$author.email$} $endif$
+  $if(author.footnote)$ \cortext[c1]{$author.footnote$}$endif$
+  $endfor$
+  $for(address)$
+  \address[$address.code$]{$address.address$}    
+  $endfor$
+
+
+
+%  \author[cstar]{Marc Mangel}
+%  \author[noaa]{Stephan B. Munch}
+%  \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA 95064, USA}
+%  \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}
+
+  \begin{abstract}
+  $abstract$
+  \end{abstract}
+
  \end{frontmatter}
 
 
