@@ -1084,4 +1084,9 @@ A copy of the script to reconstruct the simulations and analysis shown here is p
 Sensitivity Analysis
 --------------------
 
+These results are not sensitive to the modeling details of the simulation.  The Gaussian process estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01, 0.05, 0.1, and 0.2, 3 different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  
+
+![Sensitivity Analysis](figure/sensitivity.pdf)
+
+
 

@@ -710,6 +710,15 @@ ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) +
 #  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 ```
 
+Sensitivity Analysis
+--------------------
+
+
+These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parameteric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parameteric models in the previous figure.   
+
+![Sensitivity Analysis](figure/sensitivity.pdf)
+
+
 
 Discussion 
 ==========
@@ -1083,20 +1092,16 @@ for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`.
 The training data can be seen in Figure 1.  
 
 
+
 Code
 ----
 
-A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R]().  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  These routines are provided as an R package, [nonparameteric-bayes](), also available on Github.
+A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R]().  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  The sensitivity analysis is provided as a separate script, [sensitivity.Rmd](). These routines are provided as an R package, [nonparameteric-bayes](), also available on Github.
 
 
+Data
+----
 
-
-Sensitivity Analysis
---------------------
-
-These results are not sensitive to the modeling details of the simulation.  The Gaussian process estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01, 0.05, 0.1, and 0.2, 3 different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  
-
-![Sensitivity Analysis](figure/sensitivity.pdf)
-
+While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
 
