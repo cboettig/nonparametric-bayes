@@ -178,7 +178,7 @@ the difficulties of formulating even qualitatively correct models of
 the underlying processes.
 
 
-We develop these concerns in the context of fisheries, though
+We develop a novel approach to address these concerns in the context of fisheries; though
 the underlying challenges and methods are germane to many other
 conservation and resource management problems.  The economic value and
 ecological concern have made marine fisheries the crucible for much
@@ -193,7 +193,7 @@ challenges all the more pressing.
 Uncertainty enters the decision-making process at many levels:
 intrinsic stochasticity in biological processes, measurements, and
 implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
-@Sethi2005], parameteric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
+@Sethi2005], parametric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
 @McAllister1998; @Schapaugh2013], and model or structural uncertainty
 [_e.g._ @Williams2001; @Cressie2009;  @Athanassoglou2012].  Of these,
 structural uncertainty incorporates the least a priori knowledge or
@@ -206,7 +206,7 @@ dynamics follow a particular (i.e. parametric) structure.
 
 
 
-_Cut the next three paragraphs, since they are covered more consisely in the above paragraph?_
+_Cut the next three paragraphs, since they are covered more concisely in the above paragraph?_
 
 ### Process, measurement, and implementation error
 
@@ -270,7 +270,7 @@ and decision-making context.
 This difficult position of having neither the true model nor data that
 covers the full range of possible states is unfortunately the rule more
 than the exception. The potential concern of tipping points in ecological
-dyanmics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
+dynamics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
 either knowledge of the true model or more complete sampling of the
 state space would make it easy to identify if a tipping point existed.
 If we do not know but cannot rule out such a possibility, then we
@@ -312,7 +312,7 @@ the use of the BNP approach.  In contrast to parametric models which
 can only reflect uncertainty in parameter estimates, the BNP approach
 provides a more state-space dependent representation of uncertainty.
 This permits a much greater uncertainty far from the observed data than
-near the observed data.  These features allow the GP-SDP approach to
+near the observed data.  These features allow the BNP-SDP approach to
 find robust management solutions in face of limited data and without
 knowledge of the correct model structure.
 
@@ -381,7 +381,7 @@ Having fit a parametric model to some data, the model is completely
 described by the values (or posterior distributions) of it's parameters.
 The non-parametric model is not captured by its parameter values or
 distributions alone. Either the model scales with the complexity of the data
-on which it is estimated (e.g. nonparametric heirarchical approaches such
+on which it is estimated (e.g. nonparametric hierarchical approaches such
 as the Dirchlet process) or the data points become themselves part of the model
 specification, as in the nonparametric regression used here.
 
@@ -426,17 +426,13 @@ consider probabilities on a large set of possible curves simultaneously.
 The posterior distribution for the hyper-parameters of the Gaussian 
 process model are estimated by Metropolis-Hastings algorithm, again with
 details and code provided in the Appendix.  @Rasmussen2006 provides
-an excellent general introduction to Gaussian Processes and @Munch2005 
+an excellent general introduction to Gaussian Processes and @Munch2005a 
 first discusses their application in the context of population dynamics
 models such as fisheries stock-recruitment relationships.
 
 
 Approach and Methods
 ====================
-
-<!-- skip this oveview? 
-### Summary of approach
---> 
 
 
 
@@ -488,11 +484,11 @@ threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure. Thus
 we have three potential parametric models of the stock dynamics.
 
-We introduce parameteric uncertainty by first estimating each of the
+We introduce parametric uncertainty by first estimating each of the
 candidate models from data on unexploited stock dynamics following
-some pertubation (non-equilibrium initial condition) over several time
+some perturbation (non-equilibrium initial condition) over several time
 steps. This training data could be generated in several different ways
-(such as known variable exploitation rates, etc), as long as it reflects
+(such as known variable exploitation rates, etc.), as long as it reflects
 the dynamics in some limited region of state space without impacting
 the problem.  We consider a period of 40 years of training data: long
 enough that the estimates are not dependent on the particular realization,
@@ -506,9 +502,15 @@ while longer times are not likely to provide substantial improvement
 We infer posterior distributions for the parameters of each model
 in a Bayesian context using Gibbs sampling (implemented in R [@RTeam]
 using jags, [@R2jags]).  We choose uninformative uniform priors for all
-parameters (See Appendix, Figures S1-S3, and Table S1, and the R code
+parameters (See Appendix, Figures and tables, and the R code
 provided). One-step-ahead predictions of these model fits are shown in
-Figure 1.
+Figure 1.  While alternative approaches to the estimation of the posteriors
+(such as integrating out the rate parameter $r$ analytically and then
+performing a grid search over the remaining parameter space), the 
+approach of using a standard Gibbs sampler routine is both more general
+and representitive of common practice in estimating posteriors for such models. 
+Each sampling is tested for Gelman-Rubin convergence and results are robust
+to longer runs.  
 
 <!-- SDP via parametric models -->
 
@@ -625,7 +627,7 @@ the tipping point.
 
 
 
-![Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parameteric models, while the realized state often falls outside of the expected range forecasted by the structurally incorrect Myers and Ricker models.](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
+![Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the paramteric models, while the realized state often falls outside of the expected range forecast by the structurally incorrect Myers and Ricker models.](figure/nonparametric-bayes-out_of_sample_predictions.pdf) 
 
 
 
@@ -644,7 +646,7 @@ the tipping point.
 
 
 Despite the similarities in model fits to the observed data, the
-policies inferred under each model differ widely, as shown in Figure 3.
+policies inferred under each model differ widely, as shown in Figure 4.
 Policies are shown in terms of target escapement, $S_t$.  Under models
 such as this a constant escapement policy is expected to be optimal
 [@Reed1979], whereby population levels below a certain size $S$ are
@@ -659,7 +661,7 @@ model structure and parameter values are known without error).
 
 
 The consequences of managing 100 replicate realizations of the simulated
-fishery under each of the policies estimated is shown in Figure 4.
+fishery under each of the policies estimated is shown in Figure 5.
 As expected from the policy curves, the structurally correct model
 under-harvests, leaving the stock to vary around it's un-fished optimum.
 The structurally incorrect Ricker model over-harvests the population
@@ -669,7 +671,8 @@ of the stock and thus derives minimal profits.
 These results are robust across a range of stochastic realizations,
 models, and parameter values.  The results across this range can most
 easily be compared by using the relative differences in net present
-value realized by each of the model, as shown in Figure 5.  The BNP-SDP
+value realized by each of the model. Figure 6 shows the distribution of values
+(profits) realized by each simulation shown in Figure 5.  The BNP-SDP
 approach most consistently realizes a value close to the optimal solution,
 and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
@@ -682,9 +685,9 @@ Sensitivity Analysis
 --------------------
 
 
-These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parameteric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parameteric models in the previous figure.   
+These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in Figure 7. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parametric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parametric models in the previous figure. The sensitivity analysis is compared against the optimal solution alone and not shown against the estimates of the various parameteric models (but see Figure 6), where convergence of the Gibbs sampling could contribute to their poorer performance if not checked by hand for each configuration.  
 
-![Sensitivity Analysis](figure/sensitivity.pdf)
+![Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the BNP-SDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels.](figure/sensitivity.pdf)
 
 
 
@@ -755,18 +758,18 @@ can also provide a better fit with smaller uncertainty inside the range
 of the observed data. This arises from the greater flexibility of the 
 Gaussian process, which describes a large family of possible curves.
 Despite this flexibility, the GP can be described in relatively few 
-parameters and is thus far less likely to overfit. 
+parameters and is thus far less likely to over-fit. 
 
 ### Risk-prone and risk-adverse value functions
 
 The degree to which the decision-making part of the algorithm (the SDP)
 chooses to explore or avoid the resulting region of uncertainty can also
 be influenced by the curvature of the value (profit) function $\Pi$. Both
-to simplify the intution and avoid biasing this result, we have chosen
+to simplify the intuition and avoid biasing this result, we have chosen
 a profits that are linear in the catch and thus neither risk-prone nor
 risk adverse.  Making this function concave, representing the typical
 assumption of diminishing returns, would make the SDP more risk-adverse
-(as larger-than-expected stock sizes offer dimished returns relative
+(as larger-than-expected stock sizes offer diminished returns relative
 to the cost of smaller-than-expected stock sizes), and strengthen the
 result shown here in which the BNP solution tends to avoid the region
 of uncertainty.  Sufficiently convex or risk-prone functions could lead
@@ -874,7 +877,7 @@ The Ricker model is given by
 
 (@rickereq) $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
 
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see provided code).  
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see provided code).  
 
 
 <!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
@@ -911,7 +914,7 @@ The Myers model [@Myers1995] is given by
 <!--Eq S2: Myers model -->
 (@myerseq) $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
 
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, $\theta$ controls the strength of the nonlinearity, exhibiting an allee effect for $\theta \geq 2$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, $\theta$ controls the strength of the nonlinearity, exhibiting an allee effect for $\theta \geq 2$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see code provided).  
 
 
 <!--
@@ -951,7 +954,7 @@ The Allen model [@Allen2005] is given by
 
 (@alleneq) $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, allee threshold $C$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, allee threshold $C$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see code provided).  
 
 
 

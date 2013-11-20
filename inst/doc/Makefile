@@ -1,7 +1,7 @@
 SOURCEFILE = nonparametric-bayes
 
 make:
-	make refs.aux 
+#	make refs.aux 
 	make ${SOURCEFILE}.bib
 	make ${SOURCEFILE}.tex
 	make ${SOURCEFILE}.pdf
@@ -26,8 +26,7 @@ ${SOURCEFILE}.html:  ${SOURCEFILE}.Rmd ${SOURCEFILE}.bib
 # Build a list of references appearing in the source markdown
 refs.aux: ${SOURCEFILE}.Rmd 
 	grep -o "@\w*" ${SOURCEFILE}.Rmd | tr '\n' ',' | tr -d "@"  > refs.tmp  # Extract cited references
-	echo "\citation{" > refs.aux
-	cat refs.tmp >> refs.aux # need to avoid newline
+	sed '1i\\\citation{' refs.tmp > refs.aux
 	echo "}" >> refs.aux	
 
 ${SOURCEFILE}.bib: refs.aux
