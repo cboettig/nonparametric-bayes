@@ -97,7 +97,6 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 ```{r gp-output, dependson="gp", results=toggle}
 ```
 
-
 ```{r jags-setup}
 ```
 ```{r common-priors}
@@ -210,7 +209,7 @@ the difficulties of formulating even qualitatively correct models of
 the underlying processes.
 
 
-We develop these concerns in the context of fisheries, though
+We develop a novel approach to address these concerns in the context of fisheries; though
 the underlying challenges and methods are germane to many other
 conservation and resource management problems.  The economic value and
 ecological concern have made marine fisheries the crucible for much
@@ -225,7 +224,7 @@ challenges all the more pressing.
 Uncertainty enters the decision-making process at many levels:
 intrinsic stochasticity in biological processes, measurements, and
 implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
-@Sethi2005], parameteric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
+@Sethi2005], parametric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
 @McAllister1998; @Schapaugh2013], and model or structural uncertainty
 [_e.g._ @Williams2001; @Cressie2009;  @Athanassoglou2012].  Of these,
 structural uncertainty incorporates the least a priori knowledge or
@@ -238,7 +237,7 @@ dynamics follow a particular (i.e. parametric) structure.
 
 
 
-_Cut the next three paragraphs, since they are covered more consisely in the above paragraph?_
+_Cut the next three paragraphs, since they are covered more concisely in the above paragraph?_
 
 ### Process, measurement, and implementation error
 
@@ -302,7 +301,7 @@ and decision-making context.
 This difficult position of having neither the true model nor data that
 covers the full range of possible states is unfortunately the rule more
 than the exception. The potential concern of tipping points in ecological
-dyanmics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
+dynamics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
 either knowledge of the true model or more complete sampling of the
 state space would make it easy to identify if a tipping point existed.
 If we do not know but cannot rule out such a possibility, then we
@@ -344,7 +343,7 @@ the use of the BNP approach.  In contrast to parametric models which
 can only reflect uncertainty in parameter estimates, the BNP approach
 provides a more state-space dependent representation of uncertainty.
 This permits a much greater uncertainty far from the observed data than
-near the observed data.  These features allow the GP-SDP approach to
+near the observed data.  These features allow the BNP-SDP approach to
 find robust management solutions in face of limited data and without
 knowledge of the correct model structure.
 
@@ -413,7 +412,7 @@ Having fit a parametric model to some data, the model is completely
 described by the values (or posterior distributions) of it's parameters.
 The non-parametric model is not captured by its parameter values or
 distributions alone. Either the model scales with the complexity of the data
-on which it is estimated (e.g. nonparametric heirarchical approaches such
+on which it is estimated (e.g. nonparametric hierarchical approaches such
 as the Dirchlet process) or the data points become themselves part of the model
 specification, as in the nonparametric regression used here.
 
@@ -458,17 +457,13 @@ consider probabilities on a large set of possible curves simultaneously.
 The posterior distribution for the hyper-parameters of the Gaussian 
 process model are estimated by Metropolis-Hastings algorithm, again with
 details and code provided in the Appendix.  @Rasmussen2006 provides
-an excellent general introduction to Gaussian Processes and @Munch2005 
+an excellent general introduction to Gaussian Processes and @Munch2005a 
 first discusses their application in the context of population dynamics
 models such as fisheries stock-recruitment relationships.
 
 
 Approach and Methods
 ====================
-
-<!-- skip this oveview? 
-### Summary of approach
---> 
 
 
 
@@ -520,11 +515,11 @@ threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure. Thus
 we have three potential parametric models of the stock dynamics.
 
-We introduce parameteric uncertainty by first estimating each of the
+We introduce parametric uncertainty by first estimating each of the
 candidate models from data on unexploited stock dynamics following
-some pertubation (non-equilibrium initial condition) over several time
+some perturbation (non-equilibrium initial condition) over several time
 steps. This training data could be generated in several different ways
-(such as known variable exploitation rates, etc), as long as it reflects
+(such as known variable exploitation rates, etc.), as long as it reflects
 the dynamics in some limited region of state space without impacting
 the problem.  We consider a period of `r Tobs` years of training data: long
 enough that the estimates are not dependent on the particular realization,
@@ -645,7 +640,7 @@ the tipping point.
 
 
 
-```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parameteric models, while the realized state often falls outside of the expected range forecasted by the structurally incorrect Myers and Ricker models." }
+```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the paramteric models, while the realized state often falls outside of the expected range forecast by the structurally incorrect Myers and Ricker models." }
 ```
 
 
@@ -714,7 +709,7 @@ Sensitivity Analysis
 --------------------
 
 
-These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parameteric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parameteric models in the previous figure.   
+These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parametric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parametric models in the previous figure.   
 
 ![Sensitivity Analysis](figure/sensitivity.pdf)
 
@@ -787,18 +782,18 @@ can also provide a better fit with smaller uncertainty inside the range
 of the observed data. This arises from the greater flexibility of the 
 Gaussian process, which describes a large family of possible curves.
 Despite this flexibility, the GP can be described in relatively few 
-parameters and is thus far less likely to overfit. 
+parameters and is thus far less likely to over-fit. 
 
 ### Risk-prone and risk-adverse value functions
 
 The degree to which the decision-making part of the algorithm (the SDP)
 chooses to explore or avoid the resulting region of uncertainty can also
 be influenced by the curvature of the value (profit) function $\Pi$. Both
-to simplify the intution and avoid biasing this result, we have chosen
+to simplify the intuition and avoid biasing this result, we have chosen
 a profits that are linear in the catch and thus neither risk-prone nor
 risk adverse.  Making this function concave, representing the typical
 assumption of diminishing returns, would make the SDP more risk-adverse
-(as larger-than-expected stock sizes offer dimished returns relative
+(as larger-than-expected stock sizes offer diminished returns relative
 to the cost of smaller-than-expected stock sizes), and strengthen the
 result shown here in which the BNP solution tends to avoid the region
 of uncertainty.  Sufficiently convex or risk-prone functions could lead
@@ -1096,7 +1091,7 @@ The training data can be seen in Figure 1.
 Code
 ----
 
-A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R]().  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  The sensitivity analysis is provided as a separate script, [sensitivity.Rmd](). These routines are provided as an R package, [nonparameteric-bayes](), also available on Github.
+A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R](https://github.com/cboettig/nonparametric-bayes/blob/371114ec43bb32e92f330f049b420047edae5eb0/inst/doc/nonparametric-bayes.R).  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  The sensitivity analysis is provided as a separate script, [sensitivity.Rmd](https://github.com/cboettig/nonparametric-bayes/blob/62e0f81f9e8eabd0f7ee462f098320409a407f81/inst/examples/sensitivity.Rmd). These routines are provided as an R package, [nonparameteric-bayes](https://github.com/cboettig/nonparametric-bayes), also available on Github.
 
 
 Data
