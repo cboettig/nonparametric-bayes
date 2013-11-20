@@ -596,6 +596,7 @@ DIC & 50.14 & 49.45 & 50.61 \\
   BIC & -17.85 & -25.00 & -20.44 \\ 
    \hline
 \end{tabular}
+\caption{Model choice scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.}
 \end{center}
 \end{table}
 
@@ -849,27 +850,31 @@ and the Fisheries Ecology Division, Southwest Fisheries Science Center,
 Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
 to CB.
 
-
 \appendix
 
-Appendix
-========
-
 Model definitions and estimation
----------------------------------
+=================================
 
+
+
+Ricker Model
+------------
 
 <!-- Equation S1: Ricker model. --> 
 
-$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{rickereq} $$
+The Ricker model is given by 
+
+(@rickereq) $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
+
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see provided code).  
+
 
 <!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
 
-![Traces from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-4.pdf) 
 
 
-![Posteriors from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-5.pdf) 
 
+![Posteriors from the MCMC estimate of the Ricker model](figure/nonparametric-bayes-unnamed-chunk-2.pdf) 
 
 
 <!-- Table S1: Parameterization of the priors --> 
@@ -890,18 +895,26 @@ $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{rickereq} $$
 \end{table}
 
 
+Myers Model
+-----------
+
+The Myers model [@Myers1995] is given by
+
 <!--Eq S2: Myers model -->
 (@myerseq) $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
+
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, $\theta$ controls the strength of the nonlinearity, exhibiting an allee effect for $\theta \geq 2$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
+
 
 <!--
 Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
 -->
 
 
-![Traces from the MCMC estimate of the Myers model](figure/nonparametric-bayes-unnamed-chunk-7.pdf) 
+![Traces from the MCMC estimate of the Myers model](figure/nonparametric-bayes-unnamed-chunk-4.pdf) 
 
 
-![Posterior distributions from the MCMC estimates of the Myers model](figure/nonparametric-bayes-unnamed-chunk-8.pdf) 
+![Posterior distributions from the MCMC estimates of the Myers model](figure/nonparametric-bayes-unnamed-chunk-5.pdf) 
 
 
 <!-- Table S2: Parameterization of the priors -->
@@ -923,17 +936,23 @@ Figure S2: Myers model: Traces, prior and posterior distributions for parameter 
 \end{table}
 
 
+Allen model
+-----------
 
-Eq S3: Allen model 
+The Allen model [@Allen2005] is given by 
 
 (@alleneq) $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
-Figure S3: Allen model: prior and posterior distributions for parameter estimates.
-
-![Traces from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-10.pdf) 
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, allee threshold $C$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
 
 
-![Posteriors from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-11.pdf) 
+
+<!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
+
+![Traces from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-7.pdf) 
+
+
+![Posteriors from the MCMC estimate of the Allen model](figure/nonparametric-bayes-unnamed-chunk-8.pdf) 
 
 
 
@@ -942,10 +961,21 @@ Table S3: Parameterization of the priors
 -->
 
 
-
-```
-Error: object 'allen_priors_xtable' not found
-```
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rlrr}
+  \hline
+ & parameter & lower.bound & upper.bound \\ 
+  \hline
+1 & r0 & 0.01 & 6.00 \\ 
+  2 & K & 0.01 & 20.00 \\ 
+  3 & theta & 0.01 & 20.00 \\ 
+  4 & sigma & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\caption{parameterization range for the uniform priors in the Allen model}
+\end{center}
+\end{table}
 
 
 
@@ -971,11 +1001,11 @@ See @Munch2005a or @Rasmussen2006 for a more detailed introduction.
 
 <!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
-![Traces from the MCMC estimates of the GP model](figure/nonparametric-bayes-unnamed-chunk-13.pdf) 
+![Traces from the MCMC estimates of the GP model](figure/nonparametric-bayes-unnamed-chunk-10.pdf) 
 
 
 
-![Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red.](figure/nonparametric-bayes-unnamed-chunk-14.pdf) 
+![Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red.](figure/nonparametric-bayes-unnamed-chunk-11.pdf) 
 
 
 The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ are are inverse Gamma distributed,
@@ -986,7 +1016,8 @@ For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5.  For $\ell$ prior,  $\al
 
 
 
-## Optimal Control Problem
+Optimal Control Problem Specification 
+-------------------------------------
 
 We seek the harvest policy $h(x)$ that maximizes:
 
@@ -1032,18 +1063,25 @@ D[,OptTime-time+1] = out[2,]       # The index positions
 
 
 
-
-
-### Training data
+Training data
+-------------
 
 Eacho of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = $ ` r p[1]`, 
-$K =$ ` r p[2]`, $C =$ ` r p[3]`, and  $\sigma_g =$ ` r sigma_g` 
+we simulate from the Allen model with parameters $r = $ 2, 
+$K =$ 8, $C =$ 5, and  $\sigma_g =$ 0.05 
 for $T=$ 40 timesteps, starting at initial condition $X_0 = $ 5.5. 
 The training data can be seen in Figure 1.  
 
 
-### Sensitivity Analysis
+Code
+----
 
+A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R]().  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  These routines are provided as an R package, [nonparameteric-bayes](), also available on Github.
+
+
+
+
+Sensitivity Analysis
+--------------------
 
 

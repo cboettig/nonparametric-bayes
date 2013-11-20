@@ -107,7 +107,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 ```{r allen-priors, dependson="common-priors"}
 ```
 
-```{r }
+```{r allen_priors_xtable, include=TRUE, echo=FALSE}
 allen_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
            "lower bound" = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            "upper bound" = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2]))
@@ -128,7 +128,7 @@ allen_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
 ```{r ricker-priors, dependson="common-priors"}
 ```
 
-```{r}
+```{r ricker_priors_xtable, include=TRUE, echo=FALSE, cache=FALSE}
 ricker_priors_xtable <- data.frame(
   parameter = c("r0", "K", "sigma"),
   "lower bound" = c(r0_prior_p[1], K_prior_p[1], stdQ_prior_p[1]),
@@ -150,7 +150,7 @@ ricker_priors_xtable <- data.frame(
 ```{r myers-priors}
 ```
 
-```{r } 
+```{r myers_prior_xtable, include=TRUE, echo=FALSE} 
 myers_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
            "lower bound" = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            "upper bound" = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2]))
@@ -617,7 +617,7 @@ All models fit the observed data rather closely and with relatively small uncert
 ```
 
 ```{r Table1, dependson="deviances", include=TRUE, results="asis", echo=FALSE, cache=FALSE}
-xtable::xtable(rbind(dictable, aictable, bictable))
+xtable::xtable(rbind(dictable, aictable, bictable), caption="Model choice scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.")
 ```
 
 
@@ -695,8 +695,19 @@ and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
 
-```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE, echo=FALSE}
+```{r Figure4, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.",  include=TRUE, echo=FALSE, fig.width=6, fig.height=6}
 
+ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
+  facet_wrap(~variable, ncol=2)  + 
+  guides(legend.position = "none") +
+  xlab("Total profit by replicate") + 
+  scale_fill_manual(values=colorkey) # density plots fail when delta fn
+
+# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
+#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
+# ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
+#  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
+#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 ```
 
 
@@ -870,19 +881,24 @@ and the Fisheries Ecology Division, Southwest Fisheries Science Center,
 Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
 to CB.
 
-
 \appendix
 
-Appendix
-========
-
 Model definitions and estimation
----------------------------------
+=================================
 
+
+
+Ricker Model
+------------
 
 <!-- Equation S1: Ricker model. --> 
 
-$$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{rickereq} $$
+The Ricker model is given by 
+
+(@rickereq) $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
+
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see provided code).  
+
 
 <!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
 
@@ -896,7 +912,6 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
 
-
 <!-- Table S1: Parameterization of the priors --> 
 
 ```{r echo=FALSE, results = "asis", include = TRUE, cache=FALSE}
@@ -904,8 +919,16 @@ xtable::xtable(ricker_priors_xtable,
   caption = "parameterization range for the uniform priors in the Ricker model")
 ```
 
+Myers Model
+-----------
+
+The Myers model [@Myers1995] is given by
+
 <!--Eq S2: Myers model -->
 (@myerseq) $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
+
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, $\theta$ controls the strength of the nonlinearity, exhibiting an allee effect for $\theta \geq 2$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
+
 
 <!--
 Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
@@ -929,12 +952,18 @@ xtable::xtable(myers_priors_xtable,
            caption = "parameterization range for the uniform priors in the Myers model")
 ```
 
+Allen model
+-----------
 
-Eq S3: Allen model 
+The Allen model [@Allen2005] is given by 
 
 (@alleneq) $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
 
-Figure S3: Allen model: prior and posterior distributions for parameter estimates.
+where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, allee threshold $C$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2Jags] (see code provided).  
+
+
+
+<!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
 
 ```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Allen model", fig.width=6}
 plot_allen_traces
@@ -997,7 +1026,8 @@ For the $\sigma$ prior, $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.  For
 
 
 
-## Optimal Control Problem
+Optimal Control Problem Specification 
+-------------------------------------
 
 We seek the harvest policy $h(x)$ that maximizes:
 
@@ -1043,18 +1073,30 @@ D[,OptTime-time+1] = out[2,]       # The index positions
 
 
 
-
-
-### Training data
+Training data
+-------------
 
 Eacho of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = $ ` r p[1]`, 
-$K =$ ` r p[2]`, $C =$ ` r p[3]`, and  $\sigma_g =$ ` r sigma_g` 
+we simulate from the Allen model with parameters $r = $ `r p[1]`, 
+$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
 for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
 The training data can be seen in Figure 1.  
 
 
-### Sensitivity Analysis
+Code
+----
+
+A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R]().  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  These routines are provided as an R package, [nonparameteric-bayes](), also available on Github.
+
+
+
+
+Sensitivity Analysis
+--------------------
+
+These results are not sensitive to the modeling details of the simulation.  The Gaussian process estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in the figure. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01, 0.05, 0.1, and 0.2, 3 different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  
+
+![Sensitivity Analysis](figure/sensitivity.pdf)
 
 
 

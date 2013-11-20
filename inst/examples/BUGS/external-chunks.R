@@ -617,7 +617,7 @@ tmp <- melt(tmp[2:dim(tmp)[2]])
 actual_over_optimal <-subset(tmp, variable != "True")
 
 
-## @knitr Figure4 
+## @knitr Figure4plots 
 fig4v1 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
   xlab("Total profit by replicate") + scale_fill_manual(values=colorkey) # density plots fail when delta fn

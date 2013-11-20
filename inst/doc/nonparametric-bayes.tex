@@ -493,6 +493,7 @@ DIC & 50.14 & 49.45 & 50.61 \\
   BIC & -17.85 & -25.00 & -20.44 \\ 
    \hline
 \end{tabular}
+\caption{Model choice scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.}
 \end{center}
 \end{table}
 
@@ -761,22 +762,32 @@ DBI-1306697 to CB.
 
 \appendix
 
-\section{Appendix}\label{appendix}
-
-\subsection{Model definitions and
+\section{Model definitions and
 estimation}\label{model-definitions-and-estimation}
 
-\[X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{rickereq} \]
+\subsection{Ricker Model}\label{ricker-model}
+
+The Ricker model is given by
+
+\begin{enumerate}
+\def\labelenumi{(\arabic{enumi})}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  \[X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } \]
+\end{enumerate}
+
+where $Z_t$ is log-normal noise of mean unity and log standard deviation
+$\sigma$, representing the stochastic growth, $X_t$ the stock size at
+time $t$, $S_t$ the escapement (unharvested population that will recruit
+in the following year, $S_t = X_t - h_t$). We place uniform priors on
+the growth rate $r$, carrying capacity $K$, and log-normal standard
+deviation parameter $\sigma$, over ranges given in Table 1. Posteriors
+are inferred by Gibbs sampling using Jags ({\textbf{???}}) (see provided
+code).
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-4.pdf}
-\caption{Traces from the MCMC estimate of the Ricker model}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-5.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-2.pdf}
 \caption{Posteriors from the MCMC estimate of the Ricker model}
 \end{figure}
 
@@ -795,22 +806,37 @@ estimation}\label{model-definitions-and-estimation}
 \end{center}
 \end{table}
 
+\subsection{Myers Model}\label{myers-model}
+
+The Myers model (Myers et al. 1995) is given by
+
 \begin{enumerate}
 \def\labelenumi{(\arabic{enumi})}
+\setcounter{enumi}{1}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   \[ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}\]
 \end{enumerate}
 
+where $Z_t$ is log-normal noise of mean unity and log standard deviation
+$\sigma$, representing the stochastic growth, $X_t$ the stock size at
+time $t$, $S_t$ the escapement (unharvested population that will recruit
+in the following year, $S_t = X_t - h_t$). We place uniform priors on
+the growth rate $r$, carrying capacity $K$, $\theta$ controls the
+strength of the nonlinearity, exhibiting an allee effect for
+$\theta \geq 2$, and log-normal standard deviation parameter $\sigma$,
+over ranges given in Table 1. Posteriors are inferred by Gibbs sampling
+using Jags ({\textbf{???}}) (see code provided).
+
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-7.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-4.pdf}
 \caption{Traces from the MCMC estimate of the Myers model}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-8.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-5.pdf}
 \caption{Posterior distributions from the MCMC estimates of the Myers
 model}
 \end{figure}
@@ -831,34 +857,54 @@ model}
 \end{center}
 \end{table}
 
-Eq S3: Allen model
+\subsection{Allen model}\label{allen-model}
+
+The Allen model (Allen and Tanner 2005) is given by
 
 \begin{enumerate}
 \def\labelenumi{(\arabic{enumi})}
-\setcounter{enumi}{1}
+\setcounter{enumi}{2}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
   \[f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} \]
 \end{enumerate}
 
-Figure S3: Allen model: prior and posterior distributions for parameter
-estimates.
+where $Z_t$ is log-normal noise of mean unity and log standard deviation
+$\sigma$, representing the stochastic growth, $X_t$ the stock size at
+time $t$, $S_t$ the escapement (unharvested population that will recruit
+in the following year, $S_t = X_t - h_t$). We place uniform priors on
+the growth rate $r$, carrying capacity $K$, allee threshold $C$, and
+log-normal standard deviation parameter $\sigma$, over ranges given in
+Table 1. Posteriors are inferred by Gibbs sampling using Jags
+({\textbf{???}}) (see code provided).
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-10.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-7.pdf}
 \caption{Traces from the MCMC estimate of the Allen model}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-11.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-8.pdf}
 \caption{Posteriors from the MCMC estimate of the Allen model}
 \end{figure}
 
-\begin{verbatim}
-Error: object 'allen_priors_xtable' not found
-\end{verbatim}
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{rlrr}
+  \hline
+ & parameter & lower.bound & upper.bound \\ 
+  \hline
+1 & r0 & 0.01 & 6.00 \\ 
+  2 & K & 0.01 & 20.00 \\ 
+  3 & theta & 0.01 & 20.00 \\ 
+  4 & sigma & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\caption{parameterization range for the uniform priors in the Allen model}
+\end{center}
+\end{table}
 
 Assuming the data are known with some process noise,
 
@@ -881,13 +927,13 @@ for a more detailed introduction.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-13.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-10.pdf}
 \caption{Traces from the MCMC estimates of the GP model}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{figure/nonparametric-bayes-unnamed-chunk-14.pdf}
+\includegraphics{figure/nonparametric-bayes-unnamed-chunk-11.pdf}
 \caption{Posterior distributions from the MCMC estimate of the GP model.
 Prior curves shown in red.}
 \end{figure}
@@ -900,7 +946,8 @@ noise $\sigma$ are are inverse Gamma distributed,
 For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5. For $\ell$
 prior, $\alpha = $ 10 and $\beta = $ 10.
 
-\subsection{Optimal Control Problem}\label{optimal-control-problem}
+\subsection{Optimal Control Problem
+Specification}\label{optimal-control-problem-specification}
 
 We seek the harvest policy $h(x)$ that maximizes:
 
@@ -944,16 +991,27 @@ iteration}\label{pseudocode-for-the-bellman-iteration}
 \end{Highlighting}
 \end{Shaded}
 
-\subsubsection{Training data}\label{training-data}
+\subsection{Training data}\label{training-data}
 
 Eacho of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = $
-\texttt{r p{[}1{]}}, $K =$ \texttt{r p{[}2{]}}, $C =$
-\texttt{r p{[}3{]}}, and $\sigma_g =$ \texttt{r sigma\_g} for $T=$ 40
-timesteps, starting at initial condition $X_0 = $ 5.5. The training data
-can be seen in Figure 1.
+we simulate from the Allen model with parameters $r = $ 2, $K =$ 8,
+$C =$ 5, and $\sigma_g =$ 0.05 for $T=$ 40 timesteps, starting at
+initial condition $X_0 = $ 5.5. The training data can be seen in Figure
+1.
 
-\subsubsection{Sensitivity Analysis}\label{sensitivity-analysis}
+\subsection{Code}\label{code}
+
+A copy of the script to reconstruct the simulations and analysis shown
+here is provided in the supplemental materials, and through this
+version-stable link to the project's Github code repostitory,
+\href{}{nonparameteric-bayes.R}. This code is dynamically embedded into
+the manuscript using Knitr, (Xie 2012). The script relies on custom
+routines for executing the estimation of the Gaussian process and the
+for solving the stochastic dynamic programming problem. These routines
+are provided as an R package, \href{}{nonparameteric-bayes}, also
+available on Github.
+
+\subsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
 Allen, Deborah, and Kimberly Tanner. 2005. ``Infusing Active Learning
 into the Large-enrollment Biology Class: Seven Strategies, from the
@@ -1159,6 +1217,9 @@ Collie, Christopher Costello, Michael J. Fogarty, et al. 2009.
 ``Rebuilding Global Fisheries.'' \emph{Science (New York, N.Y.)} 325
 (5940) (jul): 578--85. doi:10.1126/science.1173146.
 \url{http://www.ncbi.nlm.nih.gov/pubmed/19644114}.
+
+Xie, Yihui. 2012. \emph{Knitr: A General-purpose Package for Dynamic
+Report Generation in R}. \url{http://yihui.name/knitr/}.
 
 \end{document}
 
