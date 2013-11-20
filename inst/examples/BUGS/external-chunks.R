@@ -200,7 +200,7 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
 })
 plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=allen_priors, aes(x=value, y=density), col="red") + 
+#  geom_line(data=allen_priors, aes(x=value, y=density), col="red") +  
   facet_wrap(~ variable, scale="free", ncol=3)
 
 
@@ -286,7 +286,7 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
 # plot posterior distributions
 plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") + 
+#  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") +  # don't plot priors 
   facet_wrap(~ variable, scale="free", ncol=2)
 
 
@@ -378,7 +378,8 @@ myers_jags <- do.call(autojags,
 tmp <- lapply(as.mcmc(myers_jags), as.matrix) # strip classes
 myers_posteriors <- melt(tmp, id = colnames(tmp[[1]])) 
 names(myers_posteriors) = c("index", "variable", "value", "chain")
-plot_myers_traces <- ggplot(myers_posteriors) + geom_line(aes(index, value)) +
+plot_myers_traces <- ggplot(myers_posteriors) + 
+  geom_line(aes(index, value)) + # priors, need to fix order though
   facet_wrap(~ variable, scale="free", ncol=1)
 
 
@@ -390,7 +391,7 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
 })
 plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
-  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") + 
+#  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") +  # Whoops, these are misaligned. see table instead 
   facet_wrap(~ variable, scale="free", ncol=3)
 
 
@@ -527,13 +528,18 @@ for(t in 1:(length(y)-1))
 crash_data <- step_ahead_posteriors(y)
 crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers"))
 ggplot(crash_data) + 
-  geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col = variable, 
-            group=interaction(L1,variable)), alpha=.1) + 
-  facet_wrap(~variable) + 
-  scale_colour_manual(values=colorkey, 
+  geom_boxplot(aes(as.factor(as.integer(time)), value, 
+                   fill = variable, col=variable), 
+               alpha=.7, outlier.size=1, position="identity") + 
+#  geom_line(aes(time, value, col = variable, 
+#            group=interaction(L1,variable)), alpha=.1) + 
+  geom_point(aes(time, stock), size = 3) + 
+  scale_fill_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
                       guide = guide_legend(override.aes = list(alpha = 1))) +  
-  theme(legend.position="none")
+  scale_colour_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
+                      guide = guide_legend(override.aes = list(alpha = 1))) +  
+  facet_wrap(~variable) + 
+  theme(legend.position="none") + xlab("time") + ylab("stock size") 
 
 
 ## @knitr gp-opt
@@ -611,7 +617,7 @@ tmp <- melt(tmp[2:dim(tmp)[2]])
 actual_over_optimal <-subset(tmp, variable != "True")
 
 
-## @knitr Figure4 
+## @knitr Figure4plots 
 fig4v1 <- ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, scales = "free_y")  + guides(legend.position = "none") +
   xlab("Total profit by replicate") + scale_fill_manual(values=colorkey) # density plots fail when delta fn
