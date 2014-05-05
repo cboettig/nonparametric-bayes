@@ -51,25 +51,14 @@ keywords:
 ```{r plot-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(nonparametricbayes) 
 opts_chunk$set(external=TRUE)
-read_chunk("../examples/BUGS/external-chunks.R")
-
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=1, 
-               comment=NA, verbose=TRUE, fig.width=4, fig.height=3)
- 
-# Name the cache path and fig.path based on filename...
-opts_chunk$set(fig.path = paste("figure/",
-                                gsub(".Rmd", "", knitr:::knit_concord$get('infile')),
-                                "-", sep=""),
-               cache.path = paste("cache/", 
-                                  gsub(".Rmd", "", knitr:::knit_concord$get('infile') ), 
-                                "/", sep=""))
-
-toggle = "markup" #"hide"  # toggles `results` chunk option 
-
+read_chunk("components/external-chunks.R")
+opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
 library(ggplot2) 
 theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+toggle = "markup" # results argument
 ```
 
 ```{r posterior-mode}
@@ -1107,3 +1096,9 @@ Data
 While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
 
+
+```{r include=FALSE}
+unlink("ricker_process.bugs")
+unlink("allen_process.bugs")
+unlink("myers_process.bugs")
+```
