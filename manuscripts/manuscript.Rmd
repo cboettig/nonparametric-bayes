@@ -78,7 +78,7 @@ toggle = "hide" # results argument
 ```
 ```{r sdp-pars, dependson="stateeq"}
 ```
-```{r obs, dependson="sdp-pars"}
+```{r obs, dependson="sdp-pars", fig.keep='none'}
 ```
 
 
@@ -645,7 +645,7 @@ to their poorer performance if not checked by hand for each configuration.
 
 
 
-```{r sensitivity, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+```{r sensitivity, fig.height=6, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
 ggplot(dat) + geom_histogram(aes(value, fill=noise)) + xlim(0,1.0) + theme_bw() + xlab("value as fraction of the optimal") + facet_wrap(~model, ncol=1)
 ```
 
