@@ -69,7 +69,7 @@ theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-toggle = "markup" # results argument
+toggle = "hide" # results argument
 ```
 
 ```{r posterior-mode}
@@ -191,6 +191,9 @@ myers_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
 ```
 
 
+```{r sensitivity-calc}
+source("components/sensitivity.R")
+```
 
 
 
@@ -363,15 +366,15 @@ literature) to formulate a predictive model is relatively new in the
 context of modeling dynamical systems [@Kocijan2005], and was first introduced
 in the context ecological modeling and fisheries management in @Munch2005.
 GP models have subsequently been used to test for the presence of Allee
-effects [@SugenoMunch], estimate the maximum reproductive
-rate [@SugenoMunch], determine temporal variation in food
+effects [@Sugeno2013], estimate the maximum reproductive
+rate [@Sugeno2013], determine temporal variation in food
 availability [@Sigourney], and provide a basis for identifying
-model-mispecification [@Thorson].
+model-mispecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
 GPs can be found in @Rasmussen2006. The nonparametric monicker for
 the GP approach is unfortunate as (a) it still involves the estimation
 of parameters, and (b), statisticians also use non-parametric to mean
-models that make only weak distributional assumptions.  (@signTestREF). 
+models that make only weak distributional assumptions  [e.g. @Lehmann1975]. 
 However, we retain the terminology for consistency with previous
 studies.
 
@@ -441,7 +444,7 @@ parameters (See Appendix, Figures and tables, and the R code
 provided). One-step-ahead predictions of these model fits are shown in
 Figure 1.  Each chain was tested for Gelman-Rubin convergence and results wer robust
 to longer runs.  For each simulation we also applied several commonly
-used model selection criteria (AIC, BIC, DIC, see @BurnhamAndersonREF)
+used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
 to identify the best fitting model.
 
 
@@ -617,9 +620,34 @@ Sensitivity Analysis
 --------------------
 
 
-These results are not sensitive to the modeling details of the simulation.  The GPDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in Figure 7. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the GPDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parametric model.  The GPDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parametric models in the previous figure. The sensitivity analysis is compared against the optimal solution alone and not shown against the estimates of the various parameteric models (but see Figure 6), where convergence of the Gibbs sampling could contribute to their poorer performance if not checked by hand for each configuration.  
+These results are not sensitive to the modeling details of the simulation.
+The GPDP estimate remains very close to the optimal solution obtained
+by knowning the true model across changes to the training simulation,
+noise scale, parameters or structure of the underlying model, as seen in
+Figure 7. The sensitivity analysis uses a factorial design of eight replicates 
+of three different randomly generated parameter sets for each of two different 
+generating models (Allen and Myers) over two different noise levels 
+(0.01 and 0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. In Figure 7, 
+results are pooled across different random seeds (111, 222,
+333), noise values of 0.01 and 0.05 (not large enough to violate the
+self-sustaining criterion of @Reed1979), and different randomly generated
+parameters sets for each model, and using either the Myers or Allen as the
+underlying structure.  While the GPDP performs slightly closer to optimal
+on the smaller noise levels, and closer on the Allen model then the Myers
+model, the differences are small compared to the values observed in using
+the wrong parametric model.  The GPDP solution consistently avoids either
+failing to harvest at all or crashing the stock, which results in the very
+low profits/values seen in parametric models in the previous figure. The
+sensitivity analysis is compared against the optimal solution alone and
+not shown against the estimates of the various parameteric models (but
+see Figure 6), where convergence of the Gibbs sampling could contribute
+to their poorer performance if not checked by hand for each configuration.
 
-![Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels.](figure/sensitivity.pdf)
+
+
+```{r sensitivity, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+ggplot(dat) + geom_histogram(aes(value, fill=noise)) + xlim(0,1.0) + theme_bw() + xlab("value as fraction of the optimal") + facet_wrap(~model, ncol=1)
+```
 
 
 
@@ -717,7 +745,7 @@ In principle, this may allow a manager to improve the performance of the
 GPDP approach by adding only enough additional detail as is justified.
 For instance, it would be possible to use a linear or a Ricker-shaped
 mean in the prior without making the much stronger assumption that the
-Ricker is the structurally correct model [@SugenoMunch]. Future research
+Ricker is the structurally correct model [@Sugeno2013]. Future research
 should focus on identifying criteria to ensure the prior and the value function
 are chosen appropriately for the problem at hand.
 
@@ -779,7 +807,7 @@ Acknowledgments
 This work was partially supported by NOAA-IAM grant to SM administered through the Center for Stock Assessment
 Research, a partnership between the University of California Santa Cruz
 and the Fisheries Ecology Division, Southwest Fisheries Science Center,
-Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
+Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
 to CB.
 
 \appendix

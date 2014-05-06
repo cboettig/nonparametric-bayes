@@ -1,7 +1,7 @@
 #!/usr/bin/R
 
 # restore cache file
-archive <- "template-manuscript-cache.tar.gz"
+archive <- "nonparameteric-bayes-cache.tar.gz"
 
 setwd("components")
 download.file(paste0("http://two.ucdavis.edu/~cboettig/data/", archive), archive)

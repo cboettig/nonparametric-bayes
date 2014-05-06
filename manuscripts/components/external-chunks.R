@@ -53,7 +53,6 @@ MaxT = 1000 # timeout for value iteration convergence
                     y = c(rep(0,nz), 
                           x[2:Tobs]))
 raw_plot <- ggplot(data.frame(time = 1:Tobs, x=x), aes(time,x)) + geom_line()
-raw_plot
 
 
 ## @knitr mle
