@@ -1,4 +1,5 @@
 ---
+layout: 12pt,review
 title: "Avoiding tipping points in the management of ecological systems: a non-parametric Bayesian approach"
 author: 
   - name: "Carl Boettiger"
@@ -23,20 +24,31 @@ address:
       110 Shaffer Road, Santa Cruz, CA 95060, USA
 
 abstract: |
-          Model uncertainty and limited data coverage are fundamental challenges to
-          robust ecosystem management.  These challenges are acutely highlighted
-          by concerns that many ecological systems may contain tipping points.
-          Before a collapse, we do not know where the tipping points lie, if the
-          exist at all.  Hence, we know neither a complete model of the system
-          dynamics nor do we have access to data in some large region of state-space
-          where such a tipping point might exist.  These two sources of uncertainty
-          frustrate state-of-the-art parametric approaches to decision theory
-          and optimal control.  I will illustrate how a non-parametric approach
-          using a Gaussian Process prior provides a more flexible representation
-          of this inherent uncertainty.  Consequently, we can adapt the Gaussian
-          Process prior to a stochastic dynamic programming framework in order to
-          make robust management predictions under both model and uncertainty and
-          limited data.
+          Model uncertainty and limited data coverage are fundamental
+          challenges to robust ecosystem management.  These challenges
+          are acutely highlighted by concerns that many ecological systems
+          may contain tipping points.  Before a collapse, we do not know
+          where the tipping points lie, if the exist at all.  Hence,
+          we know neither a complete model of the system dynamics nor
+          do we have access to data in some large region of state-space
+          where such a tipping point might exist.  These two sources of
+          uncertainty frustrate state-of-the-art parametric approaches
+          to decision theory and optimal control.  Here we illustrate
+          how a non-parametric approach using a Gaussian process prior
+          provides a more flexible representation of this inherent
+          uncertainty. We can then embed the Gaussian process in a
+          stochastic dynamic programming framework in order to make
+          robust management predictions under both model uncertainty and
+          limited data. We conduct a set of simulations to evaluate this
+          approach as compared with the standard approach of using model
+          selection to choose from a set of candidate models.  In keeping
+          with previous results, we find that model selection erroneously
+          favors models without tipping points -- leading to harvest policies
+          that guarantee extinction. The Gaussian process approach
+          performs nearly as well as the true model and significantly
+          outperforms standard appraoches.
+
+
 keywords:
   - Bayesian
   - Structural Uncertainty
@@ -51,25 +63,14 @@ keywords:
 ```{r plot-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 library(nonparametricbayes) 
 opts_chunk$set(external=TRUE)
-read_chunk("../examples/BUGS/external-chunks.R")
-
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=1, 
-               comment=NA, verbose=TRUE, fig.width=4, fig.height=3)
- 
-# Name the cache path and fig.path based on filename...
-opts_chunk$set(fig.path = paste("figure/",
-                                gsub(".Rmd", "", knitr:::knit_concord$get('infile')),
-                                "-", sep=""),
-               cache.path = paste("cache/", 
-                                  gsub(".Rmd", "", knitr:::knit_concord$get('infile') ), 
-                                "/", sep=""))
-
-toggle = "markup" #"hide"  # toggles `results` chunk option 
-
+read_chunk("components/external-chunks.R")
+opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
 library(ggplot2) 
 theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+toggle = "hide" # results argument
 ```
 
 ```{r posterior-mode}
@@ -78,7 +79,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 ```
 ```{r sdp-pars, dependson="stateeq"}
 ```
-```{r obs, dependson="sdp-pars"}
+```{r obs, dependson="sdp-pars", fig.keep='none'}
 ```
 
 
@@ -191,6 +192,9 @@ myers_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
 ```
 
 
+```{r sensitivity-calc}
+source("components/sensitivity.R")
+```
 
 
 
@@ -200,7 +204,7 @@ Introduction
 Decision making under uncertainty is a ubiquitous challenge of
 natural resource management and conservation.  Ecological dynamics are
 frequently complex and difficult to measure, making uncertainty in our
-understanding a prediction a persistent challenge to effective management.
+understanding a persistent challenge to effective management.
 Decision-theoretic approaches provide a framework to determine the
 best sequence of actions in face of uncertainty, but only when that
 uncertainty can be meaningfully quantified [@Fischer2009].  The sudden
@@ -211,11 +215,11 @@ the underlying processes.
 
 We develop a novel approach to address these concerns in the context of fisheries; though
 the underlying challenges and methods are germane to many other
-conservation and resource management problems.  The economic value and
+conservation and resource management problems.  Economic value and
 ecological concern have made marine fisheries the crucible for much
 of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
-in managing ecosystems under uncertainty.  Global trends [@Worm2006]
-and controversy [@Hilborn2007; @Worm2009] have made understanding these
+on management under uncertainty.  Global declines [@Worm2006]
+and the controversy surrounding their interpretation [@Hilborn2007; @Worm2009] have made understanding these
 challenges all the more pressing.
 
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
@@ -227,8 +231,7 @@ implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
 @Sethi2005], parametric uncertainty [_e.g._ @Ludwig1982; @Hilborn1997;
 @McAllister1998; @Schapaugh2013], and model or structural uncertainty
 [_e.g._ @Williams2001; @Cressie2009;  @Athanassoglou2012].  Of these,
-structural uncertainty incorporates the least a priori knowledge or
-assumptions and is generally the hardest to quantify. Typical approaches
+structural uncertainty is generally the hardest to quantify. Typical approaches
 assume a weak notion of model uncertainty in which the correct model
 (or reasonable approximation) of the dynamics must be identified from
 among a handful of alternative models.  Here we consider an approach
@@ -236,37 +239,10 @@ that addresses uncertainty at each of these levels without assuming the
 dynamics follow a particular (i.e. parametric) structure.
 
 
-
-_Cut the next three paragraphs, since they are covered more concisely in the above paragraph?_
-
-### Process, measurement, and implementation error
-
-Resource management and conservation planning seek to determine the
-optimal set of feasible actions to maximize the value of some objectives
-(e.g @Halpern2013).  Process error, measurement error, implementation
-error [@Reed1979, @Clark1986, @Roughgarden1996, @Sethi2005].  These
-sources of stochasticity in turn mean that model parameters can only
-be estimated approximately, requiring parametric uncertainty also be
-considered [@Ludwig1982].
-
-### Parametric uncertainty
-
-As the parameter values for these models must be estimated from limited
-data, there will always be some uncertainty associated with these values.
-This uncertainty further compounds the intrinsic variability introduced
-by demographic or environmental noise.  The degree of uncertainty in
-the parameter values can be inferred from the data and reflected in the
-estimates of the transition probabilities [@Ludwig1982; @Mangel1988;
-@Hilborn1997; @Schapaugh2013].
-
-### Structural (model) uncertainty
-
-Estimates of parameter uncertainty are only as good as the parametric
-models themselves.  Often we do not understand the system dynamics well
+Often we do not understand the system dynamics well
 enough to know if a model provides a good approximation over the relevant
 range of states and timescales (criteria that we loosely refer to as
-defining the "right" or "true" model.)  So called structural or model
-uncertainty is a more difficult problem than parametric uncertainty.
+defining the "right" or "true" model.)  
 Typical solutions involve either model choice, model averaging, or
 introducing yet greater model complexity of which others may be special
 cases (model averaging being one such way to construct such a model)
@@ -286,17 +262,9 @@ This extrapolation uncertainty is felt most keenly in decision-theoretic
 (or optimal control) applications, since (a) exploring the potential
 action space typically involves considering actions that may move the
 system outside the range of observed behavior, and (b) decision-theoretic
-alogrithms rely not only on reasonable estimates of the expected
+algorithms rely not only on reasonable estimates of the expected
 outcomes, but depend on the weights given to all possible outcomes
-[_e.g._ @Weitzman2013].  If we are observing the fluctuations of a
-given fish stock over many years under a fixed harvesting pressure,
-we might develop and test a model that could reasonably predict the
-frequency of a deviation of a given size, even when such a deviation has
-not been previously observed. Yet such predictions are far less reliable
-when extrapolated to a harvest pressure that has not yet been observed.
-Thus, model uncertainty can be particularly challenging in the management
-and decision-making context.
-
+[_e.g._ @Weitzman2013].  
 
 This difficult position of having neither the true model nor data that
 covers the full range of possible states is unfortunately the rule more
@@ -333,19 +301,15 @@ decision-theoretic approach in face of substantial structural uncertainty.
 
 
 
-
-
-<!-- necessary? --> <!-- should reflect the dual problem of extrapolation and model uncertainty better -->
-
-This paper represents the first time the SDP decision-making framework has
-been used without an a priori model of the underlying dynamics through
-the use of the BNP approach.  In contrast to parametric models which
-can only reflect uncertainty in parameter estimates, the BNP approach
-provides a more state-space dependent representation of uncertainty.
-This permits a much greater uncertainty far from the observed data than
-near the observed data.  These features allow the BNP-SDP approach to
-find robust management solutions in face of limited data and without
-knowledge of the correct model structure.
+This paper represents the first ecological application of the SDP
+decision-making framework without an a priori model of the underlying
+dynamics.  In contrast to parametric models which can only reflect
+uncertainty in parameter estimates, the BNP approach provides a more
+state-space dependent representation of uncertainty.  This permits
+a much greater uncertainty far from the observed data than near the
+observed data.  These features allow the GPDP approach to find robust
+management solutions in face of limited data and without knowledge of
+the correct model structure.
 
 
 
@@ -370,18 +334,16 @@ management policies than with common parametric modeling approaches.
 - _Note on comparing models_ (via value function rather than by "fit"). 
 -->
 
-The nature of decision-making problems provides a convenient way to compare 
-models.  Rather than compare models in terms of best fit to data or fret over
-the appropriate penalty for model complexity, model performance is defined 
-in the concrete terms of the decision-maker's objective function, which we
-will take as given. (Much argument can be made over the 'correct' objective
+The nature of decision-making problems provides a compelling and pragmatic way to compare 
+models: Rather than compare models in terms of best fit to data, model performance is defined 
+in the concrete terms of the decision-maker's objectives. Although much argument can be made over the 'correct' objective
 function, e.g. how to account for the social value of fish left in the sea
 vs. the commercial value of fish harvested; see @Halpern2013 for further 
-discussion of this issue.  Alternatively, we can always compare model performance
-across multiple potential objective functions.)  The decision-maker
+discussion of this issue.  We can always compare model performance
+across multiple potential objectives.  The important point is that a decision-maker
 does not necessarily need a model that provides the best mechanistic understanding
-or the best long-term outcome, but rather the one that best estimates the 
-probabilities of being in different states as a result of the possible actions. 
+or the best long-term outcome, but rather the one that idelivers the best 
+management performance over the period of interest. 
 
 
 
@@ -391,75 +353,29 @@ probabilities of being in different states as a result of the possible actions.
 - Background on non-parametric modeling.  
 -->
 
-
-Addressing the difficulty posed by extrapolation without knowing the
-true model requires a nonparametric approach to model fitting: one
-that does not assume a fixed structure but rather depends on the size
-of the data (e.g. non-parametric regression or a Dirichlet process).
-This established terminology is nevertheless unfortunate, as (a)
-this approach still involves the estimation of parameters, and (b),
-Statisticians use non-parametric to mean both this property (structure
-is not fixed by the parameters) and an entirely different (and probably
-more familiar) case in which the model does not assume any distribution
-(e.g. non-parametric bootstrap, order statistics).  Some literature
-thus uses the term semi-parametric, which merely adds ambiguity to
-the confusion.
-
-This non-parametric property -- having a structure explicitly dependent on
-the data -- is precisely the property that makes this approach attractive
-in face of the limited data sampling challenges discussed above.
-Having fit a parametric model to some data, the model is completely
-described by the values (or posterior distributions) of it's parameters.
-The non-parametric model is not captured by its parameter values or
-distributions alone. Either the model scales with the complexity of the data
-on which it is estimated (e.g. nonparametric hierarchical approaches such
-as the Dirchlet process) or the data points become themselves part of the model
-specification, as in the nonparametric regression used here.
-
 <!--
 - Definition
 - Previous application
 --> 
 
+We use a Bayesian nonparameteric regression approach based on Gaussian process priors. 
 The use of Gaussian process (GP) regression (or "kriging" in the geospatial
 literature) to formulate a predictive model is relatively new in the
 context of modeling dynamical systems [@Kocijan2005], and was first introduced
 in the context ecological modeling and fisheries management in @Munch2005.
+GP models have subsequently been used to test for the presence of Allee
+effects [@Sugeno2013], estimate the maximum reproductive
+rate [@Sugeno2013], determine temporal variation in food
+availability [@Sigourney2012], and provide a basis for identifying
+model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
-GPs can be found in @Rasmussen2006.
+GPs can be found in @Rasmussen2006. The nonparametric moniker for
+the GP approach is unfortunate as (a) it still involves the estimation
+of parameters, and (b), statisticians also use non-parametric to mean
+models that make only weak distributional assumptions  [e.g. @Lehmann1975]. 
+However, we retain the terminology for consistency with previous
+studies.
 
-<!--
-- Why it is particularly suited to these two problems
-- (Why this is a novel application thereof)
---> 
-
-<!-- Useless 
-The essence of the GP approach can be captured in the following
-thought experiment: An exhaustive parametric approach to the challenge
-of structural uncertainty might proceed by writing down all possible
-functional forms for the underlying dynamical system with all possible
-parameter values for each form, and then consider searching over this
-huge space to select the most likely model and parameters; or using a
-Bayesian approach, assign priors to each of these possible models and
-infer the posterior distribution of possible models. The GP approach
-can be thought of as a computationally efficient approximation to this
-approach. GPs represent a large class of models that can be though
-of as capturing or reasonably approximating the set of models in this
-collection.  By modeling at the level of the process, rather than the
-level of parametric equation, we can more concisely capture the possible
-behavior of these curves.  In place of a parametric model of the dynamical
-system, the GP approach postulates a prior distribution of (n-dimensional)
-curves that can be though of as approximations to a range of possible
-(parametric) models that might describe the data. The GP allows us to
-consider probabilities on a large set of possible curves simultaneously.
--->
-
-The posterior distribution for the hyper-parameters of the Gaussian 
-process model are estimated by Metropolis-Hastings algorithm, again with
-details and code provided in the Appendix.  @Rasmussen2006 provides
-an excellent general introduction to Gaussian Processes and @Munch2005a 
-first discusses their application in the context of population dynamics
-models such as fisheries stock-recruitment relationships.
 
 
 Approach and Methods
@@ -469,18 +385,13 @@ Approach and Methods
 
 ### Statement of the optimal control problem
 
-To illustrate the application of the BNP-SDP approach and compare to the
-predictions of the alternative parametric models we focus on the classical
-problem of selecting the appropriate harvest level given an observation
-of the stock size in the previous year  [@Reed1979; @Ludwig1982; @Mangel1988].
-Given this observation and the model (together with the parameter uncertainty) of the stock
-recruitment process, the manager seeks to maximize the value of the 
-fishery over a fixed time interval of `r OptTime` years at a discount rate
-of `r delta`. The value function (profits) at time $t$ depends on the true stock size
-$x_t$ and the chosen harvest level $h_t$.  For simplicity we assume profit 
-is simply proportional in the realized harvest (only
-enforcing the restriction that harvest can not exceed available stock).  
-
+To illustrate the application of the Gaussian process-based dynamic
+programming approach (hereafter GPDP) we focus on the classical problem
+of determining a harvest policy that will maximize the expected discounted
+profit over a fixed time interval [@Reed1979; @Ludwig1982; @Mangel1988].
+For simplicity we assume profit is proportional to the realized harvest.  
+For comparison, we consider the performance of the GPDP policy against
+policies derived under several alternative parametric models. 
 
 ### Parametric models
 
@@ -507,21 +418,15 @@ introduces one additional parameter $\sigma$ that must be estimated by each
 model. 
 
 <!-- equations just in appendix? -->
-
-As we simulate training data from the Allen model, we will
-refer to this as the structurally correct model.  The Ricker model is
-thus a reasonable approximation of these dynamics far from the Allee
+Because of our interest in management performance in the presence of
+tipping points, all of our simulations are based on the Allen model.
+The Allen model is thus structurally correct and is expected to provide
+a best-case scenario when the 'true' dynamics are known.
+The Ricker model is a reasonable approximation of these dynamics far from the Allee
 threshold (but lacks threshold dynamics), while the Myers model shares
-the essential feature of a threshold but differs in the structure. Thus
-we have three potential parametric models of the stock dynamics.
+the essential feature of a threshold but differs in the structure. 
 
-We introduce parametric uncertainty by first estimating each of the
-candidate models from data on unexploited stock dynamics following
-some perturbation (non-equilibrium initial condition) over several time
-steps. This training data could be generated in several different ways
-(such as known variable exploitation rates, etc.), as long as it reflects
-the dynamics in some limited region of state space without impacting
-the problem.  We consider a period of `r Tobs` years of training data: long
+We consider a period of `r Tobs` years of training data: long
 enough that the estimates are not dependent on the particular realization,
 while longer times are not likely to provide substantial improvement
 (i.e. the results are not sensitive to this interval).  Each of the models
@@ -530,22 +435,20 @@ while longer times are not likely to provide substantial improvement
 
 <!-- Bayesian inference of parametric models --> 
 
-We infer posterior distributions for the parameters of each model
+We inferred posterior distributions for the parameters of each model
 in a Bayesian context using Gibbs sampling (implemented in R [@RTeam]
 using jags, [@R2jags]).  We choose uninformative uniform priors for all
 parameters (See Appendix, Figures and tables, and the R code
 provided). One-step-ahead predictions of these model fits are shown in
-Figure 1.  While alternative approaches to the estimation of the posteriors
-(such as integrating out the rate parameter $r$ analytically and then
-performing a grid search over the remaining parameter space), the 
-approach of using a standard Gibbs sampler routine is both more general
-and representitive of common practice in estimating posteriors for such models. 
-Each sampling is tested for Gelman-Rubin convergence and results are robust
-to longer runs.  
+Figure 1.  Each chain was tested for Gelman-Rubin convergence and results were robust
+to longer runs.  For each simulation we also applied several commonly
+used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
+to identify the best fitting model.
+
 
 <!-- SDP via parametric models -->
 
-An optimal policy function is then inferred through stochastic dynamic
+An optimal policy function was then inferred through stochastic dynamic
 programming for each model given the posterior distributions of the
 parameter estimates.  This policy maximizes the expectation of the value
 function integrated over the parameter uncertainty. (code implementing
@@ -560,13 +463,13 @@ this algorithm provided in the Appendix).
 <!-- See much longer discusion above on "Background on GP".  Move some of that to here?  -->
 
 
-We also estimate a simple Gaussian Process defined by a radial basis
+Using the simulated training data we also estimate a Gaussian process defined by a radial basis
 function kernel of two parameters: $\ell$, which gives the characteristic
 length-scale over which correlation between two points in state-space
 decays, and $\sigma$, which gives the scale of the process noise by which
 observations $Y_{t+1}$ may differ from their predicted values $X_{t+1}$
 given an observation of the previous state, $X_t$. @Munch2005a gives an
-accessible introduction to the use of Gaussian Processes in providing a
+accessible introduction to the use of Gaussian processes in providing a
 Bayesian nonparametric description of the stock-recruitment relationship.
 
 <!-- Inference of the BNP model --> 
@@ -587,19 +490,24 @@ observed data.
 
 <!-- SDP via the model --> 
 
-Though we are unaware of prior application of this type, it is reasonably
-straight-forward to adapt the Gaussian Process for Stochastic Dynamic
-Programming.  Recall that unlike the parametric models the Gaussian
-process with fixed parameters already predicts a distribution of
-curves rather than a single curve. We must first integrate over 
-this distribution of curves given a sampling of parameter values drawn
-from the posterior distribution of the two GP parameters, before
-integrating over the posterior of those parameters themselves.
+It is reasonably straight-forward to derive the harvest policy from the
+estimated BP by inserting it into a Stochastic Dynamic Programming (SDP)
+algorithm.  Recall that unlike the parametric models the Gaussian process
+with fixed parameters already predicts a distribution of curves rather
+than a single curve. We must first integrate over this distribution of
+curves given a sampling of parameter values drawn from the posterior
+distribution of the two GP parameters, before integrating over the
+posterior of those parameters themselves.
 
 
 
 Results
 =======
+
+To ensure our results are robust to our choice of parameters, 
+we perform our analysis over 96 different scenarios. To better
+understand the process, we will first describe in detail the
+results of a single scenario.  
 
 <!-- 
 ### Figure 1: Fitted Models
@@ -612,13 +520,13 @@ Results
 ```{r Figureb_posteriors, dependson=c("assemble-models", "par-fns"), include=TRUE, echo=FALSE, fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.", fig.width=8, fig.height=6}
 ```
 
-All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the expected value of the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity in growth rate.  Model-choice criteria shown in Table 1 penalize more complex models and show a slight preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to over-fit, predicting fluctuations that are actually due purely to stochasticity.  All model selection criteria shown in Table 1 penalize more complex models and show a preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
 
 ```{r deviances, dependson=c("dic_calc"), include=FALSE, echo=FALSE}
 ```
 
 ```{r Table1, dependson="deviances", include=TRUE, results="asis", echo=FALSE, cache=FALSE}
-xtable::xtable(rbind(dictable, aictable, bictable), caption="Model choice scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.")
+xtable::xtable(rbind(dictable, aictable, bictable), caption="Model selection scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.")
 ```
 
 
@@ -646,7 +554,7 @@ the tipping point.
 
 
 
-```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the paramteric models, while the realized state often falls outside of the expected range forecast by the structurally incorrect Myers and Ricker models." }
+```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parametric models, while the realized state often falls outside of the expected range forecast by the structurally incorrect Myers and Ricker models." }
 ```
 
 
@@ -687,11 +595,10 @@ The structurally incorrect Ricker model over-harvests the population
 passed the tipping point consistently, resulting in the immediate crash
 of the stock and thus derives minimal profits.
 
-These results are robust across a range of stochastic realizations,
-models, and parameter values.  The results across this range can most
+The results across replicate stochastic simulations can most
 easily be compared by using the relative differences in net present
 value realized by each of the model. Figure 6 shows the distribution of values
-(profits) realized by each simulation shown in Figure 5.  The BNP-SDP
+(profits) realized by each simulation shown in Figure 5.  The GPDP
 approach most consistently realizes a value close to the optimal solution,
 and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
@@ -716,9 +623,34 @@ Sensitivity Analysis
 --------------------
 
 
-These results are not sensitive to the modeling details of the simulation.  The BNP-SDP estimate remains very close to the optimal solution obtained by knowning the true model across changes to the training simulation, noise scale, parameters or structure of the underlying model, as seen in Figure 7. Results are pooled across different random seeds (111, 222, 333), noise values of 0.01 and 0.05 (not large enough to violate the self-sustaining criterion of @Reed1979), and different randomly generated parameters sets for each model, and using either the Myers or Allen as the underlying structure.  While the BNP-SDP performs slightly closer to optimal on the smaller noise levels, and closer on the Allen model then the Myers model, the differences are small compared to the values observed in using the wrong parametric model.  The BNP-SDP solution consistently avoids either failing to harvest at all or crashing the stock, which results in the very low profits/values seen in parametric models in the previous figure. The sensitivity analysis is compared against the optimal solution alone and not shown against the estimates of the various parameteric models (but see Figure 6), where convergence of the Gibbs sampling could contribute to their poorer performance if not checked by hand for each configuration.  
+These results are not sensitive to the modeling details of the simulation.
+The GPDP estimate remains very close to the optimal solution obtained
+by knowing the true model across changes to the training simulation,
+noise scale, parameters or structure of the underlying model, as seen in
+Figure 7. The sensitivity analysis uses a factorial design of eight replicates 
+of three different randomly generated parameter sets for each of two different 
+generating models (Allen and Myers) over two different noise levels 
+(0.01 and 0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. In Figure 7, 
+results are pooled across different random seeds (111, 222,
+333), noise values of 0.01 and 0.05 (not large enough to violate the
+self-sustaining criterion of @Reed1979), and different randomly generated
+parameters sets for each model, and using either the Myers or Allen as the
+underlying structure.  While the GPDP performs slightly closer to optimal
+on the smaller noise levels, and closer on the Allen model then the Myers
+model, the differences are small compared to the values observed in using
+the wrong parametric model.  The GPDP solution consistently avoids either
+failing to harvest at all or crashing the stock, which results in the very
+low profits/values seen in parametric models in the previous figure. The
+sensitivity analysis is compared against the optimal solution alone and
+not shown against the estimates of the various parametric models (but
+see Figure 6), where convergence of the Gibbs sampling could contribute
+to their poorer performance if not checked by hand for each configuration.
 
-![Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the BNP-SDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels.](figure/sensitivity.pdf)
+
+
+```{r sensitivity, fig.height=6, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+ggplot(dat) + geom_histogram(aes(value, fill=noise)) + xlim(0,1.0) + theme_bw() + xlab("value as fraction of the optimal") + facet_wrap(~model, ncol=1)
+```
 
 
 
@@ -732,7 +664,7 @@ potential to increase our basic understanding of ecological processes
 [@Cuddington2013; @Geritz2012], such models can be not only inaccurate but
 misleading when relied upon in a quantitative decision making framework.
 In this paper we have tackled two aspects of uncertainty that are both
-common to many ecological desicion-making problems and fundamentally
+common to many ecological decision-making problems and fundamentally
 challenging to existing approaches which largely rely on parametric
 models:
 
@@ -753,10 +685,10 @@ comes only from the basin of attraction near the unfished equilibrium,
 near which all of the models are approximately linear and approximately
 identical. 
 
-Model choice approaches trade off model complexity and fit to the data. 
+Model selection criteria trade off model complexity and fit to the data. 
 When the data come from a limited region of state-space -- as is necessarily 
 the case whenever there is a potential concern about tipping point dynamics --
-simpler models can fit just as well and will tend to outperform more complex 
+simpler models therefore fit just as well and tend to be selected more foten than complex 
 ones.  This approach would be appropriate when the dynamics can be expected 
 to remain in the region of the training data; for instance, if we only 
 considered the forecasting accuracy of the unfished population dynamics under
@@ -770,7 +702,7 @@ and conservation where the greatest concerns involve entering previously unobser
 regions of state-space -- whether that is the collapse of a fishery, the spread
 of an invasive, or the loss of habitat.  
 
-### BNP-SDP expresses larger uncertainty in regions where the data are poor 
+### GPDP expresses larger uncertainty in regions where the data are poor 
 
 The parametric models perform worst when they propose a management strategy
 outside the range of the observed data. The non-parametric Bayesian approach, 
@@ -782,14 +714,6 @@ the immediate value of the harvest, and act to stabilize the population
 dynamics in a region of state space in which the predictions can be 
 reliably reflected by the data.  
 
-### BNP-SDP has good predictive accuracy where data are good
-
-While expressing larger uncertainty outside the observed data, the GP
-can also provide a better fit with smaller uncertainty inside the range
-of the observed data. This arises from the greater flexibility of the 
-Gaussian process, which describes a large family of possible curves.
-Despite this flexibility, the GP can be described in relatively few 
-parameters and is thus far less likely to over-fit. 
 
 ### Risk-prone and risk-adverse value functions
 
@@ -797,7 +721,7 @@ The degree to which the decision-making part of the algorithm (the SDP)
 chooses to explore or avoid the resulting region of uncertainty can also
 be influenced by the curvature of the value (profit) function $\Pi$. Both
 to simplify the intuition and avoid biasing this result, we have chosen
-a profits that are linear in the catch and thus neither risk-prone nor
+profits that are linear in the catch and thus neither risk-prone nor
 risk adverse.  Making this function concave, representing the typical
 assumption of diminishing returns, would make the SDP more risk-adverse
 (as larger-than-expected stock sizes offer diminished returns relative
@@ -811,7 +735,7 @@ direction for future investigation.
 
 ### The role of the prior
 
-Lastly, it should be noted that outside the data, the NBP reverts to
+Lastly, it should be noted that outside the data, the GP reverts to
 the prior, and consequently the choice of the prior can also play a
 significant role in determining the optimal policy inferred by the
 SDP.  In the examples shown here we have selected a prior that is both
@@ -821,14 +745,11 @@ In practice, both the choice of mean and the choice of the covariance
 function may be chosen to confer particular biological properties,
 as well as more biologically informed priors for $\ell$ and $\sigma$.
 In principle, this may allow a manager to improve the performance of the
-BNP-SDP approach by adding only enough additional detail as is justified.
+GPDP approach by adding only enough additional detail as is justified.
 For instance, it would be possible to use a linear or a Ricker-shaped
 mean in the prior without making the much stronger assumption that the
-Ricker is the structurally correct model.  However, this influence raises
-challenges as well.  For instance, in choosing a trivial mean-zero prior,
-we bias the dynamics to transitions to 0 in step $X_{t+1}$ from any
-stock size $X_t$ in the prior year, in the absence of any other data.
-Future research must make sure that both the prior and the value function
+Ricker is the structurally correct model [@Sugeno2013]. Future research
+should focus on identifying criteria to ensure the prior and the value function
 are chosen appropriately for the problem at hand.
 
 
@@ -848,7 +769,7 @@ dynamics and lead to  stable nodes (rather than other attractors such
 as limit-cycles resulting in oscillations), the training data provides
 relatively limited information about the dynamics.  For these reasons,
 we anticipate that in higher-dimensional examples characteristic of
-ecosystem management problems that the machine learning approach will
+ecosystem management problems that the GP approach will
 prove even more valuable.
 
 
@@ -886,10 +807,10 @@ and when it will increase the risk of an irreversible transition.
 Acknowledgments
 ===============
 
-This work was partially supported by the Center for Stock Assessment
+This work was partially supported by NOAA-IAM grant to SM administered through the Center for Stock Assessment
 Research, a partnership between the University of California Santa Cruz
 and the Fisheries Ecology Division, Southwest Fisheries Science Center,
-Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
+Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
 to CB.
 
 \appendix
@@ -1000,23 +921,31 @@ xtable::xtable(allen_priors_xtable,
 
 <!-- Eq S4: GP model  -->
 
+Gaussian process model
+----------------------
+
 Assuming the data are known with some process noise,
 
 $$y = f(x) + \varepsilon$$
 
 $\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP,  
 
-$$x|y \sim \mathcal{N}(E,C)$$
+$$f(x) \sim \mathcal{N}(E,C)$$
 $$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
 $$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
 
 }
+
+Where $K$ is the Gaussian process kernel.  Throughout, we use the radial basis function kernel:
+
+$$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
 
 The marginal likelihood is then given by: 
 
 $$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y  - \tfrac{1}{2} \log\left| K + \sigma_n^2 \mathbf{I} \right| - \tfrac{n}{2}\log 2 \pi$$
 
 See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
+
 
 <!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
@@ -1029,7 +958,7 @@ gp_assessment_plots$traces_plot
 gp_assessment_plots$posteriors_plot
 ```
 
-The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ are are inverse Gamma distributed,
+The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ parameters are both vague inverse Gamma,
 
 $$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
 
@@ -1056,7 +985,7 @@ stochastic growth. We will consider log-normal noise with shape parameter
 $\sigma_g$. 
 
 
-Form this we can write down the Bellman recursion as: 
+From this we can write down the Bellman recursion as: 
 
 $$V_t(x_t) = \max_h \mathbf{E} \left(\Pi(h_t, x_t) + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)$$
 
@@ -1084,26 +1013,38 @@ D[,OptTime-time+1] = out[2,]       # The index positions
 
 
 
-Training data
--------------
+Training data (Figures 1-6)
+----------------------------
 
-Eacho of our models $f(S_t)$ must be estimated from training data, which
+Each of our models $f(S_t)$ must be estimated from training data, which
 we simulate from the Allen model with parameters $r = $ `r p[1]`, 
 $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
 for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
 The training data can be seen in Figure 1.  
+
+Training data for sensitivity analyses
+-------------------------------------
+
+A further 96 unique training data sets are generated for the sensitivity analysis, as described in the main text.  
 
 
 
 Code
 ----
 
-A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R](https://github.com/cboettig/nonparametric-bayes/blob/371114ec43bb32e92f330f049b420047edae5eb0/inst/doc/nonparametric-bayes.R).  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  The sensitivity analysis is provided as a separate script, [sensitivity.Rmd](https://github.com/cboettig/nonparametric-bayes/blob/62e0f81f9e8eabd0f7ee462f098320409a407f81/inst/examples/sensitivity.Rmd). These routines are provided as an R package, [nonparameteric-bayes](https://github.com/cboettig/nonparametric-bayes), also available on Github.
+All code used in producing this analysis can be found in the R package accompanying the paper, available from [http://github.com/cboettig/nonparametric-bayes]. The code for all results shown here is dynamically embedded into the manuscript using Knitr, [@knitr].  
 
 
+<!--
 Data
 ----
 
 While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
+-->
 
+```{r include=FALSE}
+unlink("ricker_process.bugs")
+unlink("allen_process.bugs")
+unlink("myers_process.bugs")
+```
