@@ -17,6 +17,6 @@ This repository is structured as an R package and can be installed directly from
 ### {{ site.pages | size }} entries
 
 {% for post in site.pages %}
-    [{{ post.title }}]({{ post.url }})
+[{{ post.title }}]({{ post.url }})
 {% endfor %}
 
