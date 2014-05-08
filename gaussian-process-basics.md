@@ -53,7 +53,7 @@ l <- 1
 ```
 
 
-We will use the squared exponential (also called radial basis or Gaussian, though it is not this that gives Gaussian process it's name; any covariance function would do) as the covariance function, \\( \operatorname{cov}(X_i, X_j) = \exp\left(-\frac{(X_i - X_j)^2}{2 \ell ^ 2}\right) \\)
+We will use the squared exponential (also called radial basis or Gaussian, though it is not this that gives Gaussian process it's name; any covariance function would do) as the covariance function, <span> \( \operatorname{cov}(X_i, X_j) = \exp\left(-\frac{(X_i - X_j)^2}{2 \ell ^ 2}\right) \) </span>
 
 
 ```r
@@ -131,7 +131,7 @@ $$\begin{pmatrix} y_{\textrm{obs}} \\ y_{\textrm{pred}} \end{pmatrix} \sim \math
 
 ## No observation noise
 
-Assuming the data are known without error and conditioning on the data, and given <span>\\(x \sim \mathcal{N}(0, cov(X_o, X_o)) \\)</span>, then the conditional probability of observing our data is easily solved by exploiting the nice properties of Gaussians,
+Assuming the data are known without error and conditioning on the data, and given <span>\(x \sim \mathcal{N}(0, cov(X_o, X_o)) \)</span>, then the conditional probability of observing our data is easily solved by exploiting the nice properties of Gaussians,
 
 <div>
 
