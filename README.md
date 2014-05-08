@@ -1,7 +1,7 @@
 ---
 layout: page
-
 ---
+
 
 gh-pages branch of nonparametric-bayes
 ===========================
