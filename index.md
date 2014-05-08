@@ -55,6 +55,6 @@ Current scripts
 ({{ site.pages | size }} entries)
 
 {% for page in site.pages %}
-- [{{ page.path }}]({{site.repo}}{{ page.url }})
+- [{{ page.path }}]({{ page.url }})
 {% endfor %}
 
