@@ -1,0 +1,40 @@
+Run the Bayesian analysis to obtain posterior distributions for parameters.  
+
+```{r, echo=TRUE, include=FALSE}
+knit("allen.Rmd")
+```
+
+
+```{r}
+pardist <- mcmcall
+```
+
+Transform parameters back
+
+```{r}
+pardist[,4] = exp(pardist[,4])
+pardist[,5] = exp(pardist[,5])
+```
+
+Compute optimal policy
+
+```{r}
+sdp = f_transition_matrix(f, p, x_grid, h_grid, sigma_g, pardist)
+s_opt <- value_iteration(sdp, x_grid, h_grid, OptTime=1000, xT, profit, delta)
+```
+
+Compare to the case without parameter uncertainty (growth noise only)
+
+```{r}
+SDP_Mat <- determine_SDP_matrix(f, p, x_grid, h_grid, sigma_g)
+pars_fixed <- value_iteration(SDP_Mat, x_grid, h_grid, OptTime=1000, xT, profit, delta)
+```
+
+Plot results
+
+```{r}
+require(reshape2)
+policies <- melt(data.frame(stock=x_grid, pars.uncert = x_grid[s_opt$D], pars.fixed = x_grid[pars_fixed$D]), id="stock")
+ggplot(policies, aes(stock, stock - value, color=variable)) + geom_line(alpha=1) + xlab("stock size") + ylab("escapement") 
+```
+
