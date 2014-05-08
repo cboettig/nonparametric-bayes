@@ -1,2 +1,4 @@
+repo: nonparametric-bayes
 markdown: redcarpet
-analytics: UA-18401403-1 
+analytics: UA-18401403-1
+exclude: ['*.Rmd']
