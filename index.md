@@ -1,7 +1,5 @@
 ---
 layout: page
-------
-layout: page
 ---
 
 # nonparametric-bayes
