@@ -55,6 +55,6 @@ Current scripts
 ({{ site.pages | size }} entries)
 
 {% for page in site.pages %}
-- [{{ page.path }}](/nonparametric-bayes/{{ page.url }})
+- [{{ page.path }}](/nonparametric-bayes{{ page.url }})
 {% endfor %}
 
