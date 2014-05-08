@@ -1,6 +1,4 @@
----
-layout: page
----```{r include=FALSE}
+```{r include=FALSE}
 opts_knit$set(upload.fun = socialR::notebook.url)
 opts_chunk$set(dev.args=list(bg="transparent"), comment=NA, tidy=FALSE, message=FALSE)
 theme_update(plot.background = element_rect(fill = "transparent",colour = NA))

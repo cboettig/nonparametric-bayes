@@ -1,6 +1,4 @@
----
-layout: page
----# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
+# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
 
 ```r

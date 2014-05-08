@@ -1,6 +1,4 @@
----
-layout: page
----# Semi-analytic posteriors
+# Semi-analytic posteriors
 
 
 

@@ -1,6 +1,4 @@
----
-layout: page
----## Custom plotting 
+## Custom plotting 
 
 For presentation figures for allen.Rmd script
 

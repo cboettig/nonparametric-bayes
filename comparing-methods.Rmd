@@ -1,6 +1,4 @@
----
-layout: page
----
+
 
 ```{r include=FALSE}
 require(MASS)

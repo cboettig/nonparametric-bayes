@@ -1,6 +1,4 @@
----
-layout: page
----Generate data under Beverton Holt model
+Generate data under Beverton Holt model
 ==============================================
 
 ```{r libraries}

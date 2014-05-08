@@ -1,6 +1,4 @@
----
-layout: page
----# Semi-analytic posteriors
+# Semi-analytic posteriors
 
 
 ```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}

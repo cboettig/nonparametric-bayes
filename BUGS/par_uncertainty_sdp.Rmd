@@ -1,6 +1,4 @@
----
-layout: page
----Run the Bayesian analysis to obtain posterior distributions for parameters.  
+Run the Bayesian analysis to obtain posterior distributions for parameters.  
 
 ```{r, echo=TRUE, include=FALSE}
 knit("allen.Rmd")

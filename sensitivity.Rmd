@@ -1,6 +1,4 @@
----
-layout: page
----```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r plotting-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 rm(list=ls())
 source("~/.knitr_defaults.R")
 opts_knit$set(upload.fun = socialR::flickr.url)

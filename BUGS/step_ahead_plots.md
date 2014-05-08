@@ -1,6 +1,4 @@
----
-layout: page
----## One-step ahead predictor plots and forecasting plots
+## One-step ahead predictor plots and forecasting plots
 
 Set our usual plotting options for the notebook
 

@@ -1,6 +1,4 @@
----
-layout: page
----`ro comment=NA, message=FALSE, cache.path="compare/", tidy=FALSE or`
+`ro comment=NA, message=FALSE, cache.path="compare/", tidy=FALSE or`
 
 ## Sequential method
 
