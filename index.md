@@ -12,10 +12,11 @@ A repository for my research in nonparametric Bayesian inference for improving e
 * The [issues tracker](https://github.com/cboettig/nonparametric-bayes/issues) lists both current and accomplished goals in this project, and steps towards their completion.
 * See the repository [history](https://github.com/cboettig/nonparametric-bayes/commits/master) for a fine-grained view of progress and changes
 
-This repository is structured as an R package and can be installed directly from github using the `devtools` package.  Active research scripts are found in [inst/examples](https://github.com/cboettig/nonparametric-bayes/tree/master/inst/examples) (see the `.md` files and their history).  Methods and algorithms developed for this research are provided as package functions defined in the `R/` directory.  
+This repository is structured as an R package and can be installed directly from github using the `devtools` package.  Active research scripts are found on the `gh-pages` branch and can be browsed here:
 
-This is an open notebook project.
+### {{ site.pages | size }} entries
 
-------------
+{% for post in site.pages %}
+    [{{ post.title }}]({{ post.url }})
+{% endfor %}
 
-![](http://onsclaims.wikispaces.com/file/view/ons-aci2-icon.png)
