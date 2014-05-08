@@ -1,4 +1,6 @@
-GP Example using the May (1979) bistable model
+---
+layout: page
+---GP Example using the May (1979) bistable model
 ==============================================
 
 

@@ -1,4 +1,6 @@
-```{r set-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
+---
+layout: page
+---```{r set-options, echo = FALSE, cache = FALSE, external = TRUE, include = FALSE}
 opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "myers-cache/", warning=FALSE)
 #read_chunk('gaussian-process-control.R')
 library(knitcitations)

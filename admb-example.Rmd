@@ -1,4 +1,6 @@
-# Learning ADMB
+---
+layout: page
+---# Learning ADMB
 
 Plotting and knitr options, (can generally be ignored)
 

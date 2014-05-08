@@ -1,4 +1,6 @@
-```{r}
+---
+layout: page
+---```{r}
 setwd("~/Documents/code/nonparametric-bayes/inst/examples/BUGS/")
 opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, cache = FALSE, 
     comment = NA, fig.width = 6, fig.height = 4)

@@ -1,4 +1,6 @@
-## Introductory examples in approximate dynamic programming
+---
+layout: page
+---## Introductory examples in approximate dynamic programming
 
 
 

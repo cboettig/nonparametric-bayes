@@ -1,4 +1,6 @@
-```{r}
+---
+layout: page
+---```{r}
 ## Set the paths for cache and figure
 library(methods)
 library(knitr)

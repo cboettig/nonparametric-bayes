@@ -1,10 +1,6 @@
-
-
-
-
-
-
-
+---
+layout: page
+---
 
 
 
@@ -14,7 +10,7 @@ Fixed priors on hyperparameters, fixed model type.
 
 ```r
 #inv gamma has mean b / (a - 1) (assuming a>1) and variance b ^ 2 / ((a - 2) * (a - 1) ^ 2) (assuming a>2)
-s2.p <- c(5,5)  
+s2.p <- c(5,5)
 tau2.p <- c(5,1)
 d.p = c(10, 1/0.1, 10, 1/0.1)
 nug.p = c(10, 1/0.1, 10, 1/0.1) # gamma mean
@@ -43,7 +39,7 @@ xT <- 0
 ```r
 f <- RickerAllee
 # c(5, 10, 5) is 2-cycle, c(5.5, 10, 5) is 6 cycle, 5.3 is about 4
-p <- c(2, 10, 5) 
+p <- c(2, 10, 5)
 K <- 10
 allee <- 5
 ```
@@ -61,7 +57,7 @@ h_grid <- x_grid
 ```
 
 
-With parameters 2, 10, 5. 
+With parameters 2, 10, 5.
 
 
 
@@ -76,7 +72,7 @@ seed_i <- 1
 
 
 ```r
-  obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz=15, 
+  obs <- sim_obs(Xo, z_g, f, p, Tobs=35, nz=15,
                  harvest = sort(rep(seq(0, .5, length=7), 5)), seed = seed_i)
 ```
 
@@ -90,20 +86,20 @@ seed_i <- 1
 
 
 
-Which estimates a Ricker model with $r =$ 2, $K =$ 6.77, and the Allen allee model with $r =$ 2, $K =$ 6.77 and $C =$ 2.  
+Which estimates a Ricker model with $r =$ 2, $K =$ 6.77, and the Allen allee model with $r =$ 2, $K =$ 6.77 and $C =$ 2.
 
 
 
 ```r
   gp <- bgp(X=obs$x, XX=x_grid, Z=obs$y, verb=0,
           meanfn="constant", bprior="b0", BTE=c(10,1600,2),
-          m0r1=FALSE, corr="exp", trace=TRUE, 
+          m0r1=FALSE, corr="exp", trace=TRUE,
           beta = beta, s2.p = s2.p, d.p = d.p, nug.p = nug.p, tau2.p = tau2.p,
-          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")      
+          s2.lam = "fixed", d.lam = "fixed", nug.lam = "fixed", tau2.lam = "fixed")
   gp_plot(gp, f, p, est$f, est$p, alt$f, alt$p, x_grid, obs, seed_i)
 ```
 
-![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8401/8693278143_1b8d80d884_o.png) 
+![plot of chunk unnamed-chunk-4](http://farm9.staticflickr.com/8401/8693278143_1b8d80d884_o.png)
 
 
 
@@ -141,7 +137,7 @@ stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust
 this.
 ```
 
-![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8254/8693278361_6a8c45c339_o.png) 
+![plot of chunk unnamed-chunk-5](http://farm9.staticflickr.com/8254/8693278361_6a8c45c339_o.png)
 
 
 
@@ -149,13 +145,13 @@ this.
 ```r
   OPT <- optimal_policy(gp, f, est$f, alt$f,
                         p, est$p, alt$p,
-                        x_grid, h_grid, sigma_g, 
+                        x_grid, h_grid, sigma_g,
                         sigma_g, sigma_g, # est$sigma_g, alt$sigma_g, but those ests are poor
                         delta, xT, profit, reward, OptTime)
   plot_policies(x_grid, OPT$gp_D, OPT$est_D, OPT$true_D, OPT$alt_D)
 ```
 
-![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8260/8693286775_966faae4ca_o.png) 
+![plot of chunk unnamed-chunk-6](http://farm9.staticflickr.com/8260/8693286775_966faae4ca_o.png)
 
 
 
@@ -171,7 +167,7 @@ Scale for 'colour' is already present. Adding another scale for 'colour',
 which will replace the existing scale.
 ```
 
-![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8118/8693287195_e1ff8acbc6_o.png) 
+![plot of chunk unnamed-chunk-7](http://farm9.staticflickr.com/8118/8693287195_e1ff8acbc6_o.png)
 
 ```r
 profits_stats(dt)
@@ -185,5 +181,5 @@ profits_stats(dt)
 4: Structural  7.650 0.0000
 ```
 
-  
+
 

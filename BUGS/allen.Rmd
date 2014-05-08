@@ -1,4 +1,6 @@
-# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
+---
+layout: page
+---# Comparison of Nonparametric Bayesian Gaussian Process estimates to standard the Parametric Bayesian approach
 
 Plotting and knitr options, (can generally be ignored)
 

@@ -1,4 +1,6 @@
-```{r, include=FALSE}
+---
+layout: page
+---```{r, include=FALSE}
 ## @knitr plotting-options
 source("~/.knitr_defaults.R")
 opts_knit$set(upload.fun = socialR::flickr.url)

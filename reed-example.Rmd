@@ -1,4 +1,6 @@
-```{r set-options, include=FALSE, echo = FALSE, cache = FALSE, external = TRUE}
+---
+layout: page
+---```{r set-options, include=FALSE, echo = FALSE, cache = FALSE, external = TRUE}
 opts_chunk$set(external = TRUE, cache = FALSE, cache.path = "bevholt-cache/")
 read_chunk('gaussian-process-control.R')
 library(knitcitations)

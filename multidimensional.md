@@ -1,4 +1,6 @@
-multi-dimensional dynamics example
+---
+layout: page
+---multi-dimensional dynamics example
 ========================================================
 
 

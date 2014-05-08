@@ -1,4 +1,6 @@
-
+---
+layout: page
+---
 
 
 ```{r plotting-options, message=FALSE, warning=FALSE, include=FALSE}

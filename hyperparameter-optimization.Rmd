@@ -1,4 +1,6 @@
-
+---
+layout: page
+---
 
 ## Optimization over hyperparameters:
 

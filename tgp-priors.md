@@ -1,4 +1,6 @@
-Exploring the behavior and ifluence of the prior in the `tgp` package.  It appears there may be a bug (or rather incorrect documentation) in how the mixed Gamma priors are defined for the nugget `nug` and range / length-scale `d`.  
+---
+layout: page
+---Exploring the behavior and ifluence of the prior in the `tgp` package.  It appears there may be a bug (or rather incorrect documentation) in how the mixed Gamma priors are defined for the nugget `nug` and range / length-scale `d`.  
 
 
 
