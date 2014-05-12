@@ -21,3 +21,9 @@ clean-reset:
 clean:
 
 
+# Non portable, just for me to update the source cache
+deploy-cache:
+	tar -pczf nonparametric-bayes-cache.tar.gz components/cache
+	scp nonparametric-bayes-cache.tar.gz ten:~/public_html/data
+
+
