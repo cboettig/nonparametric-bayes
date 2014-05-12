@@ -1006,8 +1006,8 @@ $$X_{t+1} = Z_t f(S_t)  $$
 $$S_t = X_t - h_t $$
 
 
-For simplicity we assume profit function $\Pi_t(X_t, h_t) is linear in the realized harvest, only
-enforcing the restriction that harvest can not exceed available stock, that is $\Pi(h,x) = min(h,x)$. $Z_t$ is as previously defined.   
+For simplicity we assume profit function $\Pi_t(X_t, h_t)$ is linear in the realized harvest, only
+enforcing the restriction that harvest can not exceed available stock, that is $\Pi(h,x) = \min(h,x)$. $Z_t$ is as previously defined.   
 
 From this we can write down the Bellman recursion as: 
 
