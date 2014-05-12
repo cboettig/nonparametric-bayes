@@ -43,7 +43,7 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
   
   ## Cholesky simultaneous method.  
   if(method=="cholesky"){
-    L <- chol(K + sigma_n ^ 2 * I)
+    L <- t(chol(K + sigma_n ^ 2 * I))
     alpha <- solve(t(L), solve(L, obs$y))
     loglik <- -.5 * t(obs$y) %*% alpha - sum(log(diag(L))) - n * log(2 * pi) / 2
     k_star <- cov(obs$x, X)

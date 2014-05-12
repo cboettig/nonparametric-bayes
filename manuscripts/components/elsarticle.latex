@@ -2,7 +2,9 @@
 %%% Begin My package additions %%%%%%%%%%%%%%%%%%%
 \usepackage[hyphens]{url}
 \usepackage{lineno} % add 
-%\linenumbers % turns line numbering on 
+$if(linenumbers)$
+  \linenumbers % turns line numbering on 
+$endif$
 \bibliographystyle{elsarticle-harv}
 \biboptions{sort&compress} % For natbib
 \usepackage{graphicx}

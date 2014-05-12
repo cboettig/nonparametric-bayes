@@ -1,5 +1,7 @@
 ---
-title: "Avoiding tipping points in the management of ecological systems: a non-parametric Bayesian approach"
+layout: 12pt,review
+linenumbers: true
+title: "Avoiding tipping points in ecosystem based fisheries management: a non-parametric Bayesian approach"
 author: 
   - name: "Carl Boettiger"
     affiliation: cstar
@@ -27,7 +29,7 @@ abstract: |
           challenges to robust ecosystem management.  These challenges
           are acutely highlighted by concerns that many ecological systems
           may contain tipping points.  Before a collapse, we do not know
-          where the tipping points lie, if the exist at all.  Hence,
+          where the tipping points lie, if they exist at all.  Hence,
           we know neither a complete model of the system dynamics nor
           do we have access to data in some large region of state-space
           where such a tipping point might exist.  These two sources of
@@ -42,10 +44,17 @@ abstract: |
           approach as compared with the standard approach of using model
           selection to choose from a set of candidate models.  In keeping
           with previous results, we find that model selection erroneously
-          favors models without tipping points leading to harvest policies
-          that guarantee extinction. The Gaussian process based approach
+          favors models without tipping points -- leading to harvest policies
+          that guarantee extinction. The Gaussian process approach
           performs nearly as well as the true model and significantly
-          outperforms standard appraoches.
+          outperforms standard appraoches. We illustrate this using examples
+          of simulated single-species dynamics, where the standard model
+          selection approach should be most effective, and find that it
+          still fails to account for uncertainty appropriately and leads
+          to population crashes, while management based on the Gaussian 
+          process approach does not. We discuss opportunities to adapt
+          this approach to multiple species models in further work.  
+
 
 
 keywords:
@@ -201,15 +210,15 @@ Introduction
 ============
 
 Decision making under uncertainty is a ubiquitous challenge of
-natural resource management and conservation.  Ecological dynamics are
-frequently complex and difficult to measure, making uncertainty in our
-understanding a persistent challenge to effective management.
+natural resource management and conservation.  Ecological dynamics
+are frequently complex and difficult to measure, making uncertainty
+in our understanding a persistent challenge to effective management.
 Decision-theoretic approaches provide a framework to determine the
 best sequence of actions in face of uncertainty, but only when that
-uncertainty can be meaningfully quantified [@Fischer2009].  The sudden
-collapse of fisheries and other ecosystems has increasingly emphasized
-the difficulties of formulating even qualitatively correct models of
-the underlying processes.
+uncertainty can be meaningfully quantified [@Fischer2009].  Concerns
+about the potential sudden collapse of fisheries and other ecosystems
+[@Worm2006, @Scheffer2009] has increasingly emphasized the difficulties of
+formulating even qualitatively correct models of the underlying processes.
 
 
 We develop a novel approach to address these concerns in the context of fisheries; though
@@ -261,7 +270,7 @@ This extrapolation uncertainty is felt most keenly in decision-theoretic
 (or optimal control) applications, since (a) exploring the potential
 action space typically involves considering actions that may move the
 system outside the range of observed behavior, and (b) decision-theoretic
-alogrithms rely not only on reasonable estimates of the expected
+algorithms rely not only on reasonable estimates of the expected
 outcomes, but depend on the weights given to all possible outcomes
 [_e.g._ @Weitzman2013].  
 
@@ -300,18 +309,15 @@ decision-theoretic approach in face of substantial structural uncertainty.
 
 
 
-
-
-<!-- necessary? --> <!-- should reflect the dual problem of extrapolation and model uncertainty better -->
-
-This paper represents the first time the SDP decision-making framework has
-been used without an a priori model of the underlying dynamics.  In contrast to parametric models which
-can only reflect uncertainty in parameter estimates, the BNP approach
-provides a more state-space dependent representation of uncertainty.
-This permits a much greater uncertainty far from the observed data than
-near the observed data.  These features allow the GPDP approach to
-find robust management solutions in face of limited data and without
-knowledge of the correct model structure.
+This paper represents the first ecological application of the SDP
+decision-making framework without an a priori model of the underlying
+dynamics.  In contrast to parametric models which can only reflect
+uncertainty in parameter estimates, the BNP approach provides a more
+state-space dependent representation of uncertainty.  This permits
+a much greater uncertainty far from the observed data than near the
+observed data.  These features allow the GPDP approach to find robust
+management solutions in face of limited data and without knowledge of
+the correct model structure.
 
 
 
@@ -368,10 +374,10 @@ in the context ecological modeling and fisheries management in @Munch2005.
 GP models have subsequently been used to test for the presence of Allee
 effects [@Sugeno2013], estimate the maximum reproductive
 rate [@Sugeno2013], determine temporal variation in food
-availability [@Sigourney], and provide a basis for identifying
-model-mispecification [@Thorson2014].
+availability [@Sigourney2012], and provide a basis for identifying
+model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
-GPs can be found in @Rasmussen2006. The nonparametric monicker for
+GPs can be found in @Rasmussen2006. The nonparametric moniker for
 the GP approach is unfortunate as (a) it still involves the estimation
 of parameters, and (b), statisticians also use non-parametric to mean
 models that make only weak distributional assumptions  [e.g. @Lehmann1975]. 
@@ -395,6 +401,20 @@ For simplicity we assume profit is proportional to the realized harvest.
 For comparison, we consider the performance of the GPDP policy against
 policies derived under several alternative parametric models. 
 
+
+We focus on a class of one-dimensional models of population dynamics as a
+'best-case' scenario for the parametric model performance relative to
+the Gaussian process.   We consider this a best-case scenario for the
+following reasons: first, the underlying dynamics are always simuated
+from one the parametric models in the set, whereas in reality we never
+have the "true" model among our candidates.  By choosing one-dimensional
+models with few parameters, we limit the chance that poor performance
+will be due to our inability to estimate parameters well, something
+that becomes a more severe problem for higher-dimensional parametric
+models. Further, the parametric models we consider are those most commonly
+used in modeling stock-recruitment dynamics or to model sudden transitions
+between alternative stable states.
+
 ### Parametric models
 
 <!-- 
@@ -403,12 +423,36 @@ policies derived under several alternative parametric models.
 
 We consider three candidate parametric models of the stock-recruitment
 dynamics: The Ricker model, the Allen model [@Allen2005], the Myers
-model [@Myers1995]. The familiar Ricker model involves two parameters, corresponding
+model [@Myers1995], equations~\ref{ricker}-\ref{myers}, which we parameterize as follows:  
+
+
+We consider three parametric models that relate population size at time $t+1$, $X_{t+1}$, to population size at time $t$, $X_t$  and harvest at time $t$, $h_t$ by
+
+
+$$ X_{t+1}= Z_t f(S_t,p) $$
+
+Where Z(t) is log-normally distributed process stochasticity [@Reed1979] and $p$ is a vector of parameters, and $S_t$ the escapement [@Reed1979] 
+
+$$S_t = X_t - h_t$$
+
+ 
+or the Ricker model,
+
+(@ricker) $$ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
+
+where $K$ is the carrying capacity and $r$ the growth rate.  For the Allen model,
+
+(@allen) $$ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_C\right)} $$
+
+Where $r$ and $K$ are as before, and $X_c$ denotes the location of the unstable (tipping) point.  For the Myers model, 
+
+(@myers) $$ f(S(t) | p)  = \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
+
+Where $r$ and $K$ as before, and $\theta$ the nonlinearity of the Myers model (corresponding to Beverton-Holt dynamics for $\theta$ = 1 and an Allee effect with alternative stable states exist at $\theta > 2$).
+
+The familiar Ricker model involves two parameters, corresponding
 to a growth rate and a carrying capacity, and cannot support alternative
-stable state dynamics (though as growth rate increases it exhibits a
-periodic attractor that proceeds through period-doubling into chaos. We
-will generally focus on dynamics below the chaotic threshold for
-the purposes of this analysis.) The Allen model resembles the Ricker
+stable growth rate dynamics. The Allen model resembles the Ricker
 dynamics with an added Allee effect parameter [@Courchamp2008], below
 which the population cannot persist.  The Myers model also has three
 parameters and contains an Allee threshold, but has compensatory rather
@@ -419,7 +463,6 @@ by the each of the deterministic model skeletons described above. This
 introduces one additional parameter $\sigma$ that must be estimated by each
 model. 
 
-<!-- equations just in appendix? -->
 Because of our interest in management performance in the presence of
 tipping points, all of our simulations are based on the Allen model.
 The Allen model is thus structurally correct and is expected to provide
@@ -437,12 +480,12 @@ while longer times are not likely to provide substantial improvement
 
 <!-- Bayesian inference of parametric models --> 
 
-We infered posterior distributions for the parameters of each model
-in a Bayesian context using Gibbs sampling (implemented in R [@RTeam]
+We inferred posterior distributions for the parameters of each model
+in a Bayesian context using Gibbs sampling (@Gelman2003 implemented in R [@RTeam]
 using jags, [@R2jags]).  We choose uninformative uniform priors for all
 parameters (See Appendix, Figures and tables, and the R code
-provided). One-step-ahead predictions of these model fits are shown in
-Figure 1.  Each chain was tested for Gelman-Rubin convergence and results wer robust
+provided). We show One-step-ahead predictions of these model fits in
+Figure 1.  Each chain was tested for Gelman-Rubin convergence and results were robust
 to longer runs.  For each simulation we also applied several commonly
 used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
 to identify the best fitting model.
@@ -465,19 +508,19 @@ this algorithm provided in the Appendix).
 <!-- See much longer discusion above on "Background on GP".  Move some of that to here?  -->
 
 
-Using the simulated training data we also estimate a Gaussian Process defined by a radial basis
+Using the simulated training data we also estimate a Gaussian process defined by a radial basis
 function kernel of two parameters: $\ell$, which gives the characteristic
 length-scale over which correlation between two points in state-space
 decays, and $\sigma$, which gives the scale of the process noise by which
 observations $Y_{t+1}$ may differ from their predicted values $X_{t+1}$
 given an observation of the previous state, $X_t$. @Munch2005a gives an
-accessible introduction to the use of Gaussian Processes in providing a
+accessible introduction to the use of Gaussian processes in providing a
 Bayesian nonparametric description of the stock-recruitment relationship.
 
 <!-- Inference of the BNP model --> 
 
 
-We use a Metropolis-Hastings Markov Chain Monte Carlo to infer posterior
+We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to infer posterior
 distributions of the two parameters of the GP (Figure S13, code in
 appendix), under weakly informative Gaussian priors (see parameters in
 table S5). As the posterior distributions differ substantially from the
@@ -492,18 +535,24 @@ observed data.
 
 <!-- SDP via the model --> 
 
-It is reasonably straight-forward to derive the harvest policy from the stimated BP by inserting it into a Stochastic Dynamic
-Programming (SDP) algorithm.  Recall that unlike the parametric models the Gaussian
-process with fixed parameters already predicts a distribution of
-curves rather than a single curve. We must first integrate over 
-this distribution of curves given a sampling of parameter values drawn
-from the posterior distribution of the two GP parameters, before
-integrating over the posterior of those parameters themselves.
+It is reasonably straight-forward to derive the harvest policy from the
+estimated BP by inserting it into a SDP
+algorithm.  Recall that unlike the parametric models the Gaussian process
+with fixed parameters already predicts a distribution of curves rather
+than a single curve. We must first integrate over this distribution of
+curves given a sampling of parameter values drawn from the posterior
+distribution of the two GP parameters, before integrating over the
+posterior of those parameters themselves.
 
 
 
 Results
 =======
+
+To ensure our results are robust to our choice of parameters, 
+we perform our analysis over 96 different scenarios. To better
+understand the process, we will first describe in detail the
+results of a single scenario.  
 
 <!-- 
 ### Figure 1: Fitted Models
@@ -513,10 +562,10 @@ Results
 --> 
 
 
-```{r Figureb_posteriors, dependson=c("assemble-models", "par-fns"), include=TRUE, echo=FALSE, fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models.", fig.width=8, fig.height=6}
+```{r Figureb_posteriors, dependson=c("assemble-models", "par-fns"), include=TRUE, echo=FALSE, fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=8, fig.height=6}
 ```
 
-All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to overfit, predicting fluctuations that are actually due purely to stochasticity.  All model selection criteria shown in Table 1 penalize more complex models and show a preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to over-fit, predicting fluctuations that are actually due purely to stochasticity.  All model selection criteria shown in Table 1 penalize more complex models and show a preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
 
 ```{r deviances, dependson=c("dic_calc"), include=FALSE, echo=FALSE}
 ```
@@ -550,7 +599,7 @@ the tipping point.
 
 
 
-```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Out of sample predictions of the dynamics under each model.  Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always predicts population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the paramteric models, while the realized state often falls outside of the expected range forecast by the structurally incorrect Myers and Ricker models." }
+```{r out_of_sample_predictions, include=TRUE, echo=FALSE, fig.width=8, fig.height=6, fig.cap="Beyond the tipping point (outside the range of the training data), the true dynamics fall outside the uncertainty bands of the wrong parametric models, but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parametric models." }
 ```
 
 
@@ -581,6 +630,12 @@ model structure and parameter values are known without error).
 
 
 ```{r Figure3, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.",  include=TRUE, echo=FALSE}
+
+ggplot(sims_data) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
+  facet_wrap(~method) + guides(legend.position="none")
+
 ```
 
 The consequences of managing 100 replicate realizations of the simulated
@@ -591,8 +646,7 @@ The structurally incorrect Ricker model over-harvests the population
 passed the tipping point consistently, resulting in the immediate crash
 of the stock and thus derives minimal profits.
 
-These results are robust across a range of stochastic realizations,
-models, and parameter values.  The results across this range can most
+The results across replicate stochastic simulations can most
 easily be compared by using the relative differences in net present
 value realized by each of the model. Figure 6 shows the distribution of values
 (profits) realized by each simulation shown in Figure 5.  The GPDP
@@ -622,7 +676,7 @@ Sensitivity Analysis
 
 These results are not sensitive to the modeling details of the simulation.
 The GPDP estimate remains very close to the optimal solution obtained
-by knowning the true model across changes to the training simulation,
+by knowing the true model across changes to the training simulation,
 noise scale, parameters or structure of the underlying model, as seen in
 Figure 7. The sensitivity analysis uses a factorial design of eight replicates 
 of three different randomly generated parameter sets for each of two different 
@@ -639,13 +693,13 @@ the wrong parametric model.  The GPDP solution consistently avoids either
 failing to harvest at all or crashing the stock, which results in the very
 low profits/values seen in parametric models in the previous figure. The
 sensitivity analysis is compared against the optimal solution alone and
-not shown against the estimates of the various parameteric models (but
+not shown against the estimates of the various parametric models (but
 see Figure 6), where convergence of the Gibbs sampling could contribute
 to their poorer performance if not checked by hand for each configuration.
 
 
 
-```{r sensitivity, fig.height=6, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian Process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+```{r sensitivity, fig.height=6, dependson="sensitivity-calc", echo=FALSE, fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
 ggplot(dat) + geom_histogram(aes(value, fill=noise)) + xlim(0,1.0) + theme_bw() + xlab("value as fraction of the optimal") + facet_wrap(~model, ncol=1)
 ```
 
@@ -655,13 +709,12 @@ Discussion
 ==========
 
 
-In any modeling effort, models must be chosen for the task at hand.
 Though simple mechanistically motivated models offer the greatest
 potential to increase our basic understanding of ecological processes
 [@Cuddington2013; @Geritz2012], such models can be not only inaccurate but
 misleading when relied upon in a quantitative decision making framework.
 In this paper we have tackled two aspects of uncertainty that are both
-common to many ecological desicion-making problems and fundamentally
+common to many ecological decision-making problems and fundamentally
 challenging to existing approaches which largely rely on parametric
 models:
 
@@ -712,6 +765,8 @@ dynamics in a region of state space in which the predictions can be
 reliably reflected by the data.  
 
 
+<!--
+
 ### Risk-prone and risk-adverse value functions
 
 The degree to which the decision-making part of the algorithm (the SDP)
@@ -728,6 +783,8 @@ of uncertainty.  Sufficiently convex or risk-prone functions could lead
 the SDP to attempt higher exploitation rates despite the uncertainty.
 Understanding the relative roles of such functions would be a promising
 direction for future investigation.
+
+-->
 
 
 ### The role of the prior
@@ -750,13 +807,10 @@ should focus on identifying criteria to ensure the prior and the value function
 are chosen appropriately for the problem at hand.
 
 
+<!--
 
 Future directions
 -----------------
-
-<!--
-### Higher dimensions 
--->
 
 
 In this simulated example, the underlying dynamics are truly governed
@@ -768,11 +822,6 @@ relatively limited information about the dynamics.  For these reasons,
 we anticipate that in higher-dimensional examples characteristic of
 ecosystem management problems that the GP approach will
 prove even more valuable.
-
-
-<!--
-### Real-time learning
--->
 
 In our treatment here we have ignored the possibility of learning during
 the management phase, in which the additional observations of the stock
@@ -800,20 +849,23 @@ walk up to it, but it is also the most dangerous.  Future work should
 attempt to understand when such active adaptive learning is valuable,
 and when it will increase the risk of an irreversible transition.
 
+-->
 
 Acknowledgments
 ===============
 
-This work was partially supported by NOAA-IAM grant to SM administered through the Center for Stock Assessment
-Research, a partnership between the University of California Santa Cruz
-and the Fisheries Ecology Division, Southwest Fisheries Science Center,
-Santa Cruz, CA and by NSF grant EF-0924195 to MM and NSF grant DBI-1306697
-to CB.
+This work was partially supported by NOAA-IAM grant to SM and Alec McCall and administered
+through the Center for Stock Assessment Research, a partnership between
+the University of California Santa Cruz and the Fisheries Ecology
+Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF
+grant EF-0924195 to MM and NSF grant DBI-1306697 to CB.
 
 \appendix
+\renewcommand\thefigure{\thesection.\arabic{figure}}  
 
-Model definitions and estimation
-=================================
+
+Appendix: Model definitions and estimation
+===========================================
 
 
 
@@ -822,16 +874,9 @@ Ricker Model
 
 <!-- Equation S1: Ricker model. --> 
 
-The Ricker model is given by 
-
-(@rickereq) $$X_{t+1} = Z_t X_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
-
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see provided code).  
-
-
 <!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Ricker model", fig.width=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_ricker_traces
 ```
 
@@ -845,18 +890,11 @@ ggplot(ricker_posteriors, aes(value)) +
 
 ```{r echo=FALSE, results = "asis", include = TRUE, cache=FALSE}
 xtable::xtable(ricker_priors_xtable,
-  caption = "parameterization range for the uniform priors in the Ricker model")
+  caption = "Parameterization range for the uniform priors in the Ricker model")
 ```
 
 Myers Model
 -----------
-
-The Myers model [@Myers1995] is given by
-
-<!--Eq S2: Myers model -->
-(@myerseq) $$ X_{t+1} = Z_t \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
-
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, $\theta$ controls the strength of the nonlinearity, exhibiting an allee effect for $\theta \geq 2$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see code provided).  
 
 
 <!--
@@ -864,7 +902,7 @@ Figure S2: Myers model: Traces, prior and posterior distributions for parameter 
 -->
 
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Myers model", fig.width=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_myers_traces
 ```
 
@@ -878,23 +916,16 @@ ggplot(myers_posteriors, aes(value)) +
 
 ```{r echo=FALSE, results="asis", include = TRUE, cache=FALSE}
 xtable::xtable(myers_priors_xtable,
-           caption = "parameterization range for the uniform priors in the Myers model")
+           caption = "Parameterization range for the uniform priors in the Myers model")
 ```
 
 Allen model
 -----------
 
-The Allen model [@Allen2005] is given by 
-
-(@alleneq) $$f(S_t) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - C\right)} $$
-
-where $Z_t$ is log-normal noise of mean unity and log standard deviation $\sigma$, representing the stochastic growth, $X_t$ the stock size at time $t$, $S_t$ the escapement (unharvested population that will recruit in the following year, $S_t = X_t - h_t$).  We place uniform priors on the growth rate $r$, carrying capacity $K$, allee threshold $C$, and log-normal standard deviation parameter $\sigma$, over ranges given in Table 1. Posteriors are inferred by Gibbs sampling using Jags [@R2jags] (see code provided).  
-
-
 
 <!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimate of the Allen model", fig.width=6}
+```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_allen_traces
 ```
 
@@ -912,11 +943,14 @@ Table S3: Parameterization of the priors
 
 ```{r echo=FALSE, results = "asis", include=TRUE, cache=FALSE}
 xtable::xtable(allen_priors_xtable,
-  caption = "parameterization range for the uniform priors in the Allen model")
+  caption = "Parameterization range for the uniform priors in the Allen model")
 ```
 
 
 <!-- Eq S4: GP model  -->
+
+Gaussian process model
+----------------------
 
 Assuming the data are known with some process noise,
 
@@ -924,11 +958,13 @@ $$y = f(x) + \varepsilon$$
 
 $\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP,  
 
-$$x|y \sim \mathcal{N}(E,C)$$
+$$f(x) \sim \mathcal{N}(E,C)$$
 $$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
 $$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
 
-}
+Where $K$ is the Gaussian process kernel.  Throughout, we use the radial basis function kernel:
+
+$$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
 
 The marginal likelihood is then given by: 
 
@@ -936,9 +972,10 @@ $$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y
 
 See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
 
+
 <!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
-```{r echo=FALSE, include=TRUE, fig.cap = "Traces from the MCMC estimates of the GP model"}
+```{r echo=FALSE, include=TRUE, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
 gp_assessment_plots$traces_plot
 ```
 
@@ -947,13 +984,13 @@ gp_assessment_plots$traces_plot
 gp_assessment_plots$posteriors_plot
 ```
 
-The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ are are inverse Gamma distributed,
+The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ parameters are both vague inverse Gamma,
 
 $$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
 
 For the $\sigma$ prior, $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.  For $\ell$ prior,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  
 
-
+\newpage
 
 Optimal Control Problem Specification 
 -------------------------------------
@@ -969,62 +1006,46 @@ $$X_{t+1} = Z_t f(S_t)  $$
 $$S_t = X_t - h_t $$
 
 
-Where $Z_t$ is multiplicative noise function with mean 1, representing
-stochastic growth. We will consider log-normal noise with shape parameter
-$\sigma_g$. 
+For simplicity we assume profit function $\Pi_t(X_t, h_t) is linear in the realized harvest, only
+enforcing the restriction that harvest can not exceed available stock, that is $\Pi(h,x) = min(h,x)$. $Z_t$ is as previously defined.   
 
-
-Form this we can write down the Bellman recursion as: 
+From this we can write down the Bellman recursion as: 
 
 $$V_t(x_t) = \max_h \mathbf{E} \left(\Pi(h_t, x_t) + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)$$
 
-For simplicity we assume profit is simply linear in the realized harvest (only
-enforcing the restriction that harvest can not exceed available stock), $\Pi(h,x) = min(h,x)$. 
-
-
-### Pseudocode for the Bellman iteration
-
-```r
-# compute the value for each possible harvest
-for(h in 1:length(h_grid)){
-  V1[h] = delta * F[[h]] %*% V +  profit(x_grid, h_grid[h]) 
-}
-# find havest h that gives the maximum value
-for(j in 1:gridsize){
-  value = max(V1[j,], na.rm = T)  # each col is a different h, max over these
-  index = which.max(V1[j,])       # store index so we can recover h's 
-  output[,j] = c(value, index)    # returns both profit value & index of optimal h.  
-}
-# Sets V[t+1] = max_h(V[t]) at each possible state value, x
-V = out[1,]                        # The new value-to-go
-D[,OptTime-time+1] = out[2,]       # The index positions
-```
+Where $V_t$ is the discounted value of the profit given that $X(t) = x$
 
 
 
-Training data
--------------
+Training data (Figures 1-6)
+----------------------------
 
-Eacho of our models $f(S_t)$ must be estimated from training data, which
+Each of our models $f(S_t)$ must be estimated from training data, which
 we simulate from the Allen model with parameters $r = $ `r p[1]`, 
 $K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
 for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
 The training data can be seen in Figure 1.  
+
+Training data for sensitivity analyses
+-------------------------------------
+
+A further 96 unique training data sets are generated for the sensitivity analysis, as described in the main text.  
 
 
 
 Code
 ----
 
-A copy of the script to reconstruct the simulations and analysis shown here is provided in the supplemental materials, and through this version-stable link to the project's Github code repostitory, [nonparameteric-bayes.R](https://github.com/cboettig/nonparametric-bayes/blob/371114ec43bb32e92f330f049b420047edae5eb0/inst/doc/nonparametric-bayes.R).  This code is dynamically embedded into the manuscript using Knitr, [@knitr].  The script relies on custom routines for executing the estimation of the Gaussian process and the for solving the stochastic dynamic programming problem.  The sensitivity analysis is provided as a separate script, [sensitivity.Rmd](https://github.com/cboettig/nonparametric-bayes/blob/62e0f81f9e8eabd0f7ee462f098320409a407f81/inst/examples/sensitivity.Rmd). These routines are provided as an R package, [nonparameteric-bayes](https://github.com/cboettig/nonparametric-bayes), also available on Github.
+All code used in producing this analysis can be found in the R package accompanying the paper, available from [http://github.com/cboettig/nonparametric-bayes]. The code for all results shown here is dynamically embedded into the manuscript using `knitr` [@knitr].  
 
 
+<!--
 Data
 ----
 
 While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
-
+-->
 
 ```{r include=FALSE}
 unlink("ricker_process.bugs")
