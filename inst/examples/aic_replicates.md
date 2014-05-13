@@ -1,17 +1,21 @@
-```{r}
+
+```r
 ## Set the paths for cache and figure
 library(methods)
 library(knitr)
-basename <- gsub(".Rmd", "", knitr:::knit_concord$get('infile')) 
-opts_chunk$set(fig.path = paste("figure/", basename, "-", sep=""),
-               cache.path = paste("cache/", basename, "/", sep=""))
+basename <- gsub(".Rmd", "", knitr:::knit_concord$get("infile"))
+opts_chunk$set(fig.path = paste("figure/", basename, "-", sep = ""), cache.path = paste("cache/", 
+    basename, "/", sep = ""))
 opts_chunk$set(cache = 1)
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, comment = NA, verbose = TRUE)
+opts_chunk$set(tidy = FALSE, warning = FALSE, message = FALSE, comment = NA, 
+    verbose = TRUE)
 ```
 
 
 
-```{r}
+
+
+```r
 library(nonparametricbayes) 
 
 models <- c("Myers","Allen")
@@ -37,7 +41,9 @@ posterior.mode <- function(x) {
 ```
 
 
-```{r}
+
+
+```r
 sensitivity <- function(model, parameters, nuisance, seed){
   
   if(model == "Myers")
@@ -332,7 +338,6 @@ A <- myers_posteriors
 A$index <- A$index + A$chain * max(A$index) # Combine samples across chains by renumbering index 
 myers_pardist <- acast(A, index ~ variable)
 
-
                      
 allen_deviance  <- - posterior.mode(pardist[,'deviance'])
 ricker_deviance <- - posterior.mode(ricker_pardist[,'deviance'])
@@ -359,58 +364,201 @@ df <- rbind(dictable, aictable, bictable)
 
 
 
-```{r}
+
+
+```r
 model <- "Allen"
 allen1.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
                    seed=c(1234, 2222, 3333))
 ```
-```{r}
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Allen"
 allen2.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[2]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
                    seed=c(1234, 2222, 3333))
 ```
-```{r}
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Allen"
 allen1.05 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
                    seed=c(1234, 2222, 3333))
 ```
-```{r}
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Allen"
 allen2.05 <- sensitivity(model, 
                    parameters = parameters[[model]][[2]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
                    seed=c(1234, 2222, 3333))
+```
 
 ```
-```{r}
+Error: system is computationally singular: reciprocal condition number =
+1.82252e-16
+```
+
+```
+Timing stopped at: 0.144 0.004 0.148 
+```
+
+
+```r
 model <- "Myers"
 Myers1.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
                    seed=c(1234, 2222, 3333))
 ```
-```{r}
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Myers"
 Myers2.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[2]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
                    seed=c(1234, 2222, 3333))
 ```
-```{r}
+
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Myers"
 Myers1.05 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
                    seed=c(1234, 2222, 3333))
+```
 
 ```
-```{r}
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+```r
 model <- "Myers"
 Myers2.05 <- sensitivity(model, 
                    parameters = parameters[[model]][[2]], 
@@ -418,10 +566,44 @@ Myers2.05 <- sensitivity(model,
                    seed=c(1234, 2222, 3333))
 ```
 
-```{r}
+```
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+
+Compiling model graph
+   Resolving undeclared variables
+   Allocating nodes
+   Graph Size: 328
+
+Initializing model
+```
+
+```
+Error: replacement has 0 rows, data has 5070
+```
+
+
+
+```r
 ## Assemble into data.frame
 allen_dat <- rbind(allen1.01, allen1.05, 
              allen2.01, allen2.05) 
+```
+
+```
+Error: object 'allen1.01' not found
+```
+
+```r
 myers_dat <- rbind(Myers1.01, Myers1.05, 
              Myers2.01, Myers2.05)
 ```
+
+```
+Error: object 'Myers1.01' not found
+```
+
