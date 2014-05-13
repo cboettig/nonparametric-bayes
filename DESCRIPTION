@@ -8,6 +8,7 @@ Author: Carl Boettiger
 Maintainer: Carl Boettiger, <cboettig@gmail.com>
 URL: https://github.com/cboettig/nonparametric-bayes
 BugReports: https://github.com/cboettig/nonparametric-bayes/issues
+Roxygen: list(wrap = FALSE)
 Suggests:
     testthat,
     knitr (>= 1.5),
@@ -25,8 +26,6 @@ Imports:
     pdgControl,
     plyr,
     ggplot2,
-    reshape2 (>= 1.4.0.99),
+    reshape2 (>= 1.4.0.99)
 Depends:
     R (>= 3.0)
-
-Roxygen: list(wrap = FALSE)
