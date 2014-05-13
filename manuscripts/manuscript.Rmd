@@ -69,9 +69,22 @@ keywords:
 
 <!-- Run R code for analysis, to be called by figures -->
 ```{r plot-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-library(nonparametricbayes) 
+library("nonparametricbayes") 
+library("pdgControl")
+
+library("ggplot2") 
+library("reshape2")
+library("plyr")
+library("data.table")
+
+library("R2jags")
+library("emdbook") # for as.mcmc.bugs (?)
+library("coda")  # for as.mcmc
+
+library("modeest")
+library("MASS")
+library("pander")
 opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
-library(ggplot2) 
 theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -79,8 +92,11 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 toggle = "hide" # results argument
 ```
 
+
+
+
 ```{r posterior-mode}
-require(modeest)
+library(modeest)
 posterior.mode <- function(x) {
   mlv(x, method="shorth")$M
 }
@@ -501,7 +517,6 @@ names(models) <- c("x", "method", "value")
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
-require(MASS)
 step_ahead <- function(x, f, p){
   h = 0
   x_predict <- sapply(x, f, h, p)
@@ -1333,96 +1348,14 @@ Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF
 grant EF-0924195 to MM and NSF grant DBI-1306697 to CB.
 
 \appendix
-\renewcommand\thefigure{\thesection.\arabic{figure}}  
-
+\renewcommand*{\thefigure}{S\arabic{figure}}
+\renewcommand*{\thetable}{S\arabic{table}}
+\setcounter{figure}{0}}
+\setcounter{table}{0}}
 
 Appendix: Model definitions and estimation
 ===========================================
 
-
-
-Ricker Model
-------------
-
-<!-- Equation S1: Ricker model. --> 
-
-<!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
-
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_ricker_traces
-```
-
-```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
-ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-<!-- Table S1: Parameterization of the priors --> 
-
-```{r echo=FALSE, results = "asis", include = TRUE, cache=FALSE}
-xtable::xtable(ricker_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Ricker model", 
-  sanitize.text.function = identity)
-```
-
-Myers Model
------------
-
-
-<!--
-Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
--->
-
-
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_myers_traces
-```
-
-```{r, echo=FALSE, include=TRUE, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
-ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-<!-- Table S2: Parameterization of the priors -->
-
-```{r echo=FALSE, results="asis", include = TRUE, cache=FALSE}
-xtable::xtable(myers_priors_xtable,
-           caption = "Parameterization range for the uniform priors in the Myers model",
-           sanitize.text.function = identity)
-```
-
-Allen model
------------
-
-
-<!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
-
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_allen_traces
-```
-
-```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
-ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-
-<!--
-Table S3: Parameterization of the priors
--->
-
-
-```{r echo=FALSE, results = "asis", include=TRUE, cache=FALSE}
-xtable::xtable(allen_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Allen model",
-  sanitize.text.function = identity)
-```
-
-
-<!-- Eq S4: GP model  -->
 
 Gaussian process model
 ----------------------
@@ -1448,14 +1381,13 @@ $$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y
 See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
 
 
-<!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
-```{r echo=FALSE, include=TRUE, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
+```{r FigureS1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
 gp_assessment_plots$traces_plot
 ```
 
 
-```{r echo=FALSE, include=TRUE, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
+```{r FigureS2, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
 gp_assessment_plots$posteriors_plot
 ```
 
@@ -1521,6 +1453,60 @@ Data
 While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
 -->
+
+
+
+```{r FigureS3, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_ricker_traces
+```
+
+```{r FigureS4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
+ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r Table S1, results = "asis"}
+pander::pandoc.table(ricker_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Ricker model")
+```
+
+
+```{r FigureS5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_myers_traces
+```
+
+```{r FigureS6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
+ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r TableS2, results="asis"}
+pander::pandoc.table(myers_priors_xtable,
+           caption = "Parameterization range for the uniform priors in the Myers model")
+```
+
+
+```{r FigureS7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_allen_traces
+```
+
+```{r FigureS8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
+ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r TableS3, results = "asis"}
+pander::pandoc.table(allen_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Allen model")
+```
+
+
 
 ```{r include=FALSE}
 unlink("ricker_process.bugs")

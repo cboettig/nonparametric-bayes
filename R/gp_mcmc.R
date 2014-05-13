@@ -48,8 +48,11 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
 }
 
 #' predict the expected values and posterior distributions of the Gaussian Process
-#' 
+#'
+#' @param a fit of the gaussian process from gp_mcmc
 #' @param x_predict the values at which we desire predictions
+#' @param burnin length of sequence to discard as a transient
+#' @param thin frequency of sub-sampling (make posterior distribution smaller if necessary)
 #' @param covs if TRUE, return covariances instead of variances (set high thinning as this is memory intensive)
 #' @import reshape2
 #' @export
