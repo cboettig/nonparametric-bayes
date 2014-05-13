@@ -614,7 +614,7 @@ Decision-theoretic approaches provide a framework to determine the
 best sequence of actions in face of uncertainty, but only when that
 uncertainty can be meaningfully quantified [@Fischer2009].  Concerns
 about the potential sudden collapse of fisheries and other ecosystems
-[@Worm2006, @Scheffer2009] has increasingly emphasized the difficulties of
+[@Worm2006; @Scheffer2009] has increasingly emphasized the difficulties of
 formulating even qualitatively correct models of the underlying processes.
 
 
@@ -769,8 +769,8 @@ literature) to formulate a predictive model is relatively new in the
 context of modeling dynamical systems [@Kocijan2005], and was first introduced
 in the context ecological modeling and fisheries management in @Munch2005.
 GP models have subsequently been used to test for the presence of Allee
-effects [@Sugeno2013], estimate the maximum reproductive
-rate [@Sugeno2013], determine temporal variation in food
+effects [@Sugeno2013a], estimate the maximum reproductive
+rate [@Sugeno2013b], determine temporal variation in food
 availability [@Sigourney2012], and provide a basis for identifying
 model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
@@ -880,8 +880,8 @@ while longer times are not likely to provide substantial improvement
 We inferred posterior distributions for the parameters of each model
 in a Bayesian context using Gibbs sampling (@Gelman2003 implemented in R [@RTeam]
 using jags, [@R2jags]).  We choose uninformative uniform priors for all
-parameters (See Appendix, Figures and tables, and the R code
-provided). We show One-step-ahead predictions of these model fits in
+parameters (See appendix Tables S1-S3; R code
+provided). We show one-step-ahead predictions of these model fits in
 Figure 1.  Each chain was tested for Gelman-Rubin convergence and results were robust
 to longer runs.  For each simulation we also applied several commonly
 used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
@@ -1119,7 +1119,7 @@ policies close to the true optimum policy (where both the underlying
 model structure and parameter values are known without error).
 
 
-```{r Figure_5, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model."}
+```{r Figure5, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model." fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
@@ -1185,6 +1185,20 @@ sensitivity analysis is compared against the optimal solution alone and
 not shown against the estimates of the various parametric models (but
 see Figure 6), where convergence of the Gibbs sampling could contribute
 to their poorer performance if not checked by hand for each configuration.
+
+
+Large noise relative to the distance between the stable and unstable
+point, (or more precisely, between the optimal escapement and the unstable
+point) increases the chance of a stochastic transition.  As a result,
+the impact of using a model which underestimates the risk of harvesting
+past the critical point is much more severe, since this such a situation
+occurs more often.  Conversely, with large enough distance between the
+optimal escapement and unstable points relative to the noise, the chance
+of a transition becomes vanishingly small and all models can be modeled
+near-optimally. Models which underestimate the cost incurred by stock
+sizes fluctuating significantly below the optimal escapement level will
+not perform poorly as long as those fluctuations are sufficently rare.
+
 
 
 
@@ -1291,7 +1305,7 @@ In principle, this may allow a manager to improve the performance of the
 GPDP approach by adding only enough additional detail as is justified.
 For instance, it would be possible to use a linear or a Ricker-shaped
 mean in the prior without making the much stronger assumption that the
-Ricker is the structurally correct model [@Sugeno2013]. Future research
+Ricker is the structurally correct model [@Sugeno2013a]. Future research
 should focus on identifying criteria to ensure the prior and the value function
 are chosen appropriately for the problem at hand.
 
