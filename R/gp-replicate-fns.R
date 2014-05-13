@@ -9,8 +9,9 @@
 #' @param seed the random number seed for the simulation
 #' @param nz the number of observations at 0 (a hack, should just condiition on 0,0)
 #' @param harvest a sequence of harvest values that occur durning the simulation
+#' @param plotdata logical, plot data?
 #' @details varying harvest values allow the system to explore the state space, making for better training data.
-#' @export
+#' @noRd 
 sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10, 
                     harvest = sort(rep(seq(0, .5, length=7), 5)),
                     plotdata=FALSE){
@@ -36,7 +37,7 @@ sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10,
 #' MLE estimate of parameters given by function f
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
-#' @export 
+#' @noRd 
 par_est_allee <- function(obs, f, p, 
                           init = c(p[1]+1, p[2]-1, p[3]-2, 
                                    s = sigma_g + abs(rnorm(1,0,.1)))
@@ -58,7 +59,7 @@ par_est_allee <- function(obs, f, p,
 #' MLE estimate of parameters given by function f
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
-#' @export 
+#' @noRd
 par_est <- function(obs,  init = c(r=1.5, K=mean(obs$x), s=1)){
   estf <- function(p){
     mu <- log(obs$x) + p["r"]*(1-obs$x/p["K"])
@@ -81,7 +82,7 @@ par_est <- function(obs,  init = c(r=1.5, K=mean(obs$x), s=1)){
 
 #' helper function to determine the optimal policies of each model
 #' @import pdgControl
-#' @export
+#' @noRd 
 optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid, sigma_g, sigma_g_est, sigma_g_alt, delta, xT, profit, reward, OptTime){
   MaxT = 1000
   matrices_gp <- gp_transition_matrix(gp$ZZ.km, gp$ZZ.ks2, x_grid, h_grid)
@@ -99,7 +100,7 @@ optimal_policy <- function(gp, f, f_est, f_alt, p, p_est, p_alt, x_grid, h_grid,
 
 #' helper function to simulate the optimal policies of each model
 #' @import pdgControl data.table reshape2
-#' @export
+#' @noRd 
 simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime){
   set.seed(1)
   sim_gp <- lapply(1:100, function(i) 
@@ -128,7 +129,7 @@ simulate_opt <- function(OPT, f, p, x_grid, h_grid, x0, z_g, profit, OptTime){
 #' @param dt the data.table from simulate_opt
 #' @import ggplot2
 #' @return plots of stock and harvest dynamics over time and replicates
-#' @export
+#' @noRd 
 sim_plots <- function(dt, seed=1, harvest=FALSE){
   fish_plot <- ggplot(dt) + 
     geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
@@ -150,7 +151,7 @@ sim_plots <- function(dt, seed=1, harvest=FALSE){
 #' @param dt the data table from simulate_opt
 #' @return a table of mean and variance in profit over the replicates, by method
 #' @import data.table
-#' @export
+#' @noRd 
 profits_stats <- function(dt){
   profits <- dt[, sum(profit), by = c("reps", "method")]
   means <- profits[, mean(V1), by = method]
@@ -162,7 +163,7 @@ profits_stats <- function(dt){
 
 #' plot the gaussian process, true model, and fitted parametric model(s)
 #' @import ggplot2 reshape2 
-#' @export
+#' @noRd
 gp_plot <- function(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid, obs, seed){
   tgp_dat <- 
     data.frame(  x = gp$XX[[1]], 
@@ -192,7 +193,7 @@ gp_plot <- function(gp, f, p, f_est, p_est, f_alt, p_alt, x_grid, obs, seed){
 #' @param gp a gp fit
 #' @param priors prior distribution functions so that they can be shown on plot as well
 #' @return the posteriors plot as histogram, with priors overlaid
-#' @export
+#' @noRd
 posteriors_plot <- function(gp, priors){
   hyperparameters <- c("index", "s2", "tau2", "beta0", "nug", "d", "ldetK")
   posteriors <- melt(gp$trace$XX[[1]][,hyperparameters], id="index")
@@ -218,7 +219,7 @@ posteriors_plot <- function(gp, priors){
 #' @param trueD the true optimal policy
 #' @param altD an alternative (structurally incorrect) policy
 #' @return the policy plot
-#' @export
+#' @noRd
 plot_policies <- function(x_grid, gpD, estD, trueD, altD){
   policies <- melt(data.frame(stock=x_grid, 
                               GP = x_grid[gpD], 

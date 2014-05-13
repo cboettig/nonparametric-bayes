@@ -6,7 +6,13 @@
 gp_predict(gp, x_predict, burnin = 0, thin = 1, covs = FALSE)
 }
 \arguments{
+\item{a}{fit of the gaussian process from gp_mcmc}
+
 \item{x_predict}{the values at which we desire predictions}
+
+\item{burnin}{length of sequence to discard as a transient}
+
+\item{thin}{frequency of sub-sampling (make posterior distribution smaller if necessary)}
 
 \item{covs}{if TRUE, return covariances instead of variances (set high thinning as this is memory intensive)}
 }
