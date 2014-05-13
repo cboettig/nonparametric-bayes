@@ -6,7 +6,7 @@
 gp_predict(gp, x_predict, burnin = 0, thin = 1, covs = FALSE)
 }
 \arguments{
-\item{a}{fit of the gaussian process from gp_mcmc}
+\item{gp}{a fit of the gaussian process from gp_mcmc}
 
 \item{x_predict}{the values at which we desire predictions}
 

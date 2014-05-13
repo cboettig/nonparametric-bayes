@@ -28,3 +28,5 @@ Imports:
     reshape2 (>= 1.4.0.99),
 Depends:
     R (>= 3.0)
+
+Roxygen: list(wrap = FALSE)

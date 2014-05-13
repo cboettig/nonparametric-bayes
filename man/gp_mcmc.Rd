@@ -14,6 +14,10 @@ gp_mcmc(x, y, init_pars = c(l = 1, sigma.n = 1), n = 10000, d.p = c(5, 5),
 \item{init_pars}{the initial guesses for lengthscale l and process noise sigma_n}
 
 \item{n}{iterations of the metropolis algorithm}
+
+\item{d.p}{parameters for the length-scale prior, as an inverse Gamma distribution}
+
+\item{s2.p}{parameters for the noise prior, as an inverse Gamma distribution}
 }
 \value{
 the MCMC output, as constructed by \link{metrop} from the mcmc package.

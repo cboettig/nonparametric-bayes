@@ -5,6 +5,8 @@
 #' @param y Vector of observed y values in the training data
 #' @param init_pars the initial guesses for lengthscale l and process noise sigma_n
 #' @param n iterations of the metropolis algorithm
+#' @param d.p parameters for the length-scale prior, as an inverse Gamma distribution
+#' @param s2.p parameters for the noise prior, as an inverse Gamma distribution
 #' @details Currently assumes the covariance function.  By default we will use 
 #' the squared exponential (also called radial basis or Gaussian, 
 #' though it is not this that gives Gaussian process it's name; 
@@ -49,7 +51,7 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
 
 #' predict the expected values and posterior distributions of the Gaussian Process
 #'
-#' @param a fit of the gaussian process from gp_mcmc
+#' @param gp a fit of the gaussian process from gp_mcmc
 #' @param x_predict the values at which we desire predictions
 #' @param burnin length of sequence to discard as a transient
 #' @param thin frequency of sub-sampling (make posterior distribution smaller if necessary)
