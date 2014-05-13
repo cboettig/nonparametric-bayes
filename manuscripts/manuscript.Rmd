@@ -69,9 +69,22 @@ keywords:
 
 <!-- Run R code for analysis, to be called by figures -->
 ```{r plot-options, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-library(nonparametricbayes) 
+library("nonparametricbayes") 
+library("pdgControl")
+
+library("ggplot2") 
+library("reshape2")
+library("plyr")
+library("data.table")
+
+library("R2jags")
+library("emdbook") # for as.mcmc.bugs (?)
+library("coda")  # for as.mcmc
+
+library("modeest")
+library("MASS")
+library("pander")
 opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
-library(ggplot2) 
 theme_set(theme_bw(base_size=12))
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -79,8 +92,11 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 toggle = "hide" # results argument
 ```
 
+
+
+
 ```{r posterior-mode}
-require(modeest)
+library(modeest)
 posterior.mode <- function(x) {
   mlv(x, method="shorth")$M
 }
@@ -501,7 +517,6 @@ names(models) <- c("x", "method", "value")
 model_names = c("GP", "True", "MLE", "Ricker", "Allen", "Myers")
 colorkey=cbPalette
 names(colorkey) = model_names 
-require(MASS)
 step_ahead <- function(x, f, p){
   h = 0
   x_predict <- sapply(x, f, h, p)
