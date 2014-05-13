@@ -1,8 +1,12 @@
 #!/usr/bin/Rscript
 args <- commandArgs(TRUE)
 
-if(!is.na(args[1]))
+if(!is.na(args[1])){
   file <- args[1]
+} else if(!is.character(file)) {
+  file <- 'manuscript.Rmd'
+}
+
 
 ## FIXME add second argument to handle figure types
 
