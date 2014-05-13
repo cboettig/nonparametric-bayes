@@ -23,9 +23,6 @@ clean:
 
 # Non portable, just for me to update the source cache
 deploy-cache:
-	cd components/
-	tar -pczf nonparametric-bayes-cache.tar.gz cache/
-	scp nonparametric-bayes-cache.tar.gz ten:~/public_html/data
-	cd ..
+	cd components; tar -pczf nonparametric-bayes-cache.tar.gz cache; scp nonparametric-bayes-cache.tar.gz ten:~/public_html/data/
 
 
