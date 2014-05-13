@@ -1333,7 +1333,7 @@ Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF
 grant EF-0924195 to MM and NSF grant DBI-1306697 to CB.
 
 \appendix
-\renewcommand\thefigure{\thesection.\arabic{figure}}  
+\renewcommand\thefigure{S.\arabic{figure}}  
 
 
 Appendix: Model definitions and estimation
@@ -1341,18 +1341,16 @@ Appendix: Model definitions and estimation
 
 
 
-Ricker Model
-------------
 
 <!-- Equation S1: Ricker model. --> 
 
 <!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_ricker_traces
 ```
 
-```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
+```{r, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -1360,14 +1358,10 @@ ggplot(ricker_posteriors, aes(value)) +
 
 <!-- Table S1: Parameterization of the priors --> 
 
-```{r echo=FALSE, results = "asis", include = TRUE, cache=FALSE}
-xtable::xtable(ricker_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Ricker model", 
-  sanitize.text.function = identity)
+```{r, results = "asis"}
+pander::pandoc.table(ricker_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Ricker model")
 ```
-
-Myers Model
------------
 
 
 <!--
@@ -1375,11 +1369,11 @@ Figure S2: Myers model: Traces, prior and posterior distributions for parameter 
 -->
 
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_myers_traces
 ```
 
-```{r, echo=FALSE, include=TRUE, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
+```{r, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -1387,23 +1381,19 @@ ggplot(myers_posteriors, aes(value)) +
 
 <!-- Table S2: Parameterization of the priors -->
 
-```{r echo=FALSE, results="asis", include = TRUE, cache=FALSE}
-xtable::xtable(myers_priors_xtable,
-           caption = "Parameterization range for the uniform priors in the Myers model",
-           sanitize.text.function = identity)
+```{r, results="asis"}
+pander::pandoc.table(myers_priors_xtable,
+           caption = "Parameterization range for the uniform priors in the Myers model")
 ```
-
-Allen model
------------
 
 
 <!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
 
-```{r, echo=FALSE, include=TRUE, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_allen_traces
 ```
 
-```{r, echo=FALSE, include=TRUE, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
+```{r, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -1415,10 +1405,9 @@ Table S3: Parameterization of the priors
 -->
 
 
-```{r echo=FALSE, results = "asis", include=TRUE, cache=FALSE}
-xtable::xtable(allen_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Allen model",
-  sanitize.text.function = identity)
+```{r, results = "asis"}
+pander::pandoc.table(allen_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Allen model")
 ```
 
 
@@ -1450,12 +1439,12 @@ See @Munch2005a or @Rasmussen2006 for a more detailed introduction.
 
 <!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
-```{r echo=FALSE, include=TRUE, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
+```{r, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
 gp_assessment_plots$traces_plot
 ```
 
 
-```{r echo=FALSE, include=TRUE, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
+```{r, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
 gp_assessment_plots$posteriors_plot
 ```
 
