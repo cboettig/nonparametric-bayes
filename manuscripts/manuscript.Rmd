@@ -224,7 +224,7 @@ par_priors  <- list(K = K_prior, deviance = function(x) 0 * x,
 ```
 
 ```{r allen_priors_xtable, include=TRUE, echo=FALSE}
-allen_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
+allen_priors_xtable <- data.frame(parameter = c("$r$", "$K$", "$X_C$", "$\\sigma$"),
            "lower bound" = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            "upper bound" = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2]))
 ```
@@ -321,7 +321,7 @@ par_priors <- list(K = K_prior, deviance = function(x) 0 * x,
 
 ```{r ricker_priors_xtable, include=TRUE, echo=FALSE, cache=FALSE}
 ricker_priors_xtable <- data.frame(
-  parameter = c("r0", "K", "sigma"),
+  parameter = c("$r$", "$K$", "$\\sigma$"),
   "lower bound" = c(r0_prior_p[1], K_prior_p[1], stdQ_prior_p[1]),
   "upper bound" = c(r0_prior_p[2], K_prior_p[2], stdQ_prior_p[2]))
 ```
@@ -423,7 +423,7 @@ par_priors <- list( deviance = function(x) 0 * x, K = K_prior,
 ```
 
 ```{r myers_prior_xtable, include=TRUE, echo=FALSE} 
-myers_priors_xtable <- data.frame(parameter = c("r0", "K", "theta", "sigma"),
+myers_priors_xtable <- data.frame(parameter = c("$r$", "$K$", "$\\theta$", "$\\sigma$"),
            "lower bound" = c(r0_prior_p[1], K_prior_p[1], theta_prior_p[1], stdQ_prior_p[1]),
            "upper bound" = c(r0_prior_p[2], K_prior_p[2], theta_prior_p[2], stdQ_prior_p[2]))
 ```
@@ -546,8 +546,9 @@ sims <- lapply(OPT, function(D){
     ForwardSimulate(f, p, x_grid, h_grid, x0, D, z_g, profit=profit, OptTime=OptTime)
   )
 })
-
-dat <- melt(sims, id=names(sims[[1]][[1]]))
+# turn the list into a data.frame
+keep.as.columns <- names(sims[[1]][[1]])
+dat <- melt(sims, id=keep.as.columns)
 sims_data <- data.table(dat)
 setnames(sims_data, c("L1", "L2"), c("method", "reps")) 
 # Legend in original ordering please, not alphabetical: 
@@ -1361,7 +1362,8 @@ ggplot(ricker_posteriors, aes(value)) +
 
 ```{r echo=FALSE, results = "asis", include = TRUE, cache=FALSE}
 xtable::xtable(ricker_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Ricker model")
+  caption = "Parameterization range for the uniform priors in the Ricker model", 
+  sanitize.text.function = identity)
 ```
 
 Myers Model
@@ -1387,7 +1389,8 @@ ggplot(myers_posteriors, aes(value)) +
 
 ```{r echo=FALSE, results="asis", include = TRUE, cache=FALSE}
 xtable::xtable(myers_priors_xtable,
-           caption = "Parameterization range for the uniform priors in the Myers model")
+           caption = "Parameterization range for the uniform priors in the Myers model",
+           sanitize.text.function = identity)
 ```
 
 Allen model
@@ -1414,7 +1417,8 @@ Table S3: Parameterization of the priors
 
 ```{r echo=FALSE, results = "asis", include=TRUE, cache=FALSE}
 xtable::xtable(allen_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Allen model")
+  caption = "Parameterization range for the uniform priors in the Allen model",
+  sanitize.text.function = identity)
 ```
 
 
@@ -1477,7 +1481,7 @@ $$X_{t+1} = Z_t f(S_t)  $$
 $$S_t = X_t - h_t $$
 
 
-For simplicity we assume profit function $\Pi_t(X_t, h_t) is linear in the realized harvest, only
+For simplicity we assume profit function $\Pi_t(X_t, h_t)$ is linear in the realized harvest, only
 enforcing the restriction that harvest can not exceed available stock, that is $\Pi(h,x) = min(h,x)$. $Z_t$ is as previously defined.   
 
 From this we can write down the Bellman recursion as: 

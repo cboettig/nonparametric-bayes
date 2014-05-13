@@ -16,7 +16,7 @@ Depends:
  tgp,
  plyr,
  data.table,
- reshape2,
+ reshape2 (>=1.4.0.99),
  pdgControl,
  ggplot2
 Collate: 
