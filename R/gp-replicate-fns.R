@@ -1,8 +1,6 @@
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-
 #' Simulate observed data for training the GP
 #' 
+#' Simulate observed data for training the GP
 #' @param Xo the initial population size
 #' @param z_g a function of no arguments providing the random multiplicative growth noise
 #' @param f a function of (x, h, p) providing the growth in population x under harvest h given pars p
@@ -33,6 +31,8 @@ sim_obs <- function(Xo, z_g, f, p, Tobs = 35, seed = 1, nz = 10,
 }
 
 
+#' MLE estimate of parameters given by function f
+#'
 #' MLE estimate of parameters given by function f
 #' @param obs the observed data, two columns giving x_t, x_t+1 respectively
 #' @return a list with the f given, the MLE estimated parameters, and estimated noise level
@@ -76,6 +76,8 @@ par_est <- function(obs,  init = c(r=1.5, K=mean(obs$x), s=1)){
   list(f_alt = f_alt, p_alt = p_alt, sigma_g_alt = sigma_g_alt)
 }
 
+
+#' helper function to determine the optimal policies of each model
 
 #' helper function to determine the optimal policies of each model
 #' @import pdgControl

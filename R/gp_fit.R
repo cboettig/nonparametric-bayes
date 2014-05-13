@@ -14,6 +14,7 @@
 #' Sigma, the covariance matrix for the posterior Gaussian process, and 
 #' "loglik", the log likelihood of observering the given data under the process, marginalized over the prior
 #' @details so far treates the prior as mean 0 and covariance given by cov(X)
+#' @import kernlab
 #' @export
 #' @examples 
 #' X <- seq(-5,5,len=50)

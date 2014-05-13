@@ -26,8 +26,6 @@ $endif$
 \topmargin -0.5in
 %%%%%%%%%%%%%%%% end my additions to header
 
-
-
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}

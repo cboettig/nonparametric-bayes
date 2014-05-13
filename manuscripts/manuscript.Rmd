@@ -1333,85 +1333,14 @@ Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF
 grant EF-0924195 to MM and NSF grant DBI-1306697 to CB.
 
 \appendix
-\renewcommand\thefigure{S.\arabic{figure}}  
-
+\renewcommand*{\thefigure}{S\arabic{figure}}
+\renewcommand*{\thetable}{S\arabic{table}}
+\setcounter{figure}{0}}
+\setcounter{table}{0}}
 
 Appendix: Model definitions and estimation
 ===========================================
 
-
-
-
-<!-- Equation S1: Ricker model. --> 
-
-<!-- Figure S1: Ricker model: prior and posterior distributions for parameter estimates. -->
-
-```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_ricker_traces
-```
-
-```{r, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
-ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-<!-- Table S1: Parameterization of the priors --> 
-
-```{r, results = "asis"}
-pander::pandoc.table(ricker_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Ricker model")
-```
-
-
-<!--
-Figure S2: Myers model: Traces, prior and posterior distributions for parameter estimates.
--->
-
-
-```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_myers_traces
-```
-
-```{r, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
-ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-<!-- Table S2: Parameterization of the priors -->
-
-```{r, results="asis"}
-pander::pandoc.table(myers_priors_xtable,
-           caption = "Parameterization range for the uniform priors in the Myers model")
-```
-
-
-<!-- Figure S3: Allen model: prior and posterior distributions for parameter estimates. --> 
-
-```{r, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
-plot_allen_traces
-```
-
-```{r, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
-ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
-  facet_wrap(~ variable, scale="free", ncol=2)
-```
-
-
-<!--
-Table S3: Parameterization of the priors
--->
-
-
-```{r, results = "asis"}
-pander::pandoc.table(allen_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Allen model")
-```
-
-
-<!-- Eq S4: GP model  -->
 
 Gaussian process model
 ----------------------
@@ -1437,14 +1366,13 @@ $$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y
 See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
 
 
-<!-- Figure S4: GP model: prior and posterior distributions for parameter estimates. --> 
 
-```{r, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
+```{r FigureS1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)"}
 gp_assessment_plots$traces_plot
 ```
 
 
-```{r, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
+```{r FigureS2, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
 gp_assessment_plots$posteriors_plot
 ```
 
@@ -1510,6 +1438,60 @@ Data
 While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
 
 -->
+
+
+
+```{r FigureS3, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_ricker_traces
+```
+
+```{r FigureS4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
+ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r Table S1, results = "asis"}
+pander::pandoc.table(ricker_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Ricker model")
+```
+
+
+```{r FigureS5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_myers_traces
+```
+
+```{r FigureS6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
+ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r TableS2, results="asis"}
+pander::pandoc.table(myers_priors_xtable,
+           caption = "Parameterization range for the uniform priors in the Myers model")
+```
+
+
+```{r FigureS7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_allen_traces
+```
+
+```{r FigureS8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
+ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity", alpha=0.7) +
+  facet_wrap(~ variable, scale="free", ncol=2)
+```
+
+
+```{r TableS3, results = "asis"}
+pander::pandoc.table(allen_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Allen model")
+```
+
+
 
 ```{r include=FALSE}
 unlink("ricker_process.bugs")
