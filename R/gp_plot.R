@@ -2,12 +2,13 @@
 #' Plot a Gaussian Process
 #' 
 #' Plot the mean (line) and 2 standard deviations (ribbon)
-#' @param gp a gpfit object from \code{\link{gp_fit}}
+#' @param x a gpfit object from \code{\link{gp_fit}}
 #' @param true an optional data.frame with columns "x" and "y" containing target curve.  
+#' @param ... additional arguments (not implemented) 
 #' @return a ggplot object of the plot
 #' @export
-plot.gpfit <- function(gp, ...){
-  dat <- data.frame(x=gp$X, y=(gp$Ef), ymin=(gp$Ef-2*sqrt(diag(gp$Cf))), ymax=(gp$Ef+2*sqrt(diag(gp$Cf))))
+plot.gpfit <- function(x, true, ...){
+  dat <- data.frame(x=x$X, y=(x$Ef), ymin=(x$Ef-2*sqrt(diag(x$Cf))), ymax=(x$Ef+2*sqrt(diag(x$Cf))))
   p <- ggplot(dat) +
     geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill="grey80") + # Var
     geom_line(aes(x=x,y=y), size=1) + #MEAN

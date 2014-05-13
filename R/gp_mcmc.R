@@ -119,7 +119,7 @@ summary_gp_mcmc <- function(gp, burnin=0, thin=1){
   df <- melt(postdist, id="index")
   traces_plot <- 
     ggplot(df) + geom_line(aes(index, value)) + 
-    facet_wrap(~ variable, scale="free", ncol=1)
+    facet_wrap(~ variable, scales="free", ncol=1)
   
   s2.p <- gp$s2.p
   d.p <- gp$d.p
@@ -136,7 +136,7 @@ summary_gp_mcmc <- function(gp, burnin=0, thin=1){
   posteriors_plot <- ggplot(df, aes(value)) + 
     stat_density(geom="path", position="identity", alpha=0.7) +
     geom_line(data=prior_curves, aes(x=value, y=density), col="red") + 
-    facet_wrap(~ variable, scale="free", ncol=2)
+    facet_wrap(~ variable, scales="free", ncol=2)
   
  # print(traces_plot)
 #  print(posteriors_plot)

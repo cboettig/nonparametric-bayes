@@ -3,12 +3,14 @@
 \alias{plot.gpfit}
 \title{Plot a Gaussian Process}
 \usage{
-\method{plot}{gpfit}(gp, ...)
+\method{plot}{gpfit}(x, true, ...)
 }
 \arguments{
-\item{gp}{a gpfit object from \code{\link{gp_fit}}}
+\item{x}{a gpfit object from \code{\link{gp_fit}}}
 
 \item{true}{an optional data.frame with columns "x" and "y" containing target curve.}
+
+\item{...}{additional arguments (not implemented)}
 }
 \value{
 a ggplot object of the plot
