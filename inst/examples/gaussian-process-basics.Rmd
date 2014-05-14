@@ -2,9 +2,9 @@
 
 
 ```{r plotting-options}
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA, dev="CairoPDF", fig.width=6, fig.height=4)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, cache=FALSE, comment=NA, fig.width=6, fig.height=4)
 library(ggplot2) # plotting 
-opts_knit$set(upload.fun = socialR::flickr.url)
+opts_knit$set(upload.fun = imgur_upload)
 theme_set(theme_bw(base_size=10))
 theme_update(panel.background = element_rect(fill = "transparent", colour = NA),
              plot.background = element_rect(fill = "transparent", colour = NA))
