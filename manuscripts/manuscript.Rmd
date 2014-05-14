@@ -742,16 +742,18 @@ management policies than with common parametric modeling approaches.
 - _Note on comparing models_ (via value function rather than by "fit"). 
 -->
 
-The nature of decision-making problems provides a compelling and pragmatic way to compare 
-models: Rather than compare models in terms of best fit to data, model performance is defined 
-in the concrete terms of the decision-maker's objectives. Although much argument can be made over the 'correct' objective
-function, e.g. how to account for the social value of fish left in the sea
-vs. the commercial value of fish harvested; see @Halpern2013 for further 
-discussion of this issue.  We can always compare model performance
-across multiple potential objectives.  The important point is that a decision-maker
-does not necessarily need a model that provides the best mechanistic understanding
-or the best long-term outcome, but rather the one that idelivers the best 
-management performance over the period of interest. 
+The nature of decision-making problems provides a compelling and
+pragmatic way to compare models: Rather than compare models in terms
+of best fit to data, model performance is defined in the concrete terms
+of the decision-maker's objectives. Although much argument can be made
+over the 'correct' objective function, e.g. how to account for the
+social value of fish left in the sea vs. the commercial value of fish
+harvested; see @Halpern2013 for further discussion of this issue.  We can
+always compare model performance across multiple potential objectives.
+The important point is that a decision-maker does not necessarily need
+a model that provides the best mechanistic understanding or the best
+long-term outcome, but rather the one that idelivers the best management
+performance over the period of interest.
 
 
 
@@ -766,23 +768,22 @@ management performance over the period of interest.
 - Previous application
 --> 
 
-We use a Bayesian nonparameteric regression approach based on Gaussian process priors. 
-The use of Gaussian process (GP) regression (or "kriging" in the geospatial
-literature) to formulate a predictive model is relatively new in the
-context of modeling dynamical systems [@Kocijan2005], and was first introduced
-in the context ecological modeling and fisheries management in @Munch2005.
-GP models have subsequently been used to test for the presence of Allee
-effects [@Sugeno2013a], estimate the maximum reproductive
-rate [@Sugeno2013b], determine temporal variation in food
-availability [@Sigourney2012], and provide a basis for identifying
-model-misspecification [@Thorson2014].
+We use a Bayesian nonparameteric regression approach based on Gaussian
+process priors.  The use of Gaussian process (GP) regression (or
+"kriging" in the geospatial literature) to formulate a predictive
+model is relatively new in the context of modeling dynamical systems
+[@Kocijan2005], and was first introduced in the context ecological
+modeling and fisheries management in @Munch2005.  GP models have
+subsequently been used to test for the presence of Allee effects
+[@Sugeno2013a], estimate the maximum reproductive rate [@Sugeno2013b],
+determine temporal variation in food availability [@Sigourney2012], and
+provide a basis for identifying model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
-GPs can be found in @Rasmussen2006. The nonparametric moniker for
-the GP approach is unfortunate as (a) it still involves the estimation
-of parameters, and (b), statisticians also use non-parametric to mean
-models that make only weak distributional assumptions  [e.g. @Lehmann1975]. 
-However, we retain the terminology for consistency with previous
-studies.
+GPs can be found in @Rasmussen2006. The nonparametric moniker for the
+GP approach is unfortunate as (a) it still involves the estimation of
+parameters, and (b), statisticians also use non-parametric to mean models
+that make only weak distributional assumptions  [e.g. @Lehmann1975].
+However, we retain the terminology for consistency with previous studies.
 
 
 
@@ -826,12 +827,15 @@ dynamics: The Ricker model, the Allen model [@Allen2005], the Myers
 model [@Myers1995], equations~\ref{ricker}-\ref{myers}, which we parameterize as follows:  
 
 
-We consider three parametric models that relate population size at time $t+1$, $X_{t+1}$, to population size at time $t$, $X_t$  and harvest at time $t$, $h_t$ by
+We consider three parametric models that relate population size at time
+$t+1$, $X_{t+1}$, to population size at time $t$, $X_t$  and harvest at
+time $t$, $h_t$ by
 
 
 $$ X_{t+1}= Z_t f(S_t,p) $$
 
-Where Z(t) is log-normally distributed process stochasticity [@Reed1979] and $p$ is a vector of parameters, and $S_t$ the escapement [@Reed1979] 
+Where Z(t) is log-normally distributed process stochasticity [@Reed1979]
+and $p$ is a vector of parameters, and $S_t$ the escapement [@Reed1979]
 
 $$S_t = X_t - h_t$$
 
@@ -880,14 +884,14 @@ while longer times are not likely to provide substantial improvement
 
 <!-- Bayesian inference of parametric models --> 
 
-We inferred posterior distributions for the parameters of each model
-in a Bayesian context using Gibbs sampling (@Gelman2003 implemented in R [@RTeam]
-using jags, [@R2jags]).  We choose uninformative uniform priors for all
-parameters (See appendix Tables S1-S3; R code
-provided). We show one-step-ahead predictions of these model fits in
-Figure 1.  Each chain was tested for Gelman-Rubin convergence and results were robust
-to longer runs.  For each simulation we also applied several commonly
-used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
+We inferred posterior distributions for the parameters of each model in
+a Bayesian context using Gibbs sampling (@Gelman2003 implemented in R
+[@RTeam] using jags, [@R2jags]).  We choose uninformative uniform priors
+for all parameters (See appendix Tables S1-S3; R code provided). We
+show one-step-ahead predictions of these model fits in Figure 1.
+Each chain was tested for Gelman-Rubin convergence and results were
+robust to longer runs.  For each simulation we also applied several
+commonly used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
 to identify the best fitting model.
 
 
@@ -904,46 +908,38 @@ this algorithm provided in the Appendix).
 
 <!-- Statement of model -->  
 
-<!-- FIXME ... say much more about the GP, as per Munch 2005a   -->
-<!-- See much longer discusion above on "Background on GP".  Move some of that to here?  -->
 
-
-Using the simulated training data we also estimate a Gaussian process defined by a radial basis
-function kernel of two parameters: $\ell$, which gives the characteristic
-length-scale over which correlation between two points in state-space
-decays, and $\sigma$, which gives the scale of the process noise by which
-observations $Y_{t+1}$ may differ from their predicted values $X_{t+1}$
-given an observation of the previous state, $X_t$. @Munch2005a gives an
-accessible introduction to the use of Gaussian processes in providing a
-Bayesian nonparametric description of the stock-recruitment relationship.
+Using the simulated training data we also estimate a Gaussian process
+defined by a radial basis function kernel of two parameters: $\ell$,
+which gives the characteristic length-scale over which correlation between
+two points in state-space decays, and $\sigma$, which gives the scale
+of the process noise by which observations $Y_{t+1}$ may differ from
+their predicted values $X_{t+1}$ given an observation of the previous
+state, $X_t$. @Munch2005a gives an accessible introduction to the use
+of Gaussian processes in providing a Bayesian nonparametric description
+of the stock-recruitment relationship.
 
 <!-- Inference of the BNP model --> 
 
 
-We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to infer posterior
-distributions of the two parameters of the GP (Figure S13, code in
-appendix), under weakly informative Gaussian priors (see parameters in
-table S5). As the posterior distributions differ substantially from the
-priors (Figure S13), we can be assured that most of the information in
-the posterior comes from the data rather than the prior belief.
-
-<!--
-In contrast to the parametric models, this posterior distribution is still
-conditional on the training data. As such, the uncertainty near the
-observed data.
--->
+We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
+infer posterior distributions of the two parameters of the GP (Figure
+S13, code in appendix), under weakly informative Gaussian priors
+(see parameters in table S5). As the posterior distributions differ
+substantially from the priors (Figure S13), we can be assured that most
+of the information in the posterior comes from the data rather than the
+prior belief.
 
 <!-- SDP via the model --> 
 
 It is reasonably straight-forward to derive the harvest policy from the
-estimated BP by inserting it into a SDP
-algorithm.  Recall that unlike the parametric models the Gaussian process
-with fixed parameters already predicts a distribution of curves rather
-than a single curve. We must first integrate over this distribution of
-curves given a sampling of parameter values drawn from the posterior
-distribution of the two GP parameters, before integrating over the
-posterior of those parameters themselves.
-
+estimated BP by inserting it into a SDP algorithm.  Recall that unlike
+the parametric models the Gaussian process with fixed parameters already
+predicts a distribution of curves rather than a single curve. We must
+first integrate over this distribution of curves given a sampling of
+parameter values drawn from the posterior distribution of the two GP
+parameters, before integrating over the posterior of those parameters
+themselves.
 
 
 Results
