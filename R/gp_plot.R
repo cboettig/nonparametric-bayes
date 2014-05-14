@@ -6,7 +6,7 @@
 #' @param true an optional data.frame with columns "x" and "y" containing target curve.  
 #' @return a ggplot object of the plot
 #' @export
-plot.gpfit <- function(gp, true=NULL){
+plot.gpfit <- function(gp, ...){
   dat <- data.frame(x=gp$X, y=(gp$Ef), ymin=(gp$Ef-2*sqrt(diag(gp$Cf))), ymax=(gp$Ef+2*sqrt(diag(gp$Cf))))
   p <- ggplot(dat) +
     geom_ribbon(aes(x=x,y=y, ymin=ymin, ymax=ymax), fill="grey80") + # Var

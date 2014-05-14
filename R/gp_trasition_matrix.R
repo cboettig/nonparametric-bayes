@@ -68,10 +68,10 @@ f_transition_matrix <- function(f, p, x_grid, h_grid = NULL, sigma_g){
 
 #' calculate transition matrix based on parameterized function
 #' 
+#' @param h the harvest over which to compute. 
 #' @param f the transtion function, a function of state x, harvest h, and parameters p
 #' @param p the parameters p of the transition function
 #' @param x_grid the grid over which to solve 
-#' @param h_grid the harvest grid over which to compute.  Assumed to match the stock grid gp$X if not given.
 #' @param sigma_g the scale of the noise
 #' @return a list of matrices corresponding to the state transition matrix at each harvest level h
 #' @export

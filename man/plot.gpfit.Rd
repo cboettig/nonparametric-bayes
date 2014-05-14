@@ -3,7 +3,7 @@
 \alias{plot.gpfit}
 \title{Plot a Gaussian Process}
 \usage{
-\method{plot}{gpfit}(gp, true = NULL)
+\method{plot}{gpfit}(gp, ...)
 }
 \arguments{
 \item{gp}{a gpfit object from \code{\link{gp_fit}}}
