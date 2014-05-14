@@ -599,9 +599,12 @@ dictable <- data.frame(Allen = allen_dic + 2*length(bayes_pars),
 
 ```{r sensitivity-calc}
 source("components/sensitivity.R")
+sensitivity_dat <- dat
 ```
 
-
+```{r export-data}
+write.csv(sensitivity_dat, "sensitivity.csv")
+```
 
 Introduction
 ============
@@ -959,7 +962,7 @@ results of a single scenario.
 --> 
 
 
-```{r Figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=8, fig.height=6}
+```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=8, fig.height=6}
 step_ahead_posteriors <- function(x){
   gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
   df_post <- melt(lapply(sample(100, 30),  
@@ -1013,7 +1016,7 @@ xtable::xtable(rbind(dictable, aictable, bictable), caption="Model selection sco
 - (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
 -->
 
-```{r Figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
 x_grid_short <- x_grid[1:40]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
 models_posteriors <- 
@@ -1063,7 +1066,7 @@ the tipping point.
 
 
 
-```{r Figure_3, fig.width=8, fig.height=6, fig.cap="Beyond the tipping point (outside the range of the training data), the true dynamics fall outside the uncertainty bands of the wrong parametric models, but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
+```{r figure_3, fig.width=8, fig.height=6, fig.cap="Beyond the tipping point (outside the range of the training data), the true dynamics fall outside the uncertainty bands of the wrong parametric models, but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
 y <- numeric(8)
 y[1] <- 4.5
 for(t in 1:(length(y)-1))
@@ -1098,7 +1101,7 @@ ggplot(crash_data) +
 --> 
 
 
-```{r Figure_4, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```{r figure_4, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
@@ -1119,7 +1122,7 @@ policies close to the true optimum policy (where both the underlying
 model structure and parameter values are known without error).
 
 
-```{r Figure5, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model." fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
@@ -1144,7 +1147,7 @@ and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
 
-```{r Figure_6, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
+```{r figure_6, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
 
 ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, ncol=2)  + 
@@ -1202,8 +1205,13 @@ not perform poorly as long as those fluctuations are sufficently rare.
 
 
 
-```{r Figure_7, fig.height=6, dependson="sensitivity-calc", fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
-ggplot(dat) + geom_histogram(aes(value, fill=noise)) + xlim(0,1.0) + theme_bw() + xlab("value as fraction of the optimal") + facet_wrap(~model, ncol=1)
+```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels.", echo=TRUE}
+ggplot(sensitivity_dat) + 
+  geom_histogram(aes(value, fill=noise)) + 
+  xlim(0,1.0) + 
+  theme_bw() + 
+  xlab("value as fraction of the optimal") + 
+  facet_wrap(~model, ncol=1)
 ```
 
 
@@ -1398,12 +1406,12 @@ See @Munch2005a or @Rasmussen2006 for a more detailed introduction.
 
 
 
-```{r FigureS1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options"}
+```{r figure_S1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options"}
 gp_assessment_plots$traces_plot
 ```
 
 
-```{r FigureS2, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
+```{r figure_S2, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
 gp_assessment_plots$posteriors_plot
 ```
 
@@ -1472,11 +1480,11 @@ While the data can be regenerated using the code provided, for convenience CSV f
 
 
 
-```{r FigureS3, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r figure_S3, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_ricker_traces
 ```
 
-```{r FigureS4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
+```{r figure_S4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -1489,11 +1497,11 @@ pander::pandoc.table(ricker_priors_xtable,
 ```
 
 
-```{r FigureS5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r figure_S5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_myers_traces
 ```
 
-```{r FigureS6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
+```{r figure_S6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
@@ -1506,11 +1514,11 @@ pander::pandoc.table(myers_priors_xtable,
 ```
 
 
-```{r FigureS7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+```{r figure_S7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
 plot_allen_traces
 ```
 
-```{r FigureS8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
+```{r figure_S8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
