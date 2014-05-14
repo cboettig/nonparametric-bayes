@@ -3,6 +3,7 @@ all:
 	make restore-cache
 	make manuscript.pdf
 	make manuscript.tex
+	make clean
 
 install: 
 	Rscript components/install.R
@@ -17,17 +18,25 @@ manuscript.tex: manuscript.md
 	pandoc manuscript.md --template=components/elsarticle.latex --bibliography=components/references.bib --csl=components/ecology-letters.csl -o manuscript.tex
 
 restore-cache:
-	Rscript components/restore-cache.R
+	make components/cache
 
 clear-cache:
 	rm -rf components/cache
+
 clean-reset:
 	rm -rf manuscript.md manuscript.pdf components/cache components/figure
-clean:
 
+clean:
+	rm -rf manuscript.md
 
 # Non portable, just for me to update the source cache
 deploy-cache:
 	cd components; tar -pczf nonparametric-bayes-cache.tar.gz cache; scp nonparametric-bayes-cache.tar.gz ten:~/public_html/data/
 
+
+
+
+# Only runs if cache has been cleared
+components/cache: components/restore-cache.R
+	Rscript components/restore-cache.R
 
