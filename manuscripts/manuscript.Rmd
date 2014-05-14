@@ -824,7 +824,7 @@ between alternative stable states.
 
 We consider three candidate parametric models of the stock-recruitment
 dynamics: The Ricker model, the Allen model [@Allen2005], the Myers
-model [@Myers1995], equations~\ref{ricker}-\ref{myers}, which we parameterize as follows:  
+model [@Myers1995], equations (@ricker)-(@myers), which we parameterize as follows:  
 
 
 We consider three parametric models that relate population size at time
@@ -1201,7 +1201,7 @@ not perform poorly as long as those fluctuations are sufficently rare.
 
 
 
-```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels.", echo=TRUE}
+```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
 ggplot(sensitivity_dat) + 
   geom_histogram(aes(value, fill=noise)) + 
   xlim(0,1.0) + 
