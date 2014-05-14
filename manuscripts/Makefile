@@ -1,6 +1,11 @@
 all:
+	make install
+	make restore-cache
 	make manuscript.pdf
 	make manuscript.tex
+
+install: 
+	Rscript components/install.R
 
 manuscript.md: manuscript.Rmd
 	Rscript components/knit.R manuscript.Rmd	
