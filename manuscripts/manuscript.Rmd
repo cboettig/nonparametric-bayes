@@ -1,7 +1,7 @@
 ---
 layout: 12pt,review
 linenumbers: true
-title: "Avoiding tipping points in ecosystem based fisheries management: a non-parametric Bayesian approach"
+title: "Avoiding tipping points in fisheries management: A Bayesian Non-Parametric approach"
 author: 
   - name: "Carl Boettiger"
     affiliation: cstar
@@ -18,6 +18,12 @@ address:
       Department of Applied Math and Statistics, 
       University of California, Mail Stop SOE-2,
       Santa Cruz, CA 95064, USA
+  - code: marc
+    address: |
+      Center for Stock Assessment Research, Department of Applied Math
+      and Statistics, University of California,
+      Mail Stop SOE-2, Santa Cruz, CA 95064, USA and Department of
+      Biology, University of Bergen, Bergen, Norway 9020
   - code: noaa
     address: | 
       Southwest Fisheries Science Center, 
@@ -26,34 +32,33 @@ address:
 
 abstract: |
           Model uncertainty and limited data coverage are fundamental
-          challenges to robust ecosystem management.  These challenges
+          challenges to robust management of human intervention in a 
+          natural system.  These challenges
           are acutely highlighted by concerns that many ecological systems
-          may contain tipping points.  Before a collapse, we do not know
+          may contain tipping points, such as Allee population sizes.  
+          Before a collapse, we do not know
           where the tipping points lie, if they exist at all.  Hence,
           we know neither a complete model of the system dynamics nor
           do we have access to data in some large region of state-space
-          where such a tipping point might exist.  These two sources of
-          uncertainty frustrate state-of-the-art parametric approaches
-          to decision theory and optimal control.  Here we illustrate
-          how a non-parametric approach using a Gaussian process prior
-          provides a more flexible representation of this inherent
-          uncertainty. We can then embed the Gaussian process in a
+          where such a tipping point might exist.  We illustrate
+          how a Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP) prior
+          provides a flexible representation of this inherent
+          uncertainty. We embed GPs in a
           stochastic dynamic programming framework in order to make
-          robust management predictions under both model uncertainty and
+          robust management predictions with both model uncertainty and
           limited data. We conduct a set of simulations to evaluate this
           approach as compared with the standard approach of using model
-          selection to choose from a set of candidate models.  In keeping
-          with previous results, we find that model selection erroneously
+          selection to choose from a set of candidate models.  We find that model selection erroneously
           favors models without tipping points -- leading to harvest policies
-          that guarantee extinction. The Gaussian process approach
+          that guarantee extinction. The GP approach
           performs nearly as well as the true model and significantly
           outperforms standard appraoches. We illustrate this using examples
           of simulated single-species dynamics, where the standard model
           selection approach should be most effective, and find that it
           still fails to account for uncertainty appropriately and leads
-          to population crashes, while management based on the Gaussian 
-          process approach does not. We discuss opportunities to adapt
-          this approach to multiple species models in further work.  
+          to population crashes, while management based on the GP 
+          approach does not, since it does not underestimate the uncertainty
+          outside of the observed data.   
 
 
 
@@ -609,26 +614,34 @@ write.csv(sensitivity_dat, "sensitivity.csv")
 Introduction
 ============
 
-Decision making under uncertainty is a ubiquitous challenge of
-natural resource management and conservation.  Ecological dynamics
-are frequently complex and difficult to measure, making uncertainty
-in our understanding a persistent challenge to effective management.
+Decision making under uncertainty is a ubiquitous challenge in the
+management of human intervention in natural resources and conservation.
+Ecological dynamics are frequently complex and difficult to measure,
+making uncertainty in our understanding a persistent challenge.
 Decision-theoretic approaches provide a framework to determine the
 best sequence of actions in face of uncertainty, but only when that
-uncertainty can be meaningfully quantified [@Fischer2009].  Concerns
-about the potential sudden collapse of fisheries and other ecosystems
-[@Worm2006; @Scheffer2009] has increasingly emphasized the difficulties of
+uncertainty can be meaningfully quantified [@Fischer2009].  Over the last
+four decades (but stretching even further back in time), marked by  the
+seminal contributions of @Clark1976; @Clark2009 and @Walters1978,
+dynamic optimization methods, particularly Stochastic Dynamic Programming
+(SDP, @Clark2009), have become increasingly important as a means of
+understanding how to management human intervention into natural systems.
+Concomittantly, there has been increasing recognition of the importance of
+Allee population sizes or `tipping points' [@Scheffer2001;
+@Polasky2011] that management actions may inadvertently
+cause populations to cross.  @Scheffer2009 emphasized the difficulties of
 formulating even qualitatively correct models of the underlying processes.
 
 
-We develop a novel approach to address these concerns in the context of fisheries; though
-the underlying challenges and methods are germane to many other
-conservation and resource management problems.  Economic value and
-ecological concern have made marine fisheries the crucible for much
-of the founding work [@Gordon1954; @Reed1979; @May1979; @Ludwig1982]
-on management under uncertainty.  Global declines [@Worm2006]
-and the controversy surrounding their interpretation [@Hilborn2007; @Worm2009] have made understanding these
-challenges all the more pressing.
+We develop a novel approach to address these concerns in the context of
+fisheries; though the underlying challenges and methods are germane to
+many other problems of conservation or natural resource exploitation,
+such as forestry.  Economic value and ecological concern have made
+marine fisheries the crucible for much of the founding work [@Gordon1954;
+@Clark1976; -@Clark2009; @Reed1979; @May1979; @Ludwig1982] on management
+under uncertainty.  Global declines [@Worm2006] and the controversy
+surrounding their interpretation [@Hilborn2007; @Worm2009] have made
+understanding these challenges all the more pressing.
 
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
 <!-- __We don't have the model__ -->
@@ -642,20 +655,11 @@ implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
 structural uncertainty is generally the hardest to quantify. Typical approaches
 assume a weak notion of model uncertainty in which the correct model
 (or reasonable approximation) of the dynamics must be identified from
-among a handful of alternative models.  Here we consider an approach
-that addresses uncertainty at each of these levels without assuming the
-dynamics follow a particular (i.e. parametric) structure.
-
-
-Often we do not understand the system dynamics well
-enough to know if a model provides a good approximation over the relevant
-range of states and timescales (criteria that we loosely refer to as
-defining the "right" or "true" model.)  
-Typical solutions involve either model choice, model averaging, or
+among a handful of alternative models, using either model choice, model averaging, or 
 introducing yet greater model complexity of which others may be special
 cases (model averaging being one such way to construct such a model)
 [@Williams2001; @Athanassoglou2012; @Cressie2009].  Even setting aside
-other computational and statistical concerns (e.g. [@Cressie2009]), these
+other computational and statistical concerns (e.g. @Cressie2009), these
 approaches do not address our second concern - representing uncertainty
 outside the observed data range.
 
@@ -665,8 +669,8 @@ outside the observed data range.
 
 
 Model uncertainty is particularly insidious when model predictions must
-be made outside of the range of data on which the model was estimated.
-This extrapolation uncertainty is felt most keenly in decision-theoretic
+be made outside of the range of data on which the model was estimated, and models may be abused [@Mangel2001].
+Extrapolation uncertainty is felt most keenly in decision-theoretic
 (or optimal control) applications, since (a) exploring the potential
 action space typically involves considering actions that may move the
 system outside the range of observed behavior, and (b) decision-theoretic
@@ -674,31 +678,28 @@ algorithms rely not only on reasonable estimates of the expected
 outcomes, but depend on the weights given to all possible outcomes
 [_e.g._ @Weitzman2013].  
 
-This difficult position of having neither the true model nor data that
+
+<!--This difficult position of having neither the true model nor data that
 covers the full range of possible states is unfortunately the rule more
 than the exception. The potential concern of tipping points in ecological
 dynamics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
 either knowledge of the true model or more complete sampling of the
 state space would make it easy to identify if a tipping point existed.
 If we do not know but cannot rule out such a possibility, then we
-face decision-making under this dual challege of model uncertainty and
-incomplete data coverage.
+face decision-making under this 
+-->
 
 
-These dual concerns pose a substantial challenge to existing decision-theoretic
-approaches [@Brozovic2011].  Because intervention is often too late 
-after a tipping point has been crossed (but see @Hughes2013), management
+The dual concerns of model uncertainty and
+incomplete data coverage pose a substantial challenge to existing decision-theoretic
+approaches [@Brozovic2011].  Because intervention is often (but not always, see @Hughes2013) too late after a tipping point has been crossed, management
 is most often concerned with avoiding potentially catastrophic tipping
 points before any data is available at or following a transition that
 would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
 
-<!--
-_Map_
--->
-
-Here we illustrate how a stochastic dynamic programming (SDP) algorithm
+We illustrate how a stochastic dynamic programming (SDP) algorithm
 [@Mangel1988; @Marescot2013] can be driven by the
-predictions from a Bayesian non-parametric (BNP) approach [@Munch2005a].
+predictions from a Bayesian Non-Parametric (BNP) model of population dynamics [@Munch2005a].
 This provides two distinct advantages compared with contemporary
 approaches.  First, using a BNP sidesteps the need for an accurate
 model-based description of the system dynamics.  Second, the BNP can
@@ -715,7 +716,7 @@ dynamics.  In contrast to parametric models which can only reflect
 uncertainty in parameter estimates, the BNP approach provides a more
 state-space dependent representation of uncertainty.  This permits
 a much greater uncertainty far from the observed data than near the
-observed data.  These features allow the GPDP approach to find robust
+observed data.  These features allow the Gaussian Process Dynamic Programming (GPDP) approach to find robust
 management solutions in face of limited data and without knowledge of
 the correct model structure.
 
@@ -725,6 +726,7 @@ the correct model structure.
 -  _Note on "not magic"_: honest uncertainty + SDP
 --> 
 
+<!--
 The idea that any approach can perform well without either having to
 know the model or have particularly good data should immediately draw
 suspicion.  The reader must bear in mind that the strength of our approach
@@ -735,17 +737,22 @@ observed data. By coupling this more accurate description of what is known
 and unknown to the decision-making under uncertainty framework provided
 by stochastic dynamic programming, we are able to obtain more robust
 management policies than with common parametric modeling approaches.
-
+-->
 
 
 <!--move to  much later *Or do we need this at all?* 
 - _Note on comparing models_ (via value function rather than by "fit"). 
 -->
 
+To illustrate GPDP, we consider the performance of the GPDP policy against
+the policies derived under several alternative parametric models [@Reed1979; @Ludwig1982; @Mangel1988]. 
 The nature of decision-making problems provides a compelling and
 pragmatic way to compare models: Rather than compare models in terms
-of best fit to data, model performance is defined in the concrete terms
-of the decision-maker's objectives. Although much argument can be made
+of best fit to data, we define model performance in the concrete terms
+of the decision-maker's objectives. 
+
+
+<!-- Although much argument can be made
 over the 'correct' objective function, e.g. how to account for the
 social value of fish left in the sea vs. the commercial value of fish
 harvested; see @Halpern2013 for further discussion of this issue.  We can
@@ -754,7 +761,7 @@ The important point is that a decision-maker does not necessarily need
 a model that provides the best mechanistic understanding or the best
 long-term outcome, but rather the one that idelivers the best management
 performance over the period of interest.
-
+-->
 
 
 ## Background on the Gaussian Process
@@ -790,23 +797,15 @@ However, we retain the terminology for consistency with previous studies.
 Approach and Methods
 ====================
 
+We first describe the requirements of dynamic optimization for the management of human intervention in natural resource systems. After that we describe three parametric models for population dynamics and the GP description of population dynamics.
 
 
-### Statement of the optimal control problem
+### Requirements of dynamic optimization
 
-To illustrate the application of the Gaussian process-based dynamic
-programming approach (hereafter GPDP) we focus on the classical problem
-of determining a harvest policy that will maximize the expected discounted
-profit over a fixed time interval [@Reed1979; @Ludwig1982; @Mangel1988].
-For simplicity we assume profit is proportional to the realized harvest.  
-For comparison, we consider the performance of the GPDP policy against
-policies derived under several alternative parametric models. 
-
-
-We focus on a class of one-dimensional models of population dynamics as a
+Dynamic optimization  requires characterizing the dynamics of a state variable (or variables), a control action, and a value function.
+In this paper, we consider only a single state variable, so that the ideas can be described as simply as possible. That is, we focus on a class of one-dimensional models of population dynamics as a
 'best-case' scenario for the parametric model performance relative to
-the Gaussian process.   We consider this a best-case scenario for the
-following reasons: first, the underlying dynamics are always simuated
+the GP.   This a best-case scenario for the parametric models because the underlying dynamics are always simuated
 from one the parametric models in the set, whereas in reality we never
 have the "true" model among our candidates.  By choosing one-dimensional
 models with few parameters, we limit the chance that poor performance
