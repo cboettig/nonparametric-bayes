@@ -2,7 +2,6 @@ all:
 	make install
 	make restore-cache
 	make manuscript.pdf
-	make manuscript.tex
 	make clean
 
 install: 
@@ -11,11 +10,9 @@ install:
 manuscript.md: manuscript.Rmd
 	Rscript components/knit.R manuscript.Rmd	
 
+# Also makes manuscript.tex
 manuscript.pdf: manuscript.md
 	Rscript components/pandoc.R manuscript.md	
-
-manuscript.tex: manuscript.md
-	pandoc manuscript.md --template=components/elsarticle.latex --bibliography=components/references.bib --csl=components/ecology-letters.csl -o manuscript.tex
 
 restore-cache:
 	make components/cache
