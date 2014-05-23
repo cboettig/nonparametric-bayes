@@ -2,7 +2,6 @@ all:
 	make install
 	make restore-cache
 	make manuscript.pdf
-	make clean
 
 install: 
 	Rscript components/install.R

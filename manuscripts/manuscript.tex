@@ -64,7 +64,7 @@
 \hypersetup{breaklinks=true,
             bookmarks=true,
             pdfauthor={},
-            pdftitle={Avoiding tipping points in ecosystem based fisheries management: a non-parametric Bayesian approach},
+            pdftitle={Avoiding tipping points in fisheries management: A Bayesian Non-Parametric approach},
             colorlinks=true,
             urlcolor=blue,
             linkcolor=magenta,
@@ -83,8 +83,8 @@
 \begin{document}
 \begin{frontmatter}
 
-  \title{Avoiding tipping points in ecosystem based fisheries management: a
-non-parametric Bayesian approach}
+  \title{Avoiding tipping points in fisheries management: A Bayesian
+Non-Parametric approach}
     \author[cstar]{Carl Boettiger\corref{c1}}
    \ead{cboettig@gmail.com} 
    \cortext[c1]{Corresponding author}
@@ -97,36 +97,38 @@ non-parametric Bayesian approach}
       \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and
 Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
 95064, USA}    
+    \address[marc]{Center for Stock Assessment Research, Department of Applied Math and
+Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
+95064, USA and Department of Biology, University of Bergen, Bergen,
+Norway 9020}    
     \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric
 Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}    
   
   \begin{abstract}
   Model uncertainty and limited data coverage are fundamental challenges
-  to robust ecosystem management. These challenges are acutely highlighted
-  by concerns that many ecological systems may contain tipping points.
-  Before a collapse, we do not know where the tipping points lie, if they
-  exist at all. Hence, we know neither a complete model of the system
-  dynamics nor do we have access to data in some large region of
-  state-space where such a tipping point might exist. These two sources of
-  uncertainty frustrate state-of-the-art parametric approaches to decision
-  theory and optimal control. Here we illustrate how a non-parametric
-  approach using a Gaussian process prior provides a more flexible
-  representation of this inherent uncertainty. We can then embed the
-  Gaussian process in a stochastic dynamic programming framework in order
-  to make robust management predictions under both model uncertainty and
+  to robust management of human intervention in a natural system. These
+  challenges are acutely highlighted by concerns that many ecological
+  systems may contain tipping points, such as Allee population
+  sizes.\\Before a collapse, we do not know where the tipping points lie,
+  if they exist at all. Hence, we know neither a complete model of the
+  system dynamics nor do we have access to data in some large region of
+  state-space where such a tipping point might exist. We illustrate how a
+  Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP)
+  prior provides a flexible representation of this inherent uncertainty.
+  We embed GPs in a stochastic dynamic programming framework in order to
+  make robust management predictions with both model uncertainty and
   limited data. We conduct a set of simulations to evaluate this approach
   as compared with the standard approach of using model selection to
-  choose from a set of candidate models. In keeping with previous results,
-  we find that model selection erroneously favors models without tipping
-  points -- leading to harvest policies that guarantee extinction. The
-  Gaussian process approach performs nearly as well as the true model and
-  significantly outperforms standard appraoches. We illustrate this using
-  examples of simulated single-species dynamics, where the standard model
-  selection approach should be most effective, and find that it still
-  fails to account for uncertainty appropriately and leads to population
-  crashes, while management based on the Gaussian process approach does
-  not. We discuss opportunities to adapt this approach to multiple species
-  models in further work.
+  choose from a set of candidate models. We find that model selection
+  erroneously favors models without tipping points -- leading to harvest
+  policies that guarantee extinction. The GP approach performs nearly as
+  well as the true model and significantly outperforms standard
+  appraoches. We illustrate this using examples of simulated
+  single-species dynamics, where the standard model selection approach
+  should be most effective, and find that it still fails to account for
+  uncertainty appropriately and leads to population crashes, while
+  management based on the GP approach does not, since it does not
+  underestimate the uncertainty outside of the observed data.
   \end{abstract}
    \begin{keyword} Bayesian \sep Structural Uncertainty \sep Nonparametric \sep Optimal Control \sep Decision Theory \sep Gaussian Processes \sep Fisheries Management \sep \end{keyword}
  \end{frontmatter}
@@ -134,94 +136,84 @@ Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}
 
 \section{Introduction}\label{introduction}
 
-Decision making under uncertainty is a ubiquitous challenge of natural
-resource management and conservation. Ecological dynamics are frequently
-complex and difficult to measure, making uncertainty in our
-understanding a persistent challenge to effective management.
+Decision making under uncertainty is a ubiquitous challenge in the
+management of human intervention in natural resources and conservation.
+Ecological dynamics are frequently complex and difficult to measure,
+making uncertainty in our understanding a persistent challenge.
 Decision-theoretic approaches provide a framework to determine the best
 sequence of actions in face of uncertainty, but only when that
-uncertainty can be meaningfully quantified (Fischer \emph{et al.} 2009).
-Concerns about the potential sudden collapse of fisheries and other
-ecosystems (Worm \emph{et al.} 2006; Scheffer \emph{et al.} 2009) has
-increasingly emphasized the difficulties of formulating even
+uncertainty can be meaningfully quantified (Fischer et al. 2009). Over
+the last four decades (but stretching even further back in time), marked
+by the seminal contributions of Clark (1976); Clark (2009) and Walters
+and Hilborn (1978), dynamic optimization methods, particularly
+Stochastic Dynamic Programming (SDP, Clark (2009)), have become
+increasingly important as a means of understanding how to management
+human intervention into natural systems. Concomittantly, there has been
+increasing recognition of the importance of Allee population sizes or
+`tipping points' (Scheffer et al. 2001, Polasky et al. 2011) that
+management actions may inadvertently cause populations to cross.
+Scheffer et al. (2009) emphasized the difficulties of formulating even
 qualitatively correct models of the underlying processes.
 
 We develop a novel approach to address these concerns in the context of
 fisheries; though the underlying challenges and methods are germane to
-many other conservation and resource management problems. Economic value
-and ecological concern have made marine fisheries the crucible for much
-of the founding work (Gordon 1954; May \emph{et al.} 1979; Reed 1979;
-Ludwig \& Walters 1982) on management under uncertainty. Global declines
-(Worm \emph{et al.} 2006) and the controversy surrounding their
-interpretation (Hilborn 2007; Worm \emph{et al.} 2009) have made
-understanding these challenges all the more pressing.
+many other problems of conservation or natural resource exploitation,
+such as forestry. Economic value and ecological concern have made marine
+fisheries the crucible for much of the founding work (Gordon 1954, Clark
+1976, 2009, May et al. 1979, Reed 1979, Ludwig and Walters 1982) on
+management under uncertainty. Global declines (Worm et al. 2006) and the
+controversy surrounding their interpretation (Hilborn 2007, Worm et al.
+2009) have made understanding these challenges all the more pressing.
 
 Uncertainty enters the decision-making process at many levels: intrinsic
 stochasticity in biological processes, measurements, and implementation
-of policy (\emph{e.g.} Reed 1979; Clark \& Kirkwood 1986; Roughgarden \&
-Smith 1996; Sethi \emph{et al.} 2005), parametric uncertainty
-(\emph{e.g.} Ludwig \& Walters 1982; Hilborn \& Mangel 1997; McAllister
-1998; Schapaugh \& Tyre 2013), and model or structural uncertainty
-(\emph{e.g.} Williams 2001; Cressie \emph{et al.} 2009; Athanassoglou \&
+of policy (\emph{e.g.} Reed 1979, Clark and Kirkwood 1986, Roughgarden
+and Smith 1996, Sethi et al. 2005), parametric uncertainty (\emph{e.g.}
+Ludwig and Walters 1982, Hilborn and Mangel 1997, McAllister 1998,
+Schapaugh and Tyre 2013), and model or structural uncertainty
+(\emph{e.g.} Williams 2001, Cressie et al. 2009, Athanassoglou and
 Xepapadeas 2012). Of these, structural uncertainty is generally the
 hardest to quantify. Typical approaches assume a weak notion of model
 uncertainty in which the correct model (or reasonable approximation) of
 the dynamics must be identified from among a handful of alternative
-models. Here we consider an approach that addresses uncertainty at each
-of these levels without assuming the dynamics follow a particular
-(i.e.~parametric) structure.
-
-Often we do not understand the system dynamics well enough to know if a
-model provides a good approximation over the relevant range of states
-and timescales (criteria that we loosely refer to as defining the
-``right'' or ``true'' model.)\\Typical solutions involve either model
-choice, model averaging, or introducing yet greater model complexity of
-which others may be special cases (model averaging being one such way to
-construct such a model) (Williams 2001; Cressie \emph{et al.} 2009;
-Athanassoglou \& Xepapadeas 2012). Even setting aside other
-computational and statistical concerns (e.g. (Cressie \emph{et al.}
-2009)), these approaches do not address our second concern -
+models, using either model choice, model averaging, or introducing yet
+greater model complexity of which others may be special cases (model
+averaging being one such way to construct such a model) (Williams 2001,
+Cressie et al. 2009, Athanassoglou and Xepapadeas 2012). Even setting
+aside other computational and statistical concerns (e.g. Cressie et al.
+(2009)), these approaches do not address our second concern -
 representing uncertainty outside the observed data range.
 
 Model uncertainty is particularly insidious when model predictions must
-be made outside of the range of data on which the model was estimated.
-This extrapolation uncertainty is felt most keenly in decision-theoretic
-(or optimal control) applications, since (a) exploring the potential
-action space typically involves considering actions that may move the
-system outside the range of observed behavior, and (b)
-decision-theoretic algorithms rely not only on reasonable estimates of
-the expected outcomes, but depend on the weights given to all possible
-outcomes (\emph{e.g.} Weitzman 2013).
+be made outside of the range of data on which the model was estimated,
+and models may be abused (Mangel et al. 2001). Extrapolation uncertainty
+is felt most keenly in decision-theoretic (or optimal control)
+applications, since (a) exploring the potential action space typically
+involves considering actions that may move the system outside the range
+of observed behavior, and (b) decision-theoretic algorithms rely not
+only on reasonable estimates of the expected outcomes, but depend on the
+weights given to all possible outcomes (\emph{e.g.} Weitzman 2013).
 
-This difficult position of having neither the true model nor data that
-covers the full range of possible states is unfortunately the rule more
-than the exception. The potential concern of tipping points in
-ecological dynamics (Scheffer \emph{et al.} 2001; Polasky \emph{et al.}
-2011) reflects these concerns -- as either knowledge of the true model
-or more complete sampling of the state space would make it easy to
-identify if a tipping point existed. If we do not know but cannot rule
-out such a possibility, then we face decision-making under this dual
-challege of model uncertainty and incomplete data coverage.
+The dual concerns of model uncertainty and incomplete data coverage pose
+a substantial challenge to existing decision-theoretic approaches
+(Brozović and Schlenker 2011). Because intervention is often (but not
+always, see Hughes et al. (2013)) too late after a tipping point has
+been crossed, management is most often concerned with avoiding
+potentially catastrophic tipping points before any data is available at
+or following a transition that would more clearly reveal these regime
+shift dynamics (e.g. Bestelmeyer et al. 2012).
 
-These dual concerns pose a substantial challenge to existing
-decision-theoretic approaches (Brozović \& Schlenker 2011). Because
-intervention is often too late after a tipping point has been crossed
-(but see Hughes et al. (2013)), management is most often concerned with
-avoiding potentially catastrophic tipping points before any data is
-available at or following a transition that would more clearly reveal
-these regime shift dynamics (e.g. Bestelmeyer \emph{et al.} 2012).
-
-Here we illustrate how a stochastic dynamic programming (SDP) algorithm
-(Mangel \& Clark 1988; Marescot \emph{et al.} 2013) can be driven by the
-predictions from a Bayesian non-parametric (BNP) approach (Munch
-\emph{et al.} 2005a). This provides two distinct advantages compared
-with contemporary approaches. First, using a BNP sidesteps the need for
-an accurate model-based description of the system dynamics. Second, the
-BNP can better reflect uncertainty that arises when extrapolating a
-model outside of the data on which it was fit. We illustrate that when
-the correct model is not known, this latter feature is crucial to
-providing a robust decision-theoretic approach in face of substantial
-structural uncertainty.
+We illustrate how a stochastic dynamic programming (SDP) algorithm
+(Mangel and Clark 1988, Marescot et al. 2013) can be driven by the
+predictions from a Bayesian Non-Parametric (BNP) model of population
+dynamics (Munch et al. 2005a). This provides two distinct advantages
+compared with contemporary approaches. First, using a BNP sidesteps the
+need for an accurate model-based description of the system dynamics.
+Second, the BNP can better reflect uncertainty that arises when
+extrapolating a model outside of the data on which it was fit. We
+illustrate that when the correct model is not known, this latter feature
+is crucial to providing a robust decision-theoretic approach in face of
+substantial structural uncertainty.
 
 This paper represents the first ecological application of the SDP
 decision-making framework without an a priori model of the underlying
@@ -229,104 +221,99 @@ dynamics. In contrast to parametric models which can only reflect
 uncertainty in parameter estimates, the BNP approach provides a more
 state-space dependent representation of uncertainty. This permits a much
 greater uncertainty far from the observed data than near the observed
-data. These features allow the GPDP approach to find robust management
-solutions in face of limited data and without knowledge of the correct
-model structure.
+data. These features allow the Gaussian Process Dynamic Programming
+(GPDP) approach to find robust management solutions in face of limited
+data and without knowledge of the correct model structure.
 
-The idea that any approach can perform well without either having to
-know the model or have particularly good data should immediately draw
-suspicion. The reader must bear in mind that the strength of our
-approach comes not from black-box predictive power from such limited
-information, but rather, by providing a more honest expression of
-uncertainty outside the observed data without sacrificing the predictive
-capacity near the observed data. By coupling this more accurate
-description of what is known and unknown to the decision-making under
-uncertainty framework provided by stochastic dynamic programming, we are
-able to obtain more robust management policies than with common
-parametric modeling approaches.
-
-The nature of decision-making problems provides a compelling and
-pragmatic way to compare models: Rather than compare models in terms of
-best fit to data, model performance is defined in the concrete terms of
-the decision-maker's objectives. Although much argument can be made over
-the `correct' objective function, e.g.~how to account for the social
-value of fish left in the sea vs.~the commercial value of fish
-harvested; see Halpern et al. (2013) for further discussion of this
-issue. We can always compare model performance across multiple potential
-objectives. The important point is that a decision-maker does not
-necessarily need a model that provides the best mechanistic
-understanding or the best long-term outcome, but rather the one that
-idelivers the best management performance over the period of interest.
-
-\subsection{Background on the Gaussian
-Process}\label{background-on-the-gaussian-process}
-
-We use a Bayesian nonparameteric regression approach based on Gaussian
-process priors. The use of Gaussian process (GP) regression (or
-``kriging'' in the geospatial literature) to formulate a predictive
-model is relatively new in the context of modeling dynamical systems
-(Kocijan \emph{et al.} 2005), and was first introduced in the context
-ecological modeling and fisheries management in Munch et al. (2005b). GP
-models have subsequently been used to test for the presence of Allee
-effects (Sugeno \& Munch 2013a), estimate the maximum reproductive rate
-(Sugeno \& Munch 2013b), determine temporal variation in food
-availability (Sigourney \emph{et al.} 2012), and provide a basis for
-identifying model-misspecification (Thorson \emph{et al.} 2014). An
-accessible and thorough introduction to the formulation and use of GPs
-can be found in Rasmussen \& Williams (2006). The nonparametric moniker
-for the GP approach is unfortunate as (a) it still involves the
-estimation of parameters, and (b), statisticians also use non-parametric
-to mean models that make only weak distributional assumptions (e.g.
-Lehmann 1975). However, we retain the terminology for consistency with
-previous studies.
+To illustrate GPDP, we consider the performance of the GPDP policy
+against the policies derived under several alternative parametric models
+(Reed 1979, Ludwig and Walters 1982, Mangel and Clark 1988). The nature
+of decision-making problems provides a compelling and pragmatic way to
+compare models: Rather than compare models in terms of best fit to data,
+we define model performance in the concrete terms of the
+decision-maker's objectives.
 
 \section{Approach and Methods}\label{approach-and-methods}
 
-\subsubsection{Statement of the optimal control
-problem}\label{statement-of-the-optimal-control-problem}
+We first describe the requirements of dynamic optimization for the
+management of human intervention in natural resource systems. After that
+we describe three parametric models for population dynamics and the GP
+description of population dynamics.
 
-To illustrate the application of the Gaussian process-based dynamic
-programming approach (hereafter GPDP) we focus on the classical problem
-of determining a harvest policy that will maximize the expected
-discounted profit over a fixed time interval (Reed 1979; Ludwig \&
-Walters 1982; Mangel \& Clark 1988). For simplicity we assume profit is
-proportional to the realized harvest.\\For comparison, we consider the
-performance of the GPDP policy against policies derived under several
-alternative parametric models.
+\subsubsection{Requirements of dynamic
+optimization}\label{requirements-of-dynamic-optimization}
 
-We focus on a class of one-dimensional models of population dynamics as
-a `best-case' scenario for the parametric model performance relative to
-the Gaussian process. We consider this a best-case scenario for the
-following reasons: first, the underlying dynamics are always simuated
-from one the parametric models in the set, whereas in reality we never
-have the ``true'' model among our candidates. By choosing
-one-dimensional models with few parameters, we limit the chance that
-poor performance will be due to our inability to estimate parameters
-well, something that becomes a more severe problem for
-higher-dimensional parametric models. Further, the parametric models we
-consider are those most commonly used in modeling stock-recruitment
+Dynamic optimization requires characterizing the dynamics of a state
+variable (or variables), a control action, and a value function. In this
+paper, we consider only a single state variable, so that the ideas can
+be described as simply as possible. That is, we focus on a class of
+one-dimensional models of population dynamics as a `best-case' scenario
+for the parametric model performance relative to the GP. This is
+abest-case scenario for the parametric models because the underlying
+dynamics are always simuated from one the parametric models in the set,
+whereas in reality we never have the ``true'' model among our
+candidates. By choosing one-dimensional models with few parameters, we
+limit the chance that poor performance will be due to our inability to
+estimate parameters well, something that becomes a more severe problem
+for higher-dimensional parametric models. Further, the parametric models
+we consider are those most commonly used in modeling stock-recruitment
 dynamics or to model sudden transitions between alternative stable
 states.
 
 \subsubsection{Parametric models}\label{parametric-models}
 
-We consider three candidate parametric models of the stock-recruitment
-dynamics: The Ricker model, the Allen model (Allen \& Tanner 2005), the
-Myers model (Myers \emph{et al.} 1995), equations (1)-(3), which we
-parameterize as follows:
+We let $X_t$ denote the size (numbers or biomass) of the focal
+population at time $t$ and assume that in the absence of take its
+dynamics are
 
-We consider three parametric models that relate population size at time
-$t+1$, $X_{t+1}$, to population size at time $t$, $X_t$ and harvest at
-time $t$, $h_t$ by
-
-\[ X_{t+1}= Z_t f(S_t,p) \]
+\[ X_{t+1}= Z_t f(X_t, h_t, p) \]
 
 Where Z(t) is log-normally distributed process stochasticity (Reed 1979)
-and $p$ is a vector of parameters, and $S_t$ the escapement (Reed 1979)
+and $p$ is a vector of parameters to be estimated from the data. We
+describe three choices for $f(X_t,p)$ in the next section.In this simple
+model, the control action is a harvest or take, $h_t$, measured in the
+same units as $X$, at time $t$. Thus, in the presence of take, the
+population size on the right hand side of Eqn 1 is replaced by
+$S_t=X_t-h_t$.
 
-\[S_t = X_t - h_t\]
+To construct the value function, we consider a return when $X_t=x$ and
+harvest $h_t=h$ denoted as the reward, $R(x,h)$. For example, if the
+return is simply the harvest at time $t$, then $R(x,h)=min(x,h)$. We
+assume that future harvests are discounted relative to current ones at a
+constant rate of discount $\delta$ and ask for the harvest policy that
+maximizes total discounted harvest between the current time $t$ and a
+final time $T$, that is we seek to maximize over choices of harvest
+$\mathbf{E}_{X_t+1} [ \sum_{t = 0}^{T}  R_t(X_t, h_t) \delta^t]$, where
+the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the
+expectation over the process stochasticity in the future population
+state.
 
-or the Ricker model,
+In order to find that policy, we introduce the value function$V_t(x_t)$
+representing the total discounted catch from time $t$ onwards given that
+$X_t=x$. This value function satisfies an equation of Stochastic Dynamic
+Programming (SDP, Mangel and Clark 1988, Clark and Mangel 2000, Clark
+2009), sometimes called the Bellman-Hamilton-Jacobi equation (Mangel
+2014).
+
+\begin{equation}
+V_t(x) = \max_{h_t} \left[R(h_t, x_t) + \delta \cdot \mathbf{E}_{X_t+1} V_{t+1}( Z_{t+1} f(x - h_t)) \right]
+\end{equation}
+
+That is, at time $t$, when population size is $x$ and harvest $h_t$ is
+applied, the immediate return is $R(h_t, x_t)$ and the population size
+after the take is $x-h_t$, which is then translated into $X_{t+1}$ by
+Eqn 1. We consider the finite time problem with \$T=\$1000, which we
+solve using value iteration algorithm (Mangel and Clark 1988, Clark and
+Mangel 2000).
+
+\subsubsection{Parametric models}\label{parametric-models}
+
+We consider three candidate parametric models of the stock-recruitment
+dynamics: The Ricker model, the Allen model (Allen and Tanner 2005), the
+Myers model (Myers et al. 1995), equations (1)-(3), which we
+parameterize as follows for $f(S_t,p)$ in Eqn 1. In all three, we let
+$K$ denote the carrying capacity and $r$ the maximum per capita growth
+rate. In the Ricker model,
 
 \begin{enumerate}
 \def\labelenumi{(\arabic{enumi})}
@@ -335,79 +322,124 @@ or the Ricker model,
   \[ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K} \right) } \]
 \end{enumerate}
 
-where $K$ is the carrying capacity and $r$ the growth rate. For the
-Allen model,
+In the Allen model,
 
 \begin{enumerate}
 \def\labelenumi{(\arabic{enumi})}
 \setcounter{enumi}{1}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  \[ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_C\right)} \]
+  \[ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_c\right)} \]
 \end{enumerate}
 
 Where $r$ and $K$ are as before, and $X_c$ denotes the location of the
-unstable (tipping) point. For the Myers model,
+unstable steady state (i.e., the tipping point).
+
+In the Myers model,
 
 \begin{enumerate}
 \def\labelenumi{(\arabic{enumi})}
 \setcounter{enumi}{2}
 \itemsep1pt\parskip0pt\parsep0pt
 \item
-  \[ f(S(t) | p)  = \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}\]
+  \[ f(S(t) | p)  = \frac{r S_t^{\theta}}{1 + \frac{S_t^\theta}{K}}\]
 \end{enumerate}
 
-Where $r$ and $K$ as before, and $\theta$ the nonlinearity of the Myers
-model (corresponding to Beverton-Holt dynamics for $\theta$ = 1 and an
-Allee effect with alternative stable states exist at $\theta > 2$).
+Where $\theta = 1$ corresponding to Beverton-Holt dynamics and $\theta$
+\textgreater{} 2 leads to Allee effects and multiple stable states.
 
-The familiar Ricker model involves two parameters, corresponding to a
-growth rate and a carrying capacity, and cannot support alternative
-stable growth rate dynamics. The Allen model resembles the Ricker
-dynamics with an added Allee effect parameter (Courchamp \emph{et al.}
-2008), below which the population cannot persist. The Myers model also
-has three parameters and contains an Allee threshold, but has
-compensatory rather than over-compensatory density dependence
-(resembling a Beverton-Holt curve rather than a Ricker curve at high
-densities.)\\We assume multiplicative log-normal noise perturbs the
-growth predicted by the each of the deterministic model skeletons
-described above. This introduces one additional parameter $\sigma$ that
-must be estimated by each model.
+The Ricker model involves two parameters, corresponding to a growth rate
+and a carrying capacity, and cannot support alternative stable growth
+rate dynamics. The Allen model resembles the Ricker dynamics with an
+added Allee effect parameter (Courchamp et al. 2008), below which the
+population cannot persist. The Myers model also has three parameters and
+contains an Allee threshold, but has compensatory rather than
+over-compensatory density dependence (resembling a Beverton-Holt curve
+rather than a Ricker curve at high densities.)
+
+The multiplicative log-normal stochasticity perturbs the growth
+predicted by each of these deterministic model skeletons. This
+introduces one additional parameter $\sigma$ that must be estimated.
 
 Because of our interest in management performance in the presence of
 tipping points, all of our simulations are based on the Allen model. The
-Allen model is thus structurally correct and is expected to provide a
-best-case scenario when the `true' dynamics are known. The Ricker model
-is a reasonable approximation of these dynamics far from the Allee
+Allen model is thus ``structurally correct'' and is expected to provide
+a best-case scenario when the `true' dynamics are known. The Ricker
+model is a reasonable approximation of these dynamics far from the Allee
 threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure.
 
 We consider a period of 40 years of training data: long enough that the
-estimates are not dependent on the particular realization, while longer
+estimates do not depend on the particular realization, while longer
 times are not likely to provide substantial improvement (i.e.~the
 results are not sensitive to this interval). Each of the models
-(described below) is fit to the same training data, as shown in Figure
-1.
+(described below) is fit to the same training data (Figure 1).
 
-We inferred posterior distributions for the parameters of each model in
-a Bayesian context using Gibbs sampling (Gelman et al. (2003)
-implemented in R (R Core Team 2013) using jags, (Su \& Masanao Yajima
-2013)). We choose uninformative uniform priors for all parameters (See
-appendix Tables S1-S3; R code provided). We show one-step-ahead
-predictions of these model fits in Figure 1. Each chain was tested for
-Gelman-Rubin convergence and results were robust to longer runs. For
-each simulation we also applied several commonly used model selection
-criteria (AIC, BIC, DIC, see Burnham \& Anderson (2002)) to identify the
-best fitting model.
-
-An optimal policy function was then inferred through stochastic dynamic
-programming for each model given the posterior distributions of the
-parameter estimates. This policy maximizes the expectation of the value
-function integrated over the parameter uncertainty. (code implementing
-this algorithm provided in the Appendix).
+We inferred posterior distributions for the parameters of each model by
+Gibbs sampling (Gelman et al. (2003) implemented in R (R Core Team 2013)
+using jags, (Su and Masanao Yajima 2013)). We choose uniform priors for
+all parameters (See appendix Tables S1-S3; R code provided). We show
+one-step-ahead predictions of these model fits in Figure 1. We tested
+each chain for Gelman-Rubin convergence and results were robust to
+longer runs. For each simulation we also applied several commonly used
+model selection criteria (AIC, BIC, DIC, see Burnham and Anderson
+(2002)) to identify the best fitting model.
 
 \subsubsection{The Gaussian Process
 model}\label{the-gaussian-process-model}
+
+The core difference for our purpose between the GP representation and
+the parametric models we have already introduced is the
+``non-parametric'' property, which means that an estimated GP model is
+defined explicitly in reference to some observed data. Unlike the models
+above, it cannot be specified by the value of some parameters alone. The
+nonparametric moniker for the GP approach is unfortunate as (a) it still
+involves the estimation of parameters, and (b), statisticians also use
+non-parametric to mean models that make only weak distributional
+assumptions (e.g. Lehmann 1975). However, we retain the terminology for
+consistency with previous studies.
+
+The use GP methods to formulate a predictive model is relatively new in
+the context of modeling dynamical systems (Kocijan et al. 2005), and was
+first introduced in the context ecological modeling and fisheries
+management in Munch et al. (2005b). GP models have subsequently been
+used to test for the presence of Allee effects (Sugeno and Munch 2013a),
+estimate the maximum reproductive rate (Sugeno and Munch 2013b),
+determine temporal variation in food availability (Sigourney et al.
+2012), and provide a basis for identifying model-misspecification
+(Thorson et al. 2014). An accessible and thorough introduction to the
+formulation and use of GPs can be found in Rasmussen and Williams
+(2006).
+
+A GP is an infinite dimensional (because it considers a continuous
+random variable) stochastic process for which any realization is a
+multivariate normal distribution. Thus, to characterize the GP we need a
+mean function and a covariance matrix. We proceed as follows.
+
+Assuming the data $X_o$ are observed with some process noise,
+
+\[y = f(x) + \varepsilon\]
+
+$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP, the
+predicted data $X_p$ given the observations obeys
+
+\[f(X_p|X_o) \sim \mathcal{N}(E,C)\]
+\[E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y\]
+\[C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)\]
+
+Where $K$ is the Gaussian process kernel. (Compare to Eqn 2.22 of
+Rasmussen and Williams (2006) for a more detailed derivation.)
+Throughout, we use the radial basis function kernel:
+
+\[ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)\]
+
+We use vague inverse Gamma priors on both the lengthscale $\ell$ and
+process noise $\sigma$ parameters, of the form
+
+\[f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)\]
+
+For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5. For $\ell$
+prior, $\alpha = $ 10 and $\beta = $ 10.
 
 Using the simulated training data we also estimate a Gaussian process
 defined by a radial basis function kernel of two parameters: $\ell$,
@@ -427,16 +459,27 @@ substantially from the priors (Figure S13), we can be assured that most
 of the information in the posterior comes from the data rather than the
 prior belief.
 
+\subsection{The method of Gaussian Process Dynamic
+Programming}\label{the-method-of-gaussian-process-dynamic-programming}
+
 It is reasonably straight-forward to derive the harvest policy from the
-estimated BP by inserting it into a SDP algorithm. Recall that unlike
-the parametric models the Gaussian process with fixed parameters already
-predicts a distribution of curves rather than a single curve. We must
-first integrate over this distribution of curves given a sampling of
-parameter values drawn from the posterior distribution of the two GP
-parameters, before integrating over the posterior of those parameters
-themselves.
+estimated BP by inserting it into a SDP algorithm. The only difference
+is that the uncertainty in the future state under the GP, $X_{t+1}$,
+includes both process uncertainty (based on the estimation of $\sigma$)
+and ``structural uncertainty'' of the posterior collection of
+curves.\\(Recall that given the parameters, a parametric model is
+represented by a single curve, while the GP remains a distribution of
+curves).\\From the GP posteriors, we can write down the (discritized)
+transition matrix representing the probability of going to each state
+$X_{t+1}$ given any current state $X_t$ and any harvest $h_t$ (See the
+function \texttt{gp\_transition\_matrix()} in the provided R package).
+Given this transition matrix, we use the same value iteration algorithm
+as in the parametric case to determine the optimal policy.
 
 \section{Results}\label{results}
+
+\subsection{Parametric and GP models for population
+dynamics}\label{parametric-and-gp-models-for-population-dynamics}
 
 To ensure our results are robust to our choice of parameters, we perform
 our analysis over 96 different scenarios. To better understand the
@@ -508,16 +551,19 @@ near the tipping point.
 \begin{figure}[htbp]
 \centering
 \includegraphics{components/figure/manuscript-figure_3.pdf}
-\caption{Beyond the tipping point (outside the range of the training
-data), the true dynamics fall outside the uncertainty bands of the wrong
-parametric models, but inside the uncertainty predicted by the GP.
+\caption{Outside the range of the training data (Figure 1), the true
+dynamics (black dots) fall outside the uncertainty (two standard
+deviations, colored bands) of the structurally incorrect parametric
+models (Ricker, Myers), but inside the uncertainty predicted by the GP.
 Points show the stock size simulated by the true model. Overlay shows
 the range of states predicted by each model, based on the state observed
 in the previous time step. The Ricker model always (wrongly) predicts
 positive population growth, while the actual population shrinks in each
 step as the initial condition falls below the Allee threshold of the
-underlying model (Allen). Note that the GP is both more pessimistic and
-more uncertain about the future state than the parametric models.}
+underlying model (Allen). Note that because it does not assume a
+parametric form but instead relies more directly on the data, the GP is
+both more pessimistic and more uncertain about the future state than the
+parametric models.}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -544,10 +590,10 @@ error).
 \begin{figure}[htbp]
 \centering
 \includegraphics{components/figure/manuscript-figure_5.pdf}
-\caption{Gaussian process inference outperforms parametric estimates.
-Shown are 100 replicate simulations of the stock dynamics (eq 1) under
-the policies derived from each of the estimated models, as well as the
-policy based on the exact underlying model.}
+\caption{In the management context, GPDP outperforms approaches based on
+parametric models. Shown are 100 replicate simulations of the stock
+dynamics (eq 1) under the policies derived from each of the estimated
+models, as well as the policy based on the exact underlying model.}
 \end{figure}
 
 The consequences of managing 100 replicate realizations of the simulated
@@ -556,16 +602,15 @@ expected from the policy curves, the structurally correct model
 under-harvests, leaving the stock to vary around it's un-fished optimum.
 The structurally incorrect Ricker model over-harvests the population
 passed the tipping point consistently, resulting in the immediate crash
-of the stock and thus derives minimal profits.
+of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most easily be
 compared by using the relative differences in net present value realized
-by each of the model. Figure 6 shows the distribution of values
-(profits) realized by each simulation shown in Figure 5. The GPDP
-approach most consistently realizes a value close to the optimal
-solution, and importantly avoids ever driving the system across the
-tipping point, which results in the near-zero value cases in the
-parametric models.
+by each of the model. Figure 6 shows the distribution of values realized
+by each simulation shown in Figure 5. The GPDP most consistently
+realizes a value close to the optimal solution, and importantly avoids
+ever driving the system across the tipping point, which results in the
+near-zero value cases in the parametric models.
 
 \begin{figure}[htbp]
 \centering
@@ -587,7 +632,7 @@ model, as seen in Figure 7. The sensitivity analysis uses a factorial
 design of eight replicates of three different randomly generated
 parameter sets for each of two different generating models (Allen and
 Myers) over two different noise levels (0.01 and 0.05), for a total of 8
-x 3 x 2 x 2 = 96 scenarios. In Figure 7, results are pooled across
+x 3 x 2 x 2 = 96 scenarios. In Figure 7, we pool results across
 different random seeds (111, 222, 333), noise values of 0.01 and 0.05
 (not large enough to violate the self-sustaining criterion of Reed
 (1979)), and different randomly generated parameters sets for each
@@ -597,44 +642,50 @@ levels, and closer on the Allen model then the Myers model, the
 differences are small compared to the values observed in using the wrong
 parametric model. The GPDP solution consistently avoids either failing
 to harvest at all or crashing the stock, which results in the very low
-profits/values seen in parametric models in the previous figure. The
-sensitivity analysis is compared against the optimal solution alone and
-not shown against the estimates of the various parametric models (but
-see Figure 6), where convergence of the Gibbs sampling could contribute
-to their poorer performance if not checked by hand for each
-configuration.
+values seen in parametric models in the previous figure. The sensitivity
+analysis is compared against the optimal solution alone and not shown
+against the estimates of the various parametric models (but see Figure
+6), where convergence of the Gibbs sampling could contribute to their
+poorer performance if not checked by hand for each configuration.
 
-Large noise relative to the distance between the stable and unstable
-point, (or more precisely, between the optimal escapement and the
-unstable point) increases the chance of a stochastic transition. As a
-result, the impact of using a model which underestimates the risk of
-harvesting past the critical point is much more severe, since this such
-a situation occurs more often. Conversely, with large enough distance
-between the optimal escapement and unstable points relative to the
-noise, the chance of a transition becomes vanishingly small and all
-models can be modeled near-optimally. Models which underestimate the
-cost incurred by stock sizes fluctuating significantly below the optimal
-escapement level will not perform poorly as long as those fluctuations
-are sufficently rare.
+Changing the noise or the distance between stable and unstable points
+does not impact the performance of the GP relative to the optimal
+solution given the true model and true parameters. The parametric models
+are more senstive to this difference. Large noise relative to the
+distance between the stable and unstable point increases the chance of a
+stochastic transition. More precisely, if we let $L = K - x_c$, then the
+probability of a transition in a given window of time $T$ scales as
+
+\[P(x_t < x_c | t \in T) \propto  \exp\left(\frac{L^2}{\sigma^2}\right),\]
+
+(following the Ahrenius relationship, see Gardiner (2009) for the
+derivation). As a result, the impact of using a model which
+underestimates the risk of harvesting past the critical point is much
+more severe, since this such a situation occurs more often. Conversely,
+with large enough distance between the optimal escapement and unstable
+points relative to the noise, the chance of a transition becomes
+vanishingly small and all models can be modeled near-optimally. Models
+that underestimate the cost incurred by stock sizes fluctuating
+significantly below the optimal escapement level will not perform poorly
+as long as those fluctuations are sufficently rare.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics{components/figure/manuscript-figure_7.pdf}
 \caption{Sensitivity Analysis. Histogram shows the ratio of the realized
-net present value / profits derived when managing under the GPDP
-Gaussian process approach over the optimal value given the true model
-and true parameters. Values near 1 indicate nearly optimal performance.
-Simulations cover a range of underlying parameter, model, replicate, and
-noise levels.}
+net present value derived when managing under the GPDP over the optimal
+value given the true model and true parameters. Values near 1 indicate
+nearly optimal performance. Simulations cover a range of underlying
+parameter, model, replicate, and noise levels.}
 \end{figure}
 
 \section{Discussion}\label{discussion}
 
 Though simple mechanistically motivated models offer the greatest
 potential to increase our basic understanding of ecological processes
-(Geritz \& Kisdi 2012; Cuddington \emph{et al.} 2013), such models can
-be not only inaccurate but misleading when relied upon in a quantitative
-decision making framework. In this paper we have tackled two aspects of
+(Geritz and Kisdi 2012, Cuddington et al. 2013), such models can be both
+inaccurate and misleading when relied upon in a quantitative decision
+making framework. In this paper we have tackled two aspects of
 uncertainty that are both common to many ecological decision-making
 problems and fundamentally challenging to existing approaches which
 largely rely on parametric models:
@@ -681,9 +732,9 @@ concerns involve entering previously unobserved regions of state-space
 -- whether that is the collapse of a fishery, the spread of an invasive,
 or the loss of habitat.
 
-\subsubsection{GPDP expresses larger uncertainty in regions where the
-data are
-poor}\label{gpdp-expresses-larger-uncertainty-in-regions-where-the-data-are-poor}
+\subsubsection{GPDP population dynamcis capture larger uncertainty in
+regions where the data are
+poor}\label{gpdp-population-dynamcis-capture-larger-uncertainty-in-regions-where-the-data-are-poor}
 
 The parametric models perform worst when they propose a management
 strategy outside the range of the observed data. The non-parametric
@@ -707,10 +758,10 @@ function kernel). In practice, both the choice of mean and the choice of
 the covariance function may be chosen to confer particular biological
 properties, as well as more biologically informed priors for $\ell$ and
 $\sigma$. In principle, this may allow a manager to improve the
-performance of the GPDP approach by adding only enough additional detail
-as is justified. For instance, it would be possible to use a linear or a
+performance of the GPDP by adding only enough additional detail as is
+justified. For instance, it would be possible to use a linear or a
 Ricker-shaped mean in the prior without making the much stronger
-assumption that the Ricker is the structurally correct model (Sugeno \&
+assumption that the Ricker is the structurally correct model (Sugeno and
 Munch 2013a). Future research should focus on identifying criteria to
 ensure the prior and the value function are chosen appropriately for the
 problem at hand.
@@ -732,30 +783,6 @@ DBI-1306697 to CB.
 \section{Appendix: Model definitions and
 estimation}\label{appendix-model-definitions-and-estimation}
 
-\subsection{Gaussian process model}\label{gaussian-process-model}
-
-Assuming the data are known with some process noise,
-
-\[y = f(x) + \varepsilon\]
-
-$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP,
-
-\[f(x) \sim \mathcal{N}(E,C)\]
-\[E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y\]
-\[C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)\]
-
-Where $K$ is the Gaussian process kernel. Throughout, we use the radial
-basis function kernel:
-
-\[ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)\]
-
-The marginal likelihood is then given by:
-
-\[\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y  - \tfrac{1}{2} \log\left| K + \sigma_n^2 \mathbf{I} \right| - \tfrac{n}{2}\log 2 \pi\]
-
-See Munch et al. (2005a) or Rasmussen \& Williams (2006) for a more
-detailed introduction.
-
 \begin{figure}[htbp]
 \centering
 \includegraphics{components/figure/manuscript-figure_S1.pdf}
@@ -770,38 +797,7 @@ mixing (no trend) and sampling rejection rate (no piecewise jumps)}
 Prior curves shown in red.}
 \end{figure}
 
-The Gaussian process priors on both the lengthscale $\ell$ and process
-noise $\sigma$ parameters are both vague inverse Gamma,
-
-\[f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)\]
-
-For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5. For $\ell$
-prior, $\alpha = $ 10 and $\beta = $ 10.
-
 \newpage
-
-\subsection{Optimal Control Problem
-Specification}\label{optimal-control-problem-specification}
-
-We seek the harvest policy $h(x)$ that maximizes:
-
-\[ \max_{h_t} \sum_{t \in 0}^{\infty}  \Pi_t(X_t, h_t) \delta^t  \]
-
-subject to the profit function $\Pi(X_t,h)$, discount rate $\delta$, and
-the state equation
-
-\[X_{t+1} = Z_t f(S_t)  \] \[S_t = X_t - h_t \]
-
-For simplicity we assume profit function $\Pi_t(X_t, h_t)$ is linear in
-the realized harvest, only enforcing the restriction that harvest can
-not exceed available stock, that is $\Pi(h,x) = min(h,x)$. $Z_t$ is as
-previously defined.
-
-From this we can write down the Bellman recursion as:
-
-\[V_t(x_t) = \max_h \mathbf{E} \left(\Pi(h_t, x_t) + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)\]
-
-Where $V_t$ is the discounted value of the profit given that $X(t) = x$
 
 \subsection{Training data (Figures
 1-6)}\label{training-data-figures-1-6}
@@ -1008,193 +1004,202 @@ $\sigma$
 model}
 \end{longtable}
 
-1.Allen, D. \& Tanner, K. \emph{et al.} (2005). Infusing active learning
-into the large-enrollment biology class: seven strategies, from the
-simple to complex. \emph{Cell biology education}, 4, 262--8.
+Allen, D., and K. Tanner. 2005. Infusing active learning into the
+large-enrollment biology class: seven strategies, from the simple to
+complex. Cell biology education 4:262--8.
 
-2.Athanassoglou, S. \& Xepapadeas, A. \emph{et al.} (2012). Pollution
-control with uncertain stock dynamics: When, and how, to be precautious.
-\emph{Journal of Environmental Economics and Management}, 63, 304--320.
+Athanassoglou, S., and A. Xepapadeas. 2012. Pollution control with
+uncertain stock dynamics: When, and how, to be precautious. Journal of
+Environmental Economics and Management 63:304--320.
 
-3.Bestelmeyer, B.T., Duniway, M.C., James, D.K., Burkett, L.M. \&
-Havstad, K.M.\emph{et al.} (2012). A test of critical thresholds and
-their indicators in a desertification-prone ecosystem: more resilience
-than we thought. \emph{Ecology Letters}, n/a--n/a.
+Bestelmeyer, B. T., M. C. Duniway, D. K. James, L. M. Burkett, and K. M.
+Havstad. 2012. A test of critical thresholds and their indicators in a
+desertification-prone ecosystem: more resilience than we thought.
+Ecology Letters:n/a--n/a.
 
-4.Brozović, N. \& Schlenker, W. \emph{et al.} (2011). Optimal management
-of an ecosystem with an unknown threshold. \emph{Ecological Economics},
-1--14.
+Brozović, N., and W. Schlenker. 2011. Optimal management of an ecosystem
+with an unknown threshold. Ecological Economics:1--14.
 
-5.Burnham, K.P. \& Anderson, D.R. \emph{et al.} (2002). \emph{Model
-Selection and Multi-Model Inference}. Springer.
+Burnham, K. P., and D. R. Anderson. 2002. Model Selection and
+Multi-Model Inference. Page 496. Springer.
 
-6.Clark, C.W. \& Kirkwood, G.P. \emph{et al.} (1986). On uncertain
-renewable resource stocks: Optimal harvest policies and the value of
-stock surveys. \emph{Journal of Environmental Economics and Management},
-13, 235--244.
+Clark, C. W. 1976. Mathematical Bioeconomics. WileyNew York.
 
-7.Courchamp, F., Berec, L. \& Gascoigne, J.\emph{et al.} (2008).
-\emph{Allee Effects in Ecology and Conservation}. Oxford University
-Press, USA.
+Clark, C. W. 2009. Mathematical Bioeconomics. WileyNew York.
 
-8.Cressie, N., Calder, C. a, Clark, J.S., {Ver Hoef}, J.M. \& Wikle,
-C.K.\emph{et al.} (2009). Accounting for uncertainty in ecological
-analysis: the strengths and limitations of hierarchical statistical
-modeling. \emph{Ecological Applications}, 19, 553--70.
+Clark, C. W., and G. P. Kirkwood. 1986. On uncertain renewable resource
+stocks: Optimal harvest policies and the value of stock surveys. Journal
+of Environmental Economics and Management 13:235--244.
 
-9.Cuddington, K.M., Fortin, M. \& Gerber, L.\emph{et al.} (2013).
-Process-based models are required to manage ecological systems in a
-changing world. \emph{Ecosphere}, 4, 1--12.
+Clark, C. W., and M. Mangel. 2000. Dynamic state variable models in
+ecology. Oxford University PressOxford.
 
-10.Fischer, J., Peterson, G.D., Gardner, T. a, Gordon, L.J., Fazey, I.
-\& Elmqvist, T.\emph{et al.} (2009). Integrating resilience thinking and
-optimisation for conservation. \emph{Trends in ecology \& evolution},
-24, 549--54.
+Courchamp, F., L. Berec, and J. Gascoigne. 2008. Allee Effects in
+Ecology and Conservation. Page 256. Oxford University Press, USA.
 
-11.Gelman, A., Carlin, J.B., Stern, H.S. \& Rubin, D.B.\emph{et al.}
-(2003). \emph{Bayesian Data Analysis}. 2nd edn. Chapman; Hall/CRC.
+Cressie, N., C. a Calder, J. S. Clark, J. M. {Ver Hoef}, and C. K.
+Wikle. 2009. Accounting for uncertainty in ecological analysis: the
+strengths and limitations of hierarchical statistical modeling.
+Ecological Applications 19:553--70.
 
-12.Geritz, S.A.H. \& Kisdi, E. \emph{et al.} (2012). Mathematical
-ecology: why mechanistic models? \emph{Journal of mathematical biology},
-65, 1411--5.
+Cuddington, K. M., M. Fortin, and L. Gerber. 2013. Process-based models
+are required to manage ecological systems in a changing world. Ecosphere
+4:1--12.
 
-13.Gordon, H. \emph{et al.} (1954). The economic theory of a
-common-property resource: the fishery. \emph{The Journal of Political
-Economy}, 62, 124--142.
+Fischer, J., G. D. Peterson, T. a Gardner, L. J. Gordon, I. Fazey, T.
+Elmqvist, A. Felton, C. Folke, and S. Dovers. 2009. Integrating
+resilience thinking and optimisation for conservation. Trends in ecology
+\& evolution 24:549--54.
 
-14.Halpern, B.S., Klein, C.J., Brown, C.J., Beger, M., Grantham, H.S. \&
-Mangubhai, S.\emph{et al.} (2013). Achieving the triple bottom line in
-the face of inherent trade-offs among social equity, economic return,
-and conservation. \emph{Proceedings of the National Academy of Sciences
-of the United States of America}, 110, 6229--34.
+Gardiner, C. 2009. Stochastic Methods: A Handbook for the Natural and
+Social Sciences (Springer Series in Synergetics). Page 447. Springer.
 
-15.Hilborn, R. \emph{et al.} (2007). Reinterpreting the State of
-Fisheries and their Management. \emph{Ecosystems}, 10, 1362--1369.
+Gelman, A., J. B. Carlin, H. S. Stern, and D. B. Rubin. 2003. Bayesian
+Data Analysis. 2nd editions. Chapman; Hall/CRC.
 
-16.Hilborn, R. \& Mangel, M. \emph{et al.} (1997). \emph{The Ecological
-Detective: Confronting Models with data}. Princeton University Press.
+Geritz, S. A. H., and E. Kisdi. 2012. Mathematical ecology: why
+mechanistic models? Journal of mathematical biology 65:1411--5.
 
-17.Hughes, T.P., Linares, C., Dakos, V., Leemput, I. a van de \& Nes,
-E.H. van\emph{et al.} (2013). Living dangerously on borrowed time during
-slow, unrecognized regime shifts. \emph{Trends in ecology \& evolution},
-28, 149--55.
+Gordon, H. 1954. The economic theory of a common-property resource: the
+fishery. The Journal of Political Economy 62:124--142.
 
-18.Kocijan, J., Girard, A., Banko, B. \& Murray-Smith, R.\emph{et al.}
-(2005). Dynamic systems identification with Gaussian processes.
-\emph{Mathematical and Computer Modelling of Dynamical Systems}, 11,
-411--424.
+Hilborn, R. 2007. Reinterpreting the State of Fisheries and their
+Management. Ecosystems 10:1362--1369.
 
-19.Lehmann, E.L. \emph{et al.} (1975). \emph{Nonparametrics: Statistical
-Methods Based on Ranks}. Holden-Day, Inc, San Francisco.
+Hilborn, R., and M. Mangel. 1997. The Ecological Detective: Confronting
+Models with data. Page 330. Princeton University Press.
 
-20.Ludwig, D. \& Walters, C.J. \emph{et al.} (1982). Optimal harvesting
-with imprecise parameter estimates. \emph{Ecological Modelling}, 14,
-273--292.
+Hughes, T. P., C. Linares, V. Dakos, I. a van de Leemput, and E. H. van
+Nes. 2013. Living dangerously on borrowed time during slow, unrecognized
+regime shifts. Trends in ecology \& evolution 28:149--55.
 
-21.Mangel, M. \& Clark, C.W. \emph{et al.} (1988). \emph{Dynamic
-Modeling in Behavioral Ecology}. Princeton University Press, Princeton.
+Kocijan, J., A. Girard, B. Banko, and R. Murray-Smith. 2005. Dynamic
+systems identification with Gaussian processes. Mathematical and
+Computer Modelling of Dynamical Systems 11:411--424.
 
-22.Marescot, L., Chapron, G., Chadès, I., Fackler, P.L., Duchamp, C. \&
-Marboutin, E.\emph{et al.} (2013). Complex decisions made simple: a
-primer on stochastic dynamic programming. \emph{Methods in Ecology and
-Evolution}, n/a--n/a.
+Lehmann, E. L. 1975. Nonparametrics: Statistical Methods Based on Ranks.
+Holden-Day, IncSan Francisco.
 
-23.May, R.M., Beddington, J.R., Clark, C.W., Holt, S.J. \& Laws,
-R.M.\emph{et al.} (1979). Management of multispecies fisheries.
-\emph{Science (New York, N.Y.)}, 205, 267--77.
+Ludwig, D., and C. J. Walters. 1982. Optimal harvesting with imprecise
+parameter estimates. Ecological Modelling 14:273--292.
 
-24.McAllister, M. \emph{et al.} (1998). Bayesian stock assessment: a
-review and example application using the logistic model. \emph{ICES
-Journal of Marine Science}, 55, 1031--1060.
+Mangel, M. 2014. Stochastic Dynamic Programming Illuminates the Link
+Between Environment. Bulletin of Mathematical Biology in press.
 
-25.Munch, S.B., Kottas, A. \& Mangel, M.\emph{et al.} (2005a). Bayesian
-nonparametric analysis of stock-recruitment relationships.
-\emph{Canadian Journal of Fisheries and Aquatic Sciences}, 62,
-1808--1821.
+Mangel, M., and C. W. Clark. 1988. Dynamic Modeling in Behavioral
+Ecology. (J. Krebs and T. Clutton-Brock, Eds.). Princeton University
+PressPrinceton.
 
-26.Munch, S.B., Snover, M.L., Watters, G.M. \& Mangel, M.\emph{et al.}
-(2005b). A unified treatment of top-down and bottom-up control of
-reproduction in populations. \emph{Ecology Letters}, 8, 691--695.
+Mangel, M., 0. Fiksen, and J. Giske. 2001. Theoretical and statistical
+models in natural resource management and research. Pages 57--71
+\emph{in} T. M. Shenk and A. B. Franklin, editors. Modeling in natural
+resource management, development, interpretation and application. Island
+PressWashington DC.
 
-27.Myers, R.A., Barrowman, N.J., Hutchings, J.A. \& Rosenberg, A.
-a\emph{et al.} (1995). Population dynamics of exploited fish stocks at
-low population levels. \emph{Science (New York, N.Y.)}, 269, 1106--8.
+Marescot, L., G. Chapron, I. Chadès, P. L. Fackler, C. Duchamp, E.
+Marboutin, and O. Gimenez. 2013. Complex decisions made simple: a primer
+on stochastic dynamic programming. Methods in Ecology and
+Evolution:n/a--n/a.
 
-28.Polasky, S., Carpenter, S.R., Folke, C. \& Keeler, B.\emph{et al.}
-(2011). Decision-making under great uncertainty: environmental
-management in an era of global change. \emph{Trends in ecology \&
-evolution}, 1--7.
+May, R. M., J. R. Beddington, C. W. Clark, S. J. Holt, and R. M. Laws.
+1979. Management of multispecies fisheries. Science (New York, N.Y.)
+205:267--77.
 
-29.R Core Team \emph{et al.} (2013). \emph{R: A Language and Environment
-for Statistical Computing}. R Foundation for Statistical Computing,
-Vienna, Austria.
+McAllister, M. 1998. Bayesian stock assessment: a review and example
+application using the logistic model. ICES Journal of Marine Science
+55:1031--1060.
 
-30.Rasmussen, C.E. \& Williams, C.K.I. \emph{et al.} (2006).
-\emph{Gaussian Processes for Machine Learning}. MIT Press, Boston.
+Munch, S. B., A. Kottas, and M. Mangel. 2005a. Bayesian nonparametric
+analysis of stock-recruitment relationships. Canadian Journal of
+Fisheries and Aquatic Sciences 62:1808--1821.
 
-31.Reed, W.J. \emph{et al.} (1979). Optimal escapement levels in
-stochastic and deterministic harvesting models. \emph{Journal of
-Environmental Economics and Management}, 6, 350--363.
+Munch, S. B., M. L. Snover, G. M. Watters, and M. Mangel. 2005b. A
+unified treatment of top-down and bottom-up control of reproduction in
+populations. Ecology Letters 8:691--695.
 
-32.Roughgarden, J.E. \& Smith, F. \emph{et al.} (1996). Why fisheries
-collapse and what to do about it. \emph{Proceedings of the National
-Academy of Sciences of the United States of America}, 93, 5078.
+Myers, R. A., N. J. Barrowman, J. A. Hutchings, and A. a Rosenberg.
+1995. Population dynamics of exploited fish stocks at low population
+levels. Science (New York, N.Y.) 269:1106--8.
 
-33.Schapaugh, A.W. \& Tyre, A.J. \emph{et al.} (2013). Accounting for
-parametric uncertainty in Markov decision processes. \emph{Ecological
-Modelling}, 254, 15--21.
+Polasky, S., S. R. Carpenter, C. Folke, and B. Keeler. 2011.
+Decision-making under great uncertainty: environmental management in an
+era of global change. Trends in ecology \& evolution:1--7.
 
-34.Scheffer, M., Bascompte, J., Brock, W.A., Brovkin, V., Carpenter,
-S.R. \& Dakos, V.\emph{et al.} (2009). Early-warning signals for
-critical transitions. \emph{Nature}, 461, 53--9.
+R Core Team. 2013. R: A Language and Environment for Statistical
+Computing. R Foundation for Statistical ComputingVienna, Austria.
 
-35.Scheffer, M., Carpenter, S.R., Foley, J.A., Folke, C. \& Walker,
-B.\emph{et al.} (2001). Catastrophic shifts in ecosystems.
-\emph{Nature}, 413, 591--6.
+Rasmussen, C. E., and C. K. I. Williams. 2006. Gaussian Processes for
+Machine Learning. (Thomas Dietterich, Ed.). MIT Press,Boston.
 
-36.Sethi, G., Costello, C., Fisher, A., Hanemann, M. \& Karp, L.\emph{et
-al.} (2005). Fishery management under multiple uncertainty.
-\emph{Journal of Environmental Economics and Management}, 50, 300--318.
+Reed, W. J. 1979. Optimal escapement levels in stochastic and
+deterministic harvesting models. Journal of Environmental Economics and
+Management 6:350--363.
 
-37.Sigourney, D.B., Munch, S.B. \& Letcher, B.H.\emph{et al.} (2012).
-Combining a Bayesian nonparametric method with a hierarchical framework
-to estimate individual and temporal variation in growth.
-\emph{Ecological Modelling}, 247, 125--134.
+Roughgarden, J. E., and F. Smith. 1996. Why fisheries collapse and what
+to do about it. Proceedings of the National Academy of Sciences of the
+United States of America 93:5078.
 
-38.Su, Y.-S. \& Masanao Yajima \emph{et al.} (2013). \emph{R2jags: A
-Package for Running jags from R}.
+Schapaugh, A. W., and A. J. Tyre. 2013. Accounting for parametric
+uncertainty in Markov decision processes. Ecological Modelling
+254:15--21.
 
-39.Sugeno, M. \& Munch, S.B. \emph{et al.} (2013a). A semiparametric
-Bayesian method for detecting Allee effects. \emph{Ecology}, 94,
-1196--1204.
+Scheffer, M., J. Bascompte, W. A. Brock, V. Brovkin, S. R. Carpenter, V.
+Dakos, H. Held, E. H. van Nes, M. Rietkerk, and G. Sugihara. 2009.
+Early-warning signals for critical transitions. Nature 461:53--9.
 
-40.Sugeno, M. \& Munch, S.B. \emph{et al.} (2013b). A semiparametric
-Bayesian approach to estimating maximum reproductive rates at low
-population sizes. \emph{Ecological applications : a publication of the
-Ecological Society of America}, 23, 699--709.
+Scheffer, M., S. R. Carpenter, J. A. Foley, C. Folke, and B. Walker.
+2001. Catastrophic shifts in ecosystems. Nature 413:591--6.
 
-41.Thorson, J.T., Ono, K. \& Munch, S.B.\emph{et al.} (2014). A Bayesian
-approach to identifying and compensating for model misspecification in
-population models. \emph{Ecology}, 95, 329--41.
+Sethi, G., C. Costello, A. Fisher, M. Hanemann, and L. Karp. 2005.
+Fishery management under multiple uncertainty. Journal of Environmental
+Economics and Management 50:300--318.
 
-42.Weitzman, M.L. \emph{et al.} (2013). A Precautionary Tale of
-Uncertain Tail Fattening. \emph{Environmental and Resource Economics},
-55, 159--173.
+Sigourney, D. B., S. B. Munch, and B. H. Letcher. 2012. Combining a
+Bayesian nonparametric method with a hierarchical framework to estimate
+individual and temporal variation in growth. Ecological Modelling
+247:125--134.
 
-43.Williams, B.K. \emph{et al.} (2001). Uncertainty , learning , and the
-optimal management of wildlife. \emph{Environmental and Ecological
-Statistics}, 8, 269--288.
+Su, Y.-S., and Masanao Yajima. 2013. R2jags: A Package for Running jags
+from R.
 
-44.Worm, B., Barbier, E.B., Beaumont, N., Duffy, J.E., Folke, C. \&
-Halpern, B.S.\emph{et al.} (2006). Impacts of biodiversity loss on ocean
-ecosystem services. \emph{Science (New York, N.Y.)}, 314, 787--90.
+Sugeno, M., and S. B. Munch. 2013a. A semiparametric Bayesian method for
+detecting Allee effects. Ecology 94:1196--1204.
 
-45.Worm, B., Hilborn, R., Baum, J.K., Branch, T.A., Collie, J.S. \&
-Costello, C.\emph{et al.} (2009). Rebuilding global fisheries.
-\emph{Science (New York, N.Y.)}, 325, 578--85.
+Sugeno, M., and S. B. Munch. 2013b. A semiparametric Bayesian approach
+to estimating maximum reproductive rates at low population sizes.
+Ecological applications : a publication of the Ecological Society of
+America 23:699--709.
 
-46.Xie, Y. \emph{et al.} (2012). \emph{knitr: A general-purpose package
-for dynamic report generation in R}.
+Thorson, J. T., K. Ono, and S. B. Munch. 2014. A Bayesian approach to
+identifying and compensating for model misspecification in population
+models. Ecology 95:329--41.
+
+Walters, C. J., and R. Hilborn. 1978. Ecological Optimization and
+Adaptive Management. Annual Review of Ecology and Systematics
+9:157--188.
+
+Weitzman, M. L. 2013. A Precautionary Tale of Uncertain Tail Fattening.
+Environmental and Resource Economics 55:159--173.
+
+Williams, B. K. 2001. Uncertainty , learning , and the optimal
+management of wildlife. Environmental and Ecological Statistics
+8:269--288.
+
+Worm, B., E. B. Barbier, N. Beaumont, J. E. Duffy, C. Folke, B. S.
+Halpern, J. B. C. Jackson, H. K. Lotze, F. Micheli, S. R. Palumbi, E.
+Sala, K. a Selkoe, J. J. Stachowicz, and R. Watson. 2006. Impacts of
+biodiversity loss on ocean ecosystem services. Science (New York, N.Y.)
+314:787--90.
+
+Worm, B., R. Hilborn, J. K. Baum, T. A. Branch, J. S. Collie, C.
+Costello, M. J. Fogarty, E. a Fulton, J. a Hutchings, S. Jennings, O. P.
+Jensen, H. K. Lotze, P. M. Mace, T. R. McClanahan, C. Minto, S. R.
+Palumbi, A. M. Parma, D. Ricard, A. a Rosenberg, R. Watson, and D.
+Zeller. 2009. Rebuilding global fisheries. Science (New York, N.Y.)
+325:578--85.
+
+Xie, Y. 2012. knitr: A general-purpose package for dynamic report
+generation in R.
 
 \end{document}
 

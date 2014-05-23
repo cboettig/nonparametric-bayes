@@ -804,18 +804,17 @@ $t$.  Thus, in the presence of take, the population size on the right hand side 
 $S_t=X_t-h_t$.
 
 
-To construct the value function, we consider a return when $X_t=x$ and harvest $h_t=h$ denoted by
-$\Pi(x,h)$. For example, if the return is simply the harvest at time $t$, then $\Pi(x,h)=min(x,h)$. We assume that future harvests are discounted relative to current ones at a constant rate of discount $\delta$ and ask for the harvest policy that maximizes total discounted harvest between the current time $t$ and a final time $T$, that is we seek to maximize over choices of harvest $\mathbf{E_Z}[ \sum_{t = 0}^{T}  \Pi_t(X_t, h_t) \delta^t]$, where the state dynamics are given by Eqn 1 and $\mathbf{E_Z}$ denotes the expectation over the process stochasticity.
+To construct the value function, we consider a return when $X_t=x$ and harvest $h_t=h$ denoted as the reward, $R(x,h)$. For example, if the return is simply the harvest at time $t$, then $R(x,h)=min(x,h)$. We assume that future harvests are discounted relative to current ones at a constant rate of discount $\delta$ and ask for the harvest policy that maximizes total discounted harvest between the current time $t$ and a final time $T$, that is we seek to maximize over choices of harvest $\mathbf{E}_{X_t+1} [ \sum_{t = 0}^{T}  R_t(X_t, h_t) \delta^t]$, where the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the expectation over the process stochasticity in the future population state.
 
 
-In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000, @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014].
+In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014].
 
 \begin{equation}
-V_t(x) = \max_{h_t} \left[\Pi(h_t, x_t) + \delta \cdot \mathbf{E_Z}  V_{t+1}( Z_{t+1} f(x - h_t)) \right]
+V_t(x) = \max_{h_t} \left[R(h_t, x_t) + \delta \cdot \mathbf{E}_{X_t+1} V_{t+1}( Z_{t+1} f(x - h_t)) \right]
 \end{equation}
 
 
-That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $\Pi(h_t, x_t)$ and the population size after the take is $x-h_t$, which is then translated into $X_{t+1}$ by Eqn 1. We consider the finite time problem with $T=$`r Tmax`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
+That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, x_t)$ and the population size after the take is $x-h_t$, which is then translated into $X_{t+1}$ by Eqn 1. We consider the finite time problem with $T=$`r MaxT`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
 
 
 
@@ -882,9 +881,20 @@ to identify the best fitting model.
 
 ### The Gaussian Process model
 
+The core difference for our purpose between the GP representation and the parametric
+models we have already introduced is the "non-parametric" property, which
+means that an estimated GP model is defined explicitly in reference to 
+some observed data.  Unlike the models above, it cannot be specified by
+the value of some parameters alone.  The nonparametric moniker for the
+GP approach is unfortunate as (a) it still involves the estimation of
+parameters, and (b), statisticians also use non-parametric to mean models
+that make only weak distributional assumptions  [e.g. @Lehmann1975].
+However, we retain the terminology for consistency with previous studies.
+
+
 <!-- Statement of model -->  
 
- The use GP methods to formulate a predictive
+The use GP methods to formulate a predictive
 model is relatively new in the context of modeling dynamical systems
 [@Kocijan2005], and was first introduced in the context ecological
 modeling and fisheries management in @Munch2005.  GP models have
@@ -895,15 +905,32 @@ provide a basis for identifying model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
 GPs can be found in @Rasmussen2006. 
 
-
-The nonparametric moniker for the
-GP approach is unfortunate as (a) it still involves the estimation of
-parameters, and (b), statisticians also use non-parametric to mean models
-that make only weak distributional assumptions  [e.g. @Lehmann1975].
-However, we retain the terminology for consistency with previous studies.
+A GP is an infinite dimensional (because it considers a continuous random
+variable) stochastic process for which any realization is a multivariate
+normal distribution. Thus, to characterize the GP we need a mean function
+and a covariance matrix. We proceed as follows.
 
 
-<!-- FIXME Marc suggests putting the full GP formulation in here?? -->
+Assuming the data $X_o$ are observed with some process noise,
+
+$$y = f(x) + \varepsilon$$
+
+$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP, the predicted data $X_p$ given the observations obeys
+
+$$f(X_p|X_o) \sim \mathcal{N}(E,C)$$
+$$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
+$$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
+
+Where $K$ is the Gaussian process kernel.  (Compare to  Eqn 2.22 of @Rasmussen2006 for a more detailed derivation.) Throughout, we use the radial basis function kernel:
+
+$$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
+
+We use vague inverse Gamma priors on both the lengthscale $\ell$ and process noise $\sigma$ parameters, of the form
+
+$$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
+
+For the $\sigma$ prior, $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.  For $\ell$ prior,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  
+
 
 
 Using the simulated training data we also estimate a Gaussian process
@@ -933,13 +960,19 @@ The method of Gaussian Process Dynamic Programming
 --------------------------------------------------
 
 It is reasonably straight-forward to derive the harvest policy from the
-estimated BP by inserting it into a SDP algorithm.  Recall that unlike
-the parametric models the Gaussian process with fixed parameters already
-predicts a distribution of curves rather than a single curve. We must
-first integrate over this distribution of curves given a sampling of
-parameter values drawn from the posterior distribution of the two GP
-parameters, before integrating over the posterior of those parameters
-themselves.
+estimated BP by inserting it into a SDP algorithm. The only difference 
+is that the uncertainty in the future state under the GP, $X_{t+1}$,
+includes both process uncertainty (based on the estimation of $\sigma$) 
+and "structural uncertainty" of the posterior collection of curves.  
+(Recall that given the parameters, a parametric model is represented
+by a single curve, while the GP remains a distribution of curves).  
+From the GP posteriors, we can write down the (discritized) transition
+matrix representing the probability of going to each state $X_{t+1}$ 
+given any current state $X_t$ and any harvest $h_t$ (See the function
+`gp_transition_matrix()` in the provided R package). Given this transition
+matrix, we use the same value iteration algorithm as in the parametric
+case to determine the optimal policy.   
+
 
 
 Results
@@ -1190,10 +1223,20 @@ see Figure 6), where convergence of the Gibbs sampling could contribute
 to their poorer performance if not checked by hand for each configuration.
 
 
-Large noise relative to the distance between the stable and unstable
-point, (or more precisely, between the optimal escapement and the unstable
-point) increases the chance of a stochastic transition.  As a result,
-the impact of using a model which underestimates the risk of harvesting
+
+Changing the noise or the distance between stable and unstable points
+does not impact the performance of the GP relative to the optimal solution
+given the true model and true parameters.  The parametric models are
+more senstive to this difference.  Large noise relative to the distance between the stable and unstable
+point increases the chance of a stochastic transition.  More precisely,
+if we let $L = K - x_c$, then the probability of a transition in a given
+window of time $T$ scales as 
+
+$$P(x_t < x_c | t \in T) \propto  \exp\left(\frac{L^2}{\sigma^2}\right),$$
+
+
+(following the Ahrenius relationship, see @Gardiner2009 for the derivation).
+As a result, the impact of using a model which underestimates the risk of harvesting
 past the critical point is much more severe, since this such a situation
 occurs more often.  Conversely, with large enough distance between the
 optimal escapement and unstable points relative to the noise, the chance
@@ -1284,7 +1327,7 @@ reliably reflected by the data.
 
 The degree to which the decision-making part of the algorithm (the SDP)
 chooses to explore or avoid the resulting region of uncertainty can also
-be influenced by the curvature of the value (profit) function $\Pi$. Both
+be influenced by the curvature of the value (profit) function $R$. Both
 to simplify the intuition and avoid biasing this result, we have chosen
 profits that are linear in the catch and thus neither risk-prone nor
 risk adverse.  Making this function concave, representing the typical
@@ -1383,30 +1426,6 @@ Appendix: Model definitions and estimation
 ===========================================
 
 
-Gaussian process model
-----------------------
-
-Assuming the data are known with some process noise,
-
-$$y = f(x) + \varepsilon$$
-
-$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP,  
-
-$$f(x) \sim \mathcal{N}(E,C)$$
-$$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
-$$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
-
-Where $K$ is the Gaussian process kernel.  Throughout, we use the radial basis function kernel:
-
-$$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
-
-The marginal likelihood is then given by: 
-
-$$\log(p(y | X)) = -\tfrac{1}{2} \mathbf{y}^T (K + \sigma_n^2 \mathbf{I})^{-1} y  - \tfrac{1}{2} \log\left| K + \sigma_n^2 \mathbf{I} \right| - \tfrac{n}{2}\log 2 \pi$$
-
-See @Munch2005a or @Rasmussen2006 for a more detailed introduction. 
-
-
 
 ```{r figure_S1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options"}
 gp_assessment_plots$traces_plot
@@ -1417,36 +1436,8 @@ gp_assessment_plots$traces_plot
 gp_assessment_plots$posteriors_plot
 ```
 
-The Gaussian process priors on both the lengthscale $\ell$ and process noise $\sigma$ parameters are both vague inverse Gamma,
-
-$$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
-
-For the $\sigma$ prior, $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.  For $\ell$ prior,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  
 
 \newpage
-
-Optimal Control Problem Specification 
--------------------------------------
-
-We seek the harvest policy $h(x)$ that maximizes:
-
-$$ \max_{h_t} \sum_{t \in 0}^{\infty}  \Pi_t(X_t, h_t) \delta^t  $$
-
-subject to the profit function $\Pi(X_t,h)$, discount rate $\delta$, and the state
-equation
-
-$$X_{t+1} = Z_t f(S_t)  $$
-$$S_t = X_t - h_t $$
-
-
-For simplicity we assume profit function $\Pi_t(X_t, h_t)$ is linear in the realized harvest, only
-enforcing the restriction that harvest can not exceed available stock, that is $\Pi(h,x) = min(h,x)$. $Z_t$ is as previously defined.   
-
-From this we can write down the Bellman recursion as: 
-
-$$V_t(x_t) = \max_h \mathbf{E} \left(\Pi(h_t, x_t) + \delta V_{t+1}( Z_{t+1} f(x_t - h_t)) \right)$$
-
-Where $V_t$ is the discounted value of the profit given that $X(t) = x$
 
 
 
