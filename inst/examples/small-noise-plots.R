@@ -193,7 +193,7 @@ ggplot(ricker_posteriors, aes(value)) +
   facet_wrap(~ variable, scale="free", ncol=2)
 
 
-## ----include=FALSE-------------------------------------------------------
+## ----cleanup, include=FALSE-------------------------------------------------------
 unlink("ricker_process.bugs")
 unlink("allen_process.bugs")
 unlink("myers_process.bugs")
