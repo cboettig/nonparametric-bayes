@@ -764,35 +764,6 @@ performance over the period of interest.
 -->
 
 
-## Background on the Gaussian Process
-
-<!-- 
-- Background on non-parametric modeling.  
--->
-
-<!--
-- Definition
-- Previous application
---> 
-
-We use a Bayesian nonparameteric regression approach based on Gaussian
-process priors.  The use of Gaussian process (GP) regression (or
-"kriging" in the geospatial literature) to formulate a predictive
-model is relatively new in the context of modeling dynamical systems
-[@Kocijan2005], and was first introduced in the context ecological
-modeling and fisheries management in @Munch2005.  GP models have
-subsequently been used to test for the presence of Allee effects
-[@Sugeno2013a], estimate the maximum reproductive rate [@Sugeno2013b],
-determine temporal variation in food availability [@Sigourney2012], and
-provide a basis for identifying model-misspecification [@Thorson2014].
-An accessible and thorough introduction to the formulation and use of
-GPs can be found in @Rasmussen2006. The nonparametric moniker for the
-GP approach is unfortunate as (a) it still involves the estimation of
-parameters, and (b), statisticians also use non-parametric to mean models
-that make only weak distributional assumptions  [e.g. @Lehmann1975].
-However, we retain the terminology for consistency with previous studies.
-
-
 
 Approach and Methods
 ====================
@@ -805,7 +776,7 @@ We first describe the requirements of dynamic optimization for the management of
 Dynamic optimization  requires characterizing the dynamics of a state variable (or variables), a control action, and a value function.
 In this paper, we consider only a single state variable, so that the ideas can be described as simply as possible. That is, we focus on a class of one-dimensional models of population dynamics as a
 'best-case' scenario for the parametric model performance relative to
-the GP.   This a best-case scenario for the parametric models because the underlying dynamics are always simuated
+the GP.   This is abest-case scenario for the parametric models because the underlying dynamics are always simuated
 from one the parametric models in the set, whereas in reality we never
 have the "true" model among our candidates.  By choosing one-dimensional
 models with few parameters, we limit the chance that poor performance
@@ -821,39 +792,55 @@ between alternative stable states.
 - Statement of the models
 --> 
 
+
+We let $X_t$ denote the size (numbers or biomass) of the focal population at time $t$ and assume that in the absence of take its dynamics are
+
+
+
+$$ X_{t+1}= Z_t f(X_t, h_t, p) $$
+
+Where Z(t) is log-normally distributed process stochasticity [@Reed1979] and $p$ is a vector of parameters to be estimated from the data.   We describe three choices for $f(X_t,p)$ in the next section.In this simple model, the control action is a harvest or take, $h_t$, measured in the same units as $X$, at time
+$t$.  Thus, in the presence of take, the population size on the right hand side of Eqn 1 is replaced by
+$S_t=X_t-h_t$.
+
+
+To construct the value function, we consider a return when $X_t=x$ and harvest $h_t=h$ denoted by
+$\Pi(x,h)$. For example, if the return is simply the harvest at time $t$, then $\Pi(x,h)=min(x,h)$. We assume that future harvests are discounted relative to current ones at a constant rate of discount $\delta$ and ask for the harvest policy that maximizes total discounted harvest between the current time $t$ and a final time $T$, that is we seek to maximize over choices of harvest $\mathbf{E_Z}[ \sum_{t = 0}^{T}  \Pi_t(X_t, h_t) \delta^t]$, where the state dynamics are given by Eqn 1 and $\mathbf{E_Z}$ denotes the expectation over the process stochasticity.
+
+
+In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000, @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014].
+
+\begin{equation}
+V_t(x) = \max_{h_t} \left[\Pi(h_t, x_t) + \delta \cdot \mathbf{E_Z}  V_{t+1}( Z_{t+1} f(x - h_t)) \right]
+\end{equation}
+
+
+That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $\Pi(h_t, x_t)$ and the population size after the take is $x-h_t$, which is then translated into $X_{t+1}$ by Eqn 1. We consider the finite time problem with $T=$`r Tmax`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
+
+
+
+\subsubsection{Parametric models}\label{parametric-models}
+
 We consider three candidate parametric models of the stock-recruitment
 dynamics: The Ricker model, the Allen model [@Allen2005], the Myers
-model [@Myers1995], equations (@ricker)-(@myers), which we parameterize as follows:  
+model [@Myers1995], equations (@ricker)-(@myers), which we parameterize as follows for $f(S_t,p)$ in Eqn 1. In all three, we let $K$ denote the carrying capacity and $r$ the maximum per capita growth rate. In the Ricker model,
 
-
-We consider three parametric models that relate population size at time
-$t+1$, $X_{t+1}$, to population size at time $t$, $X_t$  and harvest at
-time $t$, $h_t$ by
-
-
-$$ X_{t+1}= Z_t f(S_t,p) $$
-
-Where Z(t) is log-normally distributed process stochasticity [@Reed1979]
-and $p$ is a vector of parameters, and $S_t$ the escapement [@Reed1979]
-
-$$S_t = X_t - h_t$$
-
- 
-or the Ricker model,
 
 (@ricker) $$ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K} \right) } $$
 
-where $K$ is the carrying capacity and $r$ the growth rate.  For the Allen model,
+In the Allen model,
 
-(@allen) $$ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_C\right)} $$
+(@allen) $$ f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_c\right)} $$
 
-Where $r$ and $K$ are as before, and $X_c$ denotes the location of the unstable (tipping) point.  For the Myers model, 
+Where $r$ and $K$ are as before, and $X_c$ denotes the location of the unstable steady state (i.e., the tipping point).  
 
-(@myers) $$ f(S(t) | p)  = \frac{r S_t^{\theta}}{1 - \frac{S_t^\theta}{K}}$$
+In the Myers model, 
 
-Where $r$ and $K$ as before, and $\theta$ the nonlinearity of the Myers model (corresponding to Beverton-Holt dynamics for $\theta$ = 1 and an Allee effect with alternative stable states exist at $\theta > 2$).
+(@myers) $$ f(S(t) | p)  = \frac{r S_t^{\theta}}{1 + \frac{S_t^\theta}{K}}$$
 
-The familiar Ricker model involves two parameters, corresponding
+Where $\theta = 1$ corresponding to Beverton-Holt dynamics and $\theta$ > 2 leads to Allee effects and multiple stable states. 
+
+The Ricker model involves two parameters, corresponding
 to a growth rate and a carrying capacity, and cannot support alternative
 stable growth rate dynamics. The Allen model resembles the Ricker
 dynamics with an added Allee effect parameter [@Courchamp2008], below
@@ -861,51 +848,62 @@ which the population cannot persist.  The Myers model also has three
 parameters and contains an Allee threshold, but has compensatory rather
 than over-compensatory density dependence (resembling a Beverton-Holt
 curve rather than a Ricker curve at high densities.)  
-We assume multiplicative log-normal noise perturbs the growth predicted 
-by the each of the deterministic model skeletons described above. This 
-introduces one additional parameter $\sigma$ that must be estimated by each
-model. 
+
+The multiplicative log-normal stochasticity perturbs the growth predicted 
+by each of these deterministic model skeletons. This 
+introduces one additional parameter $\sigma$ that must be estimated. 
 
 Because of our interest in management performance in the presence of
 tipping points, all of our simulations are based on the Allen model.
-The Allen model is thus structurally correct and is expected to provide
+The Allen model is thus "structurally correct" and is expected to provide
 a best-case scenario when the 'true' dynamics are known.
 The Ricker model is a reasonable approximation of these dynamics far from the Allee
 threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure. 
 
 We consider a period of `r Tobs` years of training data: long
-enough that the estimates are not dependent on the particular realization,
+enough that the estimates do not depend on the particular realization,
 while longer times are not likely to provide substantial improvement
 (i.e. the results are not sensitive to this interval).  Each of the models
-(described below) is fit to the same training data, as shown in Figure 1.
+(described below) is fit to the same training data (Figure 1).
 
 
 <!-- Bayesian inference of parametric models --> 
 
-We inferred posterior distributions for the parameters of each model in
-a Bayesian context using Gibbs sampling (@Gelman2003 implemented in R
-[@RTeam] using jags, [@R2jags]).  We choose uninformative uniform priors
+We inferred posterior distributions for the parameters of each model by Gibbs sampling (@Gelman2003 implemented in R
+[@RTeam] using jags, [@R2jags]).  We choose uniform priors
 for all parameters (See appendix Tables S1-S3; R code provided). We
 show one-step-ahead predictions of these model fits in Figure 1.
-Each chain was tested for Gelman-Rubin convergence and results were
+We tested each chain for Gelman-Rubin convergence and results were
 robust to longer runs.  For each simulation we also applied several
 commonly used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
 to identify the best fitting model.
 
 
-<!-- SDP via parametric models -->
-
-An optimal policy function was then inferred through stochastic dynamic
-programming for each model given the posterior distributions of the
-parameter estimates.  This policy maximizes the expectation of the value
-function integrated over the parameter uncertainty. (code implementing
-this algorithm provided in the Appendix).
-
-
 ### The Gaussian Process model
 
 <!-- Statement of model -->  
+
+ The use GP methods to formulate a predictive
+model is relatively new in the context of modeling dynamical systems
+[@Kocijan2005], and was first introduced in the context ecological
+modeling and fisheries management in @Munch2005.  GP models have
+subsequently been used to test for the presence of Allee effects
+[@Sugeno2013a], estimate the maximum reproductive rate [@Sugeno2013b],
+determine temporal variation in food availability [@Sigourney2012], and
+provide a basis for identifying model-misspecification [@Thorson2014].
+An accessible and thorough introduction to the formulation and use of
+GPs can be found in @Rasmussen2006. 
+
+
+The nonparametric moniker for the
+GP approach is unfortunate as (a) it still involves the estimation of
+parameters, and (b), statisticians also use non-parametric to mean models
+that make only weak distributional assumptions  [e.g. @Lehmann1975].
+However, we retain the terminology for consistency with previous studies.
+
+
+<!-- FIXME Marc suggests putting the full GP formulation in here?? -->
 
 
 Using the simulated training data we also estimate a Gaussian process
@@ -929,7 +927,10 @@ substantially from the priors (Figure S13), we can be assured that most
 of the information in the posterior comes from the data rather than the
 prior belief.
 
-<!-- SDP via the model --> 
+<!-- SDP via the model  FIXME much more detail here--> 
+
+The method of Gaussian Process Dynamic Programming
+--------------------------------------------------
 
 It is reasonably straight-forward to derive the harvest policy from the
 estimated BP by inserting it into a SDP algorithm.  Recall that unlike
@@ -943,6 +944,10 @@ themselves.
 
 Results
 =======
+
+
+Parametric and GP models for population dynamics
+------------------------------------------------
 
 To ensure our results are robust to our choice of parameters, 
 we perform our analysis over 96 different scenarios. To better
@@ -1061,7 +1066,7 @@ the tipping point.
 
 
 
-```{r figure_3, fig.width=8, fig.height=6, fig.cap="Beyond the tipping point (outside the range of the training data), the true dynamics fall outside the uncertainty bands of the wrong parametric models, but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
+```{r figure_3, fig.width=8, fig.height=6, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
 y <- numeric(8)
 y[1] <- 4.5
 for(t in 1:(length(y)-1))
@@ -1117,7 +1122,7 @@ policies close to the true optimum policy (where both the underlying
 model structure and parameter values are known without error).
 
 
-```{r figure_5, dependson=c("sim"), fig.cap="Gaussian process inference outperforms parametric estimates. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
@@ -1131,13 +1136,13 @@ As expected from the policy curves, the structurally correct model
 under-harvests, leaving the stock to vary around it's un-fished optimum.
 The structurally incorrect Ricker model over-harvests the population
 passed the tipping point consistently, resulting in the immediate crash
-of the stock and thus derives minimal profits.
+of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most
 easily be compared by using the relative differences in net present
 value realized by each of the model. Figure 6 shows the distribution of values
-(profits) realized by each simulation shown in Figure 5.  The GPDP
-approach most consistently realizes a value close to the optimal solution,
+realized by each simulation shown in Figure 5.  The GPDP
+most consistently realizes a value close to the optimal solution,
 and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
@@ -1169,7 +1174,7 @@ Figure 7. The sensitivity analysis uses a factorial design of eight replicates
 of three different randomly generated parameter sets for each of two different 
 generating models (Allen and Myers) over two different noise levels 
 (0.01 and 0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. In Figure 7, 
-results are pooled across different random seeds (111, 222,
+we pool results across different random seeds (111, 222,
 333), noise values of 0.01 and 0.05 (not large enough to violate the
 self-sustaining criterion of @Reed1979), and different randomly generated
 parameters sets for each model, and using either the Myers or Allen as the
@@ -1178,7 +1183,7 @@ on the smaller noise levels, and closer on the Allen model then the Myers
 model, the differences are small compared to the values observed in using
 the wrong parametric model.  The GPDP solution consistently avoids either
 failing to harvest at all or crashing the stock, which results in the very
-low profits/values seen in parametric models in the previous figure. The
+low values seen in parametric models in the previous figure. The
 sensitivity analysis is compared against the optimal solution alone and
 not shown against the estimates of the various parametric models (but
 see Figure 6), where convergence of the Gibbs sampling could contribute
@@ -1193,14 +1198,14 @@ past the critical point is much more severe, since this such a situation
 occurs more often.  Conversely, with large enough distance between the
 optimal escapement and unstable points relative to the noise, the chance
 of a transition becomes vanishingly small and all models can be modeled
-near-optimally. Models which underestimate the cost incurred by stock
+near-optimally. Models that underestimate the cost incurred by stock
 sizes fluctuating significantly below the optimal escapement level will
 not perform poorly as long as those fluctuations are sufficently rare.
 
+<!--FIXME the above para is not particularly convincing. Quantitative please? -->
 
 
-
-```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value / profits derived when managing under the GPDP Gaussian process approach over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
 ggplot(sensitivity_dat) + 
   geom_histogram(aes(value, fill=noise)) + 
   xlim(0,1.0) + 
@@ -1217,7 +1222,7 @@ Discussion
 
 Though simple mechanistically motivated models offer the greatest
 potential to increase our basic understanding of ecological processes
-[@Cuddington2013; @Geritz2012], such models can be not only inaccurate but
+[@Cuddington2013; @Geritz2012], such models can be both inaccurate and
 misleading when relied upon in a quantitative decision making framework.
 In this paper we have tackled two aspects of uncertainty that are both
 common to many ecological decision-making problems and fundamentally
@@ -1258,7 +1263,9 @@ and conservation where the greatest concerns involve entering previously unobser
 regions of state-space -- whether that is the collapse of a fishery, the spread
 of an invasive, or the loss of habitat.  
 
-### GPDP expresses larger uncertainty in regions where the data are poor 
+### GPDP population dynamcis capture larger uncertainty in regions where the data are poor 
+
+<!-- FIXME More emphasis/explanation on _how_ it does this --> 
 
 The parametric models perform worst when they propose a management strategy
 outside the range of the observed data. The non-parametric Bayesian approach, 
@@ -1305,7 +1312,7 @@ In practice, both the choice of mean and the choice of the covariance
 function may be chosen to confer particular biological properties,
 as well as more biologically informed priors for $\ell$ and $\sigma$.
 In principle, this may allow a manager to improve the performance of the
-GPDP approach by adding only enough additional detail as is justified.
+GPDP by adding only enough additional detail as is justified.
 For instance, it would be possible to use a linear or a Ricker-shaped
 mean in the prior without making the much stronger assumption that the
 Ricker is the structurally correct model [@Sugeno2013a]. Future research
