@@ -1,4 +1,12 @@
 repo: nonparametric-bayes
+
 markdown: redcarpet
+redcarpet:
+  extensions: 
+    - no_intra_emphasis 
+    - autolink 
+    - fenced_code_blocks 
+    - footnotes
+
 analytics: UA-18401403-1
 exclude: ['*.Rmd']
