@@ -1,17 +1,23 @@
+MANUSCRIPT=manuscript
+
+
 all:
 	make install
 	make restore-cache
-	make manuscript.pdf
+	make render
+	make ../README.md
 
-install: 
+install: components/install.R
 	Rscript components/install.R
 
-manuscript.md: manuscript.Rmd
-	Rscript components/knit.R manuscript.Rmd	
+restore-cache:  
+	make components/cache
 
-# Also makes manuscript.tex
-manuscript.pdf: manuscript.md
-	Rscript components/pandoc.R manuscript.md	
+render: 
+	Rscript -e "rmarkdown::render('$(MANUSCRIPT).Rmd')"
+
+
+
 
 restore-cache:
 	make components/cache
