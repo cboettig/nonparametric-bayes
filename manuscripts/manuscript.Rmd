@@ -60,8 +60,6 @@ abstract: |
           approach does not, since it does not underestimate the uncertainty
           outside of the observed data.   
 
-
-
 keywords:
   - Bayesian
   - Structural Uncertainty
@@ -70,6 +68,16 @@ keywords:
   - Decision Theory
   - Gaussian Processes
   - Fisheries Management
+
+bibliography: components/references.bib
+csl: components/ecology.csl
+template: components/elsarticle.latex
+documentclass: components/elsarticle
+
+## rmarkdown render options
+output:
+  pdf_document:
+    keep_tex: true
 ---
 
 <!-- Run R code for analysis, to be called by figures -->
@@ -602,14 +610,10 @@ dictable <- data.frame(Allen = allen_dic + 2*length(bayes_pars),
 ```
 
 
-```{r sensitivity-calc}
-source("components/sensitivity.R")
-sensitivity_dat <- dat
+```{r sensitivity-trends}
+source("components/sensitivity-trends.Rmd")
 ```
 
-```{r export-data}
-write.csv(sensitivity_dat, "sensitivity.csv")
-```
 
 Introduction
 ============
@@ -1017,6 +1021,9 @@ figure1b_posteriors <- ggplot(df_post) + geom_point(aes(time, stock)) +
   theme(legend.position="none")
 figure1b_posteriors
 
+
+
+write.csv(df_post, "components/data/figure1.csv")
 ```
 
 All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to over-fit, predicting fluctuations that are actually due purely to stochasticity.  All model selection criteria shown in Table 1 penalize more complex models and show a preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
@@ -1082,6 +1089,9 @@ ggplot(models_posteriors) +
     facet_wrap(~variable) + 
     scale_colour_manual(values=colorkey) +  
     theme(legend.position="none")
+
+write.csv(models_posteriors, "components/data/figure2.csv")
+write.csv(obs, "components/data/obs.csv")
 ```
 
 The mean inferred state space dynamics of each model relative to the
@@ -1120,6 +1130,8 @@ ggplot(crash_data) +
                       guide = guide_legend(override.aes = list(alpha = 1))) +  
   facet_wrap(~variable) + 
   theme(legend.position="none") + xlab("time") + ylab("stock size") 
+
+write.csv(crash_data, "components/data/figure3.csv")
 ```
 
 
@@ -1141,6 +1153,8 @@ names(policies) <- c("stock", "method", "value")
 ggplot(policies, aes(stock, stock - value, color=method)) +
   geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
+
+write.csv(policies, "components/data/figure4.csv")
 ```
 
 Despite the similarities in model fits to the observed data, the
@@ -1161,6 +1175,7 @@ ggplot(sims_data) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
   facet_wrap(~method) + guides(legend.position="none")
 
+write.csv(sims_data, "components/data/figure5.csv")
 ```
 
 The consequences of managing 100 replicate realizations of the simulated
@@ -1193,6 +1208,8 @@ ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) +
 # ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
 #  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
 #  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
+
+write.csv(actual_over_optimal, "components/data/figure6.csv")
 ```
 
 Sensitivity Analysis
@@ -1243,18 +1260,25 @@ optimal escapement and unstable points relative to the noise, the chance
 of a transition becomes vanishingly small and all models can be modeled
 near-optimally. Models that underestimate the cost incurred by stock
 sizes fluctuating significantly below the optimal escapement level will
-not perform poorly as long as those fluctuations are sufficently rare.
+not perform poorly as long as those fluctuations are sufficently rare.  Figure 7
+shows that the GPDP is little effected by increasing noise or increasing Allee
+effects over much of the range.  
 
 <!--FIXME the above para is not particularly convincing. Quantitative please? -->
 
 
-```{r figure_7, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
-ggplot(sensitivity_dat) + 
-  geom_histogram(aes(value, fill=noise)) + 
-  xlim(0,1.0) + 
-  theme_bw() + 
-  xlab("value as fraction of the optimal") + 
-  facet_wrap(~model, ncol=1)
+```{r figure_7, fig.height=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (noise, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+
+plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
+  geom_point() + ylab("Net present value") + 
+  xlab("Level of growth stochasticity (sigma)") + theme_bw() 
+plot_allees <- ggplot(vary_allee, aes(pars.C, value)) + 
+  geom_point()+ ylab("Net present value") + 
+  xlab("Allee threshold stock size") + theme_bw()
+multiplot(plot_sigmas, plot_allees, cols=2) 
+
+write.csv(vary_sigma, "components/data/vary_sigma.csv")
+write.csv(vary_allee, "components/data/vary_sigma.csv")
 ```
 
 
@@ -1481,6 +1505,7 @@ plot_ricker_traces
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(ricker_posteriors, "components/data/ricker_posteriors.csv")
 ```
 
 
@@ -1498,6 +1523,7 @@ plot_myers_traces
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(myers_posteriors, "components/data/myers_posteriors.csv")
 ```
 
 
@@ -1515,12 +1541,31 @@ plot_allen_traces
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity", alpha=0.7) +
   facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
 ```
 
 
 ```{r TableS3, results = "asis"}
 pander::pandoc.table(allen_priors_xtable,
   caption = "Parameterization range for the uniform priors in the Allen model")
+```
+
+
+
+```{r sensitivity-calc}
+source("components/sensitivity.R")
+sensitivity_dat <- dat
+```
+
+```{r figure_S9, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+ggplot(sensitivity_dat) + 
+  geom_histogram(aes(value, fill=simulation)) + 
+  xlim(0,1.0) + 
+  theme_bw() + 
+  xlab("value as fraction of the optimal") + 
+  facet_grid(noise~model)
+write.csv(sensitivity_dat, "components/data/sensitivity_dat.csv") 
+
 ```
 
 
