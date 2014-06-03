@@ -80,6 +80,22 @@ output:
     keep_tex: true
 ---
 
+
+```{r caching, include=FALSE}
+library("methods")
+library("knitr")
+basename <- "manuscript"
+opts_chunk$set(fig.path = paste("components/figure/", basename, "-", sep=""),
+               cache.path = paste("components/cache/", basename, "/", sep=""))
+opts_chunk$set(cache = 2)
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, 
+               comment = NA, verbose = TRUE, echo=FALSE)
+
+# PDF-based figures
+opts_chunk$set(dev='pdf')
+```
+
+
 <!-- Run R code for analysis, to be called by figures -->
 ```{r plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
@@ -88,7 +104,6 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 ```
 
 ```{r libraries, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
-library("knitr")
 library("nonparametricbayes") 
 library("pdgControl")
 
