@@ -830,7 +830,7 @@ To construct the value function, we consider a return when $X_t=x$ and harvest $
 In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014],
 
 \begin{equation}
-V_t(X_t) = \max_{h_t} \left{ R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \right}
+V_t(X_t) = \max_{h_t} \lbrace R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \rbrace
 \end{equation}
 
 where expectation is taken over all possible values of the next state, $X_t{+1}$, and maximized over all possible choices of harvest, $h_t$.  That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, X_t)$. In the classical case, the sole source of uncertainty is the process noise term, $Z$, and thus the expectation above is equivalent to taking expectations over $Z$. That is
