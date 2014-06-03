@@ -103,36 +103,6 @@ management based on the GP approach does not, since it does not
 underestimate the uncertainty outside of the observed data.
 \end{abstract}
 
-\begin{verbatim}
-## module glm loaded
-\end{verbatim}
-
-\begin{verbatim}
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-\end{verbatim}
-
-\begin{verbatim}
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-\end{verbatim}
-
 \section{Introduction}\label{introduction}
 
 Decision making under uncertainty is a ubiquitous challenge in the
@@ -295,7 +265,7 @@ Programming (SDP, Mangel and Clark 1988, Clark and Mangel 2000, Clark
 2014),
 
 \begin{equation}
-V_t(X_t) = \max_{h_t} \left{ R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \right}
+V_t(X_t) = \max_{h_t} \lbrace R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \rbrace
 \end{equation}
 
 where expectation is taken over all possible values of the next state,
@@ -513,7 +483,7 @@ our analysis over 96 different scenarios. To better understand the
 process, we will first describe in detail the results of a single
 scenario.
 
-\includegraphics{./manuscript_files/figure-latex/figure_1.pdf}
+\includegraphics{components/figure/manuscript-figure_1.pdf}
 
 All models fit the observed data rather closely and with relatively
 small uncertainty, as illustrated in the posterior predictive curves in
@@ -529,8 +499,8 @@ complicated alternate stable state models (Allen and Myers). Details on
 MCMC estimates for each model, traces, and posterior distributions can
 be found in the appendix.
 
-\% latex table generated in R 3.1.0 by xtable 1.7-3 package \% Mon Jun 2
-17:34:16 2014
+\% latex table generated in R 3.1.0 by xtable 1.7-3 package \% Tue Jun 3
+13:34:19 2014
 
 \begin{table}[ht]
 \centering
@@ -546,7 +516,7 @@ DIC & 50.75 & 50.45 & 50.41 \\
 \caption{Model selection scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.} 
 \end{table}
 
-\includegraphics{./manuscript_files/figure-latex/figure_2.pdf}
+\includegraphics{components/figure/manuscript-figure_2.pdf}
 
 The mean inferred state space dynamics of each model relative to the
 true model used to generate the data is shown in Figure 2, predicting
@@ -561,9 +531,9 @@ region of state space corresponding to unharvested or weakly harvested
 system. No observations occur at the theoretical optimum harvest rate or
 near the tipping point.
 
-\includegraphics{./manuscript_files/figure-latex/figure_3.pdf}
+\includegraphics{components/figure/manuscript-figure_3.pdf}
 
-\includegraphics{./manuscript_files/figure-latex/figure_4.pdf}
+\includegraphics{components/figure/manuscript-figure_4.pdf}
 
 Despite the similarities in model fits to the observed data, the
 policies inferred under each model differ widely, as shown in Figure 4.
@@ -577,7 +547,7 @@ produce policies close to the true optimum policy (where both the
 underlying model structure and parameter values are known without
 error).
 
-\includegraphics{./manuscript_files/figure-latex/figure_5.pdf}
+\includegraphics{components/figure/manuscript-figure_5.pdf}
 
 The consequences of managing 100 replicate realizations of the simulated
 fishery under each of the policies estimated is shown in Figure 5. As
@@ -595,15 +565,7 @@ realizes a value close to the optimal solution, and importantly avoids
 ever driving the system across the tipping point, which results in the
 near-zero value cases in the parametric models.
 
-\begin{verbatim}
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-\end{verbatim}
-
-\includegraphics{./manuscript_files/figure-latex/figure_6.pdf}
+\includegraphics{components/figure/manuscript-figure_6.pdf}
 
 \subsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
@@ -654,11 +616,7 @@ as long as those fluctuations are sufficently rare. Figure 7 shows that
 the GPDP is little effected by increasing noise or increasing Allee
 effects over much of the range.
 
-\begin{verbatim}
-## Loading required package: grid
-\end{verbatim}
-
-\includegraphics{./manuscript_files/figure-latex/figure_7.pdf}
+\includegraphics{components/figure/manuscript-figure_7.pdf}
 
 \section{Discussion}\label{discussion}
 
@@ -764,9 +722,9 @@ DBI-1306697 to CB.
 \section{Appendix: Model definitions and
 estimation}\label{appendix-model-definitions-and-estimation}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S1.pdf}
+\includegraphics{components/figure/manuscript-figure_S1.pdf}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S2.pdf}
+\includegraphics{components/figure/manuscript-figure_S2.pdf}
 
 \newpage
 
@@ -793,9 +751,9 @@ accompanying the paper, available from
 all results shown here is dynamically embedded into the manuscript using
 \texttt{knitr} (Xie 2012).
 
-\includegraphics{./manuscript_files/figure-latex/figure_S3.pdf}
+\includegraphics{components/figure/manuscript-figure_S3.pdf}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S4.pdf}
+\includegraphics{components/figure/manuscript-figure_S4.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -838,9 +796,9 @@ $\sigma$
 model}
 \end{longtable}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S5.pdf}
+\includegraphics{components/figure/manuscript-figure_S5.pdf}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S6.pdf}
+\includegraphics{components/figure/manuscript-figure_S6.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -891,9 +849,9 @@ $\sigma$
 model}
 \end{longtable}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S7.pdf}
+\includegraphics{components/figure/manuscript-figure_S7.pdf}
 
-\includegraphics{./manuscript_files/figure-latex/figure_S8.pdf}
+\includegraphics{components/figure/manuscript-figure_S8.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -944,65 +902,7 @@ $\sigma$
 model}
 \end{longtable}
 
-\begin{verbatim}
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-## Using V1 as value column: use value.var to override.
-## No id variables; using all as measure variables
-\end{verbatim}
-
-\begin{verbatim}
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-\end{verbatim}
-
-\includegraphics{./manuscript_files/figure-latex/figure_S9.pdf}
+\includegraphics{components/figure/manuscript-figure_S9.pdf}
 
 Allen, D., and K. Tanner. 2005. Infusing active learning into the
 large-enrollment biology class: seven strategies, from the simple to
