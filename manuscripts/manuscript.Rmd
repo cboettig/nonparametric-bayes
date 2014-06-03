@@ -88,6 +88,7 @@ cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
 ```
 
 ```{r libraries, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
+library("knitr")
 library("nonparametricbayes") 
 library("pdgControl")
 
@@ -611,7 +612,7 @@ dictable <- data.frame(Allen = allen_dic + 2*length(bayes_pars),
 
 
 ```{r sensitivity-trends}
-source("components/sensitivity-trends.Rmd")
+source("components/sensitivity-trends.R")
 ```
 
 
@@ -811,14 +812,33 @@ $S_t=X_t-h_t$.
 To construct the value function, we consider a return when $X_t=x$ and harvest $h_t=h$ denoted as the reward, $R(x,h)$. For example, if the return is simply the harvest at time $t$, then $R(x,h)=min(x,h)$. We assume that future harvests are discounted relative to current ones at a constant rate of discount $\delta$ and ask for the harvest policy that maximizes total discounted harvest between the current time $t$ and a final time $T$, that is we seek to maximize over choices of harvest $\mathbf{E}_{X_t+1} [ \sum_{t = 0}^{T}  R_t(X_t, h_t) \delta^t]$, where the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the expectation over the process stochasticity in the future population state.
 
 
-In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014].
+In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014],
 
 \begin{equation}
-V_t(x) = \max_{h_t} \left[R(h_t, x_t) + \delta \cdot \mathbf{E}_{X_t+1} V_{t+1}( Z_{t+1} f(x - h_t)) \right]
+V_t(X_t) = \max_{h_t} \left{ R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \right}
 \end{equation}
 
+where expectation is taken over all possible values of the next state, $X_t{+1}$, and maximized over all possible choices of harvest, $h_t$.  That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, X_t)$. In the classical case, the sole source of uncertainty is the process noise term, $Z$, and thus the expectation above is equivalent to taking expectations over $Z$. That is
 
-That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, x_t)$ and the population size after the take is $x-h_t$, which is then translated into $X_{t+1}$ by Eqn 1. We consider the finite time problem with $T=$`r MaxT`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
+$$ \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{Z} \left[ V_{t+1}( Z f(X_t - h_t))  | X_t, h_t \right] $$
+
+where the population size after the take is $X_t-h_t$, which is then translated into $X_{t+1}$ by Eqn 1. 
+
+In a Bayesian decision framework, the parameters governing the dynamics are also uncertain, so the
+expectation in (1) involves averaging over the posterior distribution for the parameters, as well. That
+is,
+
+$$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta,\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(X_t - h_t))  | X_t, h_t \right] \}$$
+
+
+In the nonparametric case, the function $f$ too is uncertain and the expectation for the next state includes
+uncertainty in $f$ as well. That is
+
+$$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta,\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(X_t - h_t))  | X_t, h_t \right] \}$$
+
+
+
+We consider the finite time problem with $T=$`r MaxT`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
 
 
 
@@ -909,7 +929,7 @@ provide a basis for identifying model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
 GPs can be found in @Rasmussen2006. 
 
-A GP is an infinite dimensional (because it considers a continuous random
+A GP is an infinite dimensional (because it is a function of a continuous input
 variable) stochastic process for which any realization is a multivariate
 normal distribution. Thus, to characterize the GP we need a mean function
 and a covariance matrix. We proceed as follows.
@@ -917,9 +937,14 @@ and a covariance matrix. We proceed as follows.
 
 Assuming the data $X_o$ are observed with some process noise,
 
-$$y = f(x) + \varepsilon$$
+$$X_{t+1} = f(X_t) + \varepsilon$$
 
-$\varepsilon$ IID normal, variance $\sigma_n^2$. Then under the GP, the predicted data $X_p$ given the observations obeys
+$\varepsilon$ IID normal, variance $\sigma_n^2$. Note that we have chosen to
+assume additive noise.  While we could just as easily consider log-normal noise
+as in the parametric models, we make this choice to bring home the point that the
+Gaussian process approach need not have structurally correct noise form either.  
+
+Then under the GP, given a vector of observed data $X_0$ the predicted data $X_p$ obeys
 
 $$f(X_p|X_o) \sim \mathcal{N}(E,C)$$
 $$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
@@ -1275,7 +1300,7 @@ plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) +
 plot_allees <- ggplot(vary_allee, aes(pars.C, value)) + 
   geom_point()+ ylab("Net present value") + 
   xlab("Allee threshold stock size") + theme_bw()
-multiplot(plot_sigmas, plot_allees, cols=2) 
+cboettigR::multiplot(plot_sigmas, plot_allees, cols=2) 
 
 write.csv(vary_sigma, "components/data/vary_sigma.csv")
 write.csv(vary_allee, "components/data/vary_sigma.csv")

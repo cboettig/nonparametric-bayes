@@ -1,29 +1,4 @@
-\documentclass[author-year, 12pt,review]{elsarticle} %review=doublespace preprint=single 5p=2 column
-%%% Begin My package additions %%%%%%%%%%%%%%%%%%%
-\usepackage[hyphens]{url}
-\usepackage{lineno} % add 
-  \linenumbers % turns line numbering on 
-\bibliographystyle{elsarticle-harv}
-\biboptions{sort&compress} % For natbib
-\usepackage{graphicx}
-\usepackage{booktabs} % book-quality tables
-%% Redefines the elsarticle footer
-\makeatletter
-\def\ps@pprintTitle{%
- \let\@oddhead\@empty
- \let\@evenhead\@empty
- \def\@oddfoot{\it \hfill\today}%
- \let\@evenfoot\@oddfoot}
-\makeatother
-
-% A modified page layout
-\textwidth 6.75in
-\oddsidemargin -0.15in
-\evensidemargin -0.15in
-\textheight 9in
-\topmargin -0.5in
-%%%%%%%%%%%%%%%% end my additions to header
-
+\documentclass[]{components/elsarticle}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
@@ -34,26 +9,38 @@
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[utf8]{inputenc}
 \else % if luatex or xelatex
-  \usepackage{fontspec}
   \ifxetex
+    \usepackage{mathspec}
     \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
   \fi
   \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
   \newcommand{\euro}{€}
 \fi
 % use microtype if available
 \IfFileExists{microtype.sty}{\usepackage{microtype}}{}
-\usepackage{longtable}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable,booktabs}
 \usepackage{graphicx}
-% We will generate all images so they have a width \maxwidth. This means
-% that they will get their normal width if they fit onto the page, but
+% Redefine \includegraphics so that, unless explicit options are
+% given, the image width will not exceed the width of the page.
+% Images get their normal width if they fit onto the page, but
 % are scaled down if they would overflow the margins.
 \makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth
-\else\Gin@nat@width\fi}
+\def\ScaleIfNeeded{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
 \makeatother
 \let\Oldincludegraphics\includegraphics
-\renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=\maxwidth]{#1}}
+{%
+ \catcode`\@=11\relax%
+ \gdef\includegraphics{\@ifnextchar[{\Oldincludegraphics}{\Oldincludegraphics[width=\ScaleIfNeeded]}}%
+}%
 \ifxetex
   \usepackage[setpagesize=false, % page size defined by xetex
               unicode=false, % unicode breaks when used with xetex
@@ -66,6 +53,7 @@
             pdfauthor={},
             pdftitle={Avoiding tipping points in fisheries management: A Bayesian Non-Parametric approach},
             colorlinks=true,
+            citecolor=blue,
             urlcolor=blue,
             linkcolor=magenta,
             pdfborder={0 0 0}}
@@ -74,65 +62,76 @@
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 \setcounter{secnumdepth}{0}
-% Pandoc toggle for numbering sections (defaults to be off)
-\setcounter{secnumdepth}{0}
-% Pandoc header
 
-
+\title{Avoiding tipping points in fisheries management: A Bayesian
+Non-Parametric approach}
+\author{ \and  \and }
+\date{}
 
 \begin{document}
-\begin{frontmatter}
 
-  \title{Avoiding tipping points in fisheries management: A Bayesian
-Non-Parametric approach}
-    \author[cstar]{Carl Boettiger\corref{c1}}
-   \ead{cboettig@gmail.com} 
-   \cortext[c1]{Corresponding author}
-    \author[cstar]{Marc Mangel}
-  
-  
-    \author[noaa]{Stephan Munch}
-  
-  
-      \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and
-Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
-95064, USA}    
-    \address[marc]{Center for Stock Assessment Research, Department of Applied Math and
-Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
-95064, USA and Department of Biology, University of Bergen, Bergen,
-Norway 9020}    
-    \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric
-Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}    
-  
-  \begin{abstract}
-  Model uncertainty and limited data coverage are fundamental challenges
-  to robust management of human intervention in a natural system. These
-  challenges are acutely highlighted by concerns that many ecological
-  systems may contain tipping points, such as Allee population
-  sizes.\\Before a collapse, we do not know where the tipping points lie,
-  if they exist at all. Hence, we know neither a complete model of the
-  system dynamics nor do we have access to data in some large region of
-  state-space where such a tipping point might exist. We illustrate how a
-  Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP)
-  prior provides a flexible representation of this inherent uncertainty.
-  We embed GPs in a stochastic dynamic programming framework in order to
-  make robust management predictions with both model uncertainty and
-  limited data. We conduct a set of simulations to evaluate this approach
-  as compared with the standard approach of using model selection to
-  choose from a set of candidate models. We find that model selection
-  erroneously favors models without tipping points -- leading to harvest
-  policies that guarantee extinction. The GP approach performs nearly as
-  well as the true model and significantly outperforms standard
-  appraoches. We illustrate this using examples of simulated
-  single-species dynamics, where the standard model selection approach
-  should be most effective, and find that it still fails to account for
-  uncertainty appropriately and leads to population crashes, while
-  management based on the GP approach does not, since it does not
-  underestimate the uncertainty outside of the observed data.
-  \end{abstract}
-   \begin{keyword} Bayesian \sep Structural Uncertainty \sep Nonparametric \sep Optimal Control \sep Decision Theory \sep Gaussian Processes \sep Fisheries Management \sep \end{keyword}
- \end{frontmatter}
+\begin{center}
+\huge Avoiding tipping points in fisheries management: A Bayesian
+Non-Parametric approach \\[0.2cm]
+\normalsize
+\end{center}
 
+\begin{abstract}
+Model uncertainty and limited data coverage are fundamental challenges
+to robust management of human intervention in a natural system. These
+challenges are acutely highlighted by concerns that many ecological
+systems may contain tipping points, such as Allee population
+sizes.\\Before a collapse, we do not know where the tipping points lie,
+if they exist at all. Hence, we know neither a complete model of the
+system dynamics nor do we have access to data in some large region of
+state-space where such a tipping point might exist. We illustrate how a
+Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP)
+prior provides a flexible representation of this inherent uncertainty.
+We embed GPs in a stochastic dynamic programming framework in order to
+make robust management predictions with both model uncertainty and
+limited data. We conduct a set of simulations to evaluate this approach
+as compared with the standard approach of using model selection to
+choose from a set of candidate models. We find that model selection
+erroneously favors models without tipping points -- leading to harvest
+policies that guarantee extinction. The GP approach performs nearly as
+well as the true model and significantly outperforms standard
+appraoches. We illustrate this using examples of simulated
+single-species dynamics, where the standard model selection approach
+should be most effective, and find that it still fails to account for
+uncertainty appropriately and leads to population crashes, while
+management based on the GP approach does not, since it does not
+underestimate the uncertainty outside of the observed data.
+\end{abstract}
+
+\begin{verbatim}
+## module glm loaded
+\end{verbatim}
+
+\begin{verbatim}
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+\end{verbatim}
+
+\begin{verbatim}
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+\end{verbatim}
 
 \section{Introduction}\label{introduction}
 
@@ -486,13 +485,7 @@ our analysis over 96 different scenarios. To better understand the
 process, we will first describe in detail the results of a single
 scenario.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_1.pdf}
-\caption{Points show the training data of stock-size over time. Curves
-show the posterior step-ahead predictions based on each of the estimated
-models. Observe that all models are fitting the data reasonably well.}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_1.pdf}
 
 All models fit the observed data rather closely and with relatively
 small uncertainty, as illustrated in the posterior predictive curves in
@@ -508,32 +501,24 @@ complicated alternate stable state models (Allen and Myers). Details on
 MCMC estimates for each model, traces, and posterior distributions can
 be found in the appendix.
 
+\% latex table generated in R 3.1.0 by xtable 1.7-3 package \% Mon Jun 2
+00:55:24 2014
+
 \begin{table}[ht]
-\begin{center}
+\centering
 \begin{tabular}{rrrr}
   \hline
  & Allen & Ricker & Myers \\ 
   \hline
-DIC & 50.14 & 49.45 & 50.61 \\ 
-  AIC & -24.60 & -30.07 & -27.19 \\ 
-  BIC & -17.85 & -25.00 & -20.44 \\ 
+DIC & 50.75 & 50.45 & 50.41 \\ 
+  AIC & -24.51 & -30.13 & -27.01 \\ 
+  BIC & -17.75 & -25.06 & -20.25 \\ 
    \hline
 \end{tabular}
-\caption{Model selection scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.}
-\end{center}
+\caption{Model selection scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.} 
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_2.pdf}
-\caption{Graph of the inferred Gaussian process compared to the true
-process and maximum-likelihood estimated process. Graph shows the
-expected value for the function $f$ under each model. Two standard
-deviations from the estimated Gaussian process covariance with (light
-grey) and without (darker grey) measurement error are also shown. The
-training data is also shown as black points. The GP is conditioned on
-(0,0), shown as a pseudo-data point.}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_2.pdf}
 
 The mean inferred state space dynamics of each model relative to the
 true model used to generate the data is shown in Figure 2, predicting
@@ -548,32 +533,9 @@ region of state space corresponding to unharvested or weakly harvested
 system. No observations occur at the theoretical optimum harvest rate or
 near the tipping point.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_3.pdf}
-\caption{Outside the range of the training data (Figure 1), the true
-dynamics (black dots) fall outside the uncertainty (two standard
-deviations, colored bands) of the structurally incorrect parametric
-models (Ricker, Myers), but inside the uncertainty predicted by the GP.
-Points show the stock size simulated by the true model. Overlay shows
-the range of states predicted by each model, based on the state observed
-in the previous time step. The Ricker model always (wrongly) predicts
-positive population growth, while the actual population shrinks in each
-step as the initial condition falls below the Allee threshold of the
-underlying model (Allen). Note that because it does not assume a
-parametric form but instead relies more directly on the data, the GP is
-both more pessimistic and more uncertain about the future state than the
-parametric models.}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_3.pdf}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_4.pdf}
-\caption{The steady-state optimal policy (infinite boundary) calculated
-under each model. Policies are shown in terms of target escapement,
-$S_t$, as under models such as this a constant escapement policy is
-expected to be optimal (Reed 1979).}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_4.pdf}
 
 Despite the similarities in model fits to the observed data, the
 policies inferred under each model differ widely, as shown in Figure 4.
@@ -587,14 +549,7 @@ produce policies close to the true optimum policy (where both the
 underlying model structure and parameter values are known without
 error).
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_5.pdf}
-\caption{In the management context, GPDP outperforms approaches based on
-parametric models. Shown are 100 replicate simulations of the stock
-dynamics (eq 1) under the policies derived from each of the estimated
-models, as well as the policy based on the exact underlying model.}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_5.pdf}
 
 The consequences of managing 100 replicate realizations of the simulated
 fishery under each of the policies estimated is shown in Figure 5. As
@@ -612,15 +567,15 @@ realizes a value close to the optimal solution, and importantly avoids
 ever driving the system across the tipping point, which results in the
 near-zero value cases in the parametric models.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_6.pdf}
-\caption{Histograms of the realized net present value of the fishery
-over a range of simulated data and resulting parameter estimates. For
-each data set, the three models are estimated as described above. Values
-plotted are the averages of a given policy over 100 replicate
-simulations. Details and code provided in the supplement.}
-\end{figure}
+\begin{verbatim}
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+\end{verbatim}
+
+\includegraphics{./manuscript_files/figure-latex/figure_6.pdf}
 
 \subsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
@@ -667,17 +622,15 @@ points relative to the noise, the chance of a transition becomes
 vanishingly small and all models can be modeled near-optimally. Models
 that underestimate the cost incurred by stock sizes fluctuating
 significantly below the optimal escapement level will not perform poorly
-as long as those fluctuations are sufficently rare.
+as long as those fluctuations are sufficently rare. Figure 7 shows that
+the GPDP is little effected by increasing noise or increasing Allee
+effects over much of the range.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_7.pdf}
-\caption{Sensitivity Analysis. Histogram shows the ratio of the realized
-net present value derived when managing under the GPDP over the optimal
-value given the true model and true parameters. Values near 1 indicate
-nearly optimal performance. Simulations cover a range of underlying
-parameter, model, replicate, and noise levels.}
-\end{figure}
+\begin{verbatim}
+## Loading required package: grid
+\end{verbatim}
+
+\includegraphics{./manuscript_files/figure-latex/figure_7.pdf}
 
 \section{Discussion}\label{discussion}
 
@@ -783,19 +736,9 @@ DBI-1306697 to CB.
 \section{Appendix: Model definitions and
 estimation}\label{appendix-model-definitions-and-estimation}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S1.pdf}
-\caption{Traces from the MCMC estimates of the GP model show reasonable
-mixing (no trend) and sampling rejection rate (no piecewise jumps)}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S1.pdf}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S2.pdf}
-\caption{Posterior distributions from the MCMC estimate of the GP model.
-Prior curves shown in red.}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S2.pdf}
 
 \newpage
 
@@ -818,23 +761,13 @@ analysis, as described in the main text.
 
 All code used in producing this analysis can be found in the R package
 accompanying the paper, available from
-{[}http://github.com/cboettig/nonparametric-bayes{]}. The code for all
-results shown here is dynamically embedded into the manuscript using
+{[}\url{http://github.com/cboettig/nonparametric-bayes}{]}. The code for
+all results shown here is dynamically embedded into the manuscript using
 \texttt{knitr} (Xie 2012).
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S3.pdf}
-\caption{Traces from the MCMC estimates of the Ricker model show
-reasonable mixing (no trend) and sampling rejection rate (no piecewise
-jumps)}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S3.pdf}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S4.pdf}
-\caption{Posteriors from the MCMC estimate of the Ricker model}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S4.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -877,20 +810,9 @@ $\sigma$
 model}
 \end{longtable}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S5.pdf}
-\caption{Traces from the MCMC estimates of the Myers model show
-reasonable mixing (no trend) and sampling rejection rate (no piecewise
-jumps)}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S5.pdf}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S6.pdf}
-\caption{Posterior distributions from the MCMC estimates of the Myers
-model}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S6.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -941,19 +863,9 @@ $\sigma$
 model}
 \end{longtable}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S7.pdf}
-\caption{Traces from the MCMC estimates of the Allen model show
-reasonable mixing (no trend) and sampling rejection rate (no piecewise
-jumps)}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S7.pdf}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_S8.pdf}
-\caption{Posteriors from the MCMC estimate of the Allen model}
-\end{figure}
+\includegraphics{./manuscript_files/figure-latex/figure_S8.pdf}
 
 \begin{longtable}[c]{@{}ccc@{}}
 \toprule\addlinespace
@@ -1003,6 +915,66 @@ $\sigma$
 \caption{Parameterization range for the uniform priors in the Allen
 model}
 \end{longtable}
+
+\begin{verbatim}
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+## Using V1 as value column: use value.var to override.
+## No id variables; using all as measure variables
+\end{verbatim}
+
+\begin{verbatim}
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+\end{verbatim}
+
+\includegraphics{./manuscript_files/figure-latex/figure_S9.pdf}
 
 Allen, D., and K. Tanner. 2005. Infusing active learning into the
 large-enrollment biology class: seven strategies, from the simple to
@@ -1202,5 +1174,3 @@ Xie, Y. 2012. knitr: A general-purpose package for dynamic report
 generation in R.
 
 \end{document}
-
-

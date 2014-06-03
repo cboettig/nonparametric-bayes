@@ -3,24 +3,16 @@ MANUSCRIPT=manuscript
 
 all:
 	make install
-	make restore-cache
 	make render
 	make ../README.md
 
 install: components/install.R
 	Rscript components/install.R
-
 restore-cache:  
 	make components/cache
 
 render: 
 	Rscript -e "rmarkdown::render('$(MANUSCRIPT).Rmd')"
-
-
-
-
-restore-cache:
-	make components/cache
 
 clear-cache:
 	rm -rf components/cache
