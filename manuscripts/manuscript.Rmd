@@ -121,6 +121,8 @@ library("modeest")
 library("MASS")
 library("pander")
 
+library("cboettigR")
+
 opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
 theme_set(theme_bw(base_size=12))
 toggle = "hide" # results argument
@@ -1323,7 +1325,8 @@ plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) +
 plot_allees <- ggplot(vary_allee, aes(allee, value)) + 
   geom_point()+ ylab("Net present value") + 
   xlab("Allee threshold stock size") + theme_bw()
-cboettigR::multiplot(plot_sigmas, plot_allees, cols=2) 
+
+multiplot(plot_sigmas, plot_allees, cols=2) 
 
 write.csv(vary_sigma, "components/data/vary_sigma.csv")
 write.csv(vary_allee, "components/data/vary_sigma.csv")
