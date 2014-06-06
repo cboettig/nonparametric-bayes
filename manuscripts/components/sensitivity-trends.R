@@ -1,54 +1,8 @@
-library("nonparametricbayes") 
-library("pdgControl")
-library("ggplot2") 
-library("reshape2")
-library("plyr")
-library("data.table")
-
-
-
-models <- c("Myers","Allen")
-
-parameters <- list(Myers = list(
-  c(r=1.5 + rnorm(1, 0, .1), theta=2.5 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .2)),
-  c(r=1.5 + rnorm(1, 0, .1), theta=2.5 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .2)),
-  c(r=1.5 + rnorm(1, 0, .1), theta=2.5 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .2))),
-                   Allen = list(
-  c(r=2 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .1), C=5 + rnorm(1, 0, .2)),
-  c(r=2 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .1), C=5 + rnorm(1, 0, .2)),
-  c(r=2 + rnorm(1, 0, .1), K=8 + rnorm(1, 0, .1), C=5 + rnorm(1, 0, .2)))
-                   )
-nuisance_pars <- c("sigma_g")
-nuisance_values <- list(sigma_g = c(0.01, 0.05, 0.1))
-replicates <- c(1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888) # seeds
-
-
-sensitivity <- function(model, parameters, nuisance, seed){
+sensitivity_trends <- function(allee, sigma, seed){
+  sigma_g <- sigma
+  p <- c(r = p[[1]], K = p[[2]], C = allee)
   
-  if(model == "Myers")
-    f <- Myers
-  else if(model == "Allen")
-    f <- RickerAllee
-    
-sigma_g <- nuisance[["sigma_g"]]
-p <- parameters
-sigma_m <- 0.0
-z_g <- function() rlnorm(1, 0, sigma_g)
-z_m <- function() 1
-x_grid <- seq(0, 15, length=50)
-h_grid <- x_grid
-profit <- function(x,h) pmin(x, h)
-delta <- 0.01
-OptTime <- 50  # stationarity with unstable models is tricky thing
-reward <- 0
-xT <- 0
-Xo <- 5.5# observations start from
-x0 <- 8 # simulation under policy starts from
-Tobs <- 40
-MaxT <- 1000 # timeout for value iteration convergence
-
-  
-  # replicate over random seed
+  # seed indicates replicate training data, generated from f with parameters p  
   yields <- sapply(seed, 
                    function(seed_i){
                      set.seed(seed_i)
@@ -117,8 +71,7 @@ MaxT <- 1000 # timeout for value iteration convergence
   
   
   
-  dat <- data.frame(model = model, 
-                    pars = as.list(parameters), 
+  dat <- data.frame(allee = p[[3]], 
                     replicate = yields_dat$replicate, 
                     sim = yields_dat$simulation, 
                     value = yields_dat$value, 
@@ -126,30 +79,8 @@ MaxT <- 1000 # timeout for value iteration convergence
 }
 
 
-sigmas <- c(0.01, 0.05, 0.1, 0.2)
-allee <- c(1,2,3,4,5)
-vary_sigma <- lapply(sigmas, function(s) 
-                     try(sensitivity("Allen", 
-                   parameters = c(r=2,K=8,C=5), 
-                   nuisance = c(sigma_g = s), 
-                   seed=c(1234))))
 
 
-vary_allee <-  lapply(allee, function(a) try(sensitivity("Allen", 
-                   parameters = c(r=2,K=8,C=a), 
-                   nuisance = c(sigma_g = 0.05), 
-                   seed=c(1234))))
-
-save(list=c("vary_sigma", "vary_allee"), file="trends.rda")
-
-vary_sigma <- melt(vary_sigma, id=names(vary_sigma[[1]]))
-vary_allee <- melt(vary_allee, id=names(vary_allee[[1]]))
-
-
-
-plot_s <- ggplot(vary_sigma, aes(noise, value)) + geom_point() + ylab("Net present value") + xlab("Level of growth stochasticity (sigma)") + theme_bw() 
-plot_a <- ggplot(vary_allee, aes(pars.C, value)) + geom_point()+ ylab("Net present value") + xlab("Allee threshold stock size") + theme_bw()
-#multiplot(plot_s, plot_a, cols=2) 
 
 
 

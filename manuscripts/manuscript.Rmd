@@ -3,9 +3,9 @@ layout: 12pt,review
 linenumbers: true
 title: "Avoiding tipping points in fisheries management: A Bayesian Non-Parametric approach"
 author: 
-  - name: "Carl Boettiger"
+  - name: Carl Boettiger
     affiliation: cstar
-    email: cboettig@gmail.com
+    email: cboettig(at)gmail.com
     footnote: Corresponding author
   - name: Marc Mangel
     affiliation: cstar
@@ -71,13 +71,14 @@ keywords:
 
 bibliography: components/references.bib
 csl: components/ecology.csl
-template: components/elsarticle.latex
 documentclass: components/elsarticle
 
 ## rmarkdown render options
 output:
   pdf_document:
-    keep_tex: true
+    fig_caption: true
+    template: components/elsarticle.latex
+
 ---
 
 
@@ -627,8 +628,20 @@ dictable <- data.frame(Allen = allen_dic + 2*length(bayes_pars),
 
 
 ```{r sensitivity-trends}
-source("components/sensitivity-trends.R")
+source("components/sensitivity-trends.R") # load the function for looping
+
+sigmas <- c(0.01, 0.05, 0.1)
+allee <- c(1,2,3,4,5)
+
+vary_sigma <- lapply(sigmas, function(s) try(sensitivity_trends(4, sigma = s, seed=c(111,222,333))))
+vary_allee <-  lapply(allee, function(a) try(sensitivity_trends(a, sigma = sigma_g, seed=c(111,222,333))))
+
+vary_sigma <- melt(vary_sigma, id=names(vary_sigma[[1]]))
+vary_allee <- melt(vary_allee, id=names(vary_allee[[1]]))
+
 ```
+
+
 
 
 Introduction
@@ -1307,12 +1320,12 @@ effects over much of the range.
 <!--FIXME the above para is not particularly convincing. Quantitative please? -->
 
 
-```{r figure_7, fig.height=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (noise, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+```{r figure_7, fig.width=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (noise, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
 
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
   geom_point() + ylab("Net present value") + 
-  xlab("Level of growth stochasticity (sigma)") + theme_bw() 
-plot_allees <- ggplot(vary_allee, aes(pars.C, value)) + 
+  xlab("Level of growth stochasticity") + theme_bw() 
+plot_allees <- ggplot(vary_allee, aes(allee, value)) + 
   geom_point()+ ylab("Net present value") + 
   xlab("Allee threshold stock size") + theme_bw()
 cboettigR::multiplot(plot_sigmas, plot_allees, cols=2) 
@@ -1597,7 +1610,7 @@ source("components/sensitivity.R")
 sensitivity_dat <- dat
 ```
 
-```{r figure_S9, fig.height=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
+```{r figure_S9, fig.height=6, fig.width=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histogram shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values near 1 indicate nearly optimal performance. Simulations cover a range of underlying parameter, model, replicate, and noise levels."}
 ggplot(sensitivity_dat) + 
   geom_histogram(aes(value, fill=simulation)) + 
   xlim(0,1.0) + 
