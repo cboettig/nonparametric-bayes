@@ -1607,7 +1607,7 @@ models <- c("Myers","Allen")
 
 parameters <- list(
   Myers = list(
-    c(r=1.5 + rnorm(1, 0, 1), theta=2.5 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1)),
+    c(r=1.5 + rnorm(1, 0, 1), theta=2 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1)),
     c(r=1.5 + rnorm(1, 0, 1), theta=2.5 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1))),
   Allen = list(
     c(r=2 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1), C=4 + rnorm(1, 0, 1)),
@@ -1615,7 +1615,9 @@ parameters <- list(
 )
 nuisance_pars <- c("sigma_g")
 nuisance_values <- list(sigma_g = c(0.01, 0.05))
+```
 
+```{r allensets}
 model <- "Allen"
 allen1.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
@@ -1633,7 +1635,9 @@ allen2.05 <- sensitivity(model,
                    parameters = parameters[[model]][[2]], 
                    nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
                    seed=c(1111, 2222, 3333))
+```
 
+```{r myerssets}
 model <- "Myers"
 Myers1.01 <- sensitivity(model, 
                    parameters = parameters[[model]][[1]], 
@@ -1665,16 +1669,16 @@ dat$noise <- factor(dat$noise)
 names(dat) <- c("model", "parameters", "replicate", "simulation", "noise", "value")
 
 ## Extract acutal parameter values corresponding to each parameter set
-p1 = levels(factor(model_dat$pars.r))
-p2 = levels(factor(model_dat$pars.K))
-p3 = levels(factor(model_dat$pars.C))
+p1 = as.numeric(levels(factor(model_dat$pars.r)))
+p2 = as.numeric(levels(factor(model_dat$pars.K)))
+p3 = as.numeric(levels(factor(model_dat$pars.C)))
 
-setA = as.numeric(c(r = p1[1], K = p2[1], theta = p3[1]))
-setB = as.numeric(c(r = p1[2], K = p2[2], theta = p3[2]))
-setC = as.numeric(c(r = p1[3], K = p2[3], C = p3[3]))
-setD = as.numeric(c(r = p1[4], K = p2[4], C = p3[4]))
+setA = c(r = p1[1], K = p2[1], theta = p3[1])
+setB = c(r = p1[2], K = p2[2], theta = p3[2])
+setC = c(r = p1[3], K = p2[3], C = p3[3])
+setD = c(r = p1[4], K = p2[4], C = p3[4])
 AllenParameterSets <- rbind(setA, setB)
-MyersParameterSets <- rbind(setC,setD)
+MyersParameterSets <- rbind(setC, setD)
 
 sensitivity_dat <- dat
 ```
@@ -1689,14 +1693,14 @@ ggplot(sensitivity_dat) +
 write.csv(sensitivity_dat, "components/data/sensitivity_dat.csv") 
 ```
 
-```{r}
+```{r AllenSetsTable, results="asis"}
 pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S9." )
 ```
-```{r}
-pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S9." )
+```{r MyersSetsTable, results="asis"}
+pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S9." )
 ```
 
-```{r include=FALSE}
+```{r unlink, include=FALSE}
 unlink("ricker_process.bugs")
 unlink("allen_process.bugs")
 unlink("myers_process.bugs")
