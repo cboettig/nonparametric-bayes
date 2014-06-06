@@ -1272,27 +1272,19 @@ Sensitivity Analysis
 These results are not sensitive to the modeling details of the simulation.
 The GPDP estimate remains very close to the optimal solution obtained
 by knowing the true model across changes to the training simulation,
-noise scale, parameters or structure of the underlying model, as seen in
-Figure 7. The sensitivity analysis uses a factorial design of eight replicates 
-of three different randomly generated parameter sets for each of two different 
-generating models (Allen and Myers) over two different noise levels 
-(0.01 and 0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. In Figure 7, 
-we pool results across different random seeds (111, 222,
-333), noise values of 0.01 and 0.05 (not large enough to violate the
-self-sustaining criterion of @Reed1979), and different randomly generated
-parameters sets for each model, and using either the Myers or Allen as the
-underlying structure.  While the GPDP performs slightly closer to optimal
-on the smaller noise levels, and closer on the Allen model then the Myers
-model, the differences are small compared to the values observed in using
-the wrong parametric model.  The GPDP solution consistently avoids either
-failing to harvest at all or crashing the stock, which results in the very
-low values seen in parametric models in the previous figure. The
-sensitivity analysis is compared against the optimal solution alone and
-not shown against the estimates of the various parametric models (but
-see Figure 6), where convergence of the Gibbs sampling could contribute
-to their poorer performance if not checked by hand for each configuration.
+noise scale, parameters or structure of the underlying model. We consider
+both a Latin hypercube approach and a more systematic investigation of the
+parameters most responsible for impacting the transition rate: the relative 
+distance to the Allee threshold and the noise effects.  
 
-
+The Latin hypercube approach systematically varies all combinations of
+parameters, providing a more general test than varying only one parameter
+at a time.  We loop across eight replicates of three different randomly
+generated parameter sets for each of two different generating models
+(Allen and Myers) over two different noise levels (0.01 and 0.05),
+for a total of 8 x 3 x 2 x 2 = 96 scenarios. The Gaussian Process performs
+nearly optimally in each case, relative to the optimal solution with no
+parameter or model uncertainty (Figure S9, appendix).  
 
 Changing the noise or the distance between stable and unstable points
 does not impact the performance of the GP relative to the optimal solution
@@ -1313,11 +1305,14 @@ optimal escapement and unstable points relative to the noise, the chance
 of a transition becomes vanishingly small and all models can be modeled
 near-optimally. Models that underestimate the cost incurred by stock
 sizes fluctuating significantly below the optimal escapement level will
-not perform poorly as long as those fluctuations are sufficently rare.  Figure 7
-shows that the GPDP is little effected by increasing noise or increasing Allee
-effects over much of the range.  
+not perform poorly as long as those fluctuations are sufficently rare.  
 
-<!--FIXME the above para is not particularly convincing. Quantitative please? -->
+Figure 7 shows that the GPDP is little effected by increasing noise or increasing
+Allee effects over much of the range. Much larger stochasticity or higher Allee
+effects make even the optimal solution without any model or parameter uncertainty
+unable to harvest the population effectively (e.g. noise large enoug to violate the
+self-sustaining criterion of @Reed1979). Only at the largest Allee effect
+sizes are some replicates seen to deviate more from the optimal solution.  
 
 
 ```{r figure_7, fig.width=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (noise, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
