@@ -1675,7 +1675,7 @@ p2 = levels(factor(model_dat$pars.K))
 p3 = levels(factor(model_dat$pars.C))
 
 setA = as.numeric(c(r = p1[1], K = p2[1], theta = p3[1]))
-setB = as.numeric(c(r = p1[2], K = p2[2], theta = p3[2])
+setB = as.numeric(c(r = p1[2], K = p2[2], theta = p3[2]))
 setC = as.numeric(c(r = p1[3], K = p2[3], C = p3[3]))
 setD = as.numeric(c(r = p1[4], K = p2[4], C = p3[4]))
 AllenParameterSets <- rbind(setA, setB)
