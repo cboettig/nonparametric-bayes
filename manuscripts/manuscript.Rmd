@@ -31,34 +31,33 @@ address:
       110 Shaffer Road, Santa Cruz, CA 95060, USA
 
 abstract: |
-          Model uncertainty and limited data are fundamental
-          challenges to robust management of human intervention in a 
-          natural system.  These challenges
-          are acutely highlighted by concerns that many ecological systems
-          may contain tipping points, such as Allee population sizes.  
-          Before a collapse, we do not know
-          where the tipping points lie, if they exist at all.  Hence,
-          we know neither a complete model of the system dynamics nor
-          do we have access to data in some large region of state-space
-          where such a tipping point might exist.  We illustrate
-          how a Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP) prior
-          provides a flexible representation of this inherent
-          uncertainty. We embed GPs in a
-          Stochastic Dynamic Programming (SDP) framework in order to make
-          robust management predictions with both model uncertainty and
-          limited data. We use simulations to evaluate this
-          approach as compared with the standard approach of using model
-          selection to choose from a set of candidate models.  We find that model selection erroneously
-          favors models without tipping points -- leading to harvest policies
-          that guarantee extinction. The GPDP 
-          performs nearly as well as the true model and significantly
-          outperforms standard appraoches. We illustrate this using examples
-          of simulated single-species dynamics, where the standard model
-          selection approach should be most effective, and find that it
-          still fails to account for uncertainty appropriately and leads
-          to population crashes, while management based on the GPDP 
-          does not, since it does not underestimate the uncertainty
-          outside of the observed data.   
+  Model uncertainty and limited data are fundamental challenges to
+  robust management of human intervention in a natural system.
+  These challenges are acutely highlighted by concerns that
+  many ecological systems may contain tipping points, such as
+  Allee population sizes.  Before a collapse, we do not know
+  where the tipping points lie, if they exist at all.  Hence,
+  we know neither a complete model of the system dynamics nor
+  do we have access to data in some large region of state-space
+  where such a tipping point might exist.  We illustrate how
+  a Bayesian Non-Parametric (BNP) approach using a Gaussian
+  Process (GP) prior provides a flexible representation of this
+  inherent uncertainty. We embed GPs in a Stochastic Dynamic
+  Programming (SDP) framework in order to make robust management
+  predictions with both model uncertainty and limited data. We
+  use simulations to evaluate this approach as compared with the
+  standard approach of using model selection to choose from a set
+  of candidate models.  We find that model selection erroneously
+  favors models without tipping points -- leading to harvest
+  policies that guarantee extinction. The GPDP performs nearly as
+  well as the true model and significantly outperforms standard
+  approaches. We illustrate this using examples of simulated
+  single-species dynamics, where the standard model selection
+  approach should be most effective, and find that it still
+  fails to account for uncertainty appropriately and leads to
+  population crashes, while management based on the GPDP does
+  not, since it does not underestimate the uncertainty outside
+  of the observed data.
 
 keywords:
   - Bayesian
@@ -794,7 +793,7 @@ harvested; see @Halpern2013 for further discussion of this issue.  We can
 always compare model performance across multiple potential objectives.
 The important point is that a decision-maker does not necessarily need
 a model that provides the best mechanistic understanding or the best
-long-term outcome, but rather the one that idelivers the best management
+long-term outcome, but rather the one that delivers the best management
 performance over the period of interest.
 -->
 
@@ -803,23 +802,29 @@ performance over the period of interest.
 Approach and Methods
 ====================
 
-We first describe the requirements of dynamic optimization for the management of human intervention in natural resource systems. After that we describe three parametric models for population dynamics and the GP description of population dynamics.
+We first describe the requirements of dynamic optimization for the
+management of human intervention in natural resource systems. After that
+we describe three parametric models for population dynamics and the GP
+description of population dynamics.
 
 
 ### Requirements of dynamic optimization
 
-Dynamic optimization  requires characterizing the dynamics of a state variable (or variables), a control action, and a value function.
-In this paper, we consider only a single state variable, so that the ideas can be described as simply as possible. That is, we focus on a class of one-dimensional models of population dynamics as a
-'best-case' scenario for the parametric model performance relative to
-the GP.   This is a best-case scenario for the parametric models because the underlying dynamics are always simuated
-from one of the parametric models in the set, whereas in reality we never
-have the "true" model among our candidates.  By choosing one-dimensional
-models with few parameters, we limit the chance that poor performance
-will be due to our inability to estimate parameters well, something
-that becomes a more severe problem for higher-dimensional parametric
-models. Further, the parametric models we consider are those most commonly
-used in modeling stock-recruitment dynamics or to model sudden transitions
-between alternative stable states.
+Dynamic optimization  requires characterizing the dynamics of a state
+variable (or variables), a control action, and a value function.
+In this paper, we consider only a single state variable, so that the
+ideas can be described as simply as possible. That is, we focus on a
+class of one-dimensional models of population dynamics as a 'best-case'
+scenario for the parametric model performance relative to the GP.
+This is a best-case scenario for the parametric models because the
+underlying dynamics are always simulated from one of the parametric models
+in the set, whereas in reality we never have the "true" model among our
+candidates.  By choosing one-dimensional models with few parameters, we
+limit the chance that poor performance will be due to our inability to
+estimate parameters well, something that becomes a more severe problem
+for higher-dimensional parametric models. Further, the parametric models
+we consider are those most commonly used in modeling stock-recruitment
+dynamics or to model sudden transitions between alternative stable states.
 
 ### Parametric models
 
@@ -997,7 +1002,7 @@ and a covariance function. We proceed as follows.
 
 We assume that the data $X_o$ are observed with some process stochasticity,
 
-$$X_{t+1} = f(X_t) + \varepsilon$$
+$$X_{t+1} = f(X_t) + \varepsilon,$$
 
 where $\varepsilon$ are IID normal random variables with zero-mean and variance $\sigma_n^2$. Note that we have chosen to
 assume additive stochasticity.  While we could just as easily consider log-normal stochasticity
@@ -1014,7 +1019,7 @@ Where $K$ is the Gaussian process kernel.  (Compare to  Eqn 2.22 of @Rasmussen20
 
 $$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
 
-We use inverse Gamma priors on both the lengthscale $\ell$ and $\sigma$, of the form
+We use inverse Gamma priors on both the length-scale $\ell$ and $\sigma$, of the form
 
 $$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
 
@@ -1330,7 +1335,7 @@ parameter or model uncertainty (Figure S9, appendix).
 Changing the intensity of the stochasticity or the distance between stable and unstable points
 does not impact the performance of the GP relative to the optimal solution
 given the true model and true parameters.  The parametric models are
-more senstive to this difference.  Large noise relative to the distance between the stable and unstable
+more sensitive to this difference.  Large noise relative to the distance between the stable and unstable
 point increases the chance of a stochastic transition.  More precisely,
 if we let $L = K - x_c$, then the probability of a transition in a given
 window of time $T$ scales as 
@@ -1346,12 +1351,12 @@ optimal escapement and unstable points relative to the noise, the chance
 of a transition becomes vanishingly small and all models can be estimated 
 near-optimally. Models that underestimate the cost incurred by stock
 sizes fluctuating significantly below the optimal escapement level will
-not perform poorly as long as those fluctuations are sufficently rare.  
+not perform poorly as long as those fluctuations are sufficiently rare.  
 
 The GPDP is weakly influenced by increasing stochasticity or increasing
 Allee effects over much of the range (Figure 7) Much larger stochasticity or higher Allee
 effects make even the optimal solution without any model or parameter uncertainty
-unable to harvest the population effectively (e.g. noise large enoug to violate the
+unable to harvest the population effectively (e.g. noise large enough to violate the
 self-sustaining criterion of @Reed1979). Only at the largest Allee effect
 sizes are some replicates seen to deviate more from the optimal solution.  
 
