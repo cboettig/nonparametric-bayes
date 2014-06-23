@@ -2,7 +2,6 @@ MANUSCRIPT=manuscript
 
 
 all:
-	make install
 	make render
 	make ../README.md
 
