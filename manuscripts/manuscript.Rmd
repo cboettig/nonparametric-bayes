@@ -31,7 +31,7 @@ address:
       110 Shaffer Road, Santa Cruz, CA 95060, USA
 
 abstract: |
-          Model uncertainty and limited data coverage are fundamental
+          Model uncertainty and limited data are fundamental
           challenges to robust management of human intervention in a 
           natural system.  These challenges
           are acutely highlighted by concerns that many ecological systems
@@ -44,20 +44,20 @@ abstract: |
           how a Bayesian Non-Parametric (BNP) approach using a Gaussian Process (GP) prior
           provides a flexible representation of this inherent
           uncertainty. We embed GPs in a
-          stochastic dynamic programming framework in order to make
+          Stochastic Dynamic Programming (SDP) framework in order to make
           robust management predictions with both model uncertainty and
-          limited data. We conduct a set of simulations to evaluate this
+          limited data. We use simulations to evaluate this
           approach as compared with the standard approach of using model
           selection to choose from a set of candidate models.  We find that model selection erroneously
           favors models without tipping points -- leading to harvest policies
-          that guarantee extinction. The GP approach
+          that guarantee extinction. The GPDP 
           performs nearly as well as the true model and significantly
           outperforms standard appraoches. We illustrate this using examples
           of simulated single-species dynamics, where the standard model
           selection approach should be most effective, and find that it
           still fails to account for uncertainty appropriately and leads
-          to population crashes, while management based on the GP 
-          approach does not, since it does not underestimate the uncertainty
+          to population crashes, while management based on the GPDP 
+          does not, since it does not underestimate the uncertainty
           outside of the observed data.   
 
 keywords:
@@ -76,7 +76,6 @@ documentclass: components/elsarticle
 ## rmarkdown render options
 output:
   pdf_document:
-    keep_tex: true
     fig_caption: true
     template: components/elsarticle.latex
 
@@ -658,9 +657,9 @@ Decision-theoretic approaches provide a framework to determine the
 best sequence of actions in face of uncertainty, but only when that
 uncertainty can be meaningfully quantified [@Fischer2009].  Over the last
 four decades (but stretching even further back in time), marked by  the
-seminal contributions of @Clark1976; @Clark2009 and @Walters1978,
+seminal contributions of @Clark1976, @Clark2009 and @Walters1978,
 dynamic optimization methods, particularly Stochastic Dynamic Programming
-(SDP, @Clark2009), have become increasingly important as a means of
+(SDP), have become increasingly important as a means of
 understanding how to management human intervention into natural systems.
 Concomittantly, there has been increasing recognition of the importance of
 Allee population sizes or `tipping points' [@Scheffer2001;
@@ -676,7 +675,7 @@ such as forestry.  Economic value and ecological concern have made
 marine fisheries the crucible for much of the founding work [@Gordon1954;
 @Clark1976; -@Clark2009; @Reed1979; @May1979; @Ludwig1982] on management
 under uncertainty.  Global declines [@Worm2006] and the controversy
-surrounding their interpretation [@Hilborn2007; @Worm2009] have made
+surrounding their interpretation [@Hilborn2007; @Worm2009] make
 understanding these challenges all the more pressing.
 
 <!-- Uncertainty outside the data without the correct model has not been handled. -->
@@ -730,10 +729,10 @@ The dual concerns of model uncertainty and
 incomplete data coverage pose a substantial challenge to existing decision-theoretic
 approaches [@Brozovic2011].  Because intervention is often (but not always, see @Hughes2013) too late after a tipping point has been crossed, management
 is most often concerned with avoiding potentially catastrophic tipping
-points before any data is available at or following a transition that
+points before any data are available at or following a transition that
 would more clearly reveal these regime shift dynamics [e.g. @Bestelmeyer2012].
 
-We illustrate how a stochastic dynamic programming (SDP) algorithm
+We illustrate how a Stochastic Dynamic Programming (SDP) algorithm
 [@Mangel1988; @Marescot2013] can be driven by the
 predictions from a Bayesian Non-Parametric (BNP) model of population dynamics [@Munch2005a].
 This provides two distinct advantages compared with contemporary
@@ -749,7 +748,7 @@ decision-theoretic approach in face of substantial structural uncertainty.
 This paper represents the first ecological application of the SDP
 decision-making framework without an a priori model of the underlying
 dynamics.  In contrast to parametric models which can only reflect
-uncertainty in parameter estimates, the BNP approach provides a more
+uncertainty in parameter estimates, the BNP approach provides a 
 state-space dependent representation of uncertainty.  This permits
 a much greater uncertainty far from the observed data than near the
 observed data.  These features allow the Gaussian Process Dynamic Programming (GPDP) approach to find robust
@@ -829,11 +828,11 @@ between alternative stable states.
 --> 
 
 
-We let $X_t$ denote the size (numbers or biomass) of the focal population at time $t$ and assume that in the absence of take its dynamics are
+We let $X_t$ denote the size (numbers or biomass) of the focal population at time $t$ and assume that in the absence of take its dynamics are. NOTE: EQUATION NUMBERS ARE ALL MESSED UP. THIS SHOULD BE EQ 1, BUT DOES NOT APPEAR ON THE PDF YOU SENT TO ME
 
 
 
-$$ X_{t+1}= Z_t f(X_t, h_t, p) $$
+$$ X_{t+1}= Z_t f(X_t) $$
 
 Where Z(t) is log-normally distributed process stochasticity [@Reed1979] and $p$ is a vector of parameters to be estimated from the data.   We describe three choices for $f(X_t,p)$ in the next section.In this simple model, the control action is a harvest or take, $h_t$, measured in the same units as $X$, at time
 $t$.  Thus, in the presence of take, the population size on the right hand side of Eqn 1 is replaced by
@@ -843,13 +842,13 @@ $S_t=X_t-h_t$.
 To construct the value function, we consider a return when $X_t=x$ and harvest $h_t=h$ denoted as the reward, $R(x,h)$. For example, if the return is simply the harvest at time $t$, then $R(x,h)=min(x,h)$. We assume that future harvests are discounted relative to current ones at a constant rate of discount $\delta$ and ask for the harvest policy that maximizes total discounted harvest between the current time $t$ and a final time $T$, that is we seek to maximize over choices of harvest $\mathbf{E}_{X_t+1} [ \sum_{t = 0}^{T}  R_t(X_t, h_t) \delta^t]$, where the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the expectation over the process stochasticity in the future population state.
 
 
-In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of Stochastic Dynamic Programming  [SDP, @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014],
+In order to find that policy, we introduce the value function$V_t(x_t)$ representing the total discounted catch from time $t$ onwards given that $X_t=x$.  This value function satisfies an equation of SDP  [ @Mangel1988; @Clark2000; @Clark2009], sometimes called the Bellman-Hamilton-Jacobi equation [@Mangel2014],
 
 \begin{equation}
 V_t(X_t) = \max_{h_t} \lbrace R(h_t, X_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] \rbrace
 \end{equation}
 
-where expectation is taken over all possible values of the next state, $X_t{+1}$, and maximized over all possible choices of harvest, $h_t$.  That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, X_t)$. In the classical case, the sole source of uncertainty is the process noise term, $Z$, and thus the expectation above is equivalent to taking expectations over $Z$. That is
+where expectation is taken over all possible values of the next state, $X_t{+1}$, and maximized over all possible choices of harvest, $h_t$.  That is, at time $t$, when population size is $x$ and harvest $h_t$ is applied, the immediate return is $R(h_t, X_t)$. In the classical case, the sole source of uncertainty is the process stochasticity term, $Z$, and thus the expectation above is equivalent to taking expectations over $Z$. That is
 
 $$ \mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{Z} \left[ V_{t+1}( Z f(X_t - h_t))  | X_t, h_t \right] $$
 
@@ -869,7 +868,7 @@ $$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mat
 
 
 
-We consider the finite time problem with $T=$`r MaxT`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
+We consider the finite time problem with $T=$ `r MaxT`, which we solve using value iteration algorithm [@Mangel1988; @Clark2000].
 
 
 
@@ -937,11 +936,10 @@ to identify the best fitting model.
 ### The Gaussian Process model
 
 The core difference for our purpose between the GP representation and the parametric
-models we have already introduced is the "non-parametric" property, which
-means that an estimated GP model is defined explicitly in reference to 
+models is that the GP model is defined explicitly in reference to 
 some observed data.  Unlike the models above, it cannot be specified by
-the value of some parameters alone.  The nonparametric moniker for the
-GP approach is unfortunate as (a) it still involves the estimation of
+the value of some parameters alone.  Although called nonparametric, the
+GP (a)  still involves the estimation of
 parameters, and (b), statisticians also use non-parametric to mean models
 that make only weak distributional assumptions  [e.g. @Lehmann1975].
 However, we retain the terminology for consistency with previous studies.
@@ -966,12 +964,12 @@ normal distribution. Thus, to characterize the GP we need a mean function
 and a covariance matrix. We proceed as follows.
 
 
-Assuming the data $X_o$ are observed with some process noise,
+We assume that the data $X_o$ are observed with some process stochasticity,
 
 $$X_{t+1} = f(X_t) + \varepsilon$$
 
-$\varepsilon$ IID normal, variance $\sigma_n^2$. Note that we have chosen to
-assume additive noise.  While we could just as easily consider log-normal noise
+where $\varepsilon$ are IID normal random variables with zero-mean and variance $\sigma_n^2$. Note that we have chosen to
+assume additive stochasticity.  While we could just as easily consider log-normal stochasticity
 as in the parametric models, we make this choice to bring home the point that the
 Gaussian process approach need not have structurally correct noise form either.  
 
@@ -985,7 +983,7 @@ Where $K$ is the Gaussian process kernel.  (Compare to  Eqn 2.22 of @Rasmussen20
 
 $$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
 
-We use vague inverse Gamma priors on both the lengthscale $\ell$ and process noise $\sigma$ parameters, of the form
+We use vague inverse Gamma priors on both the lengthscale $\ell$ and $\sigma$, of the form
 
 $$f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)$$
 
@@ -999,7 +997,7 @@ which gives the characteristic length-scale over which correlation between
 two points in state-space decays, and $\sigma$, which gives the scale
 of the process noise by which observations $Y_{t+1}$ may differ from
 their predicted values $X_{t+1}$ given an observation of the previous
-state, $X_t$. @Munch2005a gives an accessible introduction to the use
+state, $X_t$. @Munch2005a give an accessible introduction to the use
 of Gaussian processes in providing a Bayesian nonparametric description
 of the stock-recruitment relationship.
 
@@ -1009,14 +1007,14 @@ of the stock-recruitment relationship.
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
 infer posterior distributions of the two parameters of the GP (Figure
 S13, code in appendix), under weakly informative Gaussian priors
-(see parameters in table S5). As the posterior distributions differ
+(see parameters in table S5). Since the posterior distributions differ
 substantially from the priors (Figure S13), we can be assured that most
 of the information in the posterior comes from the data rather than the
 prior belief.
 
 <!-- SDP via the model  FIXME much more detail here--> 
 
-The method of Gaussian Process Dynamic Programming
+The method of Gaussian Process Dynamic Programming (GPDP)
 --------------------------------------------------
 
 It is reasonably straight-forward to derive the harvest policy from the
@@ -1043,8 +1041,8 @@ Parametric and GP models for population dynamics
 ------------------------------------------------
 
 To ensure our results are robust to our choice of parameters, 
-we perform our analysis over 96 different scenarios. To better
-understand the process, we will first describe in detail the
+consider 96 different scenarios, described in detail below.   To begin, to help  better
+understand the process, we first describe in detail the
 results of a single scenario.  
 
 <!-- 
@@ -1082,7 +1080,9 @@ figure1b_posteriors
 write.csv(df_post, "components/data/figure1.csv")
 ```
 
-All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1.  Figure 1 shows the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to over-fit, predicting fluctuations that are actually due purely to stochasticity.  All model selection criteria shown in Table 1 penalize more complex models and show a preference for the simpler Ricker model over the more complicated alternate stable state models (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
+All models fit the observed data rather closely and with relatively small uncertainty, as illustrated in the posterior predictive curves in Figure 1, in which we show the training data of stock sizes observed over time as points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions.  Each model manages to fit the observed data rather closely. Compared to the true model most estimates appear to over-fit, predicting fluctuations that are actually due purely to stochasticity.  Model selection criteria (Table 1) penalize more complex models and show a preference for the simpler Ricker model over the  models with alternative stable states (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
+
+NOTE: IN THE PDF YOU SENT THERE IS WEIRD STUFF ON LINE 237
 
 ```{r deviances, dependson=c("dic_calc"), include=FALSE, echo=FALSE}
 allen_deviance  <- - posterior.mode(pardist[,'deviance'])
@@ -1112,7 +1112,7 @@ xtable::xtable(rbind(dictable, aictable, bictable), caption="Model selection sco
 - (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
 -->
 
-```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="Graph of the inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  Graph shows the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data is also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
 x_grid_short <- x_grid[1:40]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
 models_posteriors <- 
@@ -1150,18 +1150,20 @@ write.csv(models_posteriors, "components/data/figure2.csv")
 write.csv(obs, "components/data/obs.csv")
 ```
 
-The mean inferred state space dynamics of each model relative to the
-true model used to generate the data is shown in Figure 2, predicting
+We show the  mean inferred state space dynamics of each model relative to the
+true model used to generate the data in Figure 2, predicting
 the relationship between observed stock size (x-axis) to the stock
 size after recruitment the following year.  Note that in contrast to
 the  other models shown, the expected Gaussian process corresponds to a
 distribution of curves - as indicated by the gray band - which itself
 has a mean shown in black. Parameter uncertainty (not shown) spreads
-out the estimates further.  The observed data from which each model is
+out the estimates further.  The observed data from which each model are
 estimated is also shown.  The observations come from only a limited region
 of state space corresponding to unharvested or weakly harvested system.
 No observations occur at the theoretical optimum harvest rate or near
 the tipping point.
+
+NOTE: THERE IS NO MENTION OF FIGURE 3 IN THE TEXT
 
 
 
@@ -1214,7 +1216,7 @@ write.csv(policies, "components/data/figure4.csv")
 ```
 
 Despite the similarities in model fits to the observed data, the
-policies inferred under each model differ widely, as shown in Figure 4.
+policies inferred under each model differ widely (Figure 4).
 Policies are shown in terms of target escapement, $S_t$.  Under models
 such as this a constant escapement policy is expected to be optimal
 [@Reed1979], whereby population levels below a certain size $S$ are
@@ -1225,7 +1227,7 @@ policies close to the true optimum policy (where both the underlying
 model structure and parameter values are known without error).
 
 
-```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. Shown are 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
   scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
@@ -1234,18 +1236,17 @@ ggplot(sims_data) +
 write.csv(sims_data, "components/data/figure5.csv")
 ```
 
-The consequences of managing 100 replicate realizations of the simulated
-fishery under each of the policies estimated is shown in Figure 5.
-As expected from the policy curves, the structurally correct model
-under-harvests, leaving the stock to vary around it's un-fished optimum.
+In Figure 5, we show the consequences of managing 100 replicate realizations of the simulated
+fishery under each of the policies estimated..
+As anticipated from the policy curves, the structurally correct model
+under-harvests, leaving the stock to vary around its unfished optimum.
 The structurally incorrect Ricker model over-harvests the population
 passed the tipping point consistently, resulting in the immediate crash
 of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most
 easily be compared by using the relative differences in net present
-value realized by each of the model. Figure 6 shows the distribution of values
-realized by each simulation shown in Figure 5.  The GPDP
+value realized by each of the model (Figure 6).  The GPDP
 most consistently realizes a value close to the optimal solution,
 and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
@@ -1289,7 +1290,7 @@ for a total of 8 x 3 x 2 x 2 = 96 scenarios. The Gaussian Process performs
 nearly optimally in each case, relative to the optimal solution with no
 parameter or model uncertainty (Figure S9, appendix).  
 
-Changing the noise or the distance between stable and unstable points
+Changing the intensity of the stochasticity or the distance between stable and unstable points
 does not impact the performance of the GP relative to the optimal solution
 given the true model and true parameters.  The parametric models are
 more senstive to this difference.  Large noise relative to the distance between the stable and unstable
@@ -1300,7 +1301,7 @@ window of time $T$ scales as
 $$P(x_t < x_c | t \in T) \propto  \exp\left(\frac{L^2}{\sigma^2}\right),$$
 
 
-(following the Ahrenius relationship, see @Gardiner2009 for the derivation).
+(see @Gardiner2009 or @Mangel2006 for the derivation).
 As a result, the impact of using a model which underestimates the risk of harvesting
 past the critical point is much more severe, since this such a situation
 occurs more often.  Conversely, with large enough distance between the
@@ -1310,15 +1311,15 @@ near-optimally. Models that underestimate the cost incurred by stock
 sizes fluctuating significantly below the optimal escapement level will
 not perform poorly as long as those fluctuations are sufficently rare.  
 
-Figure 7 shows that the GPDP is little effected by increasing noise or increasing
-Allee effects over much of the range. Much larger stochasticity or higher Allee
+The GPDP is weakly influenced by increasing stochasticity or increasing
+Allee effects over much of the range (Figure 7) Much larger stochasticity or higher Allee
 effects make even the optimal solution without any model or parameter uncertainty
 unable to harvest the population effectively (e.g. noise large enoug to violate the
 self-sustaining criterion of @Reed1979). Only at the largest Allee effect
 sizes are some replicates seen to deviate more from the optimal solution.  
 
 
-```{r figure_7, fig.width=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (noise, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+```{r figure_7, fig.width=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
 
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
   geom_point() + ylab("Net present value") + 
@@ -1491,6 +1492,8 @@ through the Center for Stock Assessment Research, a partnership between
 the University of California Santa Cruz and the Fisheries Ecology
 Division, Southwest Fisheries Science Center, Santa Cruz, CA and by NSF
 grant EF-0924195 to MM and NSF grant DBI-1306697 to CB.
+
+NOTE: THE PDF HAS TWO }} IN LINE 351
 
 \appendix
 \renewcommand*{\thefigure}{S\arabic{figure}}
