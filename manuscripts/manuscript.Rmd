@@ -76,6 +76,7 @@ documentclass: components/elsarticle
 ## rmarkdown render options
 output:
   pdf_document:
+    keep_tex: true
     fig_caption: true
     template: components/elsarticle.latex
 
