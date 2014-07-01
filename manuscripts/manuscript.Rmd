@@ -1,7 +1,7 @@
 ---
 layout: 12pt,review
 linenumbers: true
-title: "Avoiding tipping points in fisheries management: A Bayesian Non-Parametric approach"
+title: "Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming"
 author: 
   - name: Carl Boettiger
     affiliation: cstar
