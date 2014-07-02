@@ -319,7 +319,7 @@ allen_priors <- ddply(allen_posteriors, "variable", function(dd){
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
 plot_allen_posteriors <- ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
 #  geom_line(data=allen_priors, aes(x=value, y=density), col="red") +  
   facet_wrap(~ variable, scale="free", ncol=3)
 
@@ -411,7 +411,7 @@ ricker_priors <- ddply(ricker_posteriors, "variable", function(dd){
 })
 # plot posterior distributions
 plot_ricker_posteriors <- ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
 #  geom_line(data=ricker_priors, aes(x=value, y=density), col="red") +  # don't plot priors 
   facet_wrap(~ variable, scale="free", ncol=2)
 ```
@@ -517,7 +517,7 @@ par_prior_curves <- ddply(myers_posteriors, "variable", function(dd){
     data.frame(value = grid, density = par_priors[[dd$variable[1]]](grid))
 })
 plot_myers_posteriors <- ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
 #  geom_line(data=par_prior_curves, aes(x=value, y=density), col="red") +  # Whoops, these are misaligned. see table instead 
   facet_wrap(~ variable, scale="free", ncol=3)
 
@@ -1104,9 +1104,9 @@ step_ahead_posteriors <- function(x){
 }
 df_post <- step_ahead_posteriors(x)
 figure1b_posteriors <- ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=.1) + 
+  geom_line(aes(time, value, col=variable, group=interaction(L1,variable))) + 
   facet_wrap(~variable) + 
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) +  
+  scale_colour_manual(values=colorkey) +  
   theme(legend.position="none")
 figure1b_posteriors
 
@@ -1172,9 +1172,8 @@ ggplot(models_posteriors) +
                   fill = "gray80", 
                   data=subset(models_posteriors, variable == "GP")) + 
     geom_line(aes(stock, value, col = variable, 
-                  group=interaction(L1,variable)), 
-              alpha=.2) + 
-    geom_point(data = obs, aes(x,y), alpha = 0.8) + 
+                  group=interaction(L1,variable))) + 
+    geom_point(data = obs, aes(x,y)) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     facet_wrap(~variable) + 
     scale_colour_manual(values=colorkey) +  
@@ -1221,14 +1220,12 @@ crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers
 ggplot(crash_data) + 
   geom_boxplot(aes(as.factor(as.integer(time)), value, 
                    fill = variable, col=variable), 
-               alpha=.7, outlier.size=1, position="identity") + 
+               outlier.size=1, position="identity") + 
 #  geom_line(aes(time, value, col = variable, 
-#            group=interaction(L1,variable)), alpha=.1) + 
+#            group=interaction(L1,variable))) + 
   geom_point(aes(time, stock), size = 3) + 
-  scale_fill_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
-                      guide = guide_legend(override.aes = list(alpha = 1))) +  
-  scale_colour_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")], 
-                      guide = guide_legend(override.aes = list(alpha = 1))) +  
+  scale_fill_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")]) +  
+  scale_colour_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")]) +  
   facet_wrap(~variable) + 
   theme(legend.position="none") + xlab("time") + ylab("stock size") 
 
@@ -1252,7 +1249,7 @@ policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), i
 names(policies) <- c("stock", "method", "value")
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2, alpha=0.8) + xlab("stock size") + ylab("escapement")  +
+  geom_line(lwd=1.2) + xlab("stock size") + ylab("escapement")  +
   scale_colour_manual(values=colorkey)
 
 write.csv(policies, "components/data/figure4.csv")
@@ -1272,8 +1269,8 @@ model structure and parameter values are known without error).
 
 ```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
+  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method)) +
+  scale_colour_manual(values=colorkey) + 
   facet_wrap(~method) + guides(legend.position="none")
 
 write.csv(sims_data, "components/data/figure5.csv")
@@ -1306,7 +1303,7 @@ ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) +
 # ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
 #  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
 # ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
-#  stat_density(aes(y=..density..), position="stack", adjust=3, alpha=.9) + 
+#  stat_density(aes(y=..density..), position="stack", adjust=3) + 
 #  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
 
 write.csv(actual_over_optimal, "components/data/figure6.csv")
@@ -1599,7 +1596,7 @@ plot_ricker_traces
 
 ```{r figure_S4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
 ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
 write.csv(ricker_posteriors, "components/data/ricker_posteriors.csv")
 ```
@@ -1617,7 +1614,7 @@ plot_myers_traces
 
 ```{r figure_S6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
 ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
 write.csv(myers_posteriors, "components/data/myers_posteriors.csv")
 ```
@@ -1635,7 +1632,7 @@ plot_allen_traces
 
 ```{r figure_S8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
 ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity", alpha=0.7) +
+  stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
 write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
 ```
