@@ -1,0 +1,308 @@
+---
+layout: 12pt,review
+linenumbers: true
+title: "Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming"
+author: 
+  - name: Carl Boettiger
+    affiliation: cstar
+    email: cboettig(at)gmail.com
+    footnote: Corresponding author
+  - name: Marc Mangel
+    affiliation: cstar
+  - name: Stephan Munch
+    affiliation: noaa
+address: 
+  - code: cstar
+    address: | 
+      Center for Stock Assessment Research, 
+      Department of Applied Math and Statistics, 
+      University of California, Mail Stop SOE-2,
+      Santa Cruz, CA 95064, USA
+  - code: marc
+    address: |
+      Center for Stock Assessment Research, Department of Applied Math
+      and Statistics, University of California,
+      Mail Stop SOE-2, Santa Cruz, CA 95064, USA and Department of
+      Biology, University of Bergen, Bergen, Norway 9020
+  - code: noaa
+    address: | 
+      Southwest Fisheries Science Center, 
+      National Oceanic and Atmospheric Administration, 
+      110 Shaffer Road, Santa Cruz, CA 95060, USA
+
+abstract: |
+  Model uncertainty and limited data are fundamental challenges to
+  robust management of human intervention in a natural system.
+  These challenges are acutely highlighted by concerns that
+  many ecological systems may contain tipping points, such as
+  Allee population sizes.  Before a collapse, we do not know
+  where the tipping points lie, if they exist at all.  Hence,
+  we know neither a complete model of the system dynamics nor
+  do we have access to data in some large region of state-space
+  where such a tipping point might exist.  We illustrate how
+  a Bayesian Non-Parametric (BNP) approach using a Gaussian
+  Process (GP) prior provides a flexible representation of this
+  inherent uncertainty. We embed GPs in a Stochastic Dynamic
+  Programming (SDP) framework in order to make robust management
+  predictions with both model uncertainty and limited data. We
+  use simulations to evaluate this approach as compared with the
+  standard approach of using model selection to choose from a set
+  of candidate models.  We find that model selection erroneously
+  favors models without tipping points -- leading to harvest
+  policies that guarantee extinction. The GPDP performs nearly as
+  well as the true model and significantly outperforms standard
+  approaches. We illustrate this using examples of simulated
+  single-species dynamics, where the standard model selection
+  approach should be most effective, and find that it still
+  fails to account for uncertainty appropriately and leads to
+  population crashes, while management based on the GPDP does
+  not, since it does not underestimate the uncertainty outside
+  of the observed data.
+
+keywords:
+  - Bayesian
+  - Structural Uncertainty
+  - Nonparametric 
+  - Optimal Control
+  - Decision Theory
+  - Gaussian Processes
+  - Fisheries Management
+
+bibliography: components/references.bib
+csl: components/ecology.csl
+documentclass: components/elsarticle
+
+## rmarkdown render options
+output:
+  pdf_document:
+    fig_caption: true
+    template: components/elsarticle.latex
+    keep_tex: true
+
+---
+
+
+```{r knit, include=FALSE}
+library("methods")
+library("rmarkdown")
+render("manuscript.Rmd")
+```
+
+
+\appendix
+\renewcommand*{\thefigure}{S\arabic{figure}}
+\renewcommand*{\thetable}{S\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+
+Appendix: Model definitions and estimation
+===========================================
+
+
+
+```{r figure_S1, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options"}
+gp_assessment_plots$traces_plot
+```
+
+
+```{r figure_S2, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
+gp_assessment_plots$posteriors_plot
+```
+
+
+\newpage
+
+
+
+Training data (Figures 1-6)
+----------------------------
+
+Each of our models $f(S_t)$ must be estimated from training data, which
+we simulate from the Allen model with parameters $r = $ `r p[1]`, 
+$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
+for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
+The training data can be seen in Figure 1.  
+
+Training data for sensitivity analyses
+-------------------------------------
+
+A further 96 unique training data sets are generated for the sensitivity analysis, as described in the main text.  
+
+
+
+Code
+----
+
+All code used in producing this analysis can be found in the R package accompanying the paper, available from [http://github.com/cboettig/nonparametric-bayes]. The code for all results shown here is dynamically embedded into the manuscript using `knitr` [@knitr].  
+
+
+<!--
+Data
+----
+
+While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
+
+-->
+
+
+
+```{r figure_S3, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_ricker_traces
+```
+
+```{r figure_S4, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
+ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(ricker_posteriors, "components/data/ricker_posteriors.csv")
+```
+
+
+```{r Table S1, results = "asis"}
+pander::pandoc.table(ricker_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Ricker model")
+```
+
+
+```{r figure_S5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_myers_traces
+```
+
+```{r figure_S6, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
+ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(myers_posteriors, "components/data/myers_posteriors.csv")
+```
+
+
+```{r TableS2, results="asis"}
+pander::pandoc.table(myers_priors_xtable,
+           caption = "Parameterization range for the uniform priors in the Myers model")
+```
+
+
+```{r figure_S7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=6}
+plot_allen_traces
+```
+
+```{r figure_S8, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
+ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
+```
+
+
+```{r TableS3, results = "asis"}
+pander::pandoc.table(allen_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Allen model")
+```
+
+
+
+```{r sensitivity-calc}
+source("components/sensitivity.R")
+
+models <- c("Myers","Allen")
+
+parameters <- list(
+  Myers = list(
+    c(r=1.5 + rnorm(1, 0, 1), theta=2 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1)),
+    c(r=1.5 + rnorm(1, 0, 1), theta=2.5 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1))),
+  Allen = list(
+    c(r=2 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1), C=4 + rnorm(1, 0, 1)),
+    c(r=2 + rnorm(1, 0, 1), K=10 + rnorm(1, 0, 1), C=4 + rnorm(1, 0, 1)))
+)
+nuisance_pars <- c("sigma_g")
+nuisance_values <- list(sigma_g = c(0.01, 0.05))
+```
+
+```{r allensets}
+model <- "Allen"
+allen1.01 <- sensitivity(model, 
+                   parameters = parameters[[model]][[1]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
+                   seed=c(1111, 2222, 3333))
+allen2.01 <- sensitivity(model, 
+                   parameters = parameters[[model]][[2]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
+                   seed=c(1111, 2222, 3333))
+allen1.05 <- sensitivity(model, 
+                   parameters = parameters[[model]][[1]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
+                   seed=c(1111, 2222, 3333))
+allen2.05 <- sensitivity(model, 
+                   parameters = parameters[[model]][[2]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
+                   seed=c(1111, 2222, 3333))
+```
+
+```{r myerssets}
+model <- "Myers"
+Myers1.01 <- sensitivity(model, 
+                   parameters = parameters[[model]][[1]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
+                   seed=c(1111, 2222, 3333))
+Myers2.01 <- sensitivity(model, 
+                   parameters = parameters[[model]][[2]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[1]), 
+                   seed=c(1111, 2222, 3333))
+Myers1.05 <- sensitivity(model, 
+                   parameters = parameters[[model]][[1]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
+                   seed=c(1111, 2222, 3333))
+Myers2.05 <- sensitivity(model, 
+                   parameters = parameters[[model]][[2]], 
+                   nuisance = c(sigma_g = nuisance_values$sigma_g[2]), 
+                   seed=c(1111, 2222, 3333))
+
+## Assemble into data.frame
+allen_dat <- rbind(allen1.01, allen1.05, allen2.01, allen2.05) 
+m <- rbind(Myers1.01, Myers1.05, Myers2.01, Myers2.05)
+myers_dat <- m[c(1:2,4,3,5:8)]
+names(myers_dat) <- names(allen_dat)
+model_dat <- rbind(allen_dat, myers_dat)
+dat <- model_dat
+dat$pars.r <- factor(dat$pars.r, labels=c("A", "B", "C", "D"))
+dat <- dat[c(1:2,5:6, 8, 7)]
+dat$noise <- factor(dat$noise)
+names(dat) <- c("model", "parameters", "replicate", "simulation", "noise", "value")
+
+## Extract acutal parameter values corresponding to each parameter set
+p1 = as.numeric(levels(factor(model_dat$pars.r)))
+p2 = as.numeric(levels(factor(model_dat$pars.K)))
+p3 = as.numeric(levels(factor(model_dat$pars.C)))
+
+set.A = c(r = p1[1], K = p2[1], theta = p3[1])
+set.B = c(r = p1[2], K = p2[2], theta = p3[2])
+set.C = c(r = p1[3], K = p2[3], C = p3[3])
+set.D = c(r = p1[4], K = p2[4], C = p3[4])
+AllenParameterSets <- rbind(set.A, set.B)
+MyersParameterSets <- rbind(set.C, set.D)
+
+sensitivity_dat <- dat
+```
+
+```{r figure_S9, fig.height=6, fig.width=10, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histograms shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values of 1 indicate optimal performance. Columns indicate different models, rows different noise levels, and colors indicate the parameter set used. Grouped over stochastic replicates applying the contol policy and stochastic replicates of training data generated from the model indicated, see raw data for details. Randomly chosen parameter values for the models shown in tables below."}
+ggplot(sensitivity_dat) + 
+  geom_histogram(aes(value, fill=parameters)) + 
+  xlim(0,1.0) + 
+  theme_bw() + 
+  xlab("value as fraction of the optimal") + 
+  facet_grid(noise~model)
+write.csv(sensitivity_dat, "components/data/sensitivity_dat.csv") 
+```
+
+```{r AllenSetsTable, results="asis"}
+pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S9." )
+```
+```{r MyersSetsTable, results="asis"}
+pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S9." )
+```
+
+```{r unlink, include=FALSE}
+unlink("ricker_process.bugs")
+unlink("allen_process.bugs")
+unlink("myers_process.bugs")
+```
