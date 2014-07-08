@@ -12,6 +12,7 @@ restore-cache:
 
 render: 
 	Rscript -e "rmarkdown::render('$(MANUSCRIPT).Rmd')"
+	Rscript -e "rmarkdown::render('supplement.Rmd')"
 
 clear-cache:
 	rm -rf components/cache
