@@ -1,7 +1,7 @@
 ---
 layout: 12pt,review
 linenumbers: true
-title: "Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming"
+title: "Supplement for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming"
 author: 
   - name: Carl Boettiger
     affiliation: cstar
@@ -30,43 +30,6 @@ address:
       National Oceanic and Atmospheric Administration, 
       110 Shaffer Road, Santa Cruz, CA 95060, USA
 
-abstract: |
-  Model uncertainty and limited data are fundamental challenges to
-  robust management of human intervention in a natural system.
-  These challenges are acutely highlighted by concerns that
-  many ecological systems may contain tipping points, such as
-  Allee population sizes.  Before a collapse, we do not know
-  where the tipping points lie, if they exist at all.  Hence,
-  we know neither a complete model of the system dynamics nor
-  do we have access to data in some large region of state-space
-  where such a tipping point might exist.  We illustrate how
-  a Bayesian Non-Parametric (BNP) approach using a Gaussian
-  Process (GP) prior provides a flexible representation of this
-  inherent uncertainty. We embed GPs in a Stochastic Dynamic
-  Programming (SDP) framework in order to make robust management
-  predictions with both model uncertainty and limited data. We
-  use simulations to evaluate this approach as compared with the
-  standard approach of using model selection to choose from a set
-  of candidate models.  We find that model selection erroneously
-  favors models without tipping points -- leading to harvest
-  policies that guarantee extinction. The GPDP performs nearly as
-  well as the true model and significantly outperforms standard
-  approaches. We illustrate this using examples of simulated
-  single-species dynamics, where the standard model selection
-  approach should be most effective, and find that it still
-  fails to account for uncertainty appropriately and leads to
-  population crashes, while management based on the GPDP does
-  not, since it does not underestimate the uncertainty outside
-  of the observed data.
-
-keywords:
-  - Bayesian
-  - Structural Uncertainty
-  - Nonparametric 
-  - Optimal Control
-  - Decision Theory
-  - Gaussian Processes
-  - Fisheries Management
 
 bibliography: components/references.bib
 csl: components/ecology.csl
