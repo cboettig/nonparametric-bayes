@@ -1,17 +1,18 @@
-MANUSCRIPT=manuscript
-
-
 all:
-	make render
+	make manuscript.pdf
+	make supplement.pdf
 	make ../README.md
 
 install: components/install.R
 	Rscript components/install.R
+
 restore-cache:  
 	make components/cache
 
-render: 
-	Rscript -e "rmarkdown::render('$(MANUSCRIPT).Rmd')"
+manuscript.pdf: manuscript.Rmd
+	Rscript -e "rmarkdown::render('manuscript.Rmd')"
+
+supplement.pdf: supplement.Rmd
 	Rscript -e "rmarkdown::render('supplement.Rmd')"
 
 clear-cache:
@@ -34,3 +35,7 @@ deploy-cache:
 components/cache: components/restore-cache.R
 	Rscript components/restore-cache.R
 
+
+render:
+	make manuscript.pdf
+	make supplement.pdf

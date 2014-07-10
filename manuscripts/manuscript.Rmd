@@ -76,6 +76,7 @@ documentclass: components/elsarticle
 output:
   pdf_document:
     fig_caption: true
+    fig_crop: false
     template: components/elsarticle.latex
     keep_tex: true
 
@@ -139,7 +140,7 @@ posterior.mode <- function(x) {
 ```
 ```{r stateeq}
 f <- RickerAllee
-p <- c(2, 8, 5)
+p <- c(2, 10, 5)
 K <- 10  # approx, a li'l' less
 allee <- 5 # approx, a li'l' less
 ```
@@ -1090,7 +1091,7 @@ results of a single scenario.
 --> 
 
 
-```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=8, fig.height=6}
+```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=6, fig.height=4, dev.args=list(version="1.3")}
 step_ahead_posteriors <- function(x){
   gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
   df_post <- melt(lapply(sample(100, 30),  
@@ -1105,13 +1106,16 @@ step_ahead_posteriors <- function(x){
   }), id=c("time", "stock"))
 }
 df_post <- step_ahead_posteriors(x)
-figure1b_posteriors <- ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=0.2) + 
+
+ggplot(df_post) + 
+#  geom_point(aes(time, stock)) +
+  stat_summary(aes(time, value), fun.y = "mean", fun.ymin = "min", fun.ymax="max", geom="ribbon", fill='grey80', col='grey80') +
+  stat_summary(aes(time, value, col=variable), fun.y = "mean", geom="line") +
+#  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=0.2) + 
   facet_wrap(~variable) + 
   scale_colour_manual(values=colorkey) +  
+  scale_fill_manual(values=colorkey) +  
   theme(legend.position="none")
-figure1b_posteriors
-
 
 
 write.csv(df_post, "components/data/figure1.csv")
@@ -1148,7 +1152,7 @@ pandoc.table(rbind(dictable, aictable, bictable), caption="Model selection score
 - (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
 -->
 
-```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=6, fig.height=4, dev.args=list(version="1.3")}
 x_grid_short <- x_grid[1:40]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
 models_posteriors <- 
@@ -1173,8 +1177,13 @@ ggplot(models_posteriors) +
     geom_ribbon(aes(x=stock, y=y, ymin=ymin, ymax=ymax, group=L1), 
                   fill = "gray80", 
                   data=subset(models_posteriors, variable == "GP")) + 
-    geom_line(aes(stock, value, col = variable, 
-                  group=interaction(L1,variable)), alpha=0.2) + 
+
+    stat_summary(aes(stock, value), fun.y = "mean", fun.ymin = "min", fun.ymax="max", geom="ribbon", fill='grey80', col='grey80') +
+    stat_summary(aes(stock, value, col=variable), fun.y = "mean", geom="line") +
+
+#   geom_line(aes(stock, value, col = variable, 
+#                  group=interaction(L1,variable)), alpha=0.2) + 
+
     geom_point(data = obs, aes(x,y)) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     facet_wrap(~variable) + 
@@ -1211,7 +1220,7 @@ Note that the GP is particularly uncertain about the dynamics relative
 to structurally incorrect models like the Ricker.
 
 
-```{r figure_3, fig.width=8, fig.height=6, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
+```{r figure_3, fig.width=6, fig.height=4, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options", dev.args=list(version="1.3")}
 y <- numeric(8)
 y[1] <- 4.5
 for(t in 1:(length(y)-1))
@@ -1246,7 +1255,7 @@ write.csv(crash_data, "components/data/figure3.csv")
 --> 
 
 
-```{r figure_4, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```{r figure_4, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", dev.args=list(version="1.3")}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
@@ -1269,10 +1278,16 @@ policies close to the true optimum policy (where both the underlying
 model structure and parameter values are known without error).
 
 
-```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=4, dev.args=list(version="1.3")}
+
+mymin <- function(x) mean(x) - sd(x)
 ggplot(sims_data) + 
-  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
-  scale_colour_manual(values=colorkey) + 
+
+  stat_summary(aes(time, fishstock), fun.y = "mean", fun.ymin = "mymin", fun.ymax="max", geom="ribbon", fill='grey80', col='grey80') +
+  stat_summary(aes(time, fishstock, col=method), fun.y = "mean", geom="line") +
+
+#  geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
+  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
   facet_wrap(~method) + guides(legend.position="none")
 
 write.csv(sims_data, "components/data/figure5.csv")
@@ -1294,7 +1309,7 @@ and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
 
-```{r figure_6, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
+```{r figure_6, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=5, fig.height=4, dev.args=list(version="1.3")}
 
 ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, ncol=2)  + 
@@ -1361,7 +1376,7 @@ self-sustaining criterion of @Reed1979). Only at the largest Allee effect
 sizes are some replicates seen to deviate more from the optimal solution.  
 
 
-```{r figure_7, fig.width=6, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+```{r figure_7, fig.width=4, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect.", dev.args=list(version="1.3")}
 
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
   geom_point() + ylab("Net present value") + 
