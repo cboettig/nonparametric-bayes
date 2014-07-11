@@ -39,7 +39,6 @@ documentclass: components/elsarticle
 output:
   pdf_document:
     fig_caption: true
-    fig_crop: false
     template: components/elsarticle.latex
     keep_tex: true
 
@@ -50,20 +49,6 @@ output:
 library("methods")
 library("rmarkdown")
 render("manuscript.Rmd")
-```
-
-
-```{r supplement-caching, include=FALSE}
-library("knitr")
-basename <- "supplement"
-opts_chunk$set(fig.path = paste("components/figure/", basename, "-", sep=""),
-               cache.path = paste("components/cache/", basename, "/", sep=""))
-opts_chunk$set(cache = 2) 
-opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, 
-               comment = NA, verbose = TRUE, echo=FALSE)
-
-opts_chunk$set(dev.opts=c(version="1.3"), dev="pdf")
-
 ```
 
 
