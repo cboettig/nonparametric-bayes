@@ -51,6 +51,21 @@ library("rmarkdown")
 render("manuscript.Rmd")
 ```
 
+```{r supplement-caching, include=FALSE}
+library("knitr")
+basename <- "supplement"
+opts_chunk$set(fig.path = paste("components/figure/", basename, "-", sep=""),
+               cache.path = paste("components/cache/", basename, "/", sep=""))
+opts_chunk$set(cache = 2) 
+opts_chunk$set(tidy=FALSE, warning=FALSE, message=FALSE, 
+               comment = NA, verbose = TRUE, echo=FALSE)
+
+opts_chunk$set(dev.opts=c(version="1.3"), dev="pdf")
+
+```
+
+
+
 
 \appendix
 \renewcommand*{\thefigure}{S\arabic{figure}}
@@ -58,8 +73,44 @@ render("manuscript.Rmd")
 \setcounter{figure}{0}
 \setcounter{table}{0}
 
-Appendix: Model definitions and estimation
-===========================================
+
+Figure S1 illustrates the performance of the GP and parametric models
+outside the observed training data. The mean trajectory under the
+underlying model is shown by the black dots, while the corresponding
+prediction made by the model shown by the box and whiskers plots.
+Predictions are based on the true expected value in the previous time
+step.  Predicted distributions that lie entirely above the expected
+dynamics indicate the expectation of stock sizes higher than what is
+actually expected. The models differ both in their expectations and
+their uncertainty (colored bands show two standard deviations away).
+Note that the GP is particularly uncertain about the dynamics relative
+to structurally incorrect models like the Ricker.
+
+
+```{r figure_3, fig.width=8, fig.height=6, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
+y <- numeric(8)
+y[1] <- 4.5
+for(t in 1:(length(y)-1))
+      y[t+1] = z_g() * f(y[t], h=0, p=p)
+# predicts means, does not reflect uncertainty estimate!
+crash_data <- step_ahead_posteriors(y)
+crash_data <- subset(crash_data, variable %in% c("GP", "Allen", "Ricker", "Myers"))
+ggplot(crash_data) + 
+  geom_boxplot(aes(as.factor(as.integer(time)), value, 
+                   fill = variable, col=variable), 
+               outlier.size=1, position="identity") + 
+#  geom_line(aes(time, value, col = variable, 
+#            group=interaction(L1,variable))) + 
+  geom_point(aes(time, stock), size = 3) + 
+  scale_fill_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")]) +  
+  scale_colour_manual(values=colorkey[c("GP", "Allen", "Ricker", "Myers")]) +  
+  facet_wrap(~variable) + 
+  theme(legend.position="none") + xlab("time") + ylab("stock size") 
+
+write.csv(crash_data, "components/data/figure3.csv")
+```
+
+
 
 
 
@@ -161,6 +212,20 @@ write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
 pander::pandoc.table(allen_priors_xtable,
   caption = "Parameterization range for the uniform priors in the Allen model")
 ```
+
+
+
+Further sensitivity analysis
+=============================
+
+The Latin hypercube approach systematically varies all combinations of
+parameters, providing a more general test than varying only one parameter
+at a time.  We loop across eight replicates of three different randomly
+generated parameter sets for each of two different generating models
+(Allen and Myers) over two different noise levels (0.01 and 0.05),
+for a total of 8 x 3 x 2 x 2 = 96 scenarios. The Gaussian Process performs
+nearly optimally in each case, relative to the optimal solution with no
+parameter or model uncertainty (Figure S10, appendix).  
 
 
 
