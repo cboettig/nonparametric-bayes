@@ -600,37 +600,8 @@ the estimates further. The observed data from which each model are
 estimated is also shown. The observations come from only a limited
 region of state space corresponding to unharvested or weakly harvested
 system. No observations occur at the theoretical optimum harvest rate or
-near the tipping point.
-
-Figure 3 illustrates the performance of the GP and parametric models
-outside the observed training data. The mean trajectory under the
-underlying model is shown by the black dots, while the corresponding
-prediction made by the model shown by the box and whiskers plots.
-Predictions are based on the true expected value in the previous time
-step. Predicted distributions that lie entirely above the expected
-dynamics indicate the expectation of stock sizes higher than what is
-actually expected. The models differ both in their expectations and
-their uncertainty (colored bands show two standard deviations away).
-Note that the GP is particularly uncertain about the dynamics relative
-to structurally incorrect models like the Ricker.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_3.pdf}
-\caption{Outside the range of the training data (Figure 1), the true
-dynamics (black dots) fall outside the uncertainty (two standard
-deviations, colored bands) of the structurally incorrect parametric
-models (Ricker, Myers), but inside the uncertainty predicted by the GP.
-Points show the stock size simulated by the true model. Overlay shows
-the range of states predicted by each model, based on the state observed
-in the previous time step. The Ricker model always (wrongly) predicts
-positive population growth, while the actual population shrinks in each
-step as the initial condition falls below the Allee threshold of the
-underlying model (Allen). Note that because it does not assume a
-parametric form but instead relies more directly on the data, the GP is
-both more pessimistic and more uncertain about the future state than the
-parametric models.}
-\end{figure}
+near the tipping point. Figure S1 (see supplement) shows the performance
+of the models outside the observed training data.
 
 \begin{figure}[htbp]
 \centering
@@ -642,7 +613,7 @@ expected to be optimal (Reed 1979).}
 \end{figure}
 
 Despite the similarities in model fits to the observed data, the
-policies inferred under each model differ widely (Figure 4). Policies
+policies inferred under each model differ widely (Figure 3). Policies
 are shown in terms of target escapement, $S_t$. Under models such as
 this a constant escapement policy is expected to be optimal (Reed 1979),
 whereby population levels below a certain size $S$ are unharvested,
@@ -661,7 +632,7 @@ dynamics (eq 1) under the policies derived from each of the estimated
 models, as well as the policy based on the exact underlying model.}
 \end{figure}
 
-In Figure 5, we show the consequences of managing 100 replicate
+In Figure 4, we show the consequences of managing 100 replicate
 realizations of the simulated fishery under each of the policies
 estimated. As anticipated from the policy curves, the structurally
 correct model under-harvests, leaving the stock to vary around its
@@ -671,7 +642,7 @@ immediate crash of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most easily be
 compared by using the relative differences in net present value realized
-by each of the model (Figure 6). The GPDP most consistently realizes a
+by each of the model (Figure 5). The GPDP most consistently realizes a
 value close to the optimal solution, and importantly avoids ever driving
 the system across the tipping point, which results in the near-zero
 value cases in the parametric models.
@@ -692,19 +663,10 @@ These results are not sensitive to the modeling details of the
 simulation. The GPDP estimate remains very close to the optimal solution
 obtained by knowing the true model across changes to the training
 simulation, noise scale, parameters or structure of the underlying
-model. We consider both a Latin hypercube approach and a more focused
-investigation of the parameters most responsible for impacting the
-transition rate: the relative distance to the Allee threshold and the
-noise effects.
-
-The Latin hypercube approach systematically varies all combinations of
-parameters, providing a more general test than varying only one
-parameter at a time. We loop across eight replicates of three different
-randomly generated parameter sets for each of two different generating
-models (Allen and Myers) over two different noise levels (0.01 and
-0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. The Gaussian Process
-performs nearly optimally in each case, relative to the optimal solution
-with no parameter or model uncertainty (Figure S9, appendix).
+model. We consider both a Latin hypercube approach (see supplementary
+materials, Fig S11) and a more focused investigation of the parameters
+most responsible for impacting the transition rate: the relative
+distance to the Allee threshold and the noise effects.
 
 Changing the intensity of the stochasticity or the distance between
 stable and unstable points does not impact the performance of the GP
@@ -728,8 +690,8 @@ stock sizes fluctuating significantly below the optimal escapement level
 will not perform poorly as long as those fluctuations are sufficiently
 rare.
 
-The GPDP is weakly influenced by increasing stochasticity or increasing
-Allee effects over much of the range (Figure 7) Much larger
+The GPDP is only weakly influenced by increasing stochasticity or
+increasing Allee effects over much of the range (Figure 6). Much larger
 stochasticity or higher Allee effects make even the optimal solution
 without any model or parameter uncertainty unable to harvest the
 population effectively (e.g.~noise large enough to violate the
