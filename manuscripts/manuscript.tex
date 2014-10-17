@@ -470,8 +470,8 @@ nonparametric description of the stock-recruitment relationship.
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (Gelman et al.
 (2003)) to infer posterior distributions of the two parameters of the GP
-(Figure S13, code in appendix). Since the posterior distributions differ
-substantially from the priors (Figure S13), we can be assured that most
+(Figure S3, code in appendix). Since the posterior distributions differ
+substantially from the priors (Figure S3), we can be assured that most
 of the information in the posterior comes from the data rather than the
 prior belief.
 
@@ -479,7 +479,7 @@ prior belief.
 (GPDP)}\label{the-method-of-gaussian-process-dynamic-programming-gpdp}
 
 It is reasonably straight-forward to derive the harvest policy from the
-estimated BP by inserting it into a SDP algorithm. The only difference
+estimated GP by inserting it into a SDP algorithm. The only difference
 is that the uncertainty in the future state under the GP, $X_{t+1}$,
 includes both process uncertainty (based on the estimation of $\sigma$)
 and ``structural uncertainty'' of the posterior collection of
@@ -504,7 +504,7 @@ single scenario.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_1.pdf}
+\includegraphics{components/figure/manuscript-figure_1-1.pdf}
 \caption{Points show the training data of stock-size over time. Curves
 show the posterior step-ahead predictions based on each of the estimated
 models. Observe that all models are fitting the data reasonably well.}
@@ -579,7 +579,7 @@ selected model will be used outside of the observed range of the data.}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_2.pdf}
+\includegraphics{components/figure/manuscript-figure_2-1.pdf}
 \caption{The inferred Gaussian process compared to the true process and
 maximum-likelihood estimated process. We show the expected value for the
 function $f$ under each model. Two standard deviations from the
@@ -596,7 +596,7 @@ after recruitment the following year. Note that in contrast to the other
 models shown, the expected Gaussian process corresponds to a
 distribution of curves - as indicated by the gray band - which itself
 has a mean shown in black. Parameter uncertainty (not shown) spreads out
-the estimates further. The observed data from which each model are
+the estimates further. The observed data from which each model is
 estimated is also shown. The observations come from only a limited
 region of state space corresponding to unharvested or weakly harvested
 system. No observations occur at the theoretical optimum harvest rate or
@@ -605,7 +605,7 @@ of the models outside the observed training data.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_4.pdf}
+\includegraphics{components/figure/manuscript-figure_4-1.pdf}
 \caption{The steady-state optimal policy (infinite boundary) calculated
 under each model. Policies are shown in terms of target escapement,
 $S_t$, as under models such as this a constant escapement policy is
@@ -618,14 +618,17 @@ are shown in terms of target escapement, $S_t$. Under models such as
 this a constant escapement policy is expected to be optimal (Reed 1979),
 whereby population levels below a certain size $S$ are unharvested,
 while above that size the harvest strategy aims to return the population
-to $S$, resulting in the hockey-stick shaped policies shown. Only the
-structurally correct model (Allen model) and the GP produce policies
-close to the true optimum policy (where both the underlying model
-structure and parameter values are known without error).
+to $S$. Whenever a model predicts that the population will not persist
+below a certain threshold, the optimal solution is to harvest the entire
+population immediately, resulting in an escapement $S=0$, as seen in the
+true (correct form, exact parameters) model, the Allen model (correct
+form, estimated parameters) and the GP.\\Only the structurally correct
+model (Allen model) and the GP produce policies close to the true
+optimum policy.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_5.pdf}
+\includegraphics{components/figure/manuscript-figure_5-1.pdf}
 \caption{In the management context, GPDP outperforms approaches based on
 parametric models. We show 100 replicate simulations of the stock
 dynamics (eq 1) under the policies derived from each of the estimated
@@ -637,7 +640,7 @@ realizations of the simulated fishery under each of the policies
 estimated. As anticipated from the policy curves, the structurally
 correct model under-harvests, leaving the stock to vary around its
 unfished optimum. The structurally incorrect Ricker model over-harvests
-the population passed the tipping point consistently, resulting in the
+the population past the tipping point consistently, resulting in the
 immediate crash of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most easily be
@@ -649,7 +652,7 @@ value cases in the parametric models.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_6.pdf}
+\includegraphics{components/figure/manuscript-figure_6-1.pdf}
 \caption{Histograms of the realized net present value of the fishery
 over a range of simulated data and resulting parameter estimates. For
 each data set, the three models are estimated as described above. Values
@@ -664,7 +667,7 @@ simulation. The GPDP estimate remains very close to the optimal solution
 obtained by knowing the true model across changes to the training
 simulation, noise scale, parameters or structure of the underlying
 model. We consider both a Latin hypercube approach (see supplementary
-materials, Fig S11) and a more focused investigation of the parameters
+materials, Fig S10) and a more focused investigation of the parameters
 most responsible for impacting the transition rate: the relative
 distance to the Allee threshold and the noise effects.
 
@@ -701,7 +704,7 @@ solution.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_7.pdf}
+\includegraphics{components/figure/manuscript-figure_7-1.pdf}
 \caption{The effect of increasing noise or decreasing Allee threshold
 levels on the net present value of the fishery when managed under the
 GPDP, relative to managing under the true model (with known parameters).
@@ -772,7 +775,7 @@ Bayesian approach, in contrast, allows a predictive model that expresses
 a great deal of uncertainty about the probable dynamics outside the
 observed range, while retaining very good predictive accuracy in the
 range observed. The management policy dictated by the GP balances this
-uncertainty against the immediate value of the harvest, and act to
+uncertainty against the immediate value of the harvest, and acts to
 stabilize the population dynamics in a region of state space in which
 the predictions can be reliably reflected by the data.
 

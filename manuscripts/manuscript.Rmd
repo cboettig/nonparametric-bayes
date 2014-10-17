@@ -98,7 +98,7 @@ opts_chunk$set(dev='pdf')
 
 
 <!-- Run R code for analysis, to be called by figures -->
-```{r plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE, cache=FALSE}
+```{r plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -106,7 +106,7 @@ opts_chunk$set(dev='pdf', dev.args=c(version="1.3"))
 
 ```
 
-```{r libraries, cache=FALSE, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
+```{r libraries}
 library("nonparametricbayes") 
 library("pdgControl")
 
@@ -371,7 +371,7 @@ par_priors <- list(K = K_prior, deviance = function(x) 0 * x,
 
 ```
 
-```{r ricker_priors_xtable, include=TRUE, echo=FALSE, cache=FALSE}
+```{r ricker_priors_xtable, include=TRUE, echo=FALSE}
 ricker_priors_xtable <- data.frame(
   parameter = c("$r$", "$K$", "$\\sigma$"),
   "lower bound" = c(r0_prior_p[1], K_prior_p[1], stdQ_prior_p[1]),
@@ -1047,8 +1047,8 @@ of the stock-recruitment relationship.
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
 infer posterior distributions of the two parameters of the GP (Figure
-S13, code in appendix). Since the posterior distributions differ
-substantially from the priors (Figure S13), we can be assured that most
+S3, code in appendix). Since the posterior distributions differ
+substantially from the priors (Figure S3), we can be assured that most
 of the information in the posterior comes from the data rather than the
 prior belief.
 
@@ -1057,7 +1057,7 @@ The method of Gaussian Process Dynamic Programming (GPDP)
 --------------------------------------------------
 
 It is reasonably straight-forward to derive the harvest policy from the
-estimated BP by inserting it into a SDP algorithm. The only difference 
+estimated GP by inserting it into a SDP algorithm. The only difference 
 is that the uncertainty in the future state under the GP, $X_{t+1}$,
 includes both process uncertainty (based on the estimation of $\sigma$) 
 and "structural uncertainty" of the posterior collection of curves.  
@@ -1131,7 +1131,7 @@ bictable <- data.frame(Allen = allen_deviance + log(length(x))*(1+length(bayes_p
 pandoc.table(rbind(dictable, aictable, bictable))
 ```
 
-```{r Table1, dependson="deviances", include=TRUE, results="asis", echo=FALSE, cache=FALSE}
+```{r Table1, dependson="deviances", include=TRUE, results="asis", echo=FALSE}
 pandoc.table(rbind(dictable, aictable, bictable), caption="Model selection scores for several common criteria all (wrongly) select the simplest model. As the true (Allen) model is not distinguishable from the simpler (Ricker) model in the region of the observed data, this error cannot be avoided regardless of the model choice criterion. This highlights the danger of model choice when the selected model will be used outside of the observed range of the data.")
 ```
 
@@ -1186,22 +1186,25 @@ size after recruitment the following year.  Note that in contrast to
 the  other models shown, the expected Gaussian process corresponds to a
 distribution of curves - as indicated by the gray band - which itself
 has a mean shown in black. Parameter uncertainty (not shown) spreads
-out the estimates further.  The observed data from which each model are
+out the estimates further.  The observed data from which each model is 
 estimated is also shown.  The observations come from only a limited region
 of state space corresponding to unharvested or weakly harvested system.
 No observations occur at the theoretical optimum harvest rate or near
 the tipping point. Figure S1 (see supplement) shows the performance of the models outside the observed training data.  
 
 
-```{r figure_4, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2) + xlab("stock size") + ylab("escapement")  +
-  scale_colour_manual(values=colorkey)
+  geom_line(lwd=1.2) + 
+  facet_wrap(~method) +
+  xlab("stock size") + 
+  ylab("escapement")  +
+  scale_colour_manual(values=colorkey, guide=FALSE)
 
-write.csv(policies, "components/data/figure4.csv")
+write.csv(policies, "components/data/figure3.csv")
 ```
 
 Despite the similarities in model fits to the observed data, the
@@ -1210,19 +1213,19 @@ Policies are shown in terms of target escapement, $S_t$.  Under models
 such as this a constant escapement policy is expected to be optimal
 [@Reed1979], whereby population levels below a certain size $S$ are
 unharvested, while above that size the harvest strategy aims to return the
-population to $S$, resulting in the hockey-stick shaped policies shown.
+population to $S$. Whenever a model predicts that the population will not persist below a certain threshold, the optimal solution is to harvest the entire population immediately, resulting in an escapement $S=0$, as seen in the true (correct form, exact parameters) model, the Allen model (correct form, estimated parameters) and the GP.  
 Only the structurally correct model (Allen model) and the GP produce
-policies close to the true optimum policy (where both the underlying
-model structure and parameter values are known without error).
+policies close to the true optimum policy.
 
 
-```{r figure_5, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
+```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
-  scale_colour_manual(values=colorkey, guide = guide_legend(override.aes = list(alpha = 1))) + 
-  facet_wrap(~method) + guides(legend.position="none")
+  scale_colour_manual(values=colorkey, guide = FALSE) + 
+  facet_wrap(~method) + 
+  guides(legend.position="none", color=FALSE)
 
-write.csv(sims_data, "components/data/figure5.csv")
+write.csv(sims_data, "components/data/figure4.csv")
 ```
 
 In Figure 4, we show the consequences of managing 100 replicate
@@ -1230,7 +1233,7 @@ realizations of the simulated fishery under each of the policies
 estimated.  As anticipated from the policy curves, the structurally
 correct model under-harvests, leaving the stock to vary around its
 unfished optimum.  The structurally incorrect Ricker model over-harvests
-the population passed the tipping point consistently, resulting in the
+the population past the tipping point consistently, resulting in the
 immediate crash of the stock and thus derives minimal long-term catch.
 
 The results across replicate stochastic simulations can most
@@ -1241,21 +1244,15 @@ and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
 
-```{r figure_6, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
 
 ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, ncol=2)  + 
   guides(legend.position = "none") +
   xlab("Total profit by replicate") + 
-  scale_fill_manual(values=colorkey) # density plots fail when delta fn
+  scale_fill_manual(values=colorkey, guide=FALSE) # density plots fail when delta fn
 
-# ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable), binwidth=0.1) + 
-#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)
-# ggplot(actual_over_optimal, aes(value, fill=variable, color=variable)) + # density plots fail when delta fn
-#  stat_density(aes(y=..density..), position="stack", adjust=3) + 
-#  xlab("Total profit by replicate")+ scale_fill_manual(values=colorkey)+ scale_color_manual(values=colorkey)
-
-write.csv(actual_over_optimal, "components/data/figure6.csv")
+write.csv(actual_over_optimal, "components/data/figure5.csv")
 ```
 
 Sensitivity Analysis
@@ -1266,7 +1263,7 @@ These results are not sensitive to the modeling details of the simulation.
 The GPDP estimate remains very close to the optimal solution obtained
 by knowing the true model across changes to the training simulation,
 noise scale, parameters or structure of the underlying model. We consider
-both a Latin hypercube approach (see supplementary materials, Fig S11) and a more focused investigation of the
+both a Latin hypercube approach (see supplementary materials, Fig S10) and a more focused investigation of the
 parameters most responsible for impacting the transition rate: the relative 
 distance to the Allee threshold and the noise effects.  
 
@@ -1300,7 +1297,7 @@ self-sustaining criterion of @Reed1979). Only at the largest Allee effect
 sizes are some replicates seen to deviate more from the optimal solution.  
 
 
-```{r figure_7, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+```{r figure_6, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
   geom_point() + ylab("Net present value") + 
   xlab("Level of growth stochasticity") + theme_bw() 
@@ -1370,7 +1367,7 @@ in contrast, allows a predictive model that expresses a great deal of uncertaint
 about the probable dynamics outside the observed range, while retaining very
 good predictive accuracy in the range observed.  The management policy 
 dictated by the GP balances this uncertainty against
-the immediate value of the harvest, and act to stabilize the population 
+the immediate value of the harvest, and acts to stabilize the population 
 dynamics in a region of state space in which the predictions can be 
 reliably reflected by the data.  
 
