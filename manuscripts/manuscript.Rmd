@@ -182,10 +182,10 @@ estf <- function(p){
     mu <- f(obs$x,0,p)
     -sum(dlnorm(obs$y, log(mu), p[4]), log=TRUE)
 }
-par <- c(p[1]*rlnorm(1,0,.1), 
-         p[2]*rlnorm(1,0,.1), 
-         p[3]*rlnorm(1,0, .1), 
-         sigma_g * rlnorm(1,0,.1))
+par <- c(3, 
+         9, 
+         6, 
+         0.06)
 o <- optim(par, estf, method="L", lower=c(1e-5,1e-5,1e-5,1e-5))
 f_alt <- f
 p_alt <- c(as.numeric(o$par[1]), as.numeric(o$par[2]), as.numeric(o$par[3]))
@@ -647,6 +647,15 @@ vary_allee <- melt(vary_allee, id=names(vary_allee[[1]]))
 
 
 
+```{r refresh-plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE, cache=FALSE}
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
+               "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+opts_chunk$set(dev='pdf', dev.args=c(version="1.7"))
+opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
+theme_set(theme_bw(base_size=12))
+```
+
+
 
 Introduction
 ============
@@ -747,7 +756,9 @@ of the data on which it was fit.  We illustrate that when the correct
 model is not known, this latter feature is crucial to providing a robust
 decision-theoretic approach in face of substantial structural uncertainty.
 
-
+<!--
+FIXME We need to be 
+-->
 
 This paper represents the first ecological application of the
 SDP decision-making framework without an a priori model of the
@@ -760,12 +771,8 @@ data.  These features allow the Gaussian Process Dynamic Programming
 data and without knowledge of the correct model structure.
 
 
-
 <!--
--  _Note on "not magic"_: honest uncertainty + SDP
---> 
-
-<!--
+ _Note on "not magic"_: honest uncertainty + SDP
 The idea that any approach can perform well without either having to
 know the model or have particularly good data should immediately draw
 suspicion.  The reader must bear in mind that the strength of our approach
@@ -778,11 +785,6 @@ by stochastic dynamic programming, we are able to obtain more robust
 management policies than with common parametric modeling approaches.
 -->
 
-
-<!--move to  much later *Or do we need this at all?* 
-- _Note on comparing models_ (via value function rather than by "fit"). 
--->
-
 To illustrate GPDP, we consider the performance of the GPDP policy against
 the policies derived under several alternative parametric models [@Reed1979; @Ludwig1982; @Mangel1988]. 
 The nature of decision-making problems provides a compelling and
@@ -791,7 +793,9 @@ of best fit to data, we define model performance in the concrete terms
 of the decision-maker's objectives. 
 
 
-<!-- Although much argument can be made
+<!-- 
+
+Although much argument can be made
 over the 'correct' objective function, e.g. how to account for the
 social value of fish left in the sea vs. the commercial value of fish
 harvested; see @Halpern2013 for further discussion of this issue.  We can
@@ -809,9 +813,16 @@ Approach and Methods
 
 We first describe the requirements of dynamic optimization for the
 management of human intervention in natural resource systems. After that
-we describe three parametric models for population dynamics and the GP
-description of population dynamics.
+we describe three parametric models for population dynamics and the Gaussian
+Process (GP)[^1] description of population dynamics.
 
+[^1]: Note that we abbreviate Gaussian Process as GP, which refers only to 
+the statistical model we use to approximate the population dynamics (as opposed
+to a familiar parametric model such as the Ricker equation), while we use the
+term GPDP, Gaussian Process Dynamic Programming, to refer to the _use_ of a
+GP as the underlying process model when solving a Dynamic Program, as we illustrate
+in this paper.  Hence we will refer to the models as: GP, Ricker, Allen, etc, while
+we refer to the novel method we put forward here as GPDP. 
 
 ### Requirements of dynamic optimization
 
@@ -886,8 +897,8 @@ $Z$. That is
 
 $$ \mathbf{\mathrm{E}}_{X_{t+1}} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] = \mathbf{\mathrm{E}}_{Z} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] $$
 
-where the population size after the take is $X_t-h_t$, which is then
-translated into $X_{t+1}$ by Eqn 1.
+where the population size after the take is $x_t-h_t$, which is then
+translated into $X_{t+1}$ by Eqn 1 (that is, we just replaced $X_{t+1}$ with $Z f(x_t-h_t)$).
 
 In a Bayesian decision framework, the parameters governing the dynamics
 are also uncertain, so the expectation involves averaging over the
@@ -899,7 +910,7 @@ $$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] = \mat
 In the nonparametric case, the function $f$ too is uncertain and the expectation for the next state includes
 uncertainty in $f$ as well. That is
 
-$$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(X_t - h_t))  | x_t, h_t \right] \}$$
+$$\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( x_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \}$$
 
 
 
@@ -956,6 +967,12 @@ The Ricker model is a reasonable approximation of these dynamics far from the Al
 threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure. 
 
+Throughout the presentation, we will refer to the use of the "True" model
+to denote solving for the optimal solution when the underlying parameters
+_are known without error_, and refer to the "Allen" model to denote the
+when these parameters have instead only been estimated from the sample data.
+
+
 We consider a period of `r Tobs` years of training data: long
 enough that the estimates do not depend on the particular realization,
 while longer times are not likely to provide substantial improvement.  
@@ -999,9 +1016,10 @@ provide a basis for identifying model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
 GPs can be found in @Rasmussen2006. 
 
-A GP is an infinite dimensional (because it is a function of a continuous input
-variable) stochastic process for a finite sample of points from any realization is a multivariate
-normal distribution. Thus, to characterize the GP we need a mean function
+A GP is an infinite dimensional (because it is a function of a continuous
+input variable) stochastic process. Any realization of the process for
+some finite sample of points $n$ is a multivariate normal distribution
+of dimension $n$. Thus, to characterize the GP we need a mean function
 and a covariance function. We proceed as follows.
 
 
@@ -1014,15 +1032,15 @@ assume additive stochasticity.  While we could just as easily consider log-norma
 as in the parametric models, we make this choice to bring home the point that the
 Gaussian process approach need not have structurally correct noise form either.  
 
-Then under the GP, given a vector of observed data $X_0$ the predicted data $X_p$ obeys
+Then under the GP, given a vector of observed data $X_o$ the predicted data $X_p$ obeys
 
-$$f(X_p|X_o) \sim \mathcal{N}(E,C)$$
-$$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y$$
-$$C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)$$
+$$f(X_p|X_o, X_{t+1}) \sim \mathcal{N}(E,C)$$
+$$E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} X_{t+1}$$
+$$C = K(X_p, X_p) - K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} K(X_o, X_p)$$
 
 Where $K$ is the Gaussian process kernel.  (Compare to  Eqn 2.22 of @Rasmussen2006 for a more detailed derivation.) Throughout, we use the radial basis function kernel:
 
-$$ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)$$
+$$ K(\mathbf{x},\mathbf{y}) = \exp\left(\frac{-|\mathbf{x}-\mathbf{y}|^2}{2 \ell^2} \right)$$
 
 We use inverse Gamma priors on both the length-scale $\ell$ and $\sigma$, of the form
 
@@ -1084,7 +1102,7 @@ consider 96 different scenarios, described in detail below.   To help  better
 understand the process, we first describe in detail the
 results of a single scenario.  
 
-```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.", fig.width=8, fig.height=6}
+```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well. In the GP panel, black lines are means of the GP for random samples from the posterior distributions, while grey bands around them reflect the standard deviations of the GP distribution.  (Recall that while given a particular set of parameters, a parametric model gives just one curve, the GP is always a distribution, whose mean we plot in black.)", fig.width=8, fig.height=6, cache=FALSE}
 step_ahead_posteriors <- function(x){
   gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
   df_post <- melt(lapply(sample(100, 30),  
@@ -1142,7 +1160,7 @@ pandoc.table(rbind(dictable, aictable, bictable), caption="Model selection score
 - (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
 -->
 
-```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point, as explained in the text", fig.width=8, fig.height=6, cache=FALSE}
 x_grid_short <- x_grid[1:40]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
 models_posteriors <- 
@@ -1182,7 +1200,11 @@ write.csv(obs, "components/data/obs.csv")
 We show the  mean inferred state space dynamics of each model relative to the
 true model used to generate the data in Figure 2, predicting
 the relationship between observed stock size (x-axis) to the stock
-size after recruitment the following year.  Note that in contrast to
+size after recruitment the following year.  
+In addition to the raw data, Figure 2 illustrates that the GP is conditioned
+on going through the point 0,0 without error.  This conditioning on (0,0) is equivalent to making the assumption that a species hitting 0 is extinct forever & without uncertainty, despite the lack of any data in the observed sequence to justify this.  The use of this assumption illustrates how the GP approach can capture common-sense biology without having to assume more explicit details about the dynamics at low population numbers that have never been observed.  Not that we need need not make this assumption (perhaps there is immigration after all); and one could repeat the entire analysis without this assumption.  
+
+Note that in contrast to
 the  other models shown, the expected Gaussian process corresponds to a
 distribution of curves - as indicated by the gray band - which itself
 has a mean shown in black. Parameter uncertainty (not shown) spreads
@@ -1193,7 +1215,7 @@ No observations occur at the theoretical optimum harvest rate or near
 the tipping point. Figure S1 (see supplement) shows the performance of the models outside the observed training data.  
 
 
-```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979]."}
+```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S_t$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", fig.width=8, fig.height=6, cache=FALSE}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
@@ -1218,7 +1240,7 @@ Only the structurally correct model (Allen model) and the GP produce
 policies close to the true optimum policy.
 
 
-```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
+```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (eq 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6, cache=FALSE}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
   scale_colour_manual(values=colorkey, guide = FALSE) + 
@@ -1243,13 +1265,12 @@ most consistently realizes a value close to the optimal solution,
 and importantly avoids ever driving the system across the tipping point,
 which results in the near-zero value cases in the parametric models.
 
-
-```{r figure_5, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above. Values plotted are the averages of a given policy over 100 replicate simulations. Details and code provided in the supplement.", fig.width=6, fig.height=6}
+```{r figure_5, dependson=c("profits"), fig.cap="Histograms of the realized net present value of the fishery over a range of simulated data and resulting parameter estimates. For each data set, the three models are estimated as described above.", fig.width=6, fig.height=6, cache=FALSE}
 
 ggplot(actual_over_optimal, aes(value)) + geom_histogram(aes(fill=variable)) + 
   facet_wrap(~variable, ncol=2)  + 
   guides(legend.position = "none") +
-  xlab("Total profit by replicate") + 
+  xlab("Net present value") + 
   scale_fill_manual(values=colorkey, guide=FALSE) # density plots fail when delta fn
 
 write.csv(actual_over_optimal, "components/data/figure5.csv")
@@ -1297,7 +1318,7 @@ self-sustaining criterion of @Reed1979). Only at the largest Allee effect
 sizes are some replicates seen to deviate more from the optimal solution.  
 
 
-```{r figure_6, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect."}
+```{r figure_6, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect.", cache=FALSE}
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
   geom_point() + ylab("Net present value") + 
   xlab("Level of growth stochasticity") + theme_bw() 

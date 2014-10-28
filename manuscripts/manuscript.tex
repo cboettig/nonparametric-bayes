@@ -236,8 +236,16 @@ decision-maker's objectives.
 
 We first describe the requirements of dynamic optimization for the
 management of human intervention in natural resource systems. After that
-we describe three parametric models for population dynamics and the GP
-description of population dynamics.
+we describe three parametric models for population dynamics and the
+Gaussian Process (GP)\footnote{Note that we abbreviate Gaussian Process
+  as GP, which refers only to the statistical model we use to
+  approximate the population dynamics (as opposed to a familiar
+  parametric model such as the Ricker equation), while we use the term
+  GPDP, Gaussian Process Dynamic Programming, to refer to the \emph{use}
+  of a GP as the underlying process model when solving a Dynamic
+  Program, as we illustrate in this paper. Hence we will refer to the
+  models as: GP, Ricker, Allen, etc, while we refer to the novel method
+  we put forward here as GPDP.} description of population dynamics.
 
 \subsubsection{Requirements of dynamic
 optimization}\label{requirements-of-dynamic-optimization}
@@ -309,8 +317,9 @@ $Z$. That is
 
 \[ \mathbf{\mathrm{E}}_{X_{t+1}} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] = \mathbf{\mathrm{E}}_{Z} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \]
 
-where the population size after the take is $X_t-h_t$, which is then
-translated into $X_{t+1}$ by Eqn 1.
+where the population size after the take is $x_t-h_t$, which is then
+translated into $X_{t+1}$ by Eqn 1 (that is, we just replaced $X_{t+1}$
+with $Z f(x_t-h_t)$).
 
 In a Bayesian decision framework, the parameters governing the dynamics
 are also uncertain, so the expectation involves averaging over the
@@ -322,7 +331,7 @@ In the nonparametric case, the function $f$ too is uncertain and the
 expectation for the next state includes uncertainty in $f$ as well. That
 is
 
-\[\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(X_t - h_t))  | x_t, h_t \right] \}\]
+\[\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( x_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \}\]
 
 We consider the finite time problem with $T=$ 1000, which we solve using
 the standard value iteration algorithm (see Mangel and Clark 1988, Clark
@@ -380,6 +389,12 @@ model is a reasonable approximation of these dynamics far from the Allee
 threshold (but lacks threshold dynamics), while the Myers model shares
 the essential feature of a threshold but differs in the structure.
 
+Throughout the presentation, we will refer to the use of the ``True''
+model to denote solving for the optimal solution when the underlying
+parameters \emph{are known without error}, and refer to the ``Allen''
+model to denote the when these parameters have instead only been
+estimated from the sample data.
+
 We consider a period of 40 years of training data: long enough that the
 estimates do not depend on the particular realization, while longer
 times are not likely to provide substantial improvement.\\Each of the
@@ -420,10 +435,10 @@ formulation and use of GPs can be found in Rasmussen and Williams
 (2006).
 
 A GP is an infinite dimensional (because it is a function of a
-continuous input variable) stochastic process for a finite sample of
-points from any realization is a multivariate normal distribution. Thus,
-to characterize the GP we need a mean function and a covariance
-function. We proceed as follows.
+continuous input variable) stochastic process. Any realization of the
+process for some finite sample of points $n$ is a multivariate normal
+distribution of dimension $n$. Thus, to characterize the GP we need a
+mean function and a covariance function. We proceed as follows.
 
 We assume that the data $X_o$ are observed with some process
 stochasticity,
@@ -437,18 +452,18 @@ stochasticity as in the parametric models, we make this choice to bring
 home the point that the Gaussian process approach need not have
 structurally correct noise form either.
 
-Then under the GP, given a vector of observed data $X_0$ the predicted
+Then under the GP, given a vector of observed data $X_o$ the predicted
 data $X_p$ obeys
 
-\[f(X_p|X_o) \sim \mathcal{N}(E,C)\]
-\[E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)  ^{-1} y\]
-\[C = K(X_p, X_p) - K(X_p, X_o) K(X_o,X_o)^{-1} K(X_o, X_p)\]
+\[f(X_p|X_o, X_{t+1}) \sim \mathcal{N}(E,C)\]
+\[E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} X_{t+1}\]
+\[C = K(X_p, X_p) - K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} K(X_o, X_p)\]
 
 Where $K$ is the Gaussian process kernel. (Compare to Eqn 2.22 of
 Rasmussen and Williams (2006) for a more detailed derivation.)
 Throughout, we use the radial basis function kernel:
 
-\[ K(x,y) = \exp\left(\frac{-(x-y)^2}{2 \ell^2} \right)\]
+\[ K(\mathbf{x},\mathbf{y}) = \exp\left(\frac{-|\mathbf{x}-\mathbf{y}|^2}{2 \ell^2} \right)\]
 
 We use inverse Gamma priors on both the length-scale $\ell$ and
 $\sigma$, of the form
@@ -507,7 +522,12 @@ single scenario.
 \includegraphics{components/figure/manuscript-figure_1-1.pdf}
 \caption{Points show the training data of stock-size over time. Curves
 show the posterior step-ahead predictions based on each of the estimated
-models. Observe that all models are fitting the data reasonably well.}
+models. Observe that all models are fitting the data reasonably well. In
+the GP panel, black lines are means of the GP for random samples from
+the posterior distributions, while grey bands around them reflect the
+standard deviations of the GP distribution. (Recall that while given a
+particular set of parameters, a parametric model gives just one curve,
+the GP is always a distribution, whose mean we plot in black.)}
 \end{figure}
 
 All models fit the observed data rather closely and with relatively
@@ -586,26 +606,38 @@ function $f$ under each model. Two standard deviations from the
 estimated Gaussian process covariance with (light grey) and without
 (darker grey) measurement error are also shown. The training data are
 also shown as black points. The GP is conditioned on (0,0), shown as a
-pseudo-data point.}
+pseudo-data point, as explained in the text}
 \end{figure}
 
 We show the mean inferred state space dynamics of each model relative to
 the true model used to generate the data in Figure 2, predicting the
 relationship between observed stock size (x-axis) to the stock size
-after recruitment the following year. Note that in contrast to the other
-models shown, the expected Gaussian process corresponds to a
-distribution of curves - as indicated by the gray band - which itself
-has a mean shown in black. Parameter uncertainty (not shown) spreads out
-the estimates further. The observed data from which each model is
-estimated is also shown. The observations come from only a limited
-region of state space corresponding to unharvested or weakly harvested
-system. No observations occur at the theoretical optimum harvest rate or
-near the tipping point. Figure S1 (see supplement) shows the performance
-of the models outside the observed training data.
+after recruitment the following year.\\In addition to the raw data,
+Figure 2 illustrates that the GP is conditioned on going through the
+point 0,0 without error. This conditioning on (0,0) is equivalent to
+making the assumption that a species hitting 0 is extinct forever \&
+without uncertainty, despite the lack of any data in the observed
+sequence to justify this. The use of this assumption illustrates how the
+GP approach can capture common-sense biology without having to assume
+more explicit details about the dynamics at low population numbers that
+have never been observed. Not that we need need not make this assumption
+(perhaps there is immigration after all); and one could repeat the
+entire analysis without this assumption.
+
+Note that in contrast to the other models shown, the expected Gaussian
+process corresponds to a distribution of curves - as indicated by the
+gray band - which itself has a mean shown in black. Parameter
+uncertainty (not shown) spreads out the estimates further. The observed
+data from which each model is estimated is also shown. The observations
+come from only a limited region of state space corresponding to
+unharvested or weakly harvested system. No observations occur at the
+theoretical optimum harvest rate or near the tipping point. Figure S1
+(see supplement) shows the performance of the models outside the
+observed training data.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_4-1.pdf}
+\includegraphics{components/figure/manuscript-figure_3-1.pdf}
 \caption{The steady-state optimal policy (infinite boundary) calculated
 under each model. Policies are shown in terms of target escapement,
 $S_t$, as under models such as this a constant escapement policy is
@@ -628,7 +660,7 @@ optimum policy.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_5-1.pdf}
+\includegraphics{components/figure/manuscript-figure_4-1.pdf}
 \caption{In the management context, GPDP outperforms approaches based on
 parametric models. We show 100 replicate simulations of the stock
 dynamics (eq 1) under the policies derived from each of the estimated
@@ -652,12 +684,10 @@ value cases in the parametric models.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_6-1.pdf}
+\includegraphics{components/figure/manuscript-figure_5-1.pdf}
 \caption{Histograms of the realized net present value of the fishery
 over a range of simulated data and resulting parameter estimates. For
-each data set, the three models are estimated as described above. Values
-plotted are the averages of a given policy over 100 replicate
-simulations. Details and code provided in the supplement.}
+each data set, the three models are estimated as described above.}
 \end{figure}
 
 \subsection{Sensitivity Analysis}\label{sensitivity-analysis}
@@ -704,7 +734,7 @@ solution.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/manuscript-figure_7-1.pdf}
+\includegraphics{components/figure/manuscript-figure_6-1.pdf}
 \caption{The effect of increasing noise or decreasing Allee threshold
 levels on the net present value of the fishery when managed under the
 GPDP, relative to managing under the true model (with known parameters).
