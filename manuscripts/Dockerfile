@@ -1,6 +1,6 @@
 FROM rocker/hadleyverse
 
-RUN apt-get update 
+RUN apt-get update \
   && apt-get install -y r-cran-R2jags \
   && install2.r --error \
     coda \
