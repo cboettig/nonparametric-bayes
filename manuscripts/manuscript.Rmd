@@ -710,30 +710,33 @@ approaches do not address our second concern - representing uncertainty
 outside the observed data range.
 
 
-<!-- __We don't have the data where we need it__ -->
+<!-- Point is: __We don't have the data where we need it__ -->
 <!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
 
 Model uncertainty is particularly insidious when model predictions must
 be made outside of the range of data on which the model was estimated, and models may be abused [@Mangel2001].
 Extrapolation uncertainty is felt most keenly in decision-theoretic
-(or optimal control) applications, since (a) exploring the potential
-action space typically involves considering actions that may move the
+(or optimal control) applications, since (a) exploring the space of 
+all possible actions involves considering actions that may move the
 system outside the range of observed behavior, and (b) decision-theoretic
 algorithms rely not only on reasonable estimates of the expected
 outcomes, but depend on the weights given to all possible outcomes
-[_e.g._ @Weitzman2013].  
+[_e.g._ @Weitzman2013], hence estimates of the uncertainty can be as
+important as estimates of the average or expected outcome.  
 
 
-<!--This difficult position of having neither the true model nor data that
-covers the full range of possible states is unfortunately the rule more
-than the exception. The potential concern of tipping points in ecological
-dynamics [@Scheffer2001; @Polasky2011] reflects these concerns -- as
-either knowledge of the true model or more complete sampling of the
-state space would make it easy to identify if a tipping point existed.
-If we do not know but cannot rule out such a possibility, then we
-face decision-making under this 
--->
+Concerns about tipping points in ecological dynamics [@Scheffer2001;
+@Polasky2011] highlight this problem because they arise from this very
+situation.  In such cases, precise models are not available and data is
+limited or biased to a particular region of state space, such as high
+stock levels or an otherwise desirable state for the ecosystem. If such
+models or data were available, one would know just how far a system could
+be pushed before going over the tipping point, and management would be
+simple.  The fact that this concern is frequently discussed highlights
+how often we have only limited data and inperfect models. Moreover,
+the case of tipping points highlights how even small errors can have
+very large consequences, as we shall illustrate later.
 
 
 The dual concerns of model uncertainty and incomplete data coverage
@@ -755,6 +758,10 @@ better reflect uncertainty that arises when extrapolating a model outside
 of the data on which it was fit.  We illustrate that when the correct
 model is not known, this latter feature is crucial to providing a robust
 decision-theoretic approach in face of substantial structural uncertainty.
+We use _robust_ to distinguish approaches that provide nearly optimal solutions
+(as measured by the chosen value function) without being sensitive to the
+choice of the (unknown) underlying model. 
+
 
 <!--
 FIXME We need to be 
@@ -913,7 +920,7 @@ are also uncertain, so the expectation involves averaging over the
 posterior distribution for the parameters, as well. That is,
 
 \begin{equation}
-\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | p, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)), t)  \right] \}$$
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | p, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)), t)  \right] \}
 \end{equation}
 
 In the nonparametric case, the function $f$ too is uncertain and the expectation for the next state includes
@@ -1048,22 +1055,20 @@ Gaussian process approach need not have structurally correct noise form either.
 
 We consider the fase where we have some previous observations of the _timeseries_, $X_{\textrm{obs}}(t)$,
 and wish to _predict_ future values $X_{\textrm{p}}(t)$.  We consider the observations as pairs of points
-$X_{\textrm obs}(t), X_{\textrm obs}(t+1)$ for $t \in [1,2, ..., T]$
-
-Under the GP, a finite sample of these predictions at $n$ points into the future, $X_{\textrm p}(\tau)$ for $\tau in [T+1, T+2, ..., T+n]$, is simply given by a multivariate normal ($\mathcal{N}$):
+$X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)$ for $t \in [1,2, ..., T]$ up through observed time $T$.  Under the GP, a finite sample of these predictions at $n$ points into the future, $X_{\textrm p}(\tau)$ for $\tau \in [T+1, T+2, ..., T+n]$, is simply given by a multivariate normal ($\mathcal{N}$):
 
 \begin{equation}
-g(X_p|X_{\textrm obs}(t), X_{\textrm obs}(t+1)) \sim \mathcal{N}(E,C)
+g(X_p|X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)) \sim \mathcal{N}(E,C)
 \end{equation}
 
 which has mean and covariance matrix given by:
 
 \begin{equation}
-E = K(X_{\textrm p}(\tau), X_{\textrm obs}(t)) \left(K(X_{\textrm obs}(t),X_{\textrm obs}(t)) - \sigma \mathbb{I} \right)^{-1} X_{\textrm obs}(t+1)
+E = K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} X_{\textrm{obs}}(t+1)
 \end{equation}
 
 \begin{equation}
-C = K(X_{\textrm p}(\tau), X_{\textrm p}(\tau)) - K(X_{\textrm p}(\tau), X_{\textrm obs}(t)) \left(K(X_{\textrm obs}(t),X_{\textrm obs}(t)) - \sigma \mathbb{I} \right)^{-1} K(X_{\textrm obs}(t), X_{\textrm p}(\tau))
+C = K(X_{\textrm p}(\tau), X_{\textrm p}(\tau)) - K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} K(X_{\textrm{obs}}(t), X_{\textrm p}(\tau))
 \end{equation}
 
 Where $K$ is the chosen covariance kernel.  (Compare to  Eqn 2.22 of @Rasmussen2006 for a more detailed derivation.) Many options are possible for this kernel. Throughout, we use the radial basis function for simplicity, a matrix whose $(i,j)$th element is given by: 
@@ -1388,41 +1393,46 @@ more reliable solutions in the sequential decision-making problem.
 
 These results illustrate that model-choice approaches would be positively
 misleading -- supporting simpler models that cannot express tipping point
-dynamics merely on account of them being similar.  As the data shown
+dynamics merely on account of them being similar.  The data shown
 comes only from the basin of attraction near the unfished equilibrium,
 near which all of the models are approximately linear and approximately
-identical. 
+identical; so it is intuitive that all criteria choose the simplest model.
+In a complex world, the result is suboptimal. But in a world that might
+contain tipping points, the result is disastrous. 
 
-Model selection criteria trade off model complexity and fit to the data. 
-When the data come from a limited region of state-space -- as is necessarily 
-the case whenever there is a potential concern about tipping point dynamics --
-simpler models therefore fit just as well and tend to be selected more often than complex 
-ones.  This approach would be appropriate when the dynamics can be expected 
-to remain in the region of the training data; for instance, if we only 
-considered the forecasting accuracy of the unfished population dynamics under
-each model.  
+Many managers both in fisheries and beyond face a similar situation: they
+have not observed the population dynamics at all possible densities.  A
+lack of comprehensive data at all population sizes, combined with our obvious
+inability to formulate accurate population models for low population sizes
+in the absence of any data, makes this situation the rule more than the exception.
+Relying on parametric models and model choice processes that favor simplicity
+ignores this basic fact. Acknowledging this, Carl Walters [e.g. @Walters1978] has long observed that if we began
+by fishing any newly exploited population down to very low levels and
+then let it recover, we would be much better at estimating population
+dynamics and thus predicting the optimal harvest levels.  While certainly true,
+this presents a rather risky policy in the face of potential tipping points. 
+The GPDP offers an alternative way to acknowledge this uncertainty. 
 
-In contrast, the decision-maker's problem of setting appropriate harvest levels
-cannot exclude regions of state-space outside the observed range when integrating
-over all possible decisions to find the optimal choice.  Such problems are not 
-constrained to fisheries management but ubiquitous across ecological decision-making
-and conservation where the greatest concerns involve entering previously unobserved
-regions of state-space -- whether that is the collapse of a fishery, the spread
-of an invasive, or the loss of habitat.  
+
 
 ### GPDP population dynamics capture larger uncertainty in regions where the data are poor 
 
 
 The parametric models perform worst when they propose a management strategy
-outside the range of the observed data. The non-parametric Bayesian approach, 
+outside the range of the observed data. The non-parametric approach of the GPDP, 
 in contrast, allows a predictive model that expresses a great deal of uncertainty
-about the probable dynamics outside the observed range, while retaining very
-good predictive accuracy in the range observed.  The management policy 
-dictated by the GP balances this uncertainty against
+about the probable dynamics _outside_ the observed range, while retaining very
+good predictive accuracy _inside_ the range observed.  The management policy 
+dictated by the GPDP balances this uncertainty against
 the immediate value of the harvest, and acts to stabilize the population 
 dynamics in a region of state space in which the predictions can be 
 reliably reflected by the data.  
 
+Such problems are not 
+constrained to fisheries management but ubiquitous across ecological decision-making
+and conservation where the greatest concerns involve entering previously unobserved
+regions of state-space -- whether that is the collapse of a fishery, the spread
+of an invasive, or the loss of habitat.  
 
 <!--
 

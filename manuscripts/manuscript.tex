@@ -187,11 +187,25 @@ Model uncertainty is particularly insidious when model predictions must
 be made outside of the range of data on which the model was estimated,
 and models may be abused (Mangel et al. 2001). Extrapolation uncertainty
 is felt most keenly in decision-theoretic (or optimal control)
-applications, since (a) exploring the potential action space typically
+applications, since (a) exploring the space of all possible actions
 involves considering actions that may move the system outside the range
 of observed behavior, and (b) decision-theoretic algorithms rely not
 only on reasonable estimates of the expected outcomes, but depend on the
-weights given to all possible outcomes (\emph{e.g.} Weitzman 2013).
+weights given to all possible outcomes (\emph{e.g.} Weitzman 2013),
+hence estimates of the uncertainty can be as important as estimates of
+the average or expected outcome.
+
+Concerns about tipping points in ecological dynamics (Scheffer et al.
+2001, Polasky et al. 2011) highlight this problem because they arise
+from this very situation. In such cases, precise models are not
+available and data is limited or biased to a particular region of state
+space, such as high stock levels or an otherwise desirable state for the
+ecosystem. If such models or data were available, one would know just
+how far a system could be pushed before going over the tipping point,
+and management would be simple. The fact that this concern is frequently
+discussed highlights how often we have only limited data and inperfect
+models. Moreover, the case of tipping points highlights how even small
+errors can have very large consequences, as we shall illustrate later.
 
 The dual concerns of model uncertainty and incomplete data coverage pose
 a substantial challenge to existing decision-theoretic approaches
@@ -212,7 +226,10 @@ Second, the BNP can better reflect uncertainty that arises when
 extrapolating a model outside of the data on which it was fit. We
 illustrate that when the correct model is not known, this latter feature
 is crucial to providing a robust decision-theoretic approach in face of
-substantial structural uncertainty.
+substantial structural uncertainty. We use \emph{robust} to distinguish
+approaches that provide nearly optimal solutions (as measured by the
+chosen value function) without being sensitive to the choice of the
+(unknown) underlying model.
 
 This paper represents the first ecological application of the SDP
 decision-making framework without an a priori model of the underlying
@@ -269,69 +286,81 @@ states.
 
 \subsubsection{Parametric models}\label{parametric-models}
 
-We let $X_t$ denote the size (numbers or biomass) of the focal
+We let $x(t)$ denote the size (numbers or biomass) of the focal
 population at time $t$ and assume that in the absence of take its
-dynamics are.
+dynamics are. (Throughout, we will use $X(t+1)$ with a capital $X$ as a
+reminder that this is a stochastic, uncertainty quantity at time $t$,
+while we use lowercase $x(t)$ as a reminder that the current population
+size is treated as a given without error. The latter assumption is
+straight-forward to relax but will simplify the presentation here).
 
 \begin{equation}
-X_{t+1}= Z_t f(X_t) \label{eq1} 
+X(t+1) = Z(t) f(x(t), p) \label{eq1} 
 \end{equation}
 
 Where Z(t) is log-normally distributed process stochasticity (Reed 1979)
 and $p$ is a vector of parameters to be estimated from the data. We
-describe three choices for $f(X_t,p)$ in the next section.In this simple
-model, the control action is a harvest or take, $h_t$, measured in the
-same units as $X$, at time $t$. Thus, in the presence of take, the
-population size on the right hand side of Eqn 1 is replaced by
-$S_t=X_t-h_t$.
+describe three choices for $f(X(t),p)$ in the next section.In this
+simple model, the control action is a harvest or take, $h(t)$, measured
+in the same units as $X$, at time $t$. Thus, in the presence of take,
+the population size on the right hand side of Eqn 1 is replaced by
+$S(t) = X(t) - h(t)$.
 
-To construct the value function, we consider a return when $X_t=x$ and
-harvest $h_t=h$ denoted as the reward, $R(x,h)$. For example, if the
-return is simply the harvest at time $t$, then $R(x,h)=min(x,h)$. We
-assume that future harvests are discounted relative to current ones at a
-constant rate of discount $\delta$ and ask for the harvest policy that
-maximizes total discounted harvest between the current time $t$ and a
-final time $T$. That is, we seek to maximize over choices of harvest
-$\mathbf{E}_{X_t+1} [ \sum_{t = 0}^{T}  R_t(X_t, h_t) \delta^t]$, where
-the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the
+To construct the value function, we consider a return when $X(t) = x $
+and harvest $h(t) = h$ denoted as the reward, $R(x, h)$. For example, if
+the return is simply the harvest at time $t$, then
+$R(x, h) = \min(x, h)$. We assume that future harvests are discounted
+relative to current ones at a constant rate of discount $\delta$ and ask
+for the harvest policy that maximizes total discounted harvest between
+the current time $t$ and a final time $T$. That is, we seek to maximize
+over choices of harvest
+$\mathbf{E}_{X(t+1)} [ \sum_{t = 0}^{T}  R(X(t), h(t), t) \delta^t]$,
+where the state dynamics are given by Eqn 1 and $\mathbf{E}$ denotes the
 expectation over the process stochasticity in the future population
 state.
 
-In order to find that policy, we introduce the value function $V_t(x_t)$
-representing the total discounted catch from time $t$ onwards given that
-$X_t=x_t$. This value function satisfies an equation of SDP (Mangel and
-Clark 1988, Clark and Mangel 2000, Clark 2009), sometimes called the
-Hamilton-Jacobi-Bellman equation (Mangel 2014),
+In order to find that policy, we introduce the value function
+$V(x(t), t)$ representing the total discounted catch from time $t$
+onwards given that $X(t) = x(t)$. This value function satisfies an
+equation of SDP (Mangel and Clark 1988, Clark and Mangel 2000, Clark
+2009), sometimes called the Hamilton-Jacobi-Bellman equation (Mangel
+2014),
 
 \begin{equation}
-V_t(x_t) = \max_{h_t} \lbrace R(h_t, x_t) + \delta \cdot \mathbf{\mathrm{E}}_{X_{t+1}} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] \rbrace
+V(x(t), t) = \max_{h(t)} \lbrace R(h(t), x(t)) + \delta \cdot \mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] \rbrace
 \end{equation}
 
 where expectation is taken over all possible values of the next state,
-$X_{t+1}$, and maximized over all possible choices of harvest, $h_t$.
-That is, at time $t$, when population size is $x_t$ and harvest $h_t$ is
-applied, the immediate return is $R(h_t, x_t)$. In the classical case,
-the sole source of uncertainty is the process stochasticity term, $Z$,
-and thus the expectation above is equivalent to taking expectations over
-$Z$. That is
+$X(t+1)$, and maximized over all possible choices of harvest, $h(t)$.
+That is, at time $t$, when population size is $x(t)$ and harvest $h(t)$
+is applied, the immediate return is $R(h(t), x(t))$. In the classical
+case, the sole source of uncertainty is the process stochasticity term,
+$Z$, and thus the expectation above is equivalent to taking expectations
+over $Z(t)$. That is
 
-\[ \mathbf{\mathrm{E}}_{X_{t+1}} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] = \mathbf{\mathrm{E}}_{Z} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \]
+\begin{equation}
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V( X(t+1),t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{Z(t)} \left[V( Z(t) f(x(t) - h(t))), t+1 | x(t), h(t) \right]
+\end{equation}
 
-where the population size after the take is $x_t-h_t$, which is then
-translated into $X_{t+1}$ by Eqn 1 (that is, we just replaced $X_{t+1}$
-with $Z f(x_t-h_t)$).
+where the population size after the take is $x(t) - h(t)$, which is then
+translated into $X(t+1)$ by Eqn 1 (that is, we just replaced $X(t+1)$
+with $Z(t) f(x(t)-h(t))$).
 
 In a Bayesian decision framework, the parameters governing the dynamics
 are also uncertain, so the expectation involves averaging over the
 posterior distribution for the parameters, as well. That is,
 
-\[\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( X_{t+1}) | x_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \}\]
+\begin{equation}
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | p, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)), t)  \right] \}
+\end{equation}
 
 In the nonparametric case, the function $f$ too is uncertain and the
 expectation for the next state includes uncertainty in $f$ as well. That
 is
 
-\[\mathbf{\mathrm{E}}_{X_t+1} \left[ V_{t+1}( x_{t+1}) | X_t, h_t \right] = \mathbf{\mathrm{E}}_{\theta|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z | \theta, \mathrm{data}} \left[ V_{t+1}( Z f(x_t - h_t))  | x_t, h_t \right] \}\]
+\begin{equation}
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z(t) | p, \mathrm{data}} \left[ V( Z(t) f(x(t) - h(t)), t) \right] \}
+\end{equation}
 
 We consider the finite time problem with $T=$ 1000, which we solve using
 the standard value iteration algorithm (see Mangel and Clark 1988, Clark
@@ -342,18 +371,18 @@ and Mangel 2000).
 We consider three candidate parametric models of the stock-recruitment
 dynamics: The Ricker model, the Allen model (Allen and Tanner 2005), the
 Myers model (Myers et al. 1995), Eqns \eqref{ricker}-\eqref{myers},
-which we parameterize as follows for $f(S_t,p)$ in Eqn 1. In all three,
+which we parameterize as follows for $f(S(t),p)$ in Eqn 1. In all three,
 we let $K$ denote the carrying capacity and $r$ the maximum per capita
 growth rate. In the Ricker model,
 
 \begin{equation}
-f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K} \right) } \label{ricker}
+f(S(t)|p) = S(t) e^{r \left(1 - \frac{S(t)}{K} \right) } \label{ricker}
 \end{equation}
 
 In the Allen model,
 
 \begin{equation}
-f(S(t)|p) = S_t e^{r \left(1 - \frac{S_t}{K}\right)\left(S_t - X_c\right)} \label{allen}
+f(S(t)|p) = S(t) e^{r \left(1 - \frac{S(t)}{K}\right)\left(S(t) - X_c\right)} \label{allen}
 \end{equation}
 
 Where $r$ and $K$ are as before, and $X_c$ denotes the location of the
@@ -362,7 +391,7 @@ unstable steady state (i.e., the tipping point).
 In the Myers model,
 
 \begin{equation}
-f(S(t) | p)  = \frac{r S_t^{\theta}}{1 + \frac{S_t^\theta}{K}} \label{myers}
+f(S(t) | p)  = \frac{r S(t)^{\theta}}{1 + \frac{S(t)^\theta}{K}} \label{myers}
 \end{equation}
 
 Where $\theta = 1$ corresponding to Beverton-Holt dynamics and $\theta$
@@ -440,10 +469,12 @@ process for some finite sample of points $n$ is a multivariate normal
 distribution of dimension $n$. Thus, to characterize the GP we need a
 mean function and a covariance function. We proceed as follows.
 
-We assume that the data $X_o$ are observed with some process
+We assume that the data $X(t)$ are observed with some process
 stochasticity,
 
-\[X_{t+1} = f(X_t) + \varepsilon,\]
+\begin{equation}
+X(t+1) = g(X(t)) + \varepsilon,
+\end{equation}
 
 where $\varepsilon$ are IID normal random variables with zero-mean and
 variance $\sigma_n^2$. Note that we have chosen to assume additive
@@ -452,23 +483,45 @@ stochasticity as in the parametric models, we make this choice to bring
 home the point that the Gaussian process approach need not have
 structurally correct noise form either.
 
-Then under the GP, given a vector of observed data $X_o$ the predicted
-data $X_p$ obeys
+We consider the fase where we have some previous observations of the
+\emph{timeseries}, $X_{\textrm{obs}}(t)$, and wish to \emph{predict}
+future values $X_{\textrm{p}}(t)$. We consider the observations as pairs
+of points $X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)$ for
+$t \in [1,2, ..., T]$ up through observed time $T$. Under the GP, a
+finite sample of these predictions at $n$ points into the future,
+$X_{\textrm p}(\tau)$ for $\tau \in [T+1, T+2, ..., T+n]$, is simply
+given by a multivariate normal ($\mathcal{N}$):
 
-\[f(X_p|X_o, X_{t+1}) \sim \mathcal{N}(E,C)\]
-\[E = K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} X_{t+1}\]
-\[C = K(X_p, X_p) - K(X_p, X_o) \left(K(X_o,X_o) - \sigma \mathbb{I} \right)^{-1} K(X_o, X_p)\]
+\begin{equation}
+g(X_p|X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)) \sim \mathcal{N}(E,C)
+\end{equation}
 
-Where $K$ is the Gaussian process kernel. (Compare to Eqn 2.22 of
-Rasmussen and Williams (2006) for a more detailed derivation.)
-Throughout, we use the radial basis function kernel:
+which has mean and covariance matrix given by:
 
-\[ K(\mathbf{x},\mathbf{y}) = \exp\left(\frac{-|\mathbf{x}-\mathbf{y}|^2}{2 \ell^2} \right)\]
+\begin{equation}
+E = K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} X_{\textrm{obs}}(t+1)
+\end{equation}
+
+\begin{equation}
+C = K(X_{\textrm p}(\tau), X_{\textrm p}(\tau)) - K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} K(X_{\textrm{obs}}(t), X_{\textrm p}(\tau))
+\end{equation}
+
+Where $K$ is the chosen covariance kernel. (Compare to Eqn 2.22 of
+Rasmussen and Williams (2006) for a more detailed derivation.) Many
+options are possible for this kernel. Throughout, we use the radial
+basis function for simplicity, a matrix whose $(i,j)$th element is given
+by:
+
+\begin{equation}
+K_{i,j}(x_i, y_j) = \exp\left(\frac{-|\mathbf{x_i}-\mathbf{j}|^2}{2 \ell^2} \right)
+\end{equation}
 
 We use inverse Gamma priors on both the length-scale $\ell$ and
 $\sigma$, of the form
 
-\[f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)\]
+\begin{equation}
+f(x; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha - 1}\exp\left(-\frac{\beta}{x}\right)
+\end{equation}
 
 For the $\sigma$ prior, $\alpha = $ 5 and $\beta = $ 5. For $\ell$
 prior, $\alpha = $ 10 and $\beta = $ 10.
@@ -477,11 +530,9 @@ Using the simulated training data we also estimate a Gaussian process
 defined by a radial basis function kernel of two parameters: $\ell$,
 which gives the characteristic length-scale over which correlation
 between two points in state-space decays, and $\sigma$, which gives the
-scale of the process noise by which observations $Y_{t+1}$ may differ
-from their predicted values $X_{t+1}$ given an observation of the
-previous state, $X_t$. Munch et al. (2005a) give an accessible
-introduction to the use of Gaussian processes in providing a Bayesian
-nonparametric description of the stock-recruitment relationship.
+scale of the process noise by which observations $Y(t+1)$ may differ
+from their predicted values $X(t+1)$ given an observation of the
+previous state, $x(t)$ (see Munch et al. 2005a).
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (Gelman et al.
 (2003)) to infer posterior distributions of the two parameters of the GP
@@ -495,14 +546,14 @@ prior belief.
 
 It is reasonably straight-forward to derive the harvest policy from the
 estimated GP by inserting it into a SDP algorithm. The only difference
-is that the uncertainty in the future state under the GP, $X_{t+1}$,
+is that the uncertainty in the future state under the GP, $X(t+1)$,
 includes both process uncertainty (based on the estimation of $\sigma$)
 and ``structural uncertainty'' of the posterior collection of
 curves.\\(Recall that given the parameters, a parametric model is
 represented by a single curve, while the GP remains a distribution of
 curves).\\From the GP posteriors, we can write down the (discritized)
 transition matrix representing the probability of going to each state
-$X_{t+1}$ given any current state $X_t$ and any harvest $h_t$ (See the
+$X(t+1)$ given any current state $x(t)$ and any harvest $h(t)$ (See the
 function \texttt{gp\_transition\_matrix()} in the provided R package).
 Given this transition matrix, we use the same value iteration algorithm
 as in the parametric case to determine the optimal policy.
@@ -589,12 +640,14 @@ Myers
 \\\addlinespace
 \bottomrule
 \addlinespace
-\caption{Model selection scores for several common criteria all
-(wrongly) select the simplest model. As the true (Allen) model is not
-distinguishable from the simpler (Ricker) model in the region of the
-observed data, this error cannot be avoided regardless of the model
-choice criterion. This highlights the danger of model choice when the
-selected model will be used outside of the observed range of the data.}
+\caption{Model selection scores for several common criteria (DIC:
+Deviance Information Criterion, AIC: Akaike Information Criterion, BIC:
+Bayesian Information Criterion) all (wrongly) select the simplest model.
+As the true (Allen) model is not distinguishable from the simpler
+(Ricker) model in the region of the observed data, this error cannot be
+avoided regardless of the model choice criterion. This highlights the
+danger of model choice when the selected model will be used outside of
+the observed range of the data.}
 \end{longtable}
 
 \begin{figure}[htbp]
@@ -640,30 +693,30 @@ observed training data.
 \includegraphics{components/figure/manuscript-figure_3-1.pdf}
 \caption{The steady-state optimal policy (infinite boundary) calculated
 under each model. Policies are shown in terms of target escapement,
-$S_t$, as under models such as this a constant escapement policy is
+$S(t)$, as under models such as this a constant escapement policy is
 expected to be optimal (Reed 1979).}
 \end{figure}
 
 Despite the similarities in model fits to the observed data, the
 policies inferred under each model differ widely (Figure 3). Policies
-are shown in terms of target escapement, $S_t$. Under models such as
-this a constant escapement policy is expected to be optimal (Reed 1979),
-whereby population levels below a certain size $S$ are unharvested,
-while above that size the harvest strategy aims to return the population
-to $S$. Whenever a model predicts that the population will not persist
-below a certain threshold, the optimal solution is to harvest the entire
-population immediately, resulting in an escapement $S=0$, as seen in the
-true (correct form, exact parameters) model, the Allen model (correct
-form, estimated parameters) and the GP.\\Only the structurally correct
-model (Allen model) and the GP produce policies close to the true
-optimum policy.
+are shown in terms of target escapement, $S(t) = x_t - h$. Under models
+such as this a constant escapement policy is expected to be optimal
+(Reed 1979), whereby population levels below a certain size $S$ are
+unharvested, while above that size the harvest strategy aims to return
+the population to $S$. Whenever a model predicts that the population
+will not persist below a certain threshold, the optimal solution is to
+harvest the entire population immediately, resulting in an escapement
+$S=0$, as seen in the true (correct form, exact parameters) model, the
+Allen model (correct form, estimated parameters) and the GP.\\Only the
+structurally correct model (Allen model) and the GP produce policies
+close to the true optimum policy.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics{components/figure/manuscript-figure_4-1.pdf}
 \caption{In the management context, GPDP outperforms approaches based on
 parametric models. We show 100 replicate simulations of the stock
-dynamics (eq 1) under the policies derived from each of the estimated
+dynamics (Eqn 1) under the policies derived from each of the estimated
 models, as well as the policy based on the exact underlying model.}
 \end{figure}
 
@@ -710,7 +763,7 @@ point increases the chance of a stochastic transition. More precisely,
 if we let $L = K - x_c$, then the probability of a transition in a given
 window of time $T$ scales as
 
-\[P(x_t < x_c | t \in T) \propto  \exp\left(\frac{L^2}{\sigma^2}\right),\]
+\[P(x(t) < x_c | t \in T) \propto  \exp\left(\frac{L^2}{\sigma^2}\right),\]
 
 (see Gardiner (2009) or Mangel (2006) for the derivation). As a result,
 the impact of using a model which underestimates the risk of harvesting
@@ -772,28 +825,27 @@ misleading.}\label{traditional-model-choice-approaches-can-be-positively-mislead
 
 These results illustrate that model-choice approaches would be
 positively misleading -- supporting simpler models that cannot express
-tipping point dynamics merely on account of them being similar. As the
-data shown comes only from the basin of attraction near the unfished
+tipping point dynamics merely on account of them being similar. The data
+shown comes only from the basin of attraction near the unfished
 equilibrium, near which all of the models are approximately linear and
-approximately identical.
+approximately identical; so it is intuitive that all criteria choose the
+simplest model. In a complex world, the result is suboptimal. But in a
+world that might contain tipping points, the result is disastrous.
 
-Model selection criteria trade off model complexity and fit to the data.
-When the data come from a limited region of state-space -- as is
-necessarily the case whenever there is a potential concern about tipping
-point dynamics -- simpler models therefore fit just as well and tend to
-be selected more often than complex ones. This approach would be
-appropriate when the dynamics can be expected to remain in the region of
-the training data; for instance, if we only considered the forecasting
-accuracy of the unfished population dynamics under each model.
-
-In contrast, the decision-maker's problem of setting appropriate harvest
-levels cannot exclude regions of state-space outside the observed range
-when integrating over all possible decisions to find the optimal choice.
-Such problems are not constrained to fisheries management but ubiquitous
-across ecological decision-making and conservation where the greatest
-concerns involve entering previously unobserved regions of state-space
--- whether that is the collapse of a fishery, the spread of an invasive,
-or the loss of habitat.
+Many managers both in fisheries and beyond face a similar situation:
+they have not observed the population dynamics at all possible
+densities. A lack of comprehensive data at all population sizes,
+combined with our obvious inability to formulate accurate population
+models for low population sizes in the absence of any data, makes this
+situation the rule more than the exception. Relying on parametric models
+and model choice processes that favor simplicity ignores this basic
+fact. Acknowledging this, Carl Walters (e.g. Walters and Hilborn 1978)
+has long observed that if we began by fishing any newly exploited
+population down to very low levels and then let it recover, we would be
+much better at estimating population dynamics and thus predicting the
+optimal harvest levels. While certainly true, this presents a rather
+risky policy in the face of potential tipping points. The GPDP offers an
+alternative way to acknowledge this uncertainty.
 
 \subsubsection{GPDP population dynamics capture larger uncertainty in
 regions where the data are
@@ -801,13 +853,20 @@ poor}\label{gpdp-population-dynamics-capture-larger-uncertainty-in-regions-where
 
 The parametric models perform worst when they propose a management
 strategy outside the range of the observed data. The non-parametric
-Bayesian approach, in contrast, allows a predictive model that expresses
-a great deal of uncertainty about the probable dynamics outside the
-observed range, while retaining very good predictive accuracy in the
-range observed. The management policy dictated by the GP balances this
-uncertainty against the immediate value of the harvest, and acts to
-stabilize the population dynamics in a region of state space in which
-the predictions can be reliably reflected by the data.
+approach of the GPDP, in contrast, allows a predictive model that
+expresses a great deal of uncertainty about the probable dynamics
+\emph{outside} the observed range, while retaining very good predictive
+accuracy \emph{inside} the range observed. The management policy
+dictated by the GPDP balances this uncertainty against the immediate
+value of the harvest, and acts to stabilize the population dynamics in a
+region of state space in which the predictions can be reliably reflected
+by the data.
+
+Such problems are not constrained to fisheries management but ubiquitous
+across ecological decision-making and conservation where the greatest
+concerns involve entering previously unobserved regions of state-space
+-- whether that is the collapse of a fishery, the spread of an invasive,
+or the loss of habitat.
 
 \subsubsection{The role of the prior}\label{the-role-of-the-prior}
 
