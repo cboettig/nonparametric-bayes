@@ -14,4 +14,4 @@ This is an open notebook project.
 
 ------------
 
-![](http://onsclaims.wikispaces.com/file/view/ons-aci2-icon.png)
+![](http://www.carlboettiger.info/assets/img/ons-aci2-icon.svg)
