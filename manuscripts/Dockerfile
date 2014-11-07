@@ -8,6 +8,7 @@ RUN apt-get update \
     cboettig/nonparametric-bayes
 COPY . /manuscript
 
+RUN chown -R docker:docker /manuscript
 # RUN Rscript -e 'rmarkdown::render("manuscript/manuscript.Rmd")'
 # RUN Rscript -e 'rmarkdown::render("manuscript/supplement.Rmd")'
 

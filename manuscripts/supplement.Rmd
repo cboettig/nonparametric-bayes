@@ -63,7 +63,7 @@ opts_chunk$set(dev.opts=c(version="1.7"), dev="pdf")
 
 ```
 
-
+\tableofcontents
 
 
 \appendix
@@ -71,6 +71,75 @@ opts_chunk$set(dev.opts=c(version="1.7"), dev="pdf")
 \renewcommand*{\thetable}{S\arabic{table}}
 \setcounter{figure}{0}
 \setcounter{table}{0}
+
+<!--
+Table of contents? 
+-->
+
+
+
+# Code #
+
+All code used in producing this analysis has been embedded into the
+manuscript sourcefile using the Dynamic Documentation tool, `knitr`
+for the R language [@Xie_2013], available at 
+[github.com/cboettig/nonparametric-bayes/](https://github.com/cboettig/nonparametric-bayes/)
+
+To help make the mathematical and computational approaches presented
+here more accessible, we provide a free and open source (MIT License)
+R package that implements the GPDP process as it is presented here.
+Users should note that at this time, the R package has been developed
+and tested explicitly for this analysis and is not yet intended as a
+general purpose tool.  The manuscript source-code described above
+illustrates how these functions are used in this analysis. This
+package can be installed following the directions above.
+
+
+## Dependencies & Reproducibility ##
+
+The code provided should run on any common platform (Windows, Mac or Linux)
+that has R and the necessary R packages installed (including support for
+the jags Gibbs sampler).  The DESCRIPTION file of our R package, `nonparametricbayes`,
+lists all the software required to use these methods. Additional software requirements
+for the other comparisons shown here, such as the Gibbs sampling for the parametric models,
+are listed under the Suggested packages list.
+
+Nonetheless, installing the dependencies needed is not a trivial task, and may 
+become more difficult over time as software continues to evolve.  To facilitate
+reuse, we also provide a Dockerfile and Docker image that can be used to replicate
+and explore the analyses here by providing a copy of the computational environment
+we have used, with all software installed. Docker sofware (see [docker.com](http://www.docker.com))
+runs on most platforms as well as cloud servers. Use the command:
+
+    docker run -dP cboettig/nonparametric-bayes
+
+to launch an RStudio instance with the necessary software already installed. See the 
+Rocker-org project, [github.com/rocker-org](https://github.com/rocker-org) for more 
+detailed documentation on using Docker with R.
+
+
+# Data #
+
+While the data can be regenerated using the code provided, for convenience
+CSV files of the data shown in each graph are made available on Dryad.
+
+
+# Training data #
+
+Each of our models $f(S_t)$ must be estimated from training data, which
+we simulate from the Allen model with parameters $r = $ `r p[1]`, 
+$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` for $T=$ `r Tobs`
+timesteps, starting at initial condition $X_0 = $ `r Xo`.  The training
+data can be seen in Figure 1 and found in the table `figure1.csv`.
+
+## Training data for sensitivity analyses ##
+
+A further 96 unique randomly generated training data sets are generated
+for the sensitivity analysis, as described in the main text.  The code
+provided replicates the generation of these sets.
+
+
+# Model performance outside the predicted range
 
 
 Figure S1 illustrates the performance of the GP and parametric models
@@ -106,9 +175,15 @@ ggplot(crash_data) +
   facet_wrap(~variable) + 
   theme(legend.position="none") + xlab("time") + ylab("stock size") 
 
-write.csv(crash_data, "components/data/figure3.csv")
+write.csv(crash_data, "components/data/figureS1.csv")
 ```
 
+\newpage
+
+
+# MCMC analyses #
+
+This section provides figures and tables showing the traces from each of the MCMC runs used to estimate the parameters of the models presented, along with the resulting posterior distributions for each parameter.  Priors usually appear completely falt when shown against the posteriors, but are summarized by tables the parameters of their corresponding distributions for each case. 
 
 
 
@@ -120,42 +195,11 @@ gp_assessment_plots$traces_plot
 
 ```{r figure_S3, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
 gp_assessment_plots$posteriors_plot
+write.csv(gp_dat,"components/data/figureS2-3.csv")
 ```
 
 
 \newpage
-
-
-
-Training data (Figures 1-6)
-----------------------------
-
-Each of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = $ `r p[1]`, 
-$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
-for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
-The training data can be seen in Figure 1.  
-
-Training data for sensitivity analyses
--------------------------------------
-
-A further 96 unique training data sets are generated for the sensitivity analysis, as described in the main text.  
-
-
-
-Code
-----
-
-All code used in producing this analysis can be found in the R package accompanying the paper, available from [http://github.com/cboettig/nonparametric-bayes]. The code for all results shown here is dynamically embedded into the manuscript using `knitr` [@knitr].  
-
-
-<!--
-Data
-----
-
-While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
-
--->
 
 
 
@@ -169,7 +213,7 @@ ggplot(ricker_posteriors) +
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(ricker_posteriors, "components/data/ricker_posteriors.csv")
+write.csv(ricker_posteriors, "components/data/figureS4-5.csv")
 ```
 
 
@@ -189,7 +233,7 @@ ggplot(myers_posteriors) +
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(myers_posteriors, "components/data/myers_posteriors.csv")
+write.csv(myers_posteriors, "components/data/figureS6-7.csv")
 ```
 
 
@@ -209,7 +253,7 @@ ggplot(allen_posteriors) +
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
+write.csv(allen_posteriors, "components/data/figureS8-9.csv")
 ```
 
 
@@ -220,8 +264,7 @@ pander::pandoc.table(allen_priors_xtable,
 
 
 
-Further sensitivity analysis
-=============================
+# Further sensitivity analysis #
 
 The Latin hypercube approach systematically varies all combinations of
 parameters, providing a more general test than varying only one parameter
@@ -324,7 +367,7 @@ ggplot(sensitivity_dat) +
   theme_bw() + 
   xlab("value as fraction of the optimal") + 
   facet_grid(noise~model)
-write.csv(sensitivity_dat, "components/data/sensitivity_dat.csv") 
+write.csv(sensitivity_dat, "components/data/figureS10.csv") 
 ```
 
 ```{r AllenSetsTable, results="asis"}
