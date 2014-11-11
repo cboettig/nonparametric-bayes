@@ -1,7 +1,6 @@
 image: cboettig/nonparametric-bayes
 script:
-  - Rscript -e 'rmarkdown::render("manuscripts/manuscript.Rmd")'
-  - Rscript -e 'rmarkdown::render("manuscripts/supplement.Rmd")'
+  - Rscript -e 'rmarkdown::render("manuscripts/manuscript.Rmd"); rmarkdown::render("manuscripts/supplement.Rmd")'
 notify:
   email:
     recipients:

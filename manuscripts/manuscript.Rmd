@@ -1044,8 +1044,8 @@ For the prior on  $\ell$,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  Th
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
 infer posterior distributions of the parameters of the GP (Figure
-S3, code in appendix). Since the posterior distributions differ
-substantially from the priors (Figure S3), most of the information in the posterior comes from the data rather than the
+S4, code in appendix). Since the posterior distributions differ
+substantially from the priors (Figure S4), most of the information in the posterior comes from the data rather than the
 prior belief.
 
 
