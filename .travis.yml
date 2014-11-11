@@ -8,7 +8,7 @@ before_install:
   - ./travis-tool.sh bootstrap
 
 install:
-  - ./travis-tool.sh install_aptget r-cran-knitr r-cran-pander r-cran-modeest r-cran-MASS r-cran-coda r-cran-emdbook r-cran-R2jags r-cran-MCMCpack r-cran-data.table r-cran-kernlab r-cran-mcmc r-cran-plyr r-cran-ggplot2     
+  - ./travis-tool.sh install_aptget r-cran-knitr r-cran-pander r-cran-modeest r-cran-MASS r-cran-coda r-cran-emdbook r-cran-R2jags r-cran-MCMCpack r-cran-data.table r-cran-kernlab r-cran-mcmc r-cran-plyr r-cran-ggplot2 r-cran-rcurl r-cran-httr 
   - ./travis-tool.sh install_github hadley/reshape cboettig/pdg_control
   - ./travis-tool.sh install_deps
 

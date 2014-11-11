@@ -4,6 +4,6 @@
 manuscripts
 CONTRIBUTING.md
 LICENSE
-
+.drone.yml
 ^.*\.Rproj$
 ^\.Rproj\.user$

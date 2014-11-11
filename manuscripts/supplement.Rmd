@@ -44,7 +44,7 @@ output:
 ---
 
 
-```{r knit, include=FALSE}
+```{r knit, include=FALSE, eval=FALSE}
 library("methods")
 library("rmarkdown")
 render("manuscript.Rmd")
@@ -63,7 +63,7 @@ opts_chunk$set(dev.opts=c(version="1.7"), dev="pdf")
 
 ```
 
-
+\tableofcontents
 
 
 \appendix
@@ -71,6 +71,77 @@ opts_chunk$set(dev.opts=c(version="1.7"), dev="pdf")
 \renewcommand*{\thetable}{S\arabic{table}}
 \setcounter{figure}{0}
 \setcounter{table}{0}
+
+<!--
+Table of contents? 
+-->
+
+
+
+# Code #
+
+All code used in producing this analysis has been embedded into the
+manuscript sourcefile using the Dynamic Documentation tool, `knitr`
+for the R language [@Xie_2013], available at 
+[github.com/cboettig/nonparametric-bayes/](https://github.com/cboettig/nonparametric-bayes/)
+
+To help make the mathematical and computational approaches presented
+here more accessible, we provide a free and open source (MIT License)
+R package that implements the GPDP process as it is presented here.
+Users should note that at this time, the R package has been developed
+and tested explicitly for this analysis and is not yet intended as a
+general purpose tool.  The manuscript source-code described above
+illustrates how these functions are used in this analysis. This
+package can be installed following the directions above.
+
+
+## Dependencies & Reproducibility ##
+
+The code provided should run on any common platform (Windows, Mac or Linux)
+that has R and the necessary R packages installed (including support for
+the jags Gibbs sampler).  The DESCRIPTION file of our R package, `nonparametricbayes`,
+lists all the software required to use these methods. Additional software requirements
+for the other comparisons shown here, such as the Gibbs sampling for the parametric models,
+are listed under the Suggested packages list.
+
+Nonetheless, installing the dependencies needed is not a trivial task, and may 
+become more difficult over time as software continues to evolve.  To facilitate
+reuse, we also provide a Dockerfile and Docker image that can be used to replicate
+and explore the analyses here by providing a copy of the computational environment
+we have used, with all software installed. Docker sofware (see [docker.com](http://www.docker.com))
+runs on most platforms as well as cloud servers. Use the command:
+
+    docker run -dP cboettig/nonparametric-bayes
+
+to launch an RStudio instance with the necessary software already installed. See the 
+Rocker-org project, [github.com/rocker-org](https://github.com/rocker-org) for more 
+detailed documentation on using Docker with R.
+
+
+# Data #
+
+## Dryad Data Archive ##
+
+While the data can be regenerated using the code provided, for convenience
+CSV files of the data shown in each graph are made available on Dryad.
+
+
+## Training data description ##
+
+Each of our models $f(S_t)$ must be estimated from training data, which
+we simulate from the Allen model with parameters $r = $ `r p[1]`, 
+$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` for $T=$ `r Tobs`
+timesteps, starting at initial condition $X_0 = $ `r Xo`.  The training
+data can be seen in Figure 1 and found in the table `figure1.csv`.
+
+## Training data for sensitivity analyses ##
+
+A further 96 unique randomly generated training data sets are generated
+for the sensitivity analysis, as described in the main text.  The code
+provided replicates the generation of these sets.
+
+
+# Model performance outside the predicted range (Fig S1) #
 
 
 Figure S1 illustrates the performance of the GP and parametric models
@@ -86,7 +157,7 @@ Note that the GP is particularly uncertain about the dynamics relative
 to structurally incorrect models like the Ricker.
 
 
-```{r figure_S1, fig.width=8, fig.height=6, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
+```{r figure_S1, fig.width=6, fig.height=4, fig.cap="Outside the range of the training data (Figure 1), the true dynamics (black dots) fall outside the uncertainty (two standard deviations, colored bands) of the structurally incorrect parametric models (Ricker, Myers), but inside the uncertainty predicted by the GP. Points show the stock size simulated by the true model.  Overlay shows the range of states predicted by each model, based on the state observed in the previous time step. The Ricker model always (wrongly) predicts positive population growth, while the actual population shrinks in each step as the initial condition falls below the Allee threshold of the underlying model (Allen).  Note that because it does not assume a parametric form but instead relies more directly on the data, the GP is both more pessimistic and more uncertain about the future state than the parametric models.", dependson="plot-options"}
 y <- numeric(8)
 y[1] <- 4.5
 for(t in 1:(length(y)-1))
@@ -106,122 +177,14 @@ ggplot(crash_data) +
   facet_wrap(~variable) + 
   theme(legend.position="none") + xlab("time") + ylab("stock size") 
 
-write.csv(crash_data, "components/data/figure3.csv")
+write.csv(crash_data, "components/data/figureS1.csv")
 ```
-
-
-
-
-
-```{r figure_S2, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options"}
-gp_assessment_plots$traces_plot
-```
-
-
-```{r figure_S3, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red."}
-gp_assessment_plots$posteriors_plot
-```
-
 
 \newpage
 
 
 
-Training data (Figures 1-6)
-----------------------------
-
-Each of our models $f(S_t)$ must be estimated from training data, which
-we simulate from the Allen model with parameters $r = $ `r p[1]`, 
-$K =$ `r p[2]`, $C =$ `r p[3]`, and  $\sigma_g =$ `r sigma_g` 
-for $T=$ `r Tobs` timesteps, starting at initial condition $X_0 = $ `r Xo`. 
-The training data can be seen in Figure 1.  
-
-Training data for sensitivity analyses
--------------------------------------
-
-A further 96 unique training data sets are generated for the sensitivity analysis, as described in the main text.  
-
-
-
-Code
-----
-
-All code used in producing this analysis can be found in the R package accompanying the paper, available from [http://github.com/cboettig/nonparametric-bayes]. The code for all results shown here is dynamically embedded into the manuscript using `knitr` [@knitr].  
-
-
-<!--
-Data
-----
-
-While the data can be regenerated using the code provided, for convenience CSV files of the data shown in each graph are also provided, along with appropriate metadata written in the Ecological Metadata Language (EML).  
-
--->
-
-
-
-```{r figure_S4, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
-ggplot(ricker_posteriors) + 
-  geom_line(aes(index, value)) + # priors, need to fix order though
-  facet_wrap(~ variable, scale="free_y", ncol=1)
-```
-
-```{r figure_S5, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=6, fig.height=4}
-ggplot(ricker_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity") +
-  facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(ricker_posteriors, "components/data/ricker_posteriors.csv")
-```
-
-
-```{r Table S1, results = "asis"}
-pander::pandoc.table(ricker_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Ricker model")
-```
-
-
-```{r figure_S6, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
-ggplot(myers_posteriors) + 
-  geom_line(aes(index, value)) + # priors, need to fix order though
-  facet_wrap(~ variable, scale="free_y", ncol=1)
-```
-
-```{r figure_S7, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=6, fig.height=6}
-ggplot(myers_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity") +
-  facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(myers_posteriors, "components/data/myers_posteriors.csv")
-```
-
-
-```{r TableS2, results="asis"}
-pander::pandoc.table(myers_priors_xtable,
-           caption = "Parameterization range for the uniform priors in the Myers model")
-```
-
-
-```{r figure_S8, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
-ggplot(allen_posteriors) + 
-  geom_line(aes(index, value)) + # priors, need to fix order though
-  facet_wrap(~ variable, scale="free_y", ncol=1)
-```
-
-```{r figure_S9, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=6, fig.height=6}
-ggplot(allen_posteriors, aes(value)) + 
-  stat_density(geom="path", position="identity") +
-  facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(allen_posteriors, "components/data/allen_posteriors.csv")
-```
-
-
-```{r TableS3, results = "asis"}
-pander::pandoc.table(allen_priors_xtable,
-  caption = "Parameterization range for the uniform priors in the Allen model")
-```
-
-
-
-Further sensitivity analysis
-=============================
+# Further sensitivity analysis (Fig S2) #
 
 The Latin hypercube approach systematically varies all combinations of
 parameters, providing a more general test than varying only one parameter
@@ -317,21 +280,116 @@ MyersParameterSets <- rbind(set.C, set.D)
 sensitivity_dat <- dat
 ```
 
-```{r figure_S10, fig.height=6, fig.width=10, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histograms shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values of 1 indicate optimal performance. Columns indicate different models, rows different noise levels, and colors indicate the parameter set used. Grouped over stochastic replicates applying the contol policy and stochastic replicates of training data generated from the model indicated, see raw data for details. Randomly chosen parameter values for the models shown in tables below."}
+```{r figure_S2, fig.height=6, fig.width=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histograms shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values of 1 indicate optimal performance. Columns indicate different models, rows different noise levels, and colors indicate the parameter set used. Grouped over stochastic replicates applying the contol policy and stochastic replicates of training data generated from the model indicated, see raw data for details. Randomly chosen parameter values for the models shown in tables below."}
 ggplot(sensitivity_dat) + 
   geom_histogram(aes(value, fill=parameters)) + 
   xlim(0,1.0) + 
   theme_bw() + 
   xlab("value as fraction of the optimal") + 
   facet_grid(noise~model)
-write.csv(sensitivity_dat, "components/data/sensitivity_dat.csv") 
+write.csv(sensitivity_dat, "components/data/figureS2.csv") 
 ```
 
 ```{r AllenSetsTable, results="asis"}
-pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S9." )
+pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S2." )
 ```
 ```{r MyersSetsTable, results="asis"}
-pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S9." )
+pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S2." )
+```
+
+\newpage
+
+
+# MCMC analyses #
+
+This section provides figures and tables showing the traces from each of the MCMC runs used to estimate the parameters of the models presented, along with the resulting posterior distributions for each parameter.  Priors usually appear completely falt when shown against the posteriors, but are summarized by tables the parameters of their corresponding distributions for each case. 
+
+
+## GP MCMC (Fig S3-4) ##
+
+```{r figure_S3, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options", fig.width=4, fig.height=4}
+gp_assessment_plots$traces_plot
+```
+
+
+```{r figure_S4, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red.", fig.width=4, fig.height=4}
+gp_assessment_plots$posteriors_plot
+write.csv(gp_dat,"components/data/figureS3-4.csv")
+```
+
+\newpage
+\newpage
+
+
+## Ricker Model MCMC (Fig S5-6) ##
+
+```{r figure_S5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
+ggplot(ricker_posteriors) + 
+  geom_line(aes(index, value)) + # priors, need to fix order though
+  facet_wrap(~ variable, scale="free_y", ncol=1)
+```
+
+```{r figure_S6, fig.cap="Posteriors from the MCMC estimate of the Ricker model", fig.width=4, fig.height=4}
+ggplot(ricker_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(ricker_posteriors, "components/data/figureS5-6.csv")
+```
+
+
+```{r Table S1, results = "asis"}
+pander::pandoc.table(ricker_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Ricker model")
+```
+
+\newpage
+\newpage 
+
+## Myers Model MCMC (Fig S7-8) ## 
+
+
+```{r figure_S7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
+ggplot(myers_posteriors) + 
+  geom_line(aes(index, value)) + # priors, need to fix order though
+  facet_wrap(~ variable, scale="free_y", ncol=1)
+```
+
+```{r figure_S8, fig.cap="Posterior distributions from the MCMC estimates of the Myers model", fig.width=4, fig.height=6}
+ggplot(myers_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(myers_posteriors, "components/data/figureS7-8.csv")
+```
+
+
+```{r TableS2, results="asis"}
+pander::pandoc.table(myers_priors_xtable,
+           caption = "Parameterization range for the uniform priors in the Myers model")
+```
+
+\newpage 
+\newpage 
+
+## Allen Model MCMC (Fig S9-10) ##
+
+
+```{r figure_S9, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", fig.width=4}
+ggplot(allen_posteriors) + 
+  geom_line(aes(index, value)) + # priors, need to fix order though
+  facet_wrap(~ variable, scale="free_y", ncol=1)
+```
+
+```{r figure_S10, fig.cap="Posteriors from the MCMC estimate of the Allen model", fig.width=4, fig.height=6}
+ggplot(allen_posteriors, aes(value)) + 
+  stat_density(geom="path", position="identity") +
+  facet_wrap(~ variable, scale="free", ncol=2)
+write.csv(allen_posteriors, "components/data/figureS9-10.csv")
+```
+
+
+```{r TableS3, results = "asis"}
+pander::pandoc.table(allen_priors_xtable,
+  caption = "Parameterization range for the uniform priors in the Allen model")
 ```
 
 ```{r unlink, include=FALSE}
