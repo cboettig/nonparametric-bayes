@@ -1,20 +1,51 @@
-Instructions for compiling manuscripts
-======================================
+Source for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming
+========================================================================================================
 
-**Quickstart**:
+[![Build Status](http://107.170.225.143:88/api/badge/github.com/cboettig/nonparametric-bayes/status.svg?branch=master)](http://107.170.225.143:88/github.com/cboettig/nonparametric-bayes)
 
-Edit the corresponding `.Rmd` file to change either text or code.  To build, just use:
+<!--
+Manuscript code is run automatically any time changes are made to
+this repository.  The badge above summarizes the status and contains
+links to further details. 
+--> 
+
+Quickstart
+----------
+
+[Install Docker](https://docs.docker.com/installation) on your laptop or cloud server. In Docker, run: 
 
 ```bash
-make
+docker run -d -p 8787:8787 cboettig/nonparametric-bayes
 ```
+
+This downloads the computational environment necessary and launches RStudio-server to interact with it. Point your browser to:
+
+```
+http://localhost:8787
+```
+
+Mac and Windows users should replace `localhost` with the IP address returned by `boot2docker ip`.  Log in with user/pw rstudio/rstudio. 
+
+Open the `manuscript.Rmd` file from the manuscripts directory and you're ready to explore.  See [rocker-org Wiki](https://github.com/rocker-org/rocker/wiki/Using-the-RStudio-image) for details like custom passwords or user names.  
+
+
+
+Edit the corresponding `.Rmd` file (manuscript or supplement),
+which contains both text and code.
+
 
 Installation requirements
 -------------------------
 
-- pandoc (>= 1.12), pandoc-citeproc
-- LaTeX environment
+Compiling the manuscript requires additional software beyond the basic
+requirements of the `nonparametric-bayes` package, such as `jags` (for
+comparison to parametric models), but also sofware such as `LaTeX` and
+`pandoc` for typesetting. If you run into trouble, use the Docker approach
+described above instead, which provides all these components already installed.
 
+- RStudio (includes `pandoc`)
+- A LaTeX environment
+- The `nonparametric-bayes` package [from github](http://github.com/cboettig/nonparametric-bayes), including all packages on the SUGGESTS list. 
 
 
 Manuscripts in this package are written in [knitr]'s R Markdown format
@@ -27,6 +58,7 @@ plain text and easier to learn than LaTeX, the hope is that this workflow
 is relatively portable across users.  Markdown also does a better job than
 most alternatives (tex included) at separating content from formatting,
 freeing the writer to just write.
+
 
 [knitr]: http://yihui.name/knitr
 [pandoc]: http://johnmacfarlane.net/pandoc/

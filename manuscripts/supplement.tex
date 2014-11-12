@@ -1,0 +1,550 @@
+\documentclass[]{components/elsarticle}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx}
+% Redefine \includegraphics so that, unless explicit options are
+% given, the image width will not exceed the width of the page.
+% Images get their normal width if they fit onto the page, but
+% are scaled down if they would overflow the margins.
+\makeatletter
+\def\ScaleIfNeeded{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+\let\Oldincludegraphics\includegraphics
+{%
+ \catcode`\@=11\relax%
+ \gdef\includegraphics{\@ifnextchar[{\Oldincludegraphics}{\Oldincludegraphics[width=\ScaleIfNeeded]}}%
+}%
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={Supplement for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+\setlength{\droptitle}{-2em}
+  \title{Supplement for: Avoiding tipping points in fisheries management through
+Gaussian Process Dynamic Programming}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{true \and true \and true}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \date{}
+  \predate{}\postdate{}
+
+
+
+
+\begin{document}
+
+\maketitle
+
+
+\tableofcontents
+
+\appendix
+\renewcommand*{\thefigure}{S\arabic{figure}}
+\renewcommand*{\thetable}{S\arabic{table}} \setcounter{figure}{0}
+\setcounter{table}{0}
+
+\section{Code}\label{code}
+
+All code used in producing this analysis has been embedded into the
+manuscript sourcefile using the Dynamic Documentation tool,
+\texttt{knitr} for the R language (Xie 2013), available at
+\href{https://github.com/cboettig/nonparametric-bayes/}{github.com/cboettig/nonparametric-bayes/}
+
+To help make the mathematical and computational approaches presented
+here more accessible, we provide a free and open source (MIT License) R
+package that implements the GPDP process as it is presented here. Users
+should note that at this time, the R package has been developed and
+tested explicitly for this analysis and is not yet intended as a general
+purpose tool. The manuscript source-code described above illustrates how
+these functions are used in this analysis. This package can be installed
+following the directions above.
+
+\subsection{Dependencies \&
+Reproducibility}\label{dependencies-reproducibility}
+
+The code provided should run on any common platform (Windows, Mac or
+Linux) that has R and the necessary R packages installed (including
+support for the jags Gibbs sampler). The DESCRIPTION file of our R
+package, \texttt{nonparametricbayes}, lists all the software required to
+use these methods. Additional software requirements for the other
+comparisons shown here, such as the Gibbs sampling for the parametric
+models, are listed under the Suggested packages list.
+
+Nonetheless, installing the dependencies needed is not a trivial task,
+and may become more difficult over time as software continues to evolve.
+To facilitate reuse, we also provide a Dockerfile and Docker image that
+can be used to replicate and explore the analyses here by providing a
+copy of the computational environment we have used, with all software
+installed. Docker sofware (see \href{http://www.docker.com}{docker.com})
+runs on most platforms as well as cloud servers. Use the command:
+
+\begin{verbatim}
+docker run -dP cboettig/nonparametric-bayes
+\end{verbatim}
+
+to launch an RStudio instance with the necessary software already
+installed. See the Rocker-org project,
+\href{https://github.com/rocker-org}{github.com/rocker-org} for more
+detailed documentation on using Docker with R.
+
+\section{Data}\label{data}
+
+\subsection{Dryad Data Archive}\label{dryad-data-archive}
+
+While the data can be regenerated using the code provided, for
+convenience CSV files of the data shown in each graph are made available
+on Dryad.
+
+\subsection{Training data description}\label{training-data-description}
+
+Each of our models $f(S_t)$ must be estimated from training data, which
+we simulate from the Allen model with parameters $r = $ 2, $K =$ 8,
+$C =$ 5, and $\sigma_g =$ 0.05 for $T=$ 40 timesteps, starting at
+initial condition $X_0 = $ 5.5. The training data can be seen in Figure
+1 and found in the table \texttt{figure1.csv}.
+
+\subsection{Training data for sensitivity
+analyses}\label{training-data-for-sensitivity-analyses}
+
+A further 96 unique randomly generated training data sets are generated
+for the sensitivity analysis, as described in the main text. The code
+provided replicates the generation of these sets.
+
+\section{Model performance outside the predicted range (Fig
+S1)}\label{model-performance-outside-the-predicted-range-fig-s1}
+
+Figure S1 illustrates the performance of the GP and parametric models
+outside the observed training data. The mean trajectory under the
+underlying model is shown by the black dots, while the corresponding
+prediction made by the model shown by the box and whiskers plots.
+Predictions are based on the true expected value in the previous time
+step. Predicted distributions that lie entirely above the expected
+dynamics indicate the expectation of stock sizes higher than what is
+actually expected. The models differ both in their expectations and
+their uncertainty (colored bands show two standard deviations away).
+Note that the GP is particularly uncertain about the dynamics relative
+to structurally incorrect models like the Ricker.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S1-1.pdf}
+\caption{Outside the range of the training data (Figure 1), the true
+dynamics (black dots) fall outside the uncertainty (two standard
+deviations, colored bands) of the structurally incorrect parametric
+models (Ricker, Myers), but inside the uncertainty predicted by the GP.
+Points show the stock size simulated by the true model. Overlay shows
+the range of states predicted by each model, based on the state observed
+in the previous time step. The Ricker model always (wrongly) predicts
+positive population growth, while the actual population shrinks in each
+step as the initial condition falls below the Allee threshold of the
+underlying model (Allen). Note that because it does not assume a
+parametric form but instead relies more directly on the data, the GP is
+both more pessimistic and more uncertain about the future state than the
+parametric models.}
+\end{figure}
+
+\newpage
+
+\section{Further sensitivity analysis (Fig
+S2)}\label{further-sensitivity-analysis-fig-s2}
+
+The Latin hypercube approach systematically varies all combinations of
+parameters, providing a more general test than varying only one
+parameter at a time. We loop across eight replicates of three different
+randomly generated parameter sets for each of two different generating
+models (Allen and Myers) over two different noise levels (0.01 and
+0.05), for a total of 8 x 3 x 2 x 2 = 96 scenarios. The Gaussian Process
+performs nearly optimally in each case, relative to the optimal solution
+with no parameter or model uncertainty (Figure S10, appendix).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S2-1.pdf}
+\caption{Sensitivity Analysis. Histograms shows the ratio of the
+realized net present value derived when managing under the GPDP over the
+optimal value given the true model and true parameters. Values of 1
+indicate optimal performance. Columns indicate different models, rows
+different noise levels, and colors indicate the parameter set used.
+Grouped over stochastic replicates applying the contol policy and
+stochastic replicates of training data generated from the model
+indicated, see raw data for details. Randomly chosen parameter values
+for the models shown in tables below.}
+\end{figure}
+
+\begin{longtable}[c]{@{}cccc@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.15\columnwidth}\centering
+~
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\centering
+r
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\centering
+K
+\end{minipage} & \begin{minipage}[b]{0.09\columnwidth}\centering
+theta
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.15\columnwidth}\centering
+\textbf{set.A}
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+1.103
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+7.949
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\centering
+2.288
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+\textbf{set.B}
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+1.485
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+9.775
+\end{minipage} & \begin{minipage}[t]{0.09\columnwidth}\centering
+3.524
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Randomly chosen parameter sets for the Allen models in Figure
+S2.}
+\end{longtable}
+
+\begin{longtable}[c]{@{}cccc@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.15\columnwidth}\centering
+~
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\centering
+r
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\centering
+K
+\end{minipage} & \begin{minipage}[b]{0.07\columnwidth}\centering
+C
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.15\columnwidth}\centering
+\textbf{set.C}
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+1.769
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+10.46
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+4.301
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+\textbf{set.D}
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+2.075
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+10.95
+\end{minipage} & \begin{minipage}[t]{0.07\columnwidth}\centering
+4.915
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Randomly chosen parameter sets for the Myers models in Figure
+S2.}
+\end{longtable}
+
+\newpage
+
+\section{MCMC analyses}\label{mcmc-analyses}
+
+This section provides figures and tables showing the traces from each of
+the MCMC runs used to estimate the parameters of the models presented,
+along with the resulting posterior distributions for each parameter.
+Priors usually appear completely falt when shown against the posteriors,
+but are summarized by tables the parameters of their corresponding
+distributions for each case.
+
+\subsection{GP MCMC (Fig S3-4)}\label{gp-mcmc-fig-s3-4}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S3-1.pdf}
+\caption{Traces from the MCMC estimates of the GP model show reasonable
+mixing (no trend) and sampling rejection rate (no piecewise jumps)}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S4-1.pdf}
+\caption{Posterior distributions from the MCMC estimate of the GP model.
+Prior curves shown in red; note the posterior distributions are
+significantly more peaked than the priors, showing that the data has
+been informative and is not driven by the priors.}
+\end{figure}
+
+\newpage
+\newpage
+
+\subsection{Ricker Model MCMC (Fig
+S5-6)}\label{ricker-model-mcmc-fig-s5-6}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S5-1.pdf}
+\caption{Traces from the MCMC estimates of the Ricker model show
+reasonable mixing (no trend) and sampling rejection rate (no piecewise
+jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
+the log likelihood.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S6-1.pdf}
+\caption{Posteriors from the MCMC estimate of the Ricker model. Note
+that the model estimates a carrying capacity $K$ very close to the true
+equilibrium where most of the observations were made, but is less
+certain about the growth rate.}
+\end{figure}
+
+\begin{longtable}[c]{@{}ccc@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.15\columnwidth}\centering
+parameter
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+lower.bound
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+upper.bound
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$r$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+0.01
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+20
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$K$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+0.01
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+40
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$\sigma$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-06
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+100
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Parameterization range for the uniform priors in the Ricker
+model}
+\end{longtable}
+
+\newpage
+\newpage 
+
+\subsection{Myers Model MCMC (Fig
+S7-8)}\label{myers-model-mcmc-fig-s7-8}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S7-1.pdf}
+\caption{Traces from the MCMC estimates of the Myers model show
+reasonable mixing (no trend) and sampling rejection rate (no piecewise
+jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
+the log likelihood.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S8-1.pdf}
+\caption{Posterior distributions from the MCMC estimates of the Myers
+model. Note that with more free parameters, the posteriors reflect
+greater uncertainty. In particular, the parameter $\theta$ includes
+values both above 2, resulting in a tipping point, and below 2, where no
+tipping point exists in the model. Though the dynamic program will
+integrate over the full distribution, including those values
+corresponding to tipping points, the weight of the model lies in the
+region without tipping points.}
+\end{figure}
+
+\begin{longtable}[c]{@{}ccc@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.15\columnwidth}\centering
+parameter
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+lower.bound
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+upper.bound
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$r$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-04
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+10
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$K$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-04
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+40
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$\theta$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-04
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+10
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$\sigma$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-06
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+100
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Parameterization range for the uniform priors in the Myers
+model}
+\end{longtable}
+
+\newpage 
+\newpage 
+
+\subsection{Allen Model MCMC (Fig
+S9-10)}\label{allen-model-mcmc-fig-s9-10}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S9-1.pdf}
+\caption{Traces from the MCMC estimates of the Allen model show
+reasonable mixing (no trend) and sampling rejection rate (no piecewise
+jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
+the log likelihood.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S10-1.pdf}
+\caption{Posteriors from the MCMC estimate of the Allen model. The Allen
+model is the structurally correct model. Despite potential
+identfiability issues in distinguishing between the stable and unstable
+points ($K$ and $\theta$ respectively), the posterior estimates
+successfully reflect both the the upper stable point ($K$), as well as
+the significant probabilty of a tipping point ($\theta$) somewhere
+between $K$ and extinction (0).}
+\end{figure}
+
+\begin{longtable}[c]{@{}ccc@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.15\columnwidth}\centering
+parameter
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+lower.bound
+\end{minipage} & \begin{minipage}[b]{0.18\columnwidth}\centering
+upper.bound
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$r$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+0.01
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+6
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$K$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+0.01
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+20
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$X_C$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+0.01
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+20
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.15\columnwidth}\centering
+$\sigma$
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+1e-06
+\end{minipage} & \begin{minipage}[t]{0.18\columnwidth}\centering
+100
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Parameterization range for the uniform priors in the Allen
+model}
+\end{longtable}
+
+Xie, Y. 2013. Dynamic Documents with R and knitr. Chapman; Hall/CRCBoca
+Raton, Florida.
+
+\end{document}
