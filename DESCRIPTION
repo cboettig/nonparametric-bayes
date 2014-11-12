@@ -2,7 +2,7 @@ Package: nonparametricbayes
 Description: Research in the use of nonparametric Bayesian approaches,
     primarily Gaussian processes, for ecological modeling and prediction.
 Title: Nonparametric Bayes inference for ecological models
-Version: 0.0-2
+Version: 0.1.0
 License: CC0
 Author: Carl Boettiger
 Maintainer: Carl Boettiger, <cboettig@gmail.com>
