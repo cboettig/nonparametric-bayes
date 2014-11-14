@@ -1185,7 +1185,7 @@ distribution of curves - the gray band with mean shown in black. Uncertainty in 
 In Figure S1 (see supplement), we show the performance of the models outside the observed training data.  
 
 
-```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979] Several policies show a numerical jitter due to the discritization of states in the dynamic programming algorithm; doubling the number of grid points did not qualitatively change the results.", fig.width=8, fig.height=6, cache=FALSE}
+```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979] Several policies show a numerical jitter due to the discretization of states in the dynamic programming algorithm; doubling the number of grid points did not qualitatively change the results.", fig.width=8, fig.height=6, cache=FALSE}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
