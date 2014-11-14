@@ -1185,16 +1185,18 @@ distribution of curves - the gray band with mean shown in black. Uncertainty in 
 In Figure S1 (see supplement), we show the performance of the models outside the observed training data.  
 
 
-```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979].", fig.width=8, fig.height=6, cache=FALSE}
+```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979] Several policies show a numerical jitter due to the discritization of states in the dynamic programming algorithm; doubling the number of grid points did not qualitatively change the results.", fig.width=8, fig.height=6, cache=FALSE}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
 ggplot(policies, aes(stock, stock - value, color=method)) +
-  geom_line(lwd=1.2) + 
+  geom_line() + 
+  # stat_smooth(lwd=1.2, method="loess", degree=1, span=0.2, level=0, n=50) + 
   facet_wrap(~method) +
   xlab("stock size, x(t)") + 
   ylab("escapement, S(t)")  +
   scale_colour_manual(values=colorkey, guide=FALSE)
+
 
 write.csv(policies, "components/data/figure3.csv")
 ```
