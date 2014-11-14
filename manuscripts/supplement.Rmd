@@ -342,15 +342,6 @@ gp_assessment_plots$posteriors_plot
 write.csv(tgp_dat,"components/data/figureS3-4.csv")
 ```
 
-```{r S2_eml}
-par <- levels(sensitivity_dat$parameters)
-names(par) <- par
-col.defs <- names(sensitivity_dat)
-unit.defs <- list(models, par, "number", "number",  "number", "number")
-col.classes <- sapply(sensitivity_dat, class)
-eml_write("components/data/figureS2.csv", col.classes = col.classes, col.defs=col.defs,unit.defs=unit.defs,creator=me, title="Figure S2", file="components/data/README_S2.xml")
-```
-
 
 \newpage
 \newpage
