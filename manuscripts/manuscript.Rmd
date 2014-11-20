@@ -97,7 +97,6 @@ opts_chunk$set(dev='pdf')
 ```
 
 
-<!-- Run R code for analysis, to be called by figures -->
 ```{r plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE}
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -650,7 +649,7 @@ vary_allee <- melt(vary_allee, id=names(vary_allee[[1]]))
 ```{r refresh-plot-options, message=FALSE, warning=FALSE, include=FALSE, echo=FALSE, cache=FALSE}
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", 
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-opts_chunk$set(dev='pdf', dev.args=c(version="1.7"))
+opts_chunk$set(dev='pdf', dev.args=c(version="1.4"))
 opts_chunk$set(fig.width=4, fig.height=3, echo=FALSE)
 theme_set(theme_bw(base_size=12))
 ```
@@ -680,10 +679,8 @@ fisheries; although the challenges and methods are germane to
 other problems of conservation or natural resource exploitation.  Economic value and ecological concern have made
 marine fisheries the crucible for much of the founding work on management
 under uncertainty [@Gordon1954;
-@Clark1976; -@Clark2009; @Reed1979; @May1979; @Ludwig1982]
+@Clark1976; -@Clark2009; @Reed1979; @May1979; @Ludwig1982].
 
-<!-- Uncertainty outside the data without the correct model has not been handled. -->
-<!-- __We don't have the model__ -->
 
 Even if we know the proper deterministic description of the biological system, there is intrinsic stochasticity in biological dynamics, measurements, and
 implementation of policy [_e.g._ @Reed1979; @Clark1986; @Roughgarden1996;
@@ -696,10 +693,6 @@ confront the data with a collection of models, assuming that the true dynamics (
 other concerns (see @Cressie2009), these
 approaches are unable to describe uncertainty
 outside the observed data range.
-
-
-<!-- Point is: __We don't have the data where we need it__ -->
-<!-- What do we call this?  Extrapolation uncertainty?  Pathological Uncertainty? -->
 
 
 Structural  uncertainty is particularly insidious when we try to predict
@@ -719,12 +712,11 @@ stock levels or an otherwise desirable state. With perfect information
 be pushed before crossing the tipping point, and management would be
 simple.  But we face imperfect models and limited data and, with tipping points,  
 even small errors can have
-very large consequences, as we shall illustrate later.  Because intervention is often (but not always, see
-@Hughes2013) too late after a tipping point has been crossed, management
+very large consequences, as we shall illustrate later.  Because intervention may be too late once a 
+tipping point has been crossed (but see @Hughes2013), management
 is often concerned with avoiding 
-tipping points before any data about them is available or the 
-transition that would more clearly reveal a tipping point occurs
-[e.g. @Bestelmeyer2012].
+tipping points before any data about them are available.
+
 
 The dual concerns of model uncertainty and incomplete data 
 create a substantial challenge to existing decision-theoretic approaches
@@ -750,41 +742,10 @@ We will show that Gaussian Process Dynamic Programming
 (GPDP)  allows us to find robust management solutions in face of limited
 data without knowing  the correct model structure.
 
-
-<!--
- _Note on "not magic"_: honest uncertainty + SDP
-The idea that any approach can perform well without either having to
-know the model or have particularly good data should immediately draw
-suspicion.  The reader must bear in mind that the strength of our approach
-comes not from black-box predictive power from such limited information,
-but rather, by providing a more honest expression of uncertainty outside
-the observed data without sacrificing the predictive capacity near the
-observed data. By coupling this more accurate description of what is known
-and unknown to the decision-making under uncertainty framework provided
-by stochastic dynamic programming, we are able to obtain more robust
-management policies than with common parametric modeling approaches.
--->
-
 For comparisons, we consider the performance of management based on  GPDP against
 management policies derived under several alternative parametric models [@Reed1979; @Ludwig1982; @Mangel1988].  Rather than compare models in terms
 of best fit to data, we compare model performance in the concrete terms
 of the decision-maker's objectives. 
-
-
-<!-- 
-
-Although much argument can be made
-over the 'correct' objective function, e.g. how to account for the
-social value of fish left in the sea vs. the commercial value of fish
-harvested; see @Halpern2013 for further discussion of this issue.  We can
-always compare model performance across multiple potential objectives.
-The important point is that a decision-maker does not necessarily need
-a model that provides the best mechanistic understanding or the best
-long-term outcome, but rather the one that delivers the best management
-performance over the period of interest.
--->
-
-
 
 Approach and Methods
 ====================
@@ -810,34 +771,27 @@ focus on one-dimensional models of population dynamics
 for the comparison of parametric models and the GP.
 This is a best-case scenario for the parametric models because we
 simulate underlying dynamics from one of the three parametric models
-, whereas in the natural world we never know the "true" mode
-.  In addition, by choosing one-dimensional models with just a few parameters, we
+, whereas in the natural world we never know the "true" model.
+In addition, by choosing one-dimensional models with just a few parameters, we
 limit the chance that poor performance will be due to inability to
 estimate parameters accurately, something that becomes a more severe problem
 for higher-dimensional parametric models. Finally, the parametric models
-we consider are those most commonly used in modeling stock-recruitment
+we consider are commonly used in modeling stock-recruitment
 dynamics or to model sudden transitions between alternative stable states.
 
 ### Parametric models
 
-<!-- 
-- Statement of the models
---> 
-
-
 We let $X(t)$ denote the size (numbers or biomass) of the focal
 population at time $t$ and assume that in the absence of take its
-dynamics are.
-.
-
+dynamics are:
 
 \begin{equation}
-X(t+1) = Z(t) f(X(t), p) \label{eq1} 
+X(t+1) = Z(t) f(X(t), \mathbf{p}) \label{eq1} 
 \end{equation}
 
 Where Z(t) is log-normally distributed process stochasticity [@Reed1979]
-and $p$ is a vector of parameters to be estimated from the data.
-We describe the three choices for $f(X(t),p)$ in the next section.  
+and $\mathbf{p}$ is a vector of parameters to be estimated from the data.
+We describe the three choices for $f(X(t),\mathbf{p})$ in the next section.  
 The control action is a harvest or take, $h(t)$, measured
 in the same units as $X$, at time $t$.  Thus, in the presence of take,
 the population size on the right hand side of Eqn 1 is replaced by
@@ -851,9 +805,9 @@ assume that future harvests are discounted relative to current ones at
 a constant rate of discount $\delta$ and ask for the harvest policy
 that maximizes total discounted harvest between the current time $t$
 and a final time $T$. That is, we seek to maximize over choices of
-harvest $E_{X(t+1)} [ \sum_{t = 0}^{T}  R(X(t), h(t), t) \delta^t]$,
+harvest $E [ \sum_{t = 0}^{T}  R(X(t), h(t), t) \delta^t]$,
 where the state dynamics are given by Eqn 1 and $E$ denotes the
-expectation over the process stochasticity in the future population state.
+expectation over future population states.
 
 
 In order to find that policy, we introduce the value function $V(x(t), t)$
@@ -874,25 +828,25 @@ and thus the expectation in Eqn 2 is equivalent to taking expectations over
 $Z(t)$. That is
 
 \begin{equation}
-\mathbf{\mathrm{E}}_{X(t+1)} \left[ V( X(t+1),t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{Z(t)} \left[V( Z(t) f(x(t) - h(t))|p), t+1 | x(t), h(t) \right]
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V( X(t+1),t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{Z(t)} \left[V( Z(t) f(x(t) - h(t))|\mathbf{p}), t+1 | x(t), h(t) \right]
 \end{equation}
 
 where the population size after the take is $x(t) - h(t)$, which is then
-translated into $X(t+1)$ by Eqn 1 (that is, we replace $X(t+1)$ by $Z(t) f(x(t)-h(t)|p)$).
+translated into $X(t+1)$ by Eqn 1 (that is, we replace $X(t+1)$ by $Z(t) f(x(t)-h(t)|\mathbf{p})$).
 
 When the parameters governing the dynamics
 are also uncertain (the case of parametric uncertainty), the expectation in Eqn 2 involves averaging over the
 posterior distribution for the parameters. That is,
 
 \begin{equation}
-\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | p, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)|p), t)  \right] \}
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{\mathbf{p}|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | \mathbf{p}, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)|\mathbf{p}), t)  \right] \}
 \end{equation}
 
 When the underlying population dynamics are unknown (the case of structural uncertainty), the function $f$ itself is uncertain and the expectation for the next state includes
 uncertainty in $f$ as well. That is
 
 \begin{equation}
-\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{p|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z(t) | p, \mathrm{data}} \left[ V( Z(t) f(x(t) - h(t)|p), t) \right] \}
+\mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{\mathbf{p}|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z(t) | \mathbf{p}, \mathrm{data}} \left[ V( Z(t) f(x(t) - h(t)| \mathbf{p}), t) \right] \}
 \end{equation}
 
 
@@ -946,13 +900,11 @@ _are known without error_, and refer to the "Allen" model
 when these parameters have been estimated from the sample data.
 
 
-We consider a period of `r Tobs` in which data are obtained to estimate the parameters or the GP. This is long
-enough that the estimates do not depend on the particular realization,
-and longer times are not likely to provide substantial improvement.  
-We fit each of the models is fit to the same data (Figure 1).
-
-
-<!-- Bayesian inference of parametric models --> 
+We consider a period of `r Tobs` in which data are obtained to estimate
+the parameters or the GP. This is long enough that the estimates do not
+depend on the particular realization, and longer times are not likely
+to provide substantial improvement.  Each of the models is fit to the
+same data (Figure 1).
 
 We inferred posterior distributions for the parameters of each model by Gibbs sampling (@Gelman2003 implemented in R
 [@RTeam] using `jags`, [@R2jags]).  We choose uniform priors
@@ -963,14 +915,21 @@ robust to longer runs.  For each simulation we also applied several
 commonly used model selection criteria (AIC, BIC, DIC, see @Burnham2002)
 to identify the best fitting model.
 
+Additionally, we compute the maximum likelihood estimate (MLE, as we will refer to 
+this model in the figures) of the parameters for the (structurally correct) Allen model.
+Comparing this to using the posterior distribution of parameters inferred from MCMC for
+the same model gives some indication of the importance of this uncertainty in the 
+dynamic programming.
+
 
 ### The Gaussian Process model
 
-The core difference for our purpose between the GP and the parametric
-models is that the GP model is defined explicitly by the observed data.  That is, it cannot be specified by the value of parameters alone.  
-
-
-<!-- Statement of model -->  
+The core difference for our purpose between the estimated GP and the estimated parametric
+models is that the estimated GP model is defined explicitly in reference to the observed data.
+As a result, uncertainty arises in the GP model not only from uncertainty in the parameters,
+but is also increases in regions farther from the observed states, such as low population
+sizes in the example illustrated here.  The estimated parametric models, by contrast, are
+completely specified by the parameters.
 
 The use of GPs to characterize dynamical systems is relatively new
 [@Kocijan2005], and was first introduced in the context ecological
@@ -982,52 +941,49 @@ provide a basis for identifying model-misspecification [@Thorson2014].
 An accessible and thorough introduction to the formulation and use of
 GPs can be found in @Rasmussen2006. 
 
-A GP is a 
-stochastic process for which any realization of for
-a  finite sample of points $n$ is a multivariate normal distribution
-of dimension $n$. Thus, to characterize the GP we need a mean function
-and a covariance function. We proceed as follows.
 
+A GP is a stochastic process for which any realization consisting of n
+points follows a multivariate normal distribution of dimension $n$. To
+characterize the GP we need a mean function and a covariance function. We
+proceed as follows.
 
-As before, we assume that the data $X(t)$ are observed with process stochasticity around a mean function $ g(X(t))$
+As before, we assume that the data $X(t)$ are observed with process
+stochasticity around a mean function $g(X(t))$
 
 \begin{equation}
 X(t+1) = g(X(t)) + \varepsilon,
 \end{equation}
 
-where $\varepsilon$ are IID normal random variables with zero-mean and variance $\sigma_n^2$. Note that we have chosen to
+where $\varepsilon$ are IID normal random variables with zero-mean and variance $\sigma^2$. Note that we have chosen to
 assume additive stochasticity.  While we could consider log-normal stochasticity
 as in the parametric models, we make this choice to emphasize that the
 Gaussian process approach need not have structurally correct stochasticity to be effective.  
 
 
-Now consider the situation where we have a set of  previous observations of the _timeseries_, $X_{\textrm{obs}}(t)$,
-and wish to _predict_ future values $X_{\textrm{p}}(t)$.  We consider the observations as pairs of points
-$X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)$ for $t=1, 2, …$ up through final observation time $T$.  As described above, in the  GP, a finite sample of these predictions at $n$ points into the future, $X_{\textrm p}(\tau)$ for $\tau \in [T+1, T+2, ..., T+n]$, is a multivariate normal ($\mathcal{N}$):
+
+In order to make predictions, we update the GP based on the observed set of transitions.  To do so, we collect the time series of observed states into a vector of "current" states, $\mathbf{X}_{\textrm{obs}} = \{X(1), \dots, X(T-1)\}$ and a vector of "next" states $\mathbf{Y}_{\textrm{obs}} = \{X(2),\dots,X(T)\}$ where $T$ is the time of the final observation.  Conditional on these observations, the predicted next state, $g(X_p)$, for any given "current" state, $X_p$ follows a normal distribution with mean $E$ and variance $C$ determined using the standard rules for conditioning in multivariate normals, i.e.
+
 
 \begin{equation}
-g(X_p|X_{\textrm{obs}}(t), X_{\textrm{obs}}(t+1)) \sim \mathcal{N}(E,C)
+E = K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
 \end{equation}
 
-with mean and covariance matrix given by (see Eqn 2.22 of @Rasmussen2006 for a more detailed derivation)
+
+and 
 
 \begin{equation}
-E = K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} X_{\textrm{obs}}(t+1)
+C = K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm p}) - K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, \mathbf{X}_{\textrm p})
 \end{equation}
+
+Here $\mathbb{I}_n is the $n$ by $n$ identity matrix (i.e. a matrix with ones down the diagonal and zeros elsewhere) and $K$ is the ‘covariance kernel.’  The covariance kernel controls how much influence one observation has on another.  In the present application we use the squared-exponential kernel which, when evaluated over a pair of vectors, say $x$ and $y$,  generates a covariance matrix whose $i,j$th element is given by  
 
 \begin{equation}
-C = K(X_{\textrm p}(\tau), X_{\textrm p}(\tau)) - K(X_{\textrm p}(\tau), X_{\textrm{obs}}(t)) \left(K(X_{\textrm{obs}}(t),X_{\textrm{obs}}(t)) - \sigma \mathbb{I} \right)^{-1} K(X_{\textrm{obs}}(t), X_{\textrm p}(\tau))
+K_{i,j}(\mathbf{x}, \mathbf{y}) = \exp\left( \frac{ -(x_i - y_j)^2}{2 \ell^2} \right)
 \end{equation}
 
-Where $K$, called the covariance kernel, measures how much influence one observation has on another.  In this paper, for $K$ use a matrix whose $(i,j)$th element is given by: 
-
-\begin{equation}
-K_{i,j}(x_i, y_j) = \exp\left( \frac{ -(x_i - y_j)^2}{2 \ell^2} \right)
-\end{equation}
 so that $\ell$ gives the characteristic length-scale over which correlation between
-two observations decays.
-
-We use inverse Gamma priors on both the length-scale $\ell$ and $\sigma$, thus for example
+two observations decays. See @Rasmussen2006 for other choices of covariance kernels and their properties.
+Note that this simple formulation assumes a prior mean of zero. For the parameters we use inverse Gamma priors on both the length-scale $\ell$ and $\sigma$, thus for example
 
 \begin{equation}
 f(\ell; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} \ell^{-\alpha - 1}\exp\left(-\frac{\beta}{\ell}\right)
@@ -1035,11 +991,6 @@ f(\ell; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} \ell^{-\alpha - 1}\
 
 
 For the prior on  $\ell$,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  The prior  on $\sigma$,  $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.
-
-
-
-
-<!-- Inference of the BNP model --> 
 
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
@@ -1058,11 +1009,11 @@ matrix representing the probability of going to each state $X(t+1)$
 given any current state $x(t)$ and any harvest $h(t)$ (See the function
 `gp_transition_matrix()` in the provided R package). Given this transition
 matrix, we use the same value iteration algorithm as in the parametric
-case to determine the optimal policy.   
+case to determine the optimal policy.
 In doing so, 
 the uncertainty in the future state under the GP, $X(t+1)$,
 includes both process uncertainty (based on the estimation of $\sigma$) 
-and structural uncertainty of the posterior collection of curves.  
+and structural uncertainty of the posterior collection of curves.
 Unlike the case of a parametric model, which is a single curve given the parameters, 
 the GP remains a distribution of curves.  
 
@@ -1076,11 +1027,11 @@ Parametric and GP models for population dynamics
 ------------------------------------------------
 
 To ensure our results are robust to the choice of parameters, we
-consider 96 different scenarios, described in detail below.   To help  better
+will consider 96 different scenarios.  To help better
 understand the process, we first describe in detail the
 results of a single scenario.  
 
-```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well. In the GP panel, black lines are means of the GP for random samples from the posterior distributions, while grey bands around them reflect the standard deviations of the GP distribution.  (Recall that while given a particular set of parameters, a parametric model gives just one curve, the GP is always a distribution, whose mean we plot in black.)", fig.width=8, fig.height=6, cache=FALSE}
+```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the expectations over the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.)", fig.width=8, fig.height=6, cache=FALSE}
 step_ahead_posteriors <- function(x){
   gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
   df_post <- melt(lapply(sample(100, 30),  
@@ -1095,16 +1046,20 @@ step_ahead_posteriors <- function(x){
   }), id=c("time", "stock"))
 }
 df_post <- step_ahead_posteriors(x)
-figure1b_posteriors <- ggplot(df_post) + geom_point(aes(time, stock)) + 
-  geom_line(aes(time, value, col=variable, group=interaction(L1,variable)), alpha=0.2) + 
+library("dplyr")
+df_post_means <- summarize(group_by(df_post, time,variable,stock), value = mean(value))
+ggplot(df_post_means,aes(time, value)) +
+  geom_point(aes(time, stock), size=2) + 
+  geom_line(aes(time, value, col=variable, group=variable),lwd=1) + 
+#  geom_line(aes(time, value, col=variable, group=interaction(L1,variable))) + 
   facet_wrap(~variable) + 
   scale_colour_manual(values=colorkey) +  
   theme(legend.position="none")
-figure1b_posteriors
 
 
 
-write.csv(df_post, "components/data/figure1.csv")
+
+write.csv(df_post_means, "components/data/figure1.csv")
 ```
 
 All of the models fit the observed data rather closely and with relatively small uncertainty. In Figure 1, we show the posterior predictive curves.  The  training data of stock sizes observed over time are points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions. Compared to the true model most estimates appear to over-fit, predicting patterns that are actually due purely to stochasticity.  Model selection criteria (Table 1) penalize more complex models and show a preference for the simpler Ricker model over the  models with alternative stable states (Allen and Myers).  Details on MCMC estimates for each model, traces, and posterior distributions can be found in the appendix.   
@@ -1132,15 +1087,12 @@ pandoc.table(rbind(dictable, aictable, bictable), caption="Model selection score
 ```
 
 
-<!-- 
-### Figure 2 
-- Data comes from limited region of state-space 
-- (Should really show uncertainty of all models here.  Capture the forecast uncertainty several steps down the road?)   
--->
-
-```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated process.  We show the expected value for the function $f$ under each model.  Two standard deviations from the estimated Gaussian process covariance with (light grey) and without (darker grey) measurement error are also shown.  The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point, as explained in the text", fig.width=8, fig.height=6, cache=FALSE}
-x_grid_short <- x_grid[1:40]
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated (MLE) process.  We show the expected value for the function $f$ under each model.  Plots show replicates drawn from the posterior distributions in order to convey uncertainty of the estimates.  Note the MLE is a point estimate of parameters and so reflects no uncertainty in the distribution. The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6, cache=FALSE, dev="CairoJPEG", dev.args=c(quality=100)}
+# subset data first, don't care about seeing dynamics for stock >> K
+x_grid_short <- x_grid[1:max(which(x_grid<12))]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
+
+# sample from subset data
 models_posteriors <- 
   melt(lapply(sample(100, 50), 
               function(i){
@@ -1160,12 +1112,12 @@ models_posteriors <-
              }), 
        id=c("stock", "y", "ymin", "ymax"))
 ggplot(models_posteriors) + 
-    geom_ribbon(aes(x=stock, y=y, ymin=ymin, ymax=ymax, group=L1), 
-                  fill = "gray80", 
-                  data=subset(models_posteriors, variable == "GP")) + 
+#    geom_ribbon(aes(x=stock, y=y, ymin=ymin, ymax=ymax, group=L1), 
+#                  fill = "gray80", 
+#                  data=subset(models_posteriors, variable == "GP")) + 
     geom_line(aes(stock, value, col = variable, 
-                  group=interaction(L1,variable)), alpha=0.2) + 
-    geom_point(data = obs, aes(x,y)) + 
+                  group=interaction(L1,variable)), alpha=0.4) + 
+    geom_point(data = obs, aes(x,y), size=2) + 
     xlab(expression(X[t])) + ylab(expression(X[t+1])) +
     facet_wrap(~variable) + 
     scale_colour_manual(values=colorkey) +  
@@ -1180,8 +1132,8 @@ true model used to generate the data in Figure 2, predicting
 the relationship between observed population size (x-axis) to the population
 size after recruitment the following year.  
 In addition to the raw data, the GP is conditioned
-on going through the point 0,0 without error.  This conditioning on (0,0) is equivalent to making the assumption that the population is closed, so that once it hits 0 it stays at 0, despite the lack of any data in the observed sequence to justify this.  This assumption illustrates how the GP can capture common-sense biology without having to assume more explicit details about the dynamics at low population numbers that have never been observed. If the population were not closed, one could repeat the entire analysis without this assumption.  Unlike parametric models, the GP corresponds to a
-distribution of curves - the gray band with mean shown in black. Uncertainty in the parameters of the GP (not shown) further widens the band of possible population sizes.
+on going through the point 0,0 without error.  All parametric models also make this assumption. Conditioning on (0,0) is equivalent to making the assumption that the population is closed, so that once it hits 0 it stays at 0, despite the lack of any data in the observed sequence to justify this.  This assumption illustrates how the GP can capture common-sense biology without having to assume more explicit details about the dynamics at low population numbers that have never been observed. If the population were not closed, one could repeat the entire analysis without this assumption.  Unlike parametric models, the GP corresponds to a
+distribution of curves, of which this plot only shows the means. Uncertainty in the parameters of the GP (not shown) further widens the band of possible population sizes.
 In Figure S1 (see supplement), we show the performance of the models outside the observed training data.  
 
 
@@ -1212,7 +1164,7 @@ Only the structurally correct model (Allen model) and the GP produce
 policies close to the true optimum policy.
 
 
-```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (Eqn 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6, cache=FALSE}
+```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (Eqn 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6, cache=FALSE, dev="CairoJPEG", dev.args=c(quality=100)}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
   scale_colour_manual(values=colorkey, guide = FALSE) +
@@ -1266,8 +1218,8 @@ Changing the intensity of the stochasticity or the distance between stable and u
 does not impact the performance of the GP relative to the optimal solution
 obtained from the true model and true parameters.  The parametric models are
 more sensitive to this difference.  Large values of $\sigma$ relative to the distance between the stable and unstable
-point increases the chance of a stochastic transition.  More precisely,
-if we let $L$ is the distance between the stable and unstable steady states, then the probability that fluctuations drive the population across the unstable steady state scales as
+point increases the chance of a stochastic transition below the tipping point.  More precisely,
+if we let $L$ be the distance between the stable and unstable steady states, then the probability that fluctuations drive the population across the unstable steady state scales as
 $\exp\left(\frac{L^2}{\sigma^2}\right)$
 
 
@@ -1291,11 +1243,11 @@ self-sustaining criterion of @Reed1979).
 
 ```{r figure_6, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect.", cache=FALSE}
 plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
-  geom_point() + ylab("Net present value") + 
-  xlab("Level of growth stochasticity") + theme_bw() 
+  geom_point(size=2) + ylab("Net present value") + 
+  xlab("Level of growth stochasticity")
 plot_allees <- ggplot(vary_allee, aes(allee, value)) + 
-  geom_point()+ ylab("Net present value") + 
-  xlab("Allee threshold stock size") + theme_bw()
+  geom_point(size=2)+ ylab("Net present value") + 
+  xlab("Allee threshold stock size")
 multiplot(plot_sigmas, plot_allees, cols=2) 
 write.csv(vary_sigma, "components/data/figure6a.csv")
 write.csv(vary_allee, "components/data/figure6b.csv")
@@ -1331,7 +1283,7 @@ come from around the stable steady state,
 all the parametric models are approximately linear and approximately
 identical.  Thus, it is intuitive that all model selection methods choose the simplest model.
 In a complex world, the result is suboptimal. But in a world that might
-contain tipping points, the result is disastrous. 
+contain tipping points, the result could be disastrous. 
 
 Many managers both in fisheries and beyond face a similar situation: they
 have not observed the population dynamics at all possible densities.  A
@@ -1344,7 +1296,7 @@ by fishing any newly exploited population down to very low levels and
 then let it recover, we would be much better at estimating population
 dynamics and thus predicting the optimal harvest levels.  While certainly true,
 this presents a rather risky policy in the face of potential tipping points. 
-The GPDP offers an alternative way to acknowledge this uncertainty. 
+The GPDP offers a risk-adverse alternative. 
 
 
 
@@ -1367,34 +1319,13 @@ and conservation where the greatest concerns involve decisions that lead to popu
 -- whether this is the collapse of a fishery, the spread
 of an invasive, or the loss of habitat.  
 
-<!--
-
-### Risk-prone and risk-adverse value functions
-
-The degree to which the decision-making part of the algorithm (the SDP)
-chooses to explore or avoid the resulting region of uncertainty can also
-be influenced by the curvature of the value (profit) function $R$. Both
-to simplify the intuition and avoid biasing this result, we have chosen
-profits that are linear in the catch and thus neither risk-prone nor
-risk adverse.  Making this function concave, representing the typical
-assumption of diminishing returns, would make the SDP more risk-adverse
-(as larger-than-expected stock sizes offer diminished returns relative
-to the cost of smaller-than-expected stock sizes), and strengthen the
-result shown here in which the BNP solution tends to avoid the region
-of uncertainty.  Sufficiently convex or risk-prone functions could lead
-the SDP to attempt higher exploitation rates despite the uncertainty.
-Understanding the relative roles of such functions would be a promising
-direction for future investigation.
-
--->
-
 
 ### The role of the prior
 
 Outside of the observed range of the data, the GP reverts to
 the prior, and consequently the choice of the prior can also play a
-significant role in determining the optimal policy inferred by the
-SDP.  In the examples shown here we have selected a prior that is both
+significant role in determining the optimal policy.
+In the examples shown here we have selected a prior that is both
 relatively uninformative (due to the broad priors placed on its parameters
 $\ell$ and $\sigma$ and simple (the choice of our covariance function, Eqns 12 and 13 ).
 In practice, these
@@ -1403,53 +1334,9 @@ In principle, this may allow a manager to improve the performance of the
 GPDP by adding detail as is justified.
 For instance, it would be possible to use a linear or a Ricker-shaped
 mean in the prior without making the much stronger assumption that the
-Ricker is the structurally correct model [@Sugeno2013a]. One fruitful avenue of future research is  identifying criteria to ensure the prior and the value function
+Ricker is the structurally correct model [@Sugeno2013a]. One fruitful avenue of future research is  identifying criteria to ensure the prior and the reward function
 are chosen appropriately for the problem at hand.
 
-
-<!--
-
-Future directions
------------------
-
-
-In this simulated example, the underlying dynamics are truly governed
-by a simple parametric model, allowing the parametric approaches to be
-more accurate.  Similarly, because the dynamics are  one-dimensional
-dynamics and lead to  stable nodes (rather than other attractors such
-as limit-cycles resulting in oscillations), the training data provides
-relatively limited information about the dynamics.  For these reasons,
-we anticipate that in higher-dimensional examples characteristic of
-ecosystem management problems that the GP approach will
-prove even more valuable.
-
-In our treatment here we have ignored the possibility of learning during
-the management phase, in which the additional observations of the stock
-size could potentially improve parameter estimates.  Of particular
-interest in the context of the extreme uncertainty considered here
-is the notion of "active adaptive management" or "adaptive probing",
-which may actively seek to reduce uncertainty.  The concept of adaptive
-probing is one area that has explicitly addressed the extrapolation
-uncertainty addressed here, though typically without the additional
-issue of model uncertainty.  As a result, adaptive probing strategies
-suggest rather opposite conclusions than what we observe here. Such
-adaptive probing or Dual Control (e.g. @Ludwig1982) approaches trade
-off short term utility by choosing actions that can reduce uncertainty.
-Adaptive probing strategies arise when it is valuable to intentionally
-force a system far from the observed values even when the expected value
-such actions is low, as it provides much faster learning and consequent
-reduction of model uncertainty that can allow greater value to be derived
-later on.  For instance, @Ludwig1982 show that it may be advantageous
-to fish an unexploited population very heavily at first to obtain a
-better estimate of the recruitment rate.  This intuitive strategy when a
-population is governed by a Ricker or Beverton-Holt-like dynamic would
-clearly be disastrous if instead the dynamics contained an unforeseen
-tipping point.  The best way to learn where the edge lies may be to
-walk up to it, but it is also the most dangerous.  Future work should
-attempt to understand when such active adaptive learning is valuable,
-and when it will increase the risk of an irreversible transition.
-
--->
 
 Acknowledgments
 ===============
