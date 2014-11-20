@@ -1,0 +1,8 @@
+Tipping points pose a fundamental challenge to the management of natural
+resources such as fisheries.  Models that fit previous observations
+well may nonetheless fail to predict these transitions.  Consequently,
+management based on such models can have disastrous long term impacts.
+Such tipping points represent the extreme uncertainty we face in making
+decisions about natural systems, where even small errors can have big
+consequences. We present a novel approach that can improve decision-making
+in face of such extreme uncertainty.

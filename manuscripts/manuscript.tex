@@ -187,9 +187,9 @@ expected outcome.
 Tipping points in ecological dynamics (Scheffer et al. 2001, Polasky et
 al. 2011) highlight this problem because precise models are not
 available and data are limited such as around high stock levels or an
-otherwise desirable state. With perfect information , one would know
-just how far a system could be pushed before crossing the tipping point,
-and management would be simple. But we face imperfect models and limited
+otherwise desirable state. With perfect information, one would know just
+how far a system could be pushed before crossing the tipping point, and
+management would be simple. But we face imperfect models and limited
 data and, with tipping points,\\even small errors can have very large
 consequences, as we shall illustrate later. Because intervention may be
 too late once a tipping point has been crossed (but see Hughes et al.
@@ -202,7 +202,7 @@ substantial challenge to existing decision-theoretic approaches
 Programming (SDP) (Mangel and Clark 1988, Marescot et al. 2013) can be
 implemented using a Bayesian Non-Parametric (BNP) model of population
 dynamics (Munch et al. 2005a). The BNP method has two distinct
-advantages . First, using a BNP model sidesteps the need for an accurate
+advantages. First, using a BNP model sidesteps the need for an accurate
 model-based description of the system dynamics. Second, a BNP model
 better reflects uncertainty when extrapolating beyond the observed data.
 This is crucial to providing robust decision-making when the correct
@@ -232,9 +232,9 @@ management of human intervention in natural resource systems. After that
 we describe three parametric models for population dynamics and the
 Gaussian Process (GP)\footnote{We abbreviate Gaussian Process as GP,
   which refers to the statistical model we use to approximate the
-  population dynamics , and we use the term Gaussian Process Dynamic
+  population dynamics, and we use the term Gaussian Process Dynamic
   Programming {[}GPDP,{]}, to refer to the \emph{use} of a GP as the
-  underlying process model when solving a Dynamic Programming equation .
+  underlying process model when solving a Dynamic Programming equation.
   Hence we will refer to the models as: GP, Ricker, Allen, etc, and the
   novel method we put forward here as GPDP.} description of population
 dynamics.
@@ -242,20 +242,18 @@ dynamics.
 \subsubsection{Requirements of dynamic
 optimization}\label{requirements-of-dynamic-optimization}
 
-Dynamic optimization requires characterizing the dynamics of a state
+Dynamic optimization equires characterizing the dynamics of a state
 variable (or variables), a control action, and a value function. For
-simplicity, we consider only a single state variable, which allows us to
-focus on one-dimensional models of population dynamics for the
-comparison of parametric models and the GP. This is a best-case scenario
-for the parametric models because we simulate underlying dynamics from
-one of the three parametric models , whereas in the natural world we
-never know the ``true'' model. In addition, by choosing one-dimensional
-models with just a few parameters, we limit the chance that poor
-performance will be due to inability to estimate parameters accurately,
-something that becomes a more severe problem for higher-dimensional
-parametric models. Finally, the parametric models we consider are
-commonly used in modeling stock-recruitment dynamics or to model sudden
-transitions between alternative stable states.
+simplicity, we consider only a single state variable. This is a
+best-case scenario for the parametric models because we simulate
+underlying dynamics from one of the three parametric models , whereas in
+the natural world we never know the ``true'' model. In addition, by
+choosing one-dimensional models with just a few parameters, we limit the
+chance that poor performance will be due to inability to estimate
+parameters accurately, something that becomes a more severe problem for
+higher-dimensional parametric models. Finally, the parametric models we
+consider are commonly used in modeling stock-recruitment dynamics or to
+model sudden transitions between alternative stable states.
 
 \subsubsection{Parametric models}\label{parametric-models}
 
@@ -313,9 +311,8 @@ where the population size after the take is $x(t) - h(t)$, which is then
 translated into $X(t+1)$ by Eqn 1 (that is, we replace $X(t+1)$ by
 $Z(t) f(x(t)-h(t)|\mathbf{p})$).
 
-When the parameters governing the dynamics are also uncertain (the case
-of parametric uncertainty), the expectation in Eqn 2 involves averaging
-over the posterior distribution for the parameters. That is,
+When the parameters governing the dynamics are also uncertain, we take
+the expectation over the posterior distribution for the parameters:
 
 \begin{equation}
 \mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{\mathbf{p}|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{Z(t) | \mathbf{p}, \mathrm{data}} \left[ V(Z(t) f(x(t) - h(t)|\mathbf{p}), t)  \right] \}
@@ -393,12 +390,13 @@ data (Figure 1).
 We inferred posterior distributions for the parameters of each model by
 Gibbs sampling (Gelman et al. (2003) implemented in R (R Core Team 2013)
 using \texttt{jags}, (Su and Masanao Yajima 2013)). We choose uniform
-priors for all parameters (See appendix Tables S1-S3; R code provided).
-We show one-step-ahead predictions of these model fits in Figure 1. We
-tested each chain for Gelman-Rubin convergence and results were robust
-to longer runs. For each simulation we also applied several commonly
-used model selection criteria (AIC, BIC, DIC, see Burnham and Anderson
-(2002)) to identify the best fitting model.
+priors for all parameters of the parametric models (See appendix Tables
+S1-S3; R code provided). We show one-step-ahead predictions of these
+model fits in Figure 1. We tested each chain for Gelman-Rubin
+convergence and results were robust to longer runs. For each simulation
+we also applied several commonly used model selection criteria (AIC,
+BIC, DIC, see Burnham and Anderson (2002)) to identify the best fitting
+model.
 
 Additionally, we compute the maximum likelihood estimate (MLE, as we
 will refer to this model in the figures) of the parameters for the
@@ -461,22 +459,22 @@ variance $C$ determined using the standard rules for conditioning in
 multivariate normals, i.e.
 
 \begin{equation}
-E = K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
+E = K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
 \end{equation}
 
 and
 
 \begin{equation}
-C = K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm p}) - K(\mathbf{X}_{\textrm p}, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, \mathbf{X}_{\textrm p})
+C = K(X_p, X_p) - K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, X_p)
 \end{equation}
 
-Here $\mathbb{I}_n is the $n\$ by $n$ identity matrix (i.e.~a matrix
+Here $\mathbb{I}_n$ is the $n$ by $n$ identity matrix (i.e.~a matrix
 with ones down the diagonal and zeros elsewhere) and $K$ is the
 `covariance kernel.' The covariance kernel controls how much influence
 one observation has on another. In the present application we use the
 squared-exponential kernel which, when evaluated over a pair of vectors,
-say $x$ and $y$, generates a covariance matrix whose $i,j$th element is
-given by
+say $\mathbf{x}$ and $\mathbf{y}$, generates a covariance matrix whose
+$i,j$th element is given by
 
 \begin{equation}
 K_{i,j}(\mathbf{x}, \mathbf{y}) = \exp\left( \frac{ -(x_i - y_j)^2}{2 \ell^2} \right)
@@ -514,9 +512,7 @@ transition matrix, we use the same value iteration algorithm as in the
 parametric case to determine the optimal policy. In doing so, the
 uncertainty in the future state under the GP, $X(t+1)$, includes both
 process uncertainty (based on the estimation of $\sigma$) and structural
-uncertainty of the posterior collection of curves. Unlike the case of a
-parametric model, which is a single curve given the parameters, the GP
-remains a distribution of curves.
+uncertainty of the posterior collection of curves.
 
 \section{Results}\label{results}
 
@@ -545,8 +541,8 @@ Compared to the true model most estimates appear to over-fit, predicting
 patterns that are actually due purely to stochasticity. Model selection
 criteria (Table 1) penalize more complex models and show a preference
 for the simpler Ricker model over the models with alternative stable
-states (Allen and Myers). Details on MCMC estimates for each model,
-traces, and posterior distributions can be found in the appendix.
+states (Allen and Myers). Supplement provides details on the model
+estimates.
 
 \begin{longtable}[c]{@{}cccc@{}}
 \toprule\addlinespace
@@ -657,7 +653,7 @@ the population to $S$. Whenever a model predicts that the population
 will not persist below a certain threshold, the optimal solution is to
 harvest the entire population immediately, resulting in an escapement
 $S=0$, as seen in the true (correct form, exact parameters) model, the
-Allen model (correct form, estimated parameters) and the GP.\\Only the
+Allen model (correct form, estimated parameters) and the GP. Only the
 structurally correct model (Allen model) and the GP produce policies
 close to the true optimum policy.
 
@@ -672,7 +668,7 @@ models, as well as the policy based on the exact underlying model.}
 
 In Figure 4, we show the consequences of managing 100 replicate
 realizations of the simulated fishery under policies derived from each
-model . The structurally correct model under-harvests, leaving the stock
+model. The structurally correct model under-harvests, leaving the stock
 to vary around its unfished optimum. The structurally incorrect Ricker
 model over-harvests the population past the tipping point consistently,
 resulting in the immediate crash of the stock and thus leads to minimal
@@ -704,44 +700,12 @@ approach and a more focused investigation of the effects of the relative
 distance to the Allee threshold and the variance of process
 stochasticity.
 
-Changing the intensity of the stochasticity or the distance between
-stable and unstable steady states does not impact the performance of the
-GP relative to the optimal solution obtained from the true model and
-true parameters. The parametric models are more sensitive to this
-difference. Large values of $\sigma$ relative to the distance between
-the stable and unstable point increases the chance of a stochastic
-transition below the tipping point. More precisely, if we let $L$ be the
-distance between the stable and unstable steady states, then the
-probability that fluctuations drive the population across the unstable
-steady state scales as $\exp\left(\frac{L^2}{\sigma^2}\right)$
-
-(see Gardiner (2009) or Mangel (2006) for the derivation). Thus, the
-impact of using a model that underestimates the risk of harvesting
-beyond the critical point is considerable, since this such a situation
-occurs more often. Conversely, with large enough distance between the
-optimal escapement and unstable steady state relative to $\sigma$, the
-chance of a transition becomes vanishingly small and all models can be
-estimated near-optimally. Models that underestimate the cost incurred by
-population sizes fluctuating significantly below the optimal escapement
-level will not perform poorly as long as those fluctuations are
-sufficiently small.
-
 The GPDP is only weakly influenced by increasing stochasticity or
-increasing Allee effects over much of the range (Figure 6). Larger
+increasing Allee effects over much of the range (Figure S2). Larger
 $\sigma$ or higher Allee levels make even the optimal solution without
 any model or parameter uncertainty unable to harvest the population
 effectively (e.g.~the stochasticity is large enough to violate the
 self-sustaining criterion of Reed (1979)).
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{components/figure/manuscript-figure_6-1.pdf}
-\caption{The effect of increasing noise or decreasing Allee threshold
-levels on the net present value of the fishery when managed under the
-GPDP, relative to managing under the true model (with known parameters).
-Other than the focal parameter (stochasticity, Allee threshold), other
-parameters are held fixed as above to illustrate this effect.}
-\end{figure}
 
 \section{Discussion}\label{discussion}
 
@@ -880,9 +844,6 @@ Elmqvist, A. Felton, C. Folke, and S. Dovers. 2009. Integrating
 resilience thinking and optimisation for conservation. Trends in ecology
 \& evolution 24:549--54.
 
-Gardiner, C. 2009. Stochastic Methods: A Handbook for the Natural and
-Social Sciences (Springer Series in Synergetics). Page 447. Springer.
-
 Gelman, A., J. B. Carlin, H. S. Stern, and D. B. Rubin. 2003. Bayesian
 Data Analysis. 2nd editions. Chapman; Hall/CRC.
 
@@ -905,10 +866,6 @@ Computer Modelling of Dynamical Systems 11:411--424.
 
 Ludwig, D., and C. J. Walters. 1982. Optimal harvesting with imprecise
 parameter estimates. Ecological Modelling 14:273--292.
-
-Mangel, M. 2006. The Theoretical Biologist's Toolbox: Quantitative
-Methods for Ecology and Evolutionary Biology. Cambridge University
-Press.
 
 Mangel, M. 2014. Stochastic Dynamic Programming Illuminates the Link
 Between Environment. Bulletin of Mathematical Biology in press.

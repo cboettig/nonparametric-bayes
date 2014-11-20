@@ -198,7 +198,51 @@ eml_write("components/data/figureS1.csv", col.classes = col.classes, col.defs=co
 
 
 
-# Further sensitivity analysis (Fig S2) #
+# Further sensitivity analysis (Fig S2 - 3) #
+
+
+We perform 2 sensitivity analyses. The first focuses on illustrating the robustness of the
+approach to the two parameters that most influence stochastic transitions across the tipping 
+point: the position of the Allee threshold and the scale of the noise (Fig S2).
+
+Changing the intensity of the stochasticity or the distance between stable and unstable steady states
+does not impact the performance of the GP relative to the optimal solution
+obtained from the true model and true parameters.  The parametric models are
+more sensitive to this difference.  Large values of $\sigma$ relative to the distance between the stable and unstable
+point increases the chance of a stochastic transition below the tipping point.  More precisely,
+if we let $L$ be the distance between the stable and unstable steady states, then the probability that fluctuations drive the population across the unstable steady state scales as
+
+$\exp\left(\frac{L^2}{\sigma^2}\right)$
+
+(see @Gardiner2009 or @Mangel2006 for the derivation).
+
+Thus, the impact of using a model that  underestimates the risk of harvesting
+beyond the critical point is considerable, since this such a situation
+occurs more often.  Conversely, with large enough distance between the
+optimal escapement and unstable steady state relative to $\sigma$, the chance
+of a transition becomes vanishingly small and all models can be estimated 
+near-optimally. Models that underestimate the cost incurred by population
+sizes fluctuating significantly below the optimal escapement level will
+not perform poorly as long as those fluctuations are sufficiently small.
+Fig S2 shows the net present value of managing under teh GPDP remains
+close to the optimal value (ratio of 1), despite varying across either
+noise level or the the position of the allee threshold. 
+
+
+
+```{r figure_S2, fig.width=6, fig.height=3, dependson=c("sensitivity-trends"), fig.cap="The effect of increasing noise or decreasing Allee threshold levels on the net present value of the fishery when managed under the GPDP, relative to managing under the true model (with known parameters).  Other than the focal parameter (stochasticity, Allee threshold), other parameters are held fixed as above to illustrate this effect.", cache=FALSE}
+plot_sigmas <- ggplot(vary_sigma, aes(noise, value)) + 
+  geom_point(size=2) + ylab("Net present value") + 
+  xlab("Level of growth stochasticity")
+plot_allees <- ggplot(vary_allee, aes(allee, value)) + 
+  geom_point(size=2)+ ylab("Net present value") + 
+  xlab("Allee threshold stock size")
+multiplot(plot_sigmas, plot_allees, cols=2) 
+write.csv(vary_sigma, "components/data/figureS2a.csv")
+write.csv(vary_allee, "components/data/figureS2b.csv")
+```
+
+
 
 The Latin hypercube approach systematically varies all combinations of
 parameters, providing a more general test than varying only one parameter
@@ -294,32 +338,24 @@ MyersParameterSets <- rbind(set.C, set.D)
 sensitivity_dat <- dat
 ```
 
-```{r figure_S2, fig.height=6, fig.width=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histograms shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values of 1 indicate optimal performance. Columns indicate different models, rows different noise levels, and colors indicate the parameter set used. Grouped over stochastic replicates applying the contol policy and stochastic replicates of training data generated from the model indicated, see raw data for details. Randomly chosen parameter values for the models shown in tables below."}
+```{r figure_S3, fig.height=6, fig.width=6, dependson=c("sensitivity-calc", "export-data"), fig.cap="Sensitivity Analysis.  Histograms shows the ratio of the realized net present value derived when managing under the GPDP over the optimal value given the true model and true parameters. Values of 1 indicate optimal performance. Columns indicate different models, rows different noise levels, and colors indicate the parameter set used. Grouped over stochastic replicates applying the contol policy and stochastic replicates of training data generated from the model indicated, see raw data for details. Randomly chosen parameter values for the models shown in tables below."}
 ggplot(sensitivity_dat) + 
   geom_histogram(aes(value, fill=parameters)) + 
   xlim(0,1.0) + 
   theme_bw() + 
   xlab("value as fraction of the optimal") + 
   facet_grid(noise~model)
-write.csv(sensitivity_dat, "components/data/figureS2.csv") 
+write.csv(sensitivity_dat, "components/data/figureS3.csv") 
 ```
-```{r S2_eml, eval=FALSE}
-# not descriptive enough, supplement text documents this better
-par <- levels(sensitivity_dat$parameters)
-names(par) <- par
-col.defs <- names(sensitivity_dat)
-unit.defs <- list(models, par, "number", "number",  "number", "number")
-col.classes <- sapply(sensitivity_dat, class)
-eml_write("components/data/figureS2.csv", col.classes = col.classes, col.defs=col.defs,unit.defs=unit.defs,creator=me, title="Figure S2", file="components/data/README_S2.xml")
-```
+
 
 
 
 ```{r AllenSetsTable, results="asis"}
-pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S2." )
+pandoc.table(AllenParameterSets, caption="Randomly chosen parameter sets for the Allen models in Figure S3." )
 ```
 ```{r MyersSetsTable, results="asis"}
-pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S2." )
+pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the Myers models in Figure S3." )
 ```
 
 \newpage
@@ -330,16 +366,16 @@ pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the
 This section provides figures and tables showing the traces from each of the MCMC runs used to estimate the parameters of the models presented, along with the resulting posterior distributions for each parameter.  Priors usually appear completely falt when shown against the posteriors, but are summarized by tables the parameters of their corresponding distributions for each case. 
 
 
-## GP MCMC (Fig S3-4) ##
+## GP MCMC (Fig S4-5) ##
 
-```{r figure_S3, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options", fig.width=4, fig.height=4}
+```{r figure_S4, fig.cap = "Traces from the MCMC estimates of the GP model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps)", dependson="plot-options", fig.width=4, fig.height=4}
 gp_assessment_plots$traces_plot
 ```
 
 
-```{r figure_S4, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red; note the posterior distributions are significantly more peaked than the priors, showing that the data has been informative and is not driven by the priors.", fig.width=4, fig.height=4}
+```{r figure_S5, fig.cap="Posterior distributions from the MCMC estimate of the GP model. Prior curves shown in red; note the posterior distributions are significantly more peaked than the priors, showing that the data has been informative and is not driven by the priors.", fig.width=4, fig.height=4}
 gp_assessment_plots$posteriors_plot
-write.csv(tgp_dat,"components/data/figureS3-4.csv")
+write.csv(tgp_dat,"components/data/figureS4-5.csv")
 ```
 
 
@@ -347,19 +383,19 @@ write.csv(tgp_dat,"components/data/figureS3-4.csv")
 \newpage
 
 
-## Ricker Model MCMC (Fig S5-6) ##
+## Ricker Model MCMC (Fig S6-7) ##
 
-```{r figure_S5, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood. ", fig.width=4}
+```{r figure_S6, fig.height=6, fig.cap="Traces from the MCMC estimates of the Ricker model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood. ", fig.width=4}
 ggplot(ricker_posteriors) + 
   geom_line(aes(index, value)) + # priors, need to fix order though
   facet_wrap(~ variable, scale="free_y", ncol=1)
 ```
 
-```{r figure_S6, fig.cap="Posteriors from the MCMC estimate of the Ricker model. Note that the model estimates a carrying capacity $K$ very close to the true equilibrium where most of the observations were made, but is less certain about the growth rate.", fig.width=4, fig.height=4}
+```{r figure_S7, fig.cap="Posteriors from the MCMC estimate of the Ricker model. Note that the model estimates a carrying capacity $K$ very close to the true equilibrium where most of the observations were made, but is less certain about the growth rate.", fig.width=4, fig.height=4}
 ggplot(ricker_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(ricker_posteriors, "components/data/figureS5-6.csv")
+write.csv(ricker_posteriors, "components/data/figureS6-7.csv")
 ```
 
 
@@ -371,20 +407,20 @@ pander::pandoc.table(ricker_priors_xtable,
 \newpage
 \newpage 
 
-## Myers Model MCMC (Fig S7-8) ## 
+## Myers Model MCMC (Fig S8-9) ## 
 
 
-```{r figure_S7, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood.", fig.width=4}
+```{r figure_S8, fig.height=6, fig.cap="Traces from the MCMC estimates of the Myers model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood.", fig.width=4}
 ggplot(myers_posteriors) + 
   geom_line(aes(index, value)) + # priors, need to fix order though
   facet_wrap(~ variable, scale="free_y", ncol=1)
 ```
 
-```{r figure_S8, fig.cap="Posterior distributions from the MCMC estimates of the Myers model. Note that with more free parameters, the posteriors reflect greater uncertainty.  In particular, the parameter $\\theta$ includes values both above 2, resulting in a tipping point, and below 2, where no tipping point exists in the model.  Though the dynamic program will integrate over the full distribution, including those values corresponding to tipping points, the weight of the model lies in the region without tipping points.", fig.width=4, fig.height=6}
+```{r figure_S9, fig.cap="Posterior distributions from the MCMC estimates of the Myers model. Note that with more free parameters, the posteriors reflect greater uncertainty.  In particular, the parameter $\\theta$ includes values both above 2, resulting in a tipping point, and below 2, where no tipping point exists in the model.  Though the dynamic program will integrate over the full distribution, including those values corresponding to tipping points, the weight of the model lies in the region without tipping points.", fig.width=4, fig.height=6}
 ggplot(myers_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(myers_posteriors, "components/data/figureS7-8.csv")
+write.csv(myers_posteriors, "components/data/figureS8-9.csv")
 ```
 
 
@@ -396,20 +432,20 @@ pander::pandoc.table(myers_priors_xtable,
 \newpage 
 \newpage 
 
-## Allen Model MCMC (Fig S9-10) ##
+## Allen Model MCMC (Fig S10-11) ##
 
 
-```{r figure_S9, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood.", fig.width=4}
+```{r figure_S10, fig.height=6, fig.cap="Traces from the MCMC estimates of the Allen model show reasonable mixing (no trend) and sampling rejection rate (no piecewise jumps). stdQ refers to the estimate of $\\sigma$; deviance is -2 times the log likelihood.", fig.width=4}
 ggplot(allen_posteriors) + 
   geom_line(aes(index, value)) + # priors, need to fix order though
   facet_wrap(~ variable, scale="free_y", ncol=1)
 ```
 
-```{r figure_S10, fig.cap="Posteriors from the MCMC estimate of the Allen model. The Allen model is the structurally correct model.  Despite potential identfiability issues in distinguishing between the stable and unstable points ($K$ and $\\theta$ respectively), the posterior estimates successfully reflect both the the upper stable point ($K$), as well as the significant probabilty of a tipping point ($\\theta$) somewhere between $K$ and extinction (0).", fig.width=4, fig.height=6}
+```{r figure_S11, fig.cap="Posteriors from the MCMC estimate of the Allen model. The Allen model is the structurally correct model.  Despite potential identfiability issues in distinguishing between the stable and unstable points ($K$ and $\\theta$ respectively), the posterior estimates successfully reflect both the the upper stable point ($K$), as well as the significant probabilty of a tipping point ($\\theta$) somewhere between $K$ and extinction (0).", fig.width=4, fig.height=6}
 ggplot(allen_posteriors, aes(value)) + 
   stat_density(geom="path", position="identity") +
   facet_wrap(~ variable, scale="free", ncol=2)
-write.csv(allen_posteriors, "components/data/figureS9-10.csv")
+write.csv(allen_posteriors, "components/data/figureS10-11.csv")
 ```
 
 

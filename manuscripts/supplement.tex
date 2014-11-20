@@ -141,7 +141,8 @@ detailed documentation on using Docker with R.
 
 While the data can be regenerated using the code provided, for
 convenience CSV files of the data shown in each graph are made available
-on Dryad.
+on Dryad, along with the source \texttt{.Rmd} files for the manuscript
+and supplement that document them.
 
 \subsection{Training data description}\label{training-data-description}
 
@@ -193,8 +194,51 @@ parametric models.}
 
 \newpage
 
-\section{Further sensitivity analysis (Fig
-S2)}\label{further-sensitivity-analysis-fig-s2}
+\section{Further sensitivity analysis (Fig S2 -
+3)}\label{further-sensitivity-analysis-fig-s2---3}
+
+We perform 2 sensitivity analyses. The first focuses on illustrating the
+robustness of the approach to the two parameters that most influence
+stochastic transitions across the tipping point: the position of the
+Allee threshold and the scale of the noise (Fig S2).
+
+Changing the intensity of the stochasticity or the distance between
+stable and unstable steady states does not impact the performance of the
+GP relative to the optimal solution obtained from the true model and
+true parameters. The parametric models are more sensitive to this
+difference. Large values of $\sigma$ relative to the distance between
+the stable and unstable point increases the chance of a stochastic
+transition below the tipping point. More precisely, if we let $L$ be the
+distance between the stable and unstable steady states, then the
+probability that fluctuations drive the population across the unstable
+steady state scales as
+
+$\exp\left(\frac{L^2}{\sigma^2}\right)$
+
+(see Gardiner (2009) or Mangel (2006) for the derivation).
+
+Thus, the impact of using a model that underestimates the risk of
+harvesting beyond the critical point is considerable, since this such a
+situation occurs more often. Conversely, with large enough distance
+between the optimal escapement and unstable steady state relative to
+$\sigma$, the chance of a transition becomes vanishingly small and all
+models can be estimated near-optimally. Models that underestimate the
+cost incurred by population sizes fluctuating significantly below the
+optimal escapement level will not perform poorly as long as those
+fluctuations are sufficiently small. Fig S2 shows the net present value
+of managing under teh GPDP remains close to the optimal value (ratio of
+1), despite varying across either noise level or the the position of the
+allee threshold.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{components/figure/supplement-figure_S2-1.pdf}
+\caption{The effect of increasing noise or decreasing Allee threshold
+levels on the net present value of the fishery when managed under the
+GPDP, relative to managing under the true model (with known parameters).
+Other than the focal parameter (stochasticity, Allee threshold), other
+parameters are held fixed as above to illustrate this effect.}
+\end{figure}
 
 The Latin hypercube approach systematically varies all combinations of
 parameters, providing a more general test than varying only one
@@ -207,7 +251,7 @@ with no parameter or model uncertainty (Figure S10, appendix).
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S2-1.pdf}
+\includegraphics{components/figure/supplement-figure_S3-1.pdf}
 \caption{Sensitivity Analysis. Histograms shows the ratio of the
 realized net present value derived when managing under the GPDP over the
 optimal value given the true model and true parameters. Values of 1
@@ -255,7 +299,7 @@ theta
 \bottomrule
 \addlinespace
 \caption{Randomly chosen parameter sets for the Allen models in Figure
-S2.}
+S3.}
 \end{longtable}
 
 \begin{longtable}[c]{@{}cccc@{}}
@@ -294,7 +338,7 @@ C
 \bottomrule
 \addlinespace
 \caption{Randomly chosen parameter sets for the Myers models in Figure
-S2.}
+S3.}
 \end{longtable}
 
 \newpage
@@ -308,18 +352,18 @@ Priors usually appear completely falt when shown against the posteriors,
 but are summarized by tables the parameters of their corresponding
 distributions for each case.
 
-\subsection{GP MCMC (Fig S3-4)}\label{gp-mcmc-fig-s3-4}
+\subsection{GP MCMC (Fig S4-5)}\label{gp-mcmc-fig-s4-5}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S3-1.pdf}
+\includegraphics{components/figure/supplement-figure_S4-1.pdf}
 \caption{Traces from the MCMC estimates of the GP model show reasonable
 mixing (no trend) and sampling rejection rate (no piecewise jumps)}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S4-1.pdf}
+\includegraphics{components/figure/supplement-figure_S5-1.pdf}
 \caption{Posterior distributions from the MCMC estimate of the GP model.
 Prior curves shown in red; note the posterior distributions are
 significantly more peaked than the priors, showing that the data has
@@ -330,11 +374,11 @@ been informative and is not driven by the priors.}
 \newpage
 
 \subsection{Ricker Model MCMC (Fig
-S5-6)}\label{ricker-model-mcmc-fig-s5-6}
+S6-7)}\label{ricker-model-mcmc-fig-s6-7}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S5-1.pdf}
+\includegraphics{components/figure/supplement-figure_S6-1.pdf}
 \caption{Traces from the MCMC estimates of the Ricker model show
 reasonable mixing (no trend) and sampling rejection rate (no piecewise
 jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
@@ -343,7 +387,7 @@ the log likelihood.}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S6-1.pdf}
+\includegraphics{components/figure/supplement-figure_S7-1.pdf}
 \caption{Posteriors from the MCMC estimate of the Ricker model. Note
 that the model estimates a carrying capacity $K$ very close to the true
 equilibrium where most of the observations were made, but is less
@@ -395,11 +439,11 @@ model}
 \newpage 
 
 \subsection{Myers Model MCMC (Fig
-S7-8)}\label{myers-model-mcmc-fig-s7-8}
+S8-9)}\label{myers-model-mcmc-fig-s8-9}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S7-1.pdf}
+\includegraphics{components/figure/supplement-figure_S8-1.pdf}
 \caption{Traces from the MCMC estimates of the Myers model show
 reasonable mixing (no trend) and sampling rejection rate (no piecewise
 jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
@@ -408,7 +452,7 @@ the log likelihood.}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S8-1.pdf}
+\includegraphics{components/figure/supplement-figure_S9-1.pdf}
 \caption{Posterior distributions from the MCMC estimates of the Myers
 model. Note that with more free parameters, the posteriors reflect
 greater uncertainty. In particular, the parameter $\theta$ includes
@@ -472,11 +516,11 @@ model}
 \newpage 
 
 \subsection{Allen Model MCMC (Fig
-S9-10)}\label{allen-model-mcmc-fig-s9-10}
+S10-11)}\label{allen-model-mcmc-fig-s10-11}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S9-1.pdf}
+\includegraphics{components/figure/supplement-figure_S10-1.pdf}
 \caption{Traces from the MCMC estimates of the Allen model show
 reasonable mixing (no trend) and sampling rejection rate (no piecewise
 jumps). stdQ refers to the estimate of $\sigma$; deviance is -2 times
@@ -485,7 +529,7 @@ the log likelihood.}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{components/figure/supplement-figure_S10-1.pdf}
+\includegraphics{components/figure/supplement-figure_S11-1.pdf}
 \caption{Posteriors from the MCMC estimate of the Allen model. The Allen
 model is the structurally correct model. Despite potential
 identfiability issues in distinguishing between the stable and unstable
@@ -543,6 +587,13 @@ $\sigma$
 \caption{Parameterization range for the uniform priors in the Allen
 model}
 \end{longtable}
+
+Gardiner, C. 2009. Stochastic Methods: A Handbook for the Natural and
+Social Sciences (Springer Series in Synergetics). Page 447. Springer.
+
+Mangel, M. 2006. The Theoretical Biologist's Toolbox: Quantitative
+Methods for Ecology and Evolutionary Biology. Cambridge University
+Press.
 
 Xie, Y. 2013. Dynamic Documents with R and knitr. Chapman; Hall/CRCBoca
 Raton, Florida.
