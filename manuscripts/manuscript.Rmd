@@ -751,11 +751,15 @@ Approach and Methods
 We first describe the requirements of dynamic optimization for the
 management of human intervention in natural resource systems. After that
 we describe three parametric models for population dynamics and the Gaussian
-Process (GP)[^1] description of population dynamics.
+Process (GP)[^1] description of population dynamics. All computer code
+used here has been embedded in the manuscript sources (see @Xie_2013),
+and an implementation of the GPDP approach is provided as an accompanying R
+package.  Source code, R package and the CSV data files corresponding each
+figure are archived in the supplement [@Boettiger_2014]. 
 
 [^1]: We abbreviate Gaussian Process as GP, which refers to 
 the statistical model we use to approximate the population dynamics, and we use the
-term Gaussian Process Dynamic Programming [GPDP,], to refer to the _use_ of a
+term Gaussian Process Dynamic Programming (GPDP), to refer to the _use_ of a
 GP as the underlying process model when solving a Dynamic Programming equation.
 Hence we will refer to the models as: GP, Ricker, Allen, etc, and the novel method we put forward here as GPDP. 
 
@@ -990,7 +994,8 @@ and $\beta =$ `r s2.p[2]`.
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to
 infer posterior distributions of the parameters of the GP (Figure
 S4, code in appendix). Since the posterior distributions differ
-substantially from the priors (Figure S4), most of the information in the posterior comes from the data rather than the
+substantially from the priors (Figure S4), most of the information 
+in the posterior comes from the data rather than the
 prior belief.
 
 

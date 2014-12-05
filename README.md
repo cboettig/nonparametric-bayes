@@ -9,10 +9,9 @@
 
 This repository contains the research compendium of our work in
 nonparametric Bayesian inference for improving ecosystem management under
-substantial structural uncertainty.  This work is being conducted as part
-of my postdoctoral research program under Marc Mangel and Steve Munch
-at UC Santa Cruz and the NOAA SW Marine Fisheries Service in Santa Cruz.
-
+deep structural uncertainty. The compendium contains all data, code, 
+and text associated with the publication and has been permanently archived
+at the DOI indicated by the above badge.
 
 ## R package ##
 
