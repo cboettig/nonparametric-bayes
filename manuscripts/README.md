@@ -1,7 +1,7 @@
-Source for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming
+Sources for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming
 ========================================================================================================
 
-[![Build Status](http://107.170.225.143:88/api/badge/github.com/cboettig/nonparametric-bayes/status.svg?branch=master)](http://107.170.225.143:88/github.com/cboettig/nonparametric-bayes)
+[![Build Status](http://server.carlboettiger.info:88/api/badge/github.com/cboettig/nonparametric-bayes/status.svg?branch=master)](http://server.carlboettiger.info:88/github.com/cboettig/nonparametric-bayes)
 
 <!--
 Manuscript code is run automatically any time changes are made to
@@ -9,10 +9,31 @@ this repository.  The badge above summarizes the status and contains
 links to further details. 
 --> 
 
-Quickstart
-----------
+This directory contains the `.Rmd` files for the manuscript and
+supplement. These files use functions from the R package from this
+repository (`nonparametric-bayes`) but also several additional R packages
+and other software which are responsible for the parametric comparisons,
+as well as software responsible merely for the formatting to go from
+`.Rmd` to a `.pdf` file (e.g. `knitr`, `pandoc`, `LaTeX`).
 
-[Install Docker](https://docs.docker.com/installation) on your laptop or cloud server. In Docker, run: 
+All of these additional dependencies means that rebuilding the
+manuscript from scratch means more software to install and more
+points of failure. To help you get started, we provide a copy
+of the software environment we use in this paper as a Docker
+container. If you'd rather not worry about the installation details,
+[Install Docker](https://docs.docker.com/installation)
+on your laptop or a [user-friendly cloud
+server](https://www.digitalocean.com/?refcode=08c6ac401e49) [^1]
+
+The badge above is automatically generated when the manuscript
+is rebuilt on a remote server. This provides a convenient way
+to confirm that everything is still working.
+
+
+Docker Quickstart
+-----------------
+
+[Install Docker](https://docs.docker.com/installation) on your laptop or server. Mac & Windows users should then launch the installed `boot2docker` app to access the Docker terminal. Linux users just open any terminal. Then run: 
 
 ```bash
 docker run -d -p 8787:8787 cboettig/nonparametric-bayes
@@ -24,73 +45,20 @@ This downloads the computational environment necessary and launches RStudio-serv
 http://localhost:8787
 ```
 
-Mac and Windows users should replace `localhost` with the IP address returned by `boot2docker ip`.  Log in with user/pw rstudio/rstudio. 
+Mac and Windows users should replace `localhost` with the IP address returned by `boot2docker ip`.  Log in with user: `rstudio` and password: `rstudio`. See [rocker-org Wiki](https://github.com/rocker-org/rocker/wiki/Using-the-RStudio-image) for more details like custom passwords.
 
-Open the `manuscript.Rmd` file from the manuscripts directory and you're ready to explore.  See [rocker-org Wiki](https://github.com/rocker-org/rocker/wiki/Using-the-RStudio-image) for details like custom passwords or user names.  
-
-
-
-Edit the corresponding `.Rmd` file (manuscript or supplement),
-which contains both text and code.
+You can now open `manuscript.Rmd` or `supplement.Rmd` files in RStudio and run the code interactively or compile the pdfs from scratch.  See [RStudio's rmarkdown](http://rmarkdown.rstudio.com/) for details. 
 
 
-Installation requirements
--------------------------
-
-Compiling the manuscript requires additional software beyond the basic
-requirements of the `nonparametric-bayes` package, such as `jags` (for
-comparison to parametric models), but also sofware such as `LaTeX` and
-`pandoc` for typesetting. If you run into trouble, use the Docker approach
-described above instead, which provides all these components already installed.
+Local Installation requirements
+--------------------------------
 
 - RStudio (includes `pandoc`)
 - A LaTeX environment
-- The `nonparametric-bayes` package [from github](http://github.com/cboettig/nonparametric-bayes), including all packages on the SUGGESTS list. 
+- The `nonparametric-bayes` package [from github](http://github.com/cboettig/nonparametric-bayes), including all packages in the [DESCRIPTION](../DESCRIPTION) file (by default suggested packages are not installed). 
+
+--------
+
+[1]: this link provides $10 credit to Digital Ocean; enough to run a 1GB instance for a month.  Disclosure: If you subsequently become a Digital Ocean customer the authors recieve a credit for the referral. 
 
 
-Manuscripts in this package are written in [knitr]'s R Markdown format
-(`.Rmd` files), and compiled into PDFs using [pandoc] with [LaTeX]. Thanks
-to pandoc, this workflow can easily produce alternative formats, such
-as Microsoft Office's `.docx` (or open standard `.odt`), HTML, various
-flavors of `.tex` (for journal submission engines) or pure markdown
-(e.g. to be rendered by Github). Because markdown is platform independent
-plain text and easier to learn than LaTeX, the hope is that this workflow
-is relatively portable across users.  Markdown also does a better job than
-most alternatives (tex included) at separating content from formatting,
-freeing the writer to just write.
-
-
-[knitr]: http://yihui.name/knitr
-[pandoc]: http://johnmacfarlane.net/pandoc/
-[LaTeX]: http://www.latex-project.org/
-
-
-Caching
--------
-
-I've also enabled caching.  It can be annoying to have to have to rerun
-all the R code just to make a textual change to the manuscript or readme.
-The cache is ignored by git so the first time you run `make` all the
-code will run, and thereafter you will have the cache. The caching is
-modestly intelligent, in that if you edit a chunk it will be rerun by
-default, (as will chunks with declared dependencies on it). See `knitr`'s
-[caching documentation] for details.
-
-You can clear the cache by deleting it, or just use `make clear-cache`.
-
-**Restoring the default cache**
-
-You can obtain my current cache by using `make restore-cache`.
-
-**Picking up at a particular chunk**
-
-For the sake of modular reproducibility, it can also be desirable
-to pick up from somewhere in the middle of the manuscript and not
-want to have to run all the previous code just to try out one line
-(not really an issue in this paper, but more generally).  Caching is
-therefore modular by chunk, allowing you to restore the results
-of a particular chunk to investigate. Again see `knitr`'s [caching
-documentation] for details.
-
-
-[caching documentation]: http://yihui.name/knitr/demo/cache/

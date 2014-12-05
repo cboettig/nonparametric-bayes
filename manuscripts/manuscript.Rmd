@@ -670,7 +670,7 @@ dynamic optimization methods, particularly Stochastic Dynamic Programming
 (SDP), have become increasingly important as a means of
 understanding how to manage human intervention into natural systems.
 Simultaneously, there has been increasing recognition of the importance of
-multiple steady states or `tipping points' [@Scheffer2001; @Scheffer2009;
+multiple steady states or 'tipping points' [@Scheffer2001; @Scheffer2009;
 @Polasky2011] in ecological systems.
 
 
@@ -774,8 +774,6 @@ for higher-dimensional parametric models. Finally, the parametric models
 we consider are commonly used in modeling stock-recruitment
 dynamics or to model sudden transitions between alternative stable states.
 
-### Parametric models
-
 We let $X(t)$ denote the size (numbers or biomass) of the focal
 population at time $t$ and assume that in the absence of take its
 dynamics are:
@@ -849,7 +847,7 @@ We consider the finite time problem with $T=$ `r MaxT`, which we
 solve using the standard value iteration algorithm [see @Mangel1988;
 @Clark2000].
 
-\subsubsection{Parametric models}\label{parametric-models}
+### Parametric Models ### 
 
 We consider three candidate parametric models for the population dynamics: The Ricker model, the Allen model [@Allen2005], and the Myers
 model [@Myers1995], Eqns \eqref{ricker}-\eqref{myers}. In all three, we let $K$ denote the carrying capacity and $r$ the maximum per capita growth rate. The Ricker model has two parameters and the right hand side of Eqn 1 is 
@@ -981,7 +979,12 @@ f(\ell; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} \ell^{-\alpha - 1}\
 \end{equation}
 
 
-For the prior on  $\ell$,  $\alpha = $ `r d.p[1]` and $\beta = $ `r d.p[2]`.  The prior  on $\sigma$,  $\alpha = $ `r s2.p[1]` and $\beta = $ `r s2.p[2]`.
+For the prior on  $\ell$,
+$\alpha =$ `r d.p[1]` and 
+$\beta =$ `r d.p[2]`. 
+The prior  on $\sigma$,
+$\alpha =$ `r s2.p[1]`
+and $\beta =$ `r s2.p[2]`.
 
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (@Gelman2003) to

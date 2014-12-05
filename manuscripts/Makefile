@@ -22,7 +22,7 @@ clean-reset:
 	rm -rf manuscript.md manuscript.pdf components/cache components/figure
 
 clean:
-	rm -rf manuscript.md
+	rm -rf manuscript.md *.log *.spl *.aux *.out
 
 # Non portable, just for me to update the source cache
 deploy-cache:

@@ -16,12 +16,16 @@ at UC Santa Cruz and the NOAA SW Marine Fisheries Service in Santa Cruz.
 
 ## R package ##
 
+[![Build Status](https://travis-ci.org/cboettig/nonparametric-bayes.svg?branch=master)](https://travis-ci.org/cboettig/nonparametric-bayes)
+
 This repository is organized as an R package, providing functions to integrate
 the __stochastic dynamic programming__ and __Gaussian process inference__
 methods explored here. Nevertheless, this package has been written explicitly
 for this project and may not yet be suitable for more general purpose use.
 
 ## Manuscript ##
+
+[![Build Status](http://server.carlboettiger.info:88/api/badge/github.com/cboettig/nonparametric-bayes/status.svg?branch=master)](http://server.carlboettiger.info:88/github.com/cboettig/nonparametric-bayes)
 
 The results of this project have now been written up for publication. See
 the `manuscript` directory for details, including the code necessary to
