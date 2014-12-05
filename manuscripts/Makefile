@@ -3,9 +3,6 @@ all:
 	make supplement.pdf
 	make ../README.md
 
-install: components/install.R
-	Rscript components/install.R
-
 restore-cache:  
 	make components/cache
 
@@ -27,7 +24,6 @@ clean:
 # Non portable, just for me to update the source cache
 deploy-cache:
 	cd components; tar -pczf nonparametric-bayes-cache.tar.gz cache; scp nonparametric-bayes-cache.tar.gz ten:~/public_html/data/
-
 
 # Only runs if cache has been cleared
 components/cache: components/restore-cache.R
