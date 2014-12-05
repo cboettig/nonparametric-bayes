@@ -7,7 +7,7 @@ RUN apt-get update \
     cboettig/pdg_control \
     cboettig/nonparametric-bayes
 RUN git clone https://github.com/cboettig/nonparametric-bayes.git \
-  && chown -R docker:docker /nonparametric-bayes.git 
+  && chown -R docker:docker /nonparametric-bayes
 
 ## Set up a copy in the rstudio home directory so it is easy to find
 RUN mkdir /home/rstudio \ 
