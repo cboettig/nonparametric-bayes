@@ -1026,7 +1026,7 @@ will consider 96 different scenarios.  To help better
 understand the process, we first describe in detail the
 results of a single scenario.  
 
-```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the expectations over the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.)", fig.width=8, fig.height=6, cache=FALSE}
+```{r figure_1, dependson=c("assemble-models", "par-fns", "plot-options"), fig.cap="Points show the training data of stock-size over time.  Curves show the expectations over the posterior step-ahead predictions based on each of the estimated models. Observe that all models are fitting the data reasonably well.)", fig.width=8, fig.height=6}
 step_ahead_posteriors <- function(x){
   gp_f_at_obs <- gp_predict(gp, x, burnin=1e4, thin=300)
   df_post <- melt(lapply(sample(100, 30),  
@@ -1060,7 +1060,7 @@ write.csv(df_post_means, "components/data/figure1.csv")
 All of the models fit the observed data rather closely and with relatively small uncertainty. In Figure 1, we show the posterior predictive curves.  The  training data of stock sizes observed over time are points, overlaid with the step-ahead predictions of each estimated model using the parameters sampled from their posterior distributions. Compared to the true model most estimates appear to over-fit, predicting patterns that are actually due purely to stochasticity.  Model selection criteria (Table 1) penalize more complex models and show a preference for the simpler Ricker model over the  models with alternative stable states (Allen and Myers). Supplement provides details on the model estimates.
 
 
-```{r deviances, dependson=c("dic_calc"), include=FALSE, echo=FALSE}
+```{r deviances, dependson=c("dic_calc"), include = FALSE, echo = FALSE}
 allen_deviance  <- - posterior.mode(pardist[,'deviance'])
 ricker_deviance <- - posterior.mode(ricker_pardist[,'deviance'])
 myers_deviance  <- - posterior.mode(myers_pardist[,'deviance'])
@@ -1082,7 +1082,7 @@ pandoc.table(rbind(dictable, aictable, bictable), caption="Model selection score
 ```
 
 
-```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated (MLE) process.  We show the expected value for the function $f$ under each model.  Plots show replicates drawn from the posterior distributions in order to convey uncertainty of the estimates.  Note the MLE is a point estimate of parameters and so reflects no uncertainty in the distribution. The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6, cache=FALSE, dev="CairoJPEG", dev.args=c(quality=100)}
+```{r figure_2, dependson=c("assemble-models", "plot-options"), fig.cap="The inferred Gaussian process compared to the true process and maximum-likelihood estimated (MLE) process.  We show the expected value for the function $f$ under each model.  Plots show replicates drawn from the posterior distributions in order to convey uncertainty of the estimates.  Note the MLE is a point estimate of parameters and so reflects no uncertainty in the distribution. The training data are also shown as black points.  The GP is conditioned on (0,0), shown as a pseudo-data point.", fig.width=8, fig.height=6}
 # subset data first, don't care about seeing dynamics for stock >> K
 x_grid_short <- x_grid[1:max(which(x_grid<12))]
 gp_short <- gp_predict(gp, x_grid_short, burnin=1e4, thin=300)
@@ -1132,7 +1132,7 @@ distribution of curves, of which this plot only shows the means. Uncertainty in 
 In Figure S1 (see supplement), we show the performance of the models outside the observed training data.  
 
 
-```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979] Several policies show a numerical jitter due to the discretization of states in the dynamic programming algorithm; doubling the number of grid points did not qualitatively change the results.", fig.width=8, fig.height=6, cache=FALSE}
+```{r figure_3, dependson = c("assemble-opt"), fig.cap="The steady-state optimal policy (infinite boundary) calculated under each model.  Policies are shown in terms of target escapement, $S(t)$, as under models such as this a constant escapement policy is expected to be optimal [@Reed1979] Several policies show a numerical jitter due to the discretization of states in the dynamic programming algorithm; doubling the number of grid points did not qualitatively change the results.", fig.width=8, fig.height=6}
 policies <- melt(data.frame(stock=x_grid, sapply(OPT, function(x) x_grid[x])), id="stock")
 names(policies) <- c("stock", "method", "value")
 
@@ -1158,7 +1158,7 @@ population to $S$. Whenever a model predicts that the population will not persis
 policies close to the true optimum policy.
 
 
-```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (Eqn 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6, cache=FALSE, dev="CairoJPEG", dev.args=c(quality=100)}
+```{r figure_4, dependson=c("sim"), fig.cap="In the management context, GPDP outperforms approaches based on parametric models. We show 100 replicate simulations of the stock dynamics (Eqn 1) under the policies derived from each of the estimated models, as well as the policy based on the exact underlying model.", fig.width=6, fig.height=6}
 ggplot(sims_data) + 
   geom_line(aes(time, fishstock, group=interaction(reps,method), color=method), alpha=0.1) +
   scale_colour_manual(values=colorkey, guide = FALSE) +
