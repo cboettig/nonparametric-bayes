@@ -259,8 +259,8 @@ higher-dimensional parametric models. Finally, the parametric models we
 consider are commonly used in modeling stock-recruitment dynamics or to
 model sudden transitions between alternative stable states.
 
-We let \(X(t)\) denote the size (numbers or biomass) of the focal
-population at time \(t\) and assume that in the absence of take its
+We let $X(t)$ denote the size (numbers or biomass) of the focal
+population at time $t$ and assume that in the absence of take its
 dynamics are:
 
 \begin{equation}
@@ -268,50 +268,50 @@ X(t+1) = Z(t) f(X(t), \mathbf{p}) \label{eq1}
 \end{equation}
 
 Where Z(t) is log-normally distributed process stochasticity (Reed 1979)
-and \(\mathbf{p}\) is a vector of parameters to be estimated from the
-data. We describe the three choices for \(f(X(t),\mathbf{p})\) in the
-next section.\\The control action is a harvest or take, \(h(t)\),
-measured in the same units as \(X\), at time \(t\). Thus, in the
-presence of take, the population size on the right hand side of Eqn 1 is
-replaced by \(S(t) = X(t) - h(t)\).
+and $\mathbf{p}$ is a vector of parameters to be estimated from the
+data. We describe the three choices for $f(X(t),\mathbf{p})$ in the next
+section.\\The control action is a harvest or take, $h(t)$, measured in
+the same units as $X$, at time $t$. Thus, in the presence of take, the
+population size on the right hand side of Eqn 1 is replaced by
+$S(t) = X(t) - h(t)$.
 
-To construct the value function, we consider a return when
-\(X(t) = x(t)\) and harvest \(h(t) = h\) denoted as the reward,
-\(R(x(t), h)\). For example, if the return is the harvest at time \(t\),
-then \(R(x(t), h(t)) = \min(x(t), h(t))\). We assume that future
-harvests are discounted relative to current ones at a constant rate of
-discount \(\delta\) and ask for the harvest policy that maximizes total
-discounted harvest between the current time \(t\) and a final time
-\(T\). That is, we seek to maximize over choices of harvest
-\(E [ \sum_{t = 0}^{T} R(X(t), h(t), t) \delta^t]\), where the state
-dynamics are given by Eqn 1 and \(E\) denotes the expectation over
-future population states.
+To construct the value function, we consider a return when $X(t) = x(t)$
+and harvest $h(t) = h$ denoted as the reward, $R(x(t), h)$. For example,
+if the return is the harvest at time $t$, then
+$R(x(t), h(t)) = \min(x(t), h(t))$. We assume that future harvests are
+discounted relative to current ones at a constant rate of discount
+$\delta$ and ask for the harvest policy that maximizes total discounted
+harvest between the current time $t$ and a final time $T$. That is, we
+seek to maximize over choices of harvest
+$E [ \sum_{t = 0}^{T}  R(X(t), h(t), t) \delta^t]$, where the state
+dynamics are given by Eqn 1 and $E$ denotes the expectation over future
+population states.
 
 In order to find that policy, we introduce the value function
-\(V(x(t), t)\) representing the total discounted catch from time \(t\)
-onwards given that \(X(t) = x(t)\). This value function satisfies an
+$V(x(t), t)$ representing the total discounted catch from time $t$
+onwards given that $X(t) = x(t)$. This value function satisfies an
 equation of SDP (Mangel and Clark 1988, Clark and Mangel 2000, Clark
-2009 , Mangel 2014),
+2009 Mangel 2014),
 
 \begin{equation}
 V(x(t), t) = \max_{h(t)} \lbrace R(h(t), x(t)) + \delta \cdot \mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] \rbrace
 \end{equation}
 
 where expectation is taken over all possible values of the next state,
-\(X(t+1)\), and maximized over all possible choices of harvest,
-\(h(t)\). That is, at time \(t\), when population size is \(x(t)\) and
-harvest \(h(t)\) is applied, the immediate return is \(R(h(t), x(t))\).
-When the sole source of uncertainty is the process stochasticity term,
-\(Z\), and thus the expectation in Eqn 2 is equivalent to taking
-expectations over \(Z(t)\). That is
+$X(t+1)$, and maximized over all possible choices of harvest, $h(t)$.
+That is, at time $t$, when population size is $x(t)$ and harvest $h(t)$
+is applied, the immediate return is $R(h(t), x(t))$. When the sole
+source of uncertainty is the process stochasticity term, $Z$, and thus
+the expectation in Eqn 2 is equivalent to taking expectations over
+$Z(t)$. That is
 
 \begin{equation}
 \mathbf{\mathrm{E}}_{X(t+1)} \left[ V( X(t+1),t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{Z(t)} \left[V( Z(t) f(x(t) - h(t))|\mathbf{p}), t+1 | x(t), h(t) \right]
 \end{equation}
 
-where the population size after the take is \(x(t) - h(t)\), which is
-then translated into \(X(t+1)\) by Eqn 1 (that is, we replace \(X(t+1)\)
-by \(Z(t) f(x(t)-h(t)|\mathbf{p})\)).
+where the population size after the take is $x(t) - h(t)$, which is then
+translated into $X(t+1)$ by Eqn 1 (that is, we replace $X(t+1)$ by
+$Z(t) f(x(t)-h(t)|\mathbf{p})$).
 
 When the parameters governing the dynamics are also uncertain, we take
 the expectation over the posterior distribution for the parameters:
@@ -321,24 +321,24 @@ the expectation over the posterior distribution for the parameters:
 \end{equation}
 
 When the underlying population dynamics are unknown (the case of
-structural uncertainty), the function \(f\) itself is uncertain and the
-expectation for the next state includes uncertainty in \(f\) as well.
-That is
+structural uncertainty), the function $f$ itself is uncertain and the
+expectation for the next state includes uncertainty in $f$ as well. That
+is
 
 \begin{equation}
 \mathbf{\mathrm{E}}_{X(t+1)} \left[ V(X(t+1), t+1) | x(t), h(t) \right] = \mathbf{\mathrm{E}}_{\mathbf{p}|\mathrm{data}} \{ \mathbf{\mathrm{E}}_{f, Z(t) | \mathbf{p}, \mathrm{data}} \left[ V( Z(t) f(x(t) - h(t)| \mathbf{p}), t) \right] \}
 \end{equation}
 
-We consider the finite time problem with \(T=\) 1000, which we solve
-using the standard value iteration algorithm (see Mangel and Clark 1988,
-Clark and Mangel 2000).
+We consider the finite time problem with $T=$ 1000, which we solve using
+the standard value iteration algorithm (see Mangel and Clark 1988, Clark
+and Mangel 2000).
 
 \subsubsection{Parametric Models}\label{parametric-models}
 
 We consider three candidate parametric models for the population
 dynamics: The Ricker model, the Allen model (Allen and Tanner 2005), and
 the Myers model (Myers et al. 1995), Eqns \eqref{ricker}-\eqref{myers}.
-In all three, we let \(K\) denote the carrying capacity and \(r\) the
+In all three, we let $K$ denote the carrying capacity and $r$ the
 maximum per capita growth rate. The Ricker model has two parameters and
 the right hand side of Eqn 1 is
 
@@ -352,8 +352,8 @@ The Allen model has three parameters
 f(S(t)|r, K, X_c) = S(t) e^{r \left(1 - \frac{S(t)}{K}\right)\left(S(t) - X_c\right)} \label{allen}
 \end{equation}
 
-where \(X_c\) denotes the location of the unstable steady state (i.e.,
-the tipping point).
+where $X_c$ denotes the location of the unstable steady state (i.e., the
+tipping point).
 
 The Myers model also has three parameters
 
@@ -361,9 +361,8 @@ The Myers model also has three parameters
 f(S(t) | r, K, \theta)  = \frac{r S(t)^{\theta}}{1 + \frac{S(t)^\theta}{K}} \label{myers}
 \end{equation}
 
-where \(\theta = 1\) corresponds to Beverton-Holt dynamics and
-\(\theta\) \textgreater{} 2 leads to Allee effects and multiple stable
-states.
+where $\theta = 1$ corresponds to Beverton-Holt dynamics and $\theta$
+\textgreater{} 2 leads to Allee effects and multiple stable states.
 
 The Ricker model does not lead to multiple steady states. The Allen
 model resembles the Ricker dynamics with an added Allee effect parameter
@@ -371,7 +370,7 @@ model resembles the Ricker dynamics with an added Allee effect parameter
 Myers model also has three parameters and contains an Allee threshold,
 but unlike the Ricker model saturates at high population size. The
 multiplicative log-normal stochasticity in Eqn 1 introduces one
-additional parameter \(\sigma\) that must be estimated.
+additional parameter $\sigma$ that must be estimated.
 
 Because of our interest in management performance in the presence of
 tipping points, all of our simulations are based on the Allen model. The
@@ -432,19 +431,19 @@ and thorough introduction to the formulation and use of GPs can be found
 in Rasmussen and Williams (2006).
 
 A GP is a stochastic process for which any realization consisting of n
-points follows a multivariate normal distribution of dimension \(n\). To
+points follows a multivariate normal distribution of dimension $n$. To
 characterize the GP we need a mean function and a covariance function.
 We proceed as follows.
 
-As before, we assume that the data \(X(t)\) are observed with process
-stochasticity around a mean function \(g(X(t))\)
+As before, we assume that the data $X(t)$ are observed with process
+stochasticity around a mean function $g(X(t))$
 
 \begin{equation}
 X(t+1) = g(X(t)) + \varepsilon,
 \end{equation}
 
-where \(\varepsilon\) are IID normal random variables with zero-mean and
-variance \(\sigma^2\). Note that we have chosen to assume additive
+where $\varepsilon$ are IID normal random variables with zero-mean and
+variance $\sigma^2$. Note that we have chosen to assume additive
 stochasticity. While we could consider log-normal stochasticity as in
 the parametric models, we make this choice to emphasize that the
 Gaussian process approach need not have structurally correct
@@ -453,43 +452,49 @@ stochasticity to be effective.
 In order to make predictions, we update the GP based on the observed set
 of transitions. To do so, we collect the time series of observed states
 into a vector of ``current'' states,
-\(\mathbf{X}_{\textrm{obs}} = \{X(1), \dots, X(T-1)\}\) and a vector of
-``next'' states \(\mathbf{Y}_{\textrm{obs}} = \{X(2),\dots,X(T)\}\)
-where \(T\) is the time of the final observation. Conditional on these
-observations, the predicted next state, \(g(X_p)\), for any given
-``current'' state, \(X_p\) follows a normal distribution with mean \(E\)
-and variance \(C\) determined using the standard rules for conditioning
-in multivariate normals, i.e.
+$\mathbf{X}_{\textrm{obs}} = \{X(1), \dots, X(T-1)\}$ and a vector of
+``next'' states $\mathbf{Y}_{\textrm{obs}} = \{X(2),\dots,X(T)\}$ where
+$T$ is the time of the final observation. Conditional on these
+observations, the predicted next state, $g(X_p)$, for any given
+``current'' state, $X_p$ follows a normal distribution with mean $E$ and
+variance $C$ determined using the standard rules for conditioning in
+multivariate normals, i.e.
 
 \begin{equation}
-E = K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
+E = K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbf{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
 \end{equation}
 
 and
 
 \begin{equation}
-C = K(X_p, X_p) - K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, X_p)
+C = K(X_p, X_p) - K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbf{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, X_p)
 \end{equation}
 
-NA
+Here $\mathbf{I}_n$ is the $n$ by $n$ identity matrix (i.e.~a matrix
+with ones down the diagonal and zeros elsewhere) and $K$ is the
+`covariance kernel.' The covariance kernel controls how much influence
+one observation has on another. In the present application we use the
+squared-exponential kernel which, when evaluated over a pair of vectors,
+say $\mathbf{x}$ and $\mathbf{y}$, generates a covariance matrix whose
+$i,j$th element is given by
 
 \begin{equation}
 K_{i,j}(\mathbf{x}, \mathbf{y}) = \exp\left( \frac{ -(x_i - y_j)^2}{2 \ell^2} \right)
 \end{equation}
 
-so that \(\ell\) gives the characteristic length-scale over which
+so that $\ell$ gives the characteristic length-scale over which
 correlation between two observations decays. See Rasmussen and Williams
 (2006) for other choices of covariance kernels and their properties.
 Note that this simple formulation assumes a prior mean of zero. For the
-parameters we use inverse Gamma priors on both the length-scale \(\ell\)
-and \(\sigma\), thus for example
+parameters we use inverse Gamma priors on both the length-scale $\ell$
+and $\sigma$, thus for example
 
 \begin{equation}
 f(\ell; \alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)} \ell^{-\alpha - 1}\exp\left(-\frac{\beta}{\ell}\right)
 \end{equation}
 
-For the prior on \(\ell\), \(\alpha =\) 10 and \(\beta =\) 10. The prior
-on \(\sigma\), \(\alpha =\) 5 and \(\beta =\) 5.
+For the prior on $\ell$, $\alpha =$ 10 and $\beta =$ 10. The prior on
+$\sigma$, $\alpha =$ 5 and $\beta =$ 5.
 
 We use a Metropolis-Hastings Markov Chain Monte Carlo (Gelman et al.
 (2003)) to infer posterior distributions of the parameters of the GP
@@ -502,14 +507,14 @@ the posterior comes from the data rather than the prior belief.
 
 We derive the harvest policy from the estimated GP by inserting it into
 a SDP algorithm. Given the GP posteriors, we construct the transition
-matrix representing the probability of going to each state \(X(t+1)\)
-given any current state \(x(t)\) and any harvest \(h(t)\) (See the
-function \texttt{gp\_transition\_matrix()} in the provided R package).
-Given this transition matrix, we use the same value iteration algorithm
-as in the parametric case to determine the optimal policy. In doing so,
-the uncertainty in the future state under the GP, \(X(t+1)\), includes
-both process uncertainty (based on the estimation of \(\sigma\)) and
-structural uncertainty of the posterior collection of curves.
+matrix representing the probability of going to each state $X(t+1)$
+given any current state $x(t)$ and any harvest $h(t)$ (See the function
+\texttt{gp\_transition\_matrix()} in the provided R package). Given this
+transition matrix, we use the same value iteration algorithm as in the
+parametric case to determine the optimal policy. In doing so, the
+uncertainty in the future state under the GP, $X(t+1)$, includes both
+process uncertainty (based on the estimation of $\sigma$) and structural
+uncertainty of the posterior collection of curves.
 
 \section{Results}\label{results}
 
@@ -542,14 +547,6 @@ states (Allen and Myers). Supplement provides details on the model
 estimates.
 
 \begin{longtable}[c]{@{}cccc@{}}
-\caption{Model selection scores for several common criteria (DIC:
-Deviance Information Criterion, AIC: Akaike Information Criterion, BIC:
-Bayesian Information Criterion) all select the wrong model. As the true
-(Allen) model is not distinguishable from the simpler (Ricker) model in
-the region of the observed data, this error cannot be avoided regardless
-of the model choice criterion. This highlights the danger of model
-choice when the selected model will be used outside of the observed
-range of the data.}\\
 \toprule\addlinespace
 \begin{minipage}[b]{0.12\columnwidth}\centering
 ~
@@ -593,6 +590,15 @@ Myers
 \end{minipage}
 \\\addlinespace
 \bottomrule
+\addlinespace
+\caption{Model selection scores for several common criteria (DIC:
+Deviance Information Criterion, AIC: Akaike Information Criterion, BIC:
+Bayesian Information Criterion) all select the wrong model. As the true
+(Allen) model is not distinguishable from the simpler (Ricker) model in
+the region of the observed data, this error cannot be avoided regardless
+of the model choice criterion. This highlights the danger of model
+choice when the selected model will be used outside of the observed
+range of the data.}
 \end{longtable}
 
 \begin{figure}[htbp]
@@ -600,8 +606,8 @@ Myers
 \includegraphics{components/figure/manuscript-figure_2-1.pdf}
 \caption{The inferred Gaussian process compared to the true process and
 maximum-likelihood estimated (MLE) process. We show the expected value
-for the function \(f\) under each model. Plots show replicates drawn
-from the posterior distributions in order to convey uncertainty of the
+for the function $f$ under each model. Plots show replicates drawn from
+the posterior distributions in order to convey uncertainty of the
 estimates. Note the MLE is a point estimate of parameters and so
 reflects no uncertainty in the distribution. The training data are also
 shown as black points. The GP is conditioned on (0,0), shown as a
@@ -632,7 +638,7 @@ training data.
 \includegraphics{components/figure/manuscript-figure_3-1.pdf}
 \caption{The steady-state optimal policy (infinite boundary) calculated
 under each model. Policies are shown in terms of target escapement,
-\(S(t)\), as under models such as this a constant escapement policy is
+$S(t)$, as under models such as this a constant escapement policy is
 expected to be optimal (Reed 1979) Several policies show a numerical
 jitter due to the discretization of states in the dynamic programming
 algorithm; doubling the number of grid points did not qualitatively
@@ -641,17 +647,17 @@ change the results.}
 
 Despite the similarities in model fits to the observed data, the
 policies inferred under each model differ widely (Figure 3). Policies
-are shown in terms of target escapement, \(S(t) = x_t - h\). Under
-models such as this a constant escapement policy is expected to be
-optimal (Reed 1979), whereby population levels below a certain size
-\(S\) are unharvested, while above that size the harvest strategy aims
-to return the population to \(S\). Whenever a model predicts that the
-population will not persist below a certain threshold, the optimal
-solution is to harvest the entire population immediately, resulting in
-an escapement \(S=0\), as seen in the true (correct form, exact
-parameters) model, the Allen model (correct form, estimated parameters)
-and the GP. Only the structurally correct model (Allen model) and the GP
-produce policies close to the true optimum policy.
+are shown in terms of target escapement, $S(t) = x_t - h$. Under models
+such as this a constant escapement policy is expected to be optimal
+(Reed 1979), whereby population levels below a certain size $S$ are
+unharvested, while above that size the harvest strategy aims to return
+the population to $S$. Whenever a model predicts that the population
+will not persist below a certain threshold, the optimal solution is to
+harvest the entire population immediately, resulting in an escapement
+$S=0$, as seen in the true (correct form, exact parameters) model, the
+Allen model (correct form, estimated parameters) and the GP. Only the
+structurally correct model (Allen model) and the GP produce policies
+close to the true optimum policy.
 
 \begin{figure}[htbp]
 \centering
@@ -698,7 +704,7 @@ stochasticity.
 
 The GPDP is only weakly influenced by increasing stochasticity or
 increasing Allee effects over much of the range (Figure S2). Larger
-\(\sigma\) or higher Allee levels make even the optimal solution without
+$\sigma$ or higher Allee levels make even the optimal solution without
 any model or parameter uncertainty unable to harvest the population
 effectively (e.g.~the stochasticity is large enough to violate the
 self-sustaining criterion of Reed (1979)).
@@ -726,16 +732,17 @@ We have illustrated how the use of non-parametric methods provides more
 reliable solutions in the sequential decision-making problem.
 
 \subsubsection{Traditional model-choice approaches can be positively
-misleading.}\label{traditional-model-choice-approaches-can-be-positively-misleading.}
+misleading}\label{traditional-model-choice-approaches-can-be-positively-misleading}
 
-Our results illustrate that model-choice approaches can be absolutely NA
-dynamics because they have fewer parameters and the data are far from
-the tipping point. That is, when the data come from around the stable
-steady state, all the parametric models are approximately linear and
-approximately identical. Thus, it is intuitive that all model selection
-methods choose the simplest model. In a complex world, the result is
-suboptimal. But in a world that might contain tipping points, the result
-could be disastrous.
+Our results illustrate that model-choice approaches can be absolutely
+misleading -- by providing support to models that cannot capture tipping
+point dynamics because they have fewer parameters and the data are far
+from the tipping point. That is, when the data come from around the
+stable steady state, all the parametric models are approximately linear
+and approximately identical. Thus, it is intuitive that all model
+selection methods choose the simplest model. In a complex world, the
+result is suboptimal. But in a world that might contain tipping points,
+the result could be disastrous.
 
 Many managers both in fisheries and beyond face a similar situation:
 they have not observed the population dynamics at all possible
@@ -777,7 +784,7 @@ Outside of the observed range of the data, the GP reverts to the prior,
 and consequently the choice of the prior can also play a significant
 role in determining the optimal policy. In the examples shown here we
 have selected a prior that is both relatively uninformative (due to the
-broad priors placed on its parameters \(\ell\) and \(\sigma\) and simple
+broad priors placed on its parameters $\ell$ and $\sigma$ and simple
 (the choice of our covariance function, Eqns 12 and 13 ). In practice,
 these should be chosen to confer particular biological properties. In
 principle, this may allow a manager to improve the performance of the
@@ -967,7 +974,7 @@ Williams, B. K. 2001. Uncertainty , learning , and the optimal
 management of wildlife. Environmental and Ecological Statistics
 8:269--288.
 
-Xie, Y. 2013. Dynamic documents with R and knitr. Chapman; Hall/CRCBoca
+Xie, Y. 2013. Dynamic Documents with R and knitr. Chapman; Hall/CRCBoca
 Raton, Florida.
 
 \end{document}

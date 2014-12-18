@@ -958,17 +958,17 @@ In order to make predictions, we update the GP based on the observed set of tran
 
 
 \begin{equation}
-E = K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
+E = K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbf{I}_n \right)^{-1} \mathbf{Y}_{\textrm{obs}}
 \end{equation}
 
 
 and 
 
 \begin{equation}
-C = K(X_p, X_p) - K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbb{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, X_p)
+C = K(X_p, X_p) - K(X_p, \mathbf{X}_{\textrm{obs}}) \left(K(\mathbf{X}_{\textrm{obs}},\mathbf{X}_{\textrm{obs}}) - \sigma \mathbf{I} \right)^{-1} K(\mathbf{X}_{\textrm{obs}}, X_p)
 \end{equation}
 
-Here $\mathbb{I}_n$ is the $n$ by $n$ identity matrix (i.e. a matrix with ones down the diagonal and zeros elsewhere) and $K$ is the ‘covariance kernel.’  The covariance kernel controls how much influence one observation has on another.  In the present application we use the squared-exponential kernel which, when evaluated over a pair of vectors, say $\mathbf{x}$ and $\mathbf{y}$,  generates a covariance matrix whose $i,j$th element is given by  
+Here $\mathbf{I}_n$ is the $n$ by $n$ identity matrix (i.e. a matrix with ones down the diagonal and zeros elsewhere) and $K$ is the ‘covariance kernel.’  The covariance kernel controls how much influence one observation has on another.  In the present application we use the squared-exponential kernel which, when evaluated over a pair of vectors, say $\mathbf{x}$ and $\mathbf{y}$,  generates a covariance matrix whose $i,j$th element is given by  
 
 \begin{equation}
 K_{i,j}(\mathbf{x}, \mathbf{y}) = \exp\left( \frac{ -(x_i - y_j)^2}{2 \ell^2} \right)
@@ -1230,10 +1230,10 @@ models:
 We have illustrated how the use of non-parametric methods provides
 more reliable solutions in the sequential decision-making problem. 
 
-### Traditional model-choice approaches can be positively misleading.  
+### Traditional model-choice approaches can be positively misleading
 
 Our results illustrate that model-choice approaches can be absolutely
-misleading – by providing support to models that cannot capture tipping point
+misleading -- by providing support to models that cannot capture tipping point
 dynamics because they have fewer parameters and the data are far from the tipping point.  That is, when the data 
 come from around the stable steady state,
 all the parametric models are approximately linear and approximately
