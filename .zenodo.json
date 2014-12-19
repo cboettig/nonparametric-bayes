@@ -1,0 +1,21 @@
+{
+  "title": "Sources for: Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming",
+  "creators": [{
+      "name": "Boettiger, Carl",
+      "affiliation": "Center for Stock Assessment Research, Department of Applied Math and Statistics, University of California, Santa Cruz, USA"
+"
+  }, {
+      "name": "Mangel, Marc",
+      "affiliation": "Center for Stock Assessment Research, Department of Applied Math and Statistics, University of California, Santa Cruz, USA"
+  }, {
+      "name": "Munch, Stephan",
+      "affiliation": "Southwest Fisheries Science Center"
+  }],
+  "description": "This repository contains the software implementation for our paper 'Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming'",
+  "access_right": "open",
+  "license": "mit-license",
+  "related_identifiers": [{
+    "identifier": "http://dx.doi.org/10.1098/rspb.2014.1631",
+    "relation": "isCitedBy"
+  }]
+}
