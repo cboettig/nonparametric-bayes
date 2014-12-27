@@ -18,12 +18,6 @@ address:
       Department of Applied Math and Statistics, 
       University of California, Mail Stop SOE-2,
       Santa Cruz, CA 95064, USA
-  - code: marc
-    address: |
-      Center for Stock Assessment Research, Department of Applied Math
-      and Statistics, University of California,
-      Mail Stop SOE-2, Santa Cruz, CA 95064, USA and Department of
-      Biology, University of Bergen, Bergen, Norway 9020
   - code: noaa
     address: | 
       Southwest Fisheries Science Center, 

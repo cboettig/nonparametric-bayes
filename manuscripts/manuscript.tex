@@ -97,10 +97,6 @@ Dynamic Programming}
       \address[cstar]{Center for Stock Assessment Research, Department of Applied Math and
 Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
 95064, USA}    
-    \address[marc]{Center for Stock Assessment Research, Department of Applied Math and
-Statistics, University of California, Mail Stop SOE-2, Santa Cruz, CA
-95064, USA and Department of Biology, University of Bergen, Bergen,
-Norway 9020}    
     \address[noaa]{Southwest Fisheries Science Center, National Oceanic and Atmospheric
 Administration, 110 Shaffer Road, Santa Cruz, CA 95060, USA}    
   
@@ -190,7 +186,7 @@ available and data are limited such as around high stock levels or an
 otherwise desirable state. With perfect information, one would know just
 how far a system could be pushed before crossing the tipping point, and
 management would be simple. But we face imperfect models and limited
-data and, with tipping points,\\even small errors can have very large
+data and, with tipping points, even small errors can have very large
 consequences, as we shall illustrate later. Because intervention may be
 too late once a tipping point has been crossed (but see Hughes et al.
 (2013)), management is often concerned with avoiding tipping points
@@ -246,11 +242,11 @@ the supplement (Boettiger et al. 2014).
 \subsubsection{Requirements of dynamic
 optimization}\label{requirements-of-dynamic-optimization}
 
-Dynamic optimization equires characterizing the dynamics of a state
+Dynamic optimization requires characterizing the dynamics of a state
 variable (or variables), a control action, and a value function. For
 simplicity, we consider only a single state variable. This is a
 best-case scenario for the parametric models because we simulate
-underlying dynamics from one of the three parametric models , whereas in
+underlying dynamics from one of the three parametric models, whereas in
 the natural world we never know the ``true'' model. In addition, by
 choosing one-dimensional models with just a few parameters, we limit the
 chance that poor performance will be due to inability to estimate
@@ -270,7 +266,7 @@ X(t+1) = Z(t) f(X(t), \mathbf{p}) \label{eq1}
 Where Z(t) is log-normally distributed process stochasticity (Reed 1979)
 and $\mathbf{p}$ is a vector of parameters to be estimated from the
 data. We describe the three choices for $f(X(t),\mathbf{p})$ in the next
-section.\\The control action is a harvest or take, $h(t)$, measured in
+section. The control action is a harvest or take, $h(t)$, measured in
 the same units as $X$, at time $t$. Thus, in the presence of take, the
 population size on the right hand side of Eqn 1 is replaced by
 $S(t) = X(t) - h(t)$.
@@ -355,7 +351,7 @@ f(S(t)|r, K, X_c) = S(t) e^{r \left(1 - \frac{S(t)}{K}\right)\left(S(t) - X_c\ri
 where $X_c$ denotes the location of the unstable steady state (i.e., the
 tipping point).
 
-The Myers model also has three parameters
+The Myers model also has three parameters:
 
 \begin{equation}
 f(S(t) | r, K, \theta)  = \frac{r S(t)^{\theta}}{1 + \frac{S(t)^\theta}{K}} \label{myers}
@@ -617,7 +613,7 @@ pseudo-data point.}
 We show the mean inferred population dynamics of each model relative to
 the true model used to generate the data in Figure 2, predicting the
 relationship between observed population size (x-axis) to the population
-size after recruitment the following year.\\In addition to the raw data,
+size after recruitment the following year. In addition to the raw data,
 the GP is conditioned on going through the point 0,0 without error. All
 parametric models also make this assumption. Conditioning on (0,0) is
 equivalent to making the assumption that the population is closed, so
