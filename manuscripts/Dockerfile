@@ -6,11 +6,10 @@ RUN apt-get update \
     cboettig/cboettigR \
     cboettig/pdg_control \
     cboettig/nonparametric-bayes
-COPY . /home/rstudio
-RUN chown -R docker:docker /home/rstudio
-WORKDIR /home/rstudio
+COPY . /home/rstudio/pdg-control
+WORKDIR /home/rstudio/pdg-control
 
 
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/manuscript.Rmd")'
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/supplement.Rmd")'
+# RUN Rscript -e 'rmarkdown::render("/home/rstudio/pdg-control/manuscript.Rmd")'
+# RUN Rscript -e 'rmarkdown::render("/home/rstudio/pdg-control/supplement.Rmd")'
 
