@@ -59,6 +59,6 @@ Local Installation requirements
 
 --------
 
-[1]: this link provides $10 credit to Digital Ocean; enough to run a 1GB instance for a month.  Disclosure: If you subsequently become a Digital Ocean customer the authors recieve a credit for the referral. 
+[1]: this link provides $10 credit to Digital Ocean; enough to run a 1GB instance for a month.  Disclosure: If you subsequently become a Digital Ocean customer the authors receive a credit for the referral. 
 
 
