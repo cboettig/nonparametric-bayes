@@ -102,7 +102,7 @@ Nonetheless, installing the dependencies needed is not a trivial task, and may
 become more difficult over time as software continues to evolve.  To facilitate
 reuse, we also provide a Dockerfile and Docker image that can be used to replicate
 and explore the analyses here by providing a copy of the computational environment
-we have used, with all software installed. Docker sofware (see [docker.com](http://www.docker.com))
+we have used, with all software installed. Docker software (see [docker.com](http://www.docker.com))
 runs on most platforms as well as cloud servers. Use the command:
 
     docker run -dP cboettig/nonparametric-bayes
@@ -357,7 +357,7 @@ pandoc.table(MyersParameterSets, caption="Randomly chosen parameter sets for the
 
 # MCMC analyses #
 
-This section provides figures and tables showing the traces from each of the MCMC runs used to estimate the parameters of the models presented, along with the resulting posterior distributions for each parameter.  Priors usually appear completely falt when shown against the posteriors, but are summarized by tables the parameters of their corresponding distributions for each case. 
+This section provides figures and tables showing the traces from each of the MCMC runs used to estimate the parameters of the models presented, along with the resulting posterior distributions for each parameter.  Priors usually appear completely flat when shown against the posteriors, but are summarized by tables the parameters of their corresponding distributions for each case. 
 
 
 ## GP MCMC (Fig S4-5) ##
