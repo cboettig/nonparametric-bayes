@@ -1,15 +1,18 @@
 FROM rocker/hadleyverse
 MAINTAINER Carl Boettiger cboettig@ropensci.org
+
+## Install software dependencies
 RUN apt-get update \
   && apt-get install -y r-cran-R2jags r-cran-cairo \
   && installGithub.r --deps TRUE \
     cboettig/cboettigR \
     cboettig/pdg_control \
     cboettig/nonparametric-bayes
-COPY . /home/rstudio/pdg-control
-WORKDIR /home/rstudio/pdg-control
 
+## Copy the manuscripts/ dir ('.' is relative to Dockerfile location) onto the container.
+COPY . /home/rstudio/manuscripts
+WORKDIR /home/rstudio/manuscripts
 
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/pdg-control/manuscript.Rmd")'
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/pdg-control/supplement.Rmd")'
-
+## Uncomment to build manuscript + cache as part of container build step.
+# RUN Rscript -e 'rmarkdown::render("/home/rstudio/manuscripts/manuscript.Rmd")'
+# RUN Rscript -e 'rmarkdown::render("/home/rstudio/manuscripts/supplement.Rmd")'
