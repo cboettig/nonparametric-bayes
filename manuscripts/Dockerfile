@@ -3,7 +3,9 @@ MAINTAINER Carl Boettiger cboettig@ropensci.org
 
 ## Install software dependencies
 RUN apt-get update \
-  && apt-get install -y r-cran-R2jags r-cran-cairo \
+  && apt-get install -y \
+    r-cran-cairo \
+    r-cran-R2jags \
   && installGithub.r --deps TRUE \
     cboettig/cboettigR \
     cboettig/pdg_control \
