@@ -14,6 +14,15 @@
   "description": "This repository contains the software implementation for our paper 'Avoiding tipping points in fisheries management through Gaussian Process Dynamic Programming'",
   "access_right": "open",
   "license": "mit-license",
+  "keywords": [
+    "ecology",
+    "Bayesian",
+    "Gaussian Processes",
+    "fisheries",
+    "optimal control",
+    "management",
+    "Stochastic Dynamic Programming"
+    ],
   "related_identifiers": [{
     "identifier": "http://dx.doi.org/10.1098/rspb.2014.1631",
     "relation": "isCitedBy"
