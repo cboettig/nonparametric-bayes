@@ -1,11 +1,13 @@
 # nonparametric-bayes #
 
-[![DOI](https://zenodo.org/badge/2755/cboettig/nonparametric-bayes.png)](http://dx.doi.org/10.5281/zenodo.12669)
+[![doi:10.5281/zenodo.12669](https://zenodo.org/badge/2755/cboettig/nonparametric-bayes.png)](http://dx.doi.org/10.5281/zenodo.12669)
 
 * Authors:
   - Carl Boettiger
   - Marc Mangel
   - Steve Munch
+
+doi: 10.5281/zenodo.12669
 
 This repository contains the research compendium of our work in
 nonparametric Bayesian inference for improving ecosystem management under
