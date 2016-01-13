@@ -83,13 +83,15 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
     mmult <- function(x,y){
       if(length(x) == 1){
         x <- as.numeric(x) 
-        x * y
-      } else if(length(y) == 1){ 
+        return(x * y)
+      }
+      if(length(y) == 1){ 
         y <- as.numeric(y)
-        x * y
-      }  else 
-        x %*% y
+        return(x * y)
+      }
+      return(x %*% y)
     }
+    
     mu <- numeric(length(obs$y))
     y <- obs$y
     x <- obs$x
@@ -108,8 +110,6 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
     Ef <- t(mu_seq(X, length(obs$x)))
     Cf <- C_seq(X, X, length(obs$x))
   }
-  
-  
   
   ## Kernlab method
   else if(method=="kernlab"){
@@ -136,8 +136,6 @@ gp_fit <- function(obs, X, pars=c(sigma_n=1, tau=1, l=1), method=c("direct", "se
   class(out) = "gpfit"
   out
   }
-
-
 
 update.gpfit <- function(gp, obs, sigma){
   
