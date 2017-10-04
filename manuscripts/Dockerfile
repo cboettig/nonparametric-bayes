@@ -19,6 +19,5 @@ RUN apt-get update \
   && cd JAGS* && ./configure && make && make install \
   && cd / && rm -rf jags.tar.gz JAGS* \
   && R -e 'install.packages(c("devtools")); devtools::install_github("cboettig/pdg_control")'
-
-RUN R -e 'devtools::install(dep=TRUE)'
+RUN R -e 'devtools::install_github("cboettig/nonparametric-bayes", dep=TRUE)'
 
