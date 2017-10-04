@@ -19,6 +19,7 @@ Suggests:
     emdbook,
     R2jags,
     MCMCpack,
+    rmarkdown
 Imports:
     data.table,
     kernlab,
