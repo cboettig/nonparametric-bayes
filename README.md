@@ -1,6 +1,7 @@
 # nonparametric-bayes #
 
-[![doi:10.5281/zenodo.12669](https://zenodo.org/badge/2755/cboettig/nonparametric-bayes.png)](http://dx.doi.org/10.5281/zenodo.12669)
+[![DOI](https://zenodo.org/badge/6271972.svg)](https://zenodo.org/badge/latestdoi/6271972)
+
 
 * Authors:
   - Carl Boettiger
