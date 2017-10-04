@@ -1,20 +1,10 @@
-FROM rocker/hadleyverse
+FROM rocker/r-ver:3.2.0
 MAINTAINER Carl Boettiger cboettig@ropensci.org
 
 ## Install software dependencies
 RUN apt-get update \
   && apt-get install -y \
-    r-cran-cairo \
-    r-cran-R2jags \
-  && installGithub.r --deps TRUE \
-    cboettig/cboettigR \
-    cboettig/pdg_control \
-    cboettig/nonparametric-bayes
+    libssl-dev libxml2-dev libcurl4-openssl-dev git \
+  && R -e 'install.packages(c("devtools")); devtools::install_github("cboettig/pdg_control")' \
+  && R -e 'devtools::install(dep=TRUE)'
 
-## Copy the manuscripts/ dir ('.' is relative to Dockerfile location) onto the container.
-COPY . /home/rstudio/manuscripts
-WORKDIR /home/rstudio/manuscripts
-
-## Uncomment to build manuscript + cache as part of container build step.
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/manuscripts/manuscript.Rmd")'
-# RUN Rscript -e 'rmarkdown::render("/home/rstudio/manuscripts/supplement.Rmd")'
