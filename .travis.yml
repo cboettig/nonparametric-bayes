@@ -3,6 +3,6 @@ sudo: required
 services:
   - docker
 
-script: docker run -ti -v $(pwd):/data -w /data cboettig/2015 R -e "devtools::install(dep=TRUE); rmarkdown::render('manuscripts/manuscript.Rmd')"
+script: docker run -ti -v $(pwd):/data -w /data cboettig/2015 R -e "devtools::install_github(c('cboettig/cboettigR', 'cboettig/pdg_control')); devtools::install(dep=TRUE); devtools::check()"
 
 
