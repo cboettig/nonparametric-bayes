@@ -1,9 +1,8 @@
-# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+sudo: required
 
-language: R
-sudo: false
-cache: packages
+services:
+  - docker
 
-#after_success:
-#    - Rscript -e 'covr::codecov(quiet = FALSE)'
+script: docker run -ti -v $(pwd):/data -w /data cboettig/2015 R -e "devtools::install(dep=TRUE); rmarkdown::render('manuscripts/manuscript.Rmd')"
+
 
