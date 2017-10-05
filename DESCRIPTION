@@ -19,7 +19,8 @@ Suggests:
     emdbook,
     R2jags,
     MCMCpack,
-    rmarkdown
+    rmarkdown,
+    codetools
 Imports:
     data.table,
     kernlab,
