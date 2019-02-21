@@ -33,19 +33,17 @@ to confirm that everything is still working.
 Docker Quickstart
 -----------------
 
-[Install Docker](https://docs.docker.com/installation) on your laptop or server. Mac & Windows users should then launch the installed `boot2docker` app to access the Docker terminal. Linux users just open any terminal. Then run: 
+[Install Docker](https://docs.docker.com/installation) on your laptop or server. Then from the `manuscripts/` directory run: 
 
 ```bash
-docker run -d -p 8787:8787 cboettig/nonparametric-bayes
+docker build -t cboettig/nonparametric-bayes .
 ```
 
-This downloads the computational environment necessary and launches RStudio-server to interact with it. Point your browser to:
 
 ```
-http://localhost:8787
+docker run --rm -ti -v $(pwd):/data cboettig/nonparametric-bayes R -e "rmarkdown::render('manuscript.Rmd')"
 ```
 
-Mac and Windows users should replace `localhost` with the IP address returned by `boot2docker ip`.  Log in with user: `rstudio` and password: `rstudio`. See [rocker-org Wiki](https://github.com/rocker-org/rocker/wiki/Using-the-RStudio-image) for more details like custom passwords.
 
 You can now open `manuscript.Rmd` or `supplement.Rmd` files in RStudio and run the code interactively or compile the pdfs from scratch.  See [RStudio's rmarkdown](http://rmarkdown.rstudio.com/) for details. 
 
