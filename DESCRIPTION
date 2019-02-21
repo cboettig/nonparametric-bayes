@@ -20,7 +20,8 @@ Suggests:
     R2jags,
     MCMCpack,
     rmarkdown,
-    codetools
+    codetools,
+    dplyr
 Imports:
     data.table,
     kernlab,
