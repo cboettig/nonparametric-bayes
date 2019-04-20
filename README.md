@@ -37,7 +37,7 @@ run the examples shown.
 
 * See my lab notebook entries under the
 [nonparametric-bayes](http://www.carlboettiger.info/tags.html#nonparametric-bayes)
-tag for ongoing discription of this research.
+tag for ongoing description of this research.
 
 * The [issues
 tracker](https://github.com/cboettig/nonparametric-bayes/issues) lists
