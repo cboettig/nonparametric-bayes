@@ -33,7 +33,7 @@ gp_mcmc <- function(x, y, init_pars = c(l=1, sigma.n=1), n = 1e4, d.p = c(5,5), 
     K <- cov(x, x) 
     
     loglik <- - 0.5 * t(y) %*% solve(K + sigma.n^2 * I) %*% y -
-      log(det(K + sigma.n^2*I)) -
+      0.5 * log(det(K + sigma.n^2*I)) -
       length(y) * log(2 * pi) / 2
     
     loglik + lpriors(pars)
